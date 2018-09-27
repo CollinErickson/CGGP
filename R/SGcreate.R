@@ -58,39 +58,42 @@ SGcreate <- function(xmin, xmax,batchsize) {
   
   SG$w = rep(0, SG$ML) #keep track of + and - for prediction
   SG$w[1] = 1 #keep track of + and - for prediction
-  SG$uoCOUNT = 1
+  SG$uoCOUNT = 1 # Number of used levels
   # While number selected + min sample size <= batch size, i.e., still have enough spots for a block
   while (SG$bss > (SG$ss + min(SG$pogsize[1:SG$poCOUNT]) - 0.5)) {
     SG$uoCOUNT = SG$uoCOUNT + 1 #increment used count
     
-    # First d iterations do what???
+    # First d iterations pick the (2,1,1,1,1),(1,2,1,1,1) blocks b/c we need info on each dimension before going adaptive
     if (SG$uoCOUNT < (SG$d + 1.5)) {
       pstar = 1 #pick a proposed to add
-    } else{ # The next d iterations do what?
+    } else{ # The next d iterations randomly pick from the boxes with minimal number of points, not sure this makes sense
       if (SG$uoCOUNT < (2 * SG$d + 1.5)) {
         pstar = sample(which(SG$pogsize[1:SG$poCOUNT] <= 0.5 + min(SG$pogsize[1:SG$poCOUNT])), 1)
-      } else{
+      } else{ # After that randomly select from blocks that still fit
         pstar = sample(which(SG$pogsize[1:SG$poCOUNT] < (SG$bss - SG$ss + 0.5)), 1)
       }
     }
     
-    l0 =  SG$po[pstar, ]
-    SG$uo[SG$uoCOUNT, ] = l0
-    SG$ss =  SG$ss + SG$pogsize[pstar]
+    l0 =  SG$po[pstar, ] # Block name e.g. (2,1,1,2)
+    SG$uo[SG$uoCOUNT, ] = l0 # Store new block
+    SG$ss =  SG$ss + SG$pogsize[pstar] # Update selected sample size
     
     # New ancestors?
     new_an = SG$pila[pstar, 1:SG$pilaCOUNT[pstar]]
     total_an = new_an
-    # for(lcv5 in 1:10){
+    
+    # Loop over ancestors???
     for (lcv2 in 1:length(total_an)) {
+      # If more than one ancestor, update with unique ones.
       if (total_an[lcv2] > 1.5) {
         total_an = unique(c(total_an, SG$uala[total_an[lcv2], 1:SG$ualaCOUNT[total_an[lcv2]]]))
       }
-      #}
     }
+    # Update storage of ancestors
     SG$ualaCOUNT[SG$uoCOUNT]  = length(total_an)
     SG$uala[SG$uoCOUNT, 1:length(total_an)] = total_an
     
+    # Loop over ancestors, update coefficient
     for (lcv2 in 1:length(total_an)) {
       lo = SG$uo[total_an[lcv2], ]
       if (max(abs(lo - l0)) < 1.5) {
@@ -101,20 +104,20 @@ SGcreate <- function(xmin, xmax,batchsize) {
     }
     SG$w[SG$uoCOUNT] = SG$w[SG$uoCOUNT] + 1
     
-    
-    if (pstar < 1.5) {
+    # Update block tracking
+    if (pstar < 1.5) { # If you picked the first block, update like this 
       SG$po[1:(SG$poCOUNT - 1), ] = SG$po[2:SG$poCOUNT, ]
       SG$pila[1:(SG$poCOUNT - 1), ] = SG$pila[2:SG$poCOUNT, ]
       SG$pilaCOUNT[1:(SG$poCOUNT - 1)] = SG$pilaCOUNT[2:SG$poCOUNT]
       SG$pogsize[1:(SG$poCOUNT - 1)] = SG$pogsize[2:SG$poCOUNT]
     }
-    if (pstar > (SG$poCOUNT - 0.5)) {
+    if (pstar > (SG$poCOUNT - 0.5)) { # If you picked the last block, do this
       SG$po[1:(SG$poCOUNT - 1), ] = SG$po[1:(pstar - 1), ]
       SG$pila[1:(SG$poCOUNT - 1), ] = SG$pila[1:(pstar - 1), ]
       SG$pilaCOUNT[1:(SG$poCOUNT - 1)] = SG$pilaCOUNT[1:(pstar - 1)]
       SG$pogsize[1:(SG$poCOUNT - 1)] = SG$pogsize[1:(pstar - 1)]
     }
-    if (pstar < (SG$poCOUNT - 0.5) && pstar > 1.5) {
+    if (pstar < (SG$poCOUNT - 0.5) && pstar > 1.5) { # If in between, do this
       SG$po[1:(SG$poCOUNT - 1), ] = SG$po[c(1:(pstar - 1), (pstar + 1):SG$poCOUNT), ]
       SG$pila[1:(SG$poCOUNT - 1), ] = SG$pila[c(1:(pstar - 1), (pstar +
                                                                   1):SG$poCOUNT), ]
@@ -123,8 +126,10 @@ SGcreate <- function(xmin, xmax,batchsize) {
       SG$pogsize[1:(SG$poCOUNT - 1)] = SG$pogsize[c(1:(pstar - 1), (pstar +
                                                                       1):SG$poCOUNT)]
     }
+    # One less option now???
     SG$poCOUNT = SG$poCOUNT - 1
     
+    # Loop over dimensions WHY???
     for (lcv2 in 1:SG$d) {
       lp = l0
       
