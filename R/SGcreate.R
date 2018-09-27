@@ -1,21 +1,42 @@
+#' Create sparse grid GP
+#'
+#' @param xmin Min x values, vector
+#' @param xmax Max x values, vector
+#' @param batchsize Number added to design each batch
+#'
+#' @return SGGP
+#' @export
+#'
+#' @examples
+#' SG = SGcreate(rep(0, d), rep(1, d),201)
 SGcreate <- function(xmin, xmax,batchsize) {
+  # This is list representing our GP object
   SG = list("xmin" = xmin, "xmax" = xmax)
   
-  SG$d = length(xmin)
+  SG$d = length(xmin) # input dimension
+  
+  # Levels are blocks
   SG$ML = min(choose(SG$d + 6, SG$d), 100000) #max levels
   
+  # What is levelpoint? The current point? This is not used again in this file!
   SG$levelpoint = rep(0, SG$ML)
   
+  # Track evaluated blocks, aka used levels
   SG$uo = matrix(0, nrow = SG$ML, ncol = SG$d) #used levels tracker
+  # First observation is always (1,1,...,1)
   SG$uo[1, ] = rep(1, SG$d) #first observation in middle of space
   SG$uoCOUNT = 1 #number of used levels
   
+  # Track the blocks that are allowed to be evaluated
   SG$po = matrix(0, nrow = 4 * SG$ML, ncol = SG$d) #proposed levels tracker
+  # Now possible blocks are (2,1,1,1,1), (1,2,1,1,1), (1,1,2,1,1), etc
   SG$po[1:SG$d, ] = matrix(1, nrow = SG$d, ncol = SG$d) + diag(SG$d) #one at a time
   SG$poCOUNT = SG$d #number of proposed levels
   
   
-  
+  # What are ancestors? Why are we doing this?
+  # Are ancestors support blocks? Is this for calculating coefficient?
+  # How any of its ancestors be proposed? They should all be used already?
   SG$pila = matrix(0, nrow = SG$ML, ncol = 1000) #proposed immediate level ancestors
   SG$pala = matrix(0, nrow = SG$ML, ncol = 1000) #proposedal all level ancestors
   SG$uala = matrix(0, nrow = SG$ML, ncol = 1000) #used all level ancestors
@@ -28,19 +49,24 @@ SGcreate <- function(xmin, xmax,batchsize) {
   
   SG$bss = batchsize#1+4*SG$d  #must be at least 3*d
   SG$sizes = c(1, 2, 2, 2, 4, 4, 4, 6, 8)
+  # Proposed grid size? More points further along the blocks?
   SG$pogsize = rep(0, 4 * SG$ML)
   SG$pogsize[1:SG$poCOUNT] = apply(matrix(SG$sizes[SG$po[1:SG$poCOUNT, ]], SG$poCOUNT, SG$d), 1, prod)
+  # Selected sample size?
   SG$ss = 1
   
   
   SG$w = rep(0, SG$ML) #keep track of + and - for prediction
   SG$w[1] = 1 #keep track of + and - for prediction
   SG$uoCOUNT = 1
+  # While number selected + min sample size <= batch size, i.e., still have enough spots for a block
   while (SG$bss > (SG$ss + min(SG$pogsize[1:SG$poCOUNT]) - 0.5)) {
     SG$uoCOUNT = SG$uoCOUNT + 1 #increment used count
+    
+    # First d iterations do what???
     if (SG$uoCOUNT < (SG$d + 1.5)) {
       pstar = 1 #pick a proposed to add
-    } else{
+    } else{ # The next d iterations do what?
       if (SG$uoCOUNT < (2 * SG$d + 1.5)) {
         pstar = sample(which(SG$pogsize[1:SG$poCOUNT] <= 0.5 + min(SG$pogsize[1:SG$poCOUNT])), 1)
       } else{
@@ -52,6 +78,7 @@ SGcreate <- function(xmin, xmax,batchsize) {
     SG$uo[SG$uoCOUNT, ] = l0
     SG$ss =  SG$ss + SG$pogsize[pstar]
     
+    # New ancestors?
     new_an = SG$pila[pstar, 1:SG$pilaCOUNT[pstar]]
     total_an = new_an
     # for(lcv5 in 1:10){
@@ -158,6 +185,10 @@ SGcreate <- function(xmin, xmax,batchsize) {
     "each" = 2
   )
   SG$xb = 0.5 + c(0, xb * rep(c(-1, 1), length(xb) / 2))
+  # After this xb is
+  #  [1] 0.50000 0.12500 0.87500 0.25000 0.75000 0.37500 0.62500 0.28125 0.71875 0.31250 0.68750 0.00000 1.00000 0.18750 0.81250
+  # [16] 0.06250 0.93750 0.43750 0.56250 0.40625 0.59375 0.09375 0.90625 0.21875 0.78125 0.34375 0.65625 0.46875 0.53125 0.15625
+  # [31] 0.84375 0.03125 0.96875
   SG$sizest = cumsum(SG$sizes)
   
   
