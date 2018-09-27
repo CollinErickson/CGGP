@@ -131,11 +131,14 @@ SGcreate <- function(xmin, xmax,batchsize) {
     
     # Loop over dimensions WHY???
     for (lcv2 in 1:SG$d) {
+      # The block e.g. (1,2,1,1,3) just selected
       lp = l0
       
-      lp[lcv2] = lp[lcv2] + 1
+      lp[lcv2] = lp[lcv2] + 1 # Increase THIS dim by 1. This is a new possibility, are we adding it?
       
+      # Check if within some bounds??
       if (max(lp) < 7.5 && SG$poCOUNT < 4 * SG$ML) {
+        # Dimensions which 
         kvals = which(lp > 1.5)
         
         canuse = 1
