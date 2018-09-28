@@ -2,7 +2,7 @@
 #'
 #' @param xp 
 #' @param xl Levels along dimension, vector???
-#' @param theta Correlation parameters
+#' @param theta Correlation parameters on log scale
 #'
 #' @return
 #' @export
@@ -42,19 +42,21 @@ SGGPpred <- function(xp,SG, y,theta) {
   my = mean(y)
   y = y-my
   
-  Q  = max(SG$uo[1:SG$uoCOUNT,])
-  CiS = list(matrix(1,1,1),Q*SG$d)
+  Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of evaluated blocks
+  CiS = list(matrix(1,1,1),Q*SG$d) # Store correlation matrices
+  # Loop over dimensions and possible levels
   for (lcv2 in 1:SG$d) {
     for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
-      Xbrn = SG$xb[1:SG$sizest[lcv1]]
-      Xbrn = Xbrn[order(Xbrn)]
-      S = CorrMat(Xbrn, Xbrn , theta[lcv2])
-      CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
+      Xbrn = SG$xb[1:SG$sizest[lcv1]] # Get x's
+      Xbrn = Xbrn[order(Xbrn)] # Sort them
+      S = CorrMat(Xbrn, Xbrn , theta[lcv2]) # Calculate corr mat
+      CiS[[(lcv2-1)*Q+lcv1]] = solve(S) # Store inversion
     }
   }
   
   
-  pw = rep(0, length(y))
+  pw = rep(0, length(y)) # ????????????
+  # Loop over blocks
   for (lcv1 in 1:SG$uoCOUNT) {
     narrowd = which(SG$uo[lcv1,] > 1.5)
     Ci = 1
@@ -112,6 +114,3 @@ SGGPpred <- function(xp,SG, y,theta) {
   
   return(GP)
 }
-
-
-
