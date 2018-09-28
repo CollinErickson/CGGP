@@ -138,27 +138,32 @@ SGcreate <- function(xmin, xmax,batchsize) {
       
       # Check if within some bounds??
       if (max(lp) < 7.5 && SG$poCOUNT < 4 * SG$ML) {
-        # Dimensions which 
+        # Dimensions which are past first design level
         kvals = which(lp > 1.5)
         
-        canuse = 1
-        ap = rep(0, SG$d)
-        nap = 0
+        canuse = 1 # ????
+        ap = rep(0, SG$d) # ????
+        nap = 0 # ?????
+        
+        # Loop over dims at 2+ and do what?
         for (lcv3 in 1:length(kvals)) {
-          lpp = lp
-          lpp[kvals[lcv3]] = lpp[kvals[lcv3]] - 1
+          lpp = lp # The block selected with 1 dim incremented
+          lpp[kvals[lcv3]] = lpp[kvals[lcv3]] - 1 # ????
           
-          ismem = rep(1, SG$uoCOUNT)
-          for (lcv4 in 1:SG$d) {
+          ismem = rep(1, SG$uoCOUNT) # Boolean???
+          # Loop over dimensions
+          for (lcv4 in 1:SG$d) { # Set to 0 or 1 if all points already selected have same value???????
             ismem  = ismem * (SG$uo[1:SG$uoCOUNT, lcv4] == lpp[lcv4])
           }
+          # If any are still 1,
           if (max(ismem) > 0.5) {
             ap[lcv3] = which(ismem > 0.5)
-            nap = nap + 1
-          } else{
+            nap = nap + 1 # Count number that are >=1
+          } else{ # All are 0, so can't use
             canuse = 0
           }
         }
+        # If it can be used, add to possible blocks
         if (canuse > 0.5) {
           SG$poCOUNT = SG$poCOUNT + 1
           SG$po[SG$poCOUNT, ] = lp
@@ -171,6 +176,7 @@ SGcreate <- function(xmin, xmax,batchsize) {
     }
   }
   
+  # Create points for design
   xb = rep(
     c(
       3 / 8,
