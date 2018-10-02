@@ -1,3 +1,6 @@
+# No clue what this one is, looks like it's a specific function, but a real mess.
+# But it's actually used in SGappend. This is insane.
+# Maybe it's a convoluted way to calculated MSE over entire region when using given correlation function.
 MSE_calc <- function(xl, theta) {
   S = CorrMat(xl, xl, theta)
   t = exp(theta)
@@ -45,6 +48,8 @@ MSE_calc <- function(xl, theta) {
 }
 
 
+# No clue what this is either
+# I think it just loops
 MSE_de <- function(valsinds, MSE_v) {
   if(is.matrix(valsinds)){
     MSE_de = rep(0, dim(valsinds)[1])
@@ -81,28 +86,51 @@ MSE_de <- function(valsinds, MSE_v) {
 
 # 
 
+#' Add points to SGGP
+#' 
+#' Add `batchsize` points to `SG` using `theta`.
+#'
+#' @param SG Sparse grid object
+#' @param batchsize Number of points to add
+#' @param theta Correlation parameters
+#'
+#' @return SG with new points added.
+#' @export
+#'
+#' @examples
 SGappend <- function(SG,batchsize,theta){
   
-  MSE_v = matrix(0, SG$d, 8)
+  # Set up blank matrix to store MSE values
+  MSE_v = matrix(0, SG$d, 8) # 8 because he only defined the 1D designs up to 8.
+  # Why do we consider dimensions independent of each other?
+  # Loop over dimensions and design refinements
   for (lcv1 in 1:SG$d) {
     for (lcv2 in 1:8) {
+      # Calculate some sort of MSE from above, not sure what it's doing
       MSE_v[lcv1, lcv2] = max(10 ^ (-7), abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta[lcv1])))
-      if (lcv2 > 1.5) {
+      if (lcv2 > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
         MSE_v[lcv1, lcv2] = min(MSE_v[lcv1, lcv2], MSE_v[lcv1, lcv2 - 1])
       }
     }
   }
   
+  # What is this?
   I_mes = rep(0, SG$ML)
   
+  # For all possible blocks, calculate MSE_v? Is that all that MSE_de does?
   I_mes[1:SG$poCOUNT] = MSE_de(SG$po[1:SG$poCOUNT, ], MSE_v)
   
+  # Increase count of points evaluated. Do we check this if not reached exactly???
   SG$bss = SG$bss + batchsize
   
+  # Keep adding points until reaching bss
   while (SG$bss > (SG$ss + min(SG$pogsize[1:SG$poCOUNT]) - 0.5)) {
     SG$uoCOUNT = SG$uoCOUNT + 1 #increment used count
+    # Find the best one that still fits
     M_comp = max(I_mes[which(SG$pogsize[1:SG$poCOUNT] < (SG$bss - SG$ss + 0.5))])
+    # Find which ones are close to M_comp and
     possibleO =which((I_mes[1:SG$poCOUNT] >= 0.5*M_comp)&(SG$pogsize[1:SG$poCOUNT] < (SG$bss - SG$ss + 0.5)))
+    # If more than one is possible, randomly pick among them.
     if(length(possibleO)>1.5){
       pstar = sample(possibleO,1)
     } else{
