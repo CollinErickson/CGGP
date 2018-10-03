@@ -1,6 +1,20 @@
 # No clue what this one is, looks like it's a specific function, but a real mess.
 # But it's actually used in SGappend. This is insane.
 # Maybe it's a convoluted way to calculated MSE over entire region when using given correlation function.
+# Only 1 dimension.
+
+#' Calculate MSE over single dimension for Matern 3/2
+#' 
+#' Equation found using
+#'
+#' @param xl Vector of points in 1D
+#' @param theta Correlation parameters
+#'
+#' @return MSE value
+#' @export
+#'
+#' @examples
+#' MSE_calc(xl=c(0,.5,.9), theta=-1)
 MSE_calc <- function(xl, theta) {
   S = CorrMat(xl, xl, theta)
   t = exp(theta)
@@ -13,25 +27,15 @@ MSE_calc <- function(xl, theta) {
   b = pmax(A, t(A))
   
   t2 = 1.0 / t
-  
   t3 = a + b - 2.0
-  
   t4 = t2 * t3
-  
   t5 = exp(t4)
-  
   t6 = a - b
-  
   t7 = t2 * t6
-  
   t8 = exp(t7)
-  
   t9 = t ^ 2
-  
   t10 = a * t2 * 2.0
-  
   t11 = exp(t10)
-  
   t12 = a * b * 2.0
   
   out1 = t5 * (-3.0 / 2.0) + a * t5 * (3.0 / 4.0) - a * t8 * (3.0 / 4.0) +
@@ -45,11 +49,13 @@ MSE_calc <- function(xl, theta) {
   
   out1
   MSE = 1 - sum(diag(out1 %*% Ci))
+  MSE # This wasn't here. It wasn't returning anything? Was the code doing anything???
 }
 
 
 # No clue what this is either
 # I think it just loops
+# Delta of adding block is product over i=1..d of IMSE(i,j-1) - IMSE(i,j)
 MSE_de <- function(valsinds, MSE_v) {
   if(is.matrix(valsinds)){
     MSE_de = rep(0, dim(valsinds)[1])
@@ -62,6 +68,9 @@ MSE_de <- function(valsinds, MSE_v) {
           MSE_de[lcv1] = MSE_de[lcv1] + log(-MSE_v[lcv2, valsinds[lcv1, lcv2]] + MSE_v[lcv2, valsinds[lcv1, lcv2] - 1])
           
         } else {
+          # This is when no ancestor block, 1 comes from when there is no data. 
+          # 1 is correlation times integrated value over range.
+          # This depends on correlation function.
           MSE_de[lcv1] = MSE_de[lcv1] + log(-MSE_v[lcv2, valsinds[lcv1, lcv2]] + 1)
           
         }
@@ -114,7 +123,7 @@ SGappend <- function(SG,batchsize,theta){
     }
   }
   
-  # What is this?
+  # What is this? Integrate MSE
   I_mes = rep(0, SG$ML)
   
   # For all possible blocks, calculate MSE_v? Is that all that MSE_de does?
@@ -137,20 +146,22 @@ SGappend <- function(SG,batchsize,theta){
       pstar = possibleO
     }
     
-    l0 =  SG$po[pstar,]
-    SG$uo[SG$uoCOUNT,] = l0
-    SG$ss =  SG$ss + SG$pogsize[pstar]
+    l0 =  SG$po[pstar,] # Selected block
+    SG$uo[SG$uoCOUNT,] = l0 # Save selected block
+    SG$ss =  SG$ss + SG$pogsize[pstar] # Update selected size
     
+    # New ancestors???
     new_an = SG$pila[pstar, 1:SG$pilaCOUNT[pstar]]
     total_an = new_an
-    for (lcv2 in 1:length(total_an)) {
-      if (total_an[lcv2] > 1.5) {
+    for (lcv2 in 1:length(total_an)) { # Loop over ancestors
+      if (total_an[lcv2] > 1.5) { # If there's more than 1, do ???
         total_an = unique(c(total_an, SG$uala[total_an[lcv2], 1:SG$ualaCOUNT[total_an[lcv2]]]))
       }
     }
     SG$ualaCOUNT[SG$uoCOUNT]  = length(total_an)
     SG$uala[SG$uoCOUNT, 1:length(total_an)] = total_an
     
+    # Loop over all ancestors, why???
     for (lcv2 in 1:length(total_an)) {
       lo = SG$uo[total_an[lcv2],]
       if (max(abs(lo - l0)) < 1.5) {
@@ -162,6 +173,7 @@ SGappend <- function(SG,batchsize,theta){
     SG$w[SG$uoCOUNT] = SG$w[SG$uoCOUNT] + 1
     
     
+    # If on the first block
     if (pstar < 1.5) {
       SG$po[1:(SG$poCOUNT - 1),] = SG$po[2:SG$poCOUNT,]
       SG$pila[1:(SG$poCOUNT - 1),] = SG$pila[2:SG$poCOUNT,]
