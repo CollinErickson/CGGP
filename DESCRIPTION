@@ -14,3 +14,6 @@ License: GPL-3
 Imports: Rcpp (>= 0.12.18)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: testthat
+URL: https://github.com/CollinErickson/SGGP
+BugReports: https://github.com/CollinErickson/SGGP/issues
+RoxygenNote: 6.1.0
