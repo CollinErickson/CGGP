@@ -3,13 +3,16 @@
 #' Calculate likelihood
 #'
 #' @param x Theta. Terrible variable name.
-#' @param SG 
-#' @param y 
+#' @param SG SGGP object
+#' @param y Measured values of SG$design
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' lik(c(.1,.1,.1), SG=SG, y=y)
 lik <- function(x, SG, y) {
   theta = x
   
@@ -33,6 +36,7 @@ lik <- function(x, SG, y) {
   if (max(x) >= (4 - 10 ^ (-6))) {
     return(Inf)
   } else{
+    # We think pw is Sigma^{-1} * y
     pw = rep(0, length(y)) # For each point
     # Loop over blocks selected
     for (lcv1 in 1:SG$uoCOUNT) {
@@ -57,6 +61,7 @@ lik <- function(x, SG, y) {
     # Log determinant, keep a sum from smaller matrices
     lDet = 0
     
+    # Calculate log det. See page 1586 of paper.
     # Loop over evaluated blocks
     for (lcv1 in 1:SG$uoCOUNT) {
       # Loop over dimensions
@@ -70,7 +75,9 @@ lik <- function(x, SG, y) {
       }
     }
     
-    return(log(sigma_hat)+sum(theta^2)/length(y)) + 1 / length(y) * lDet 
+    # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
+    # This next line is really wrong? The paranthese closes off the return before including the lDet.
+    return(log(sigma_hat)+sum(theta^2)/length(y) + 1 / length(y) * lDet )
   }
   
 }
@@ -94,7 +101,7 @@ glik <- function(x, SG, y) {
   CiS = list(matrix(1,1,1),Q*SG$d) # To store correlation matrices
   dCiS = list(matrix(1,1,1),Q*SG$d) # To store derivatives of corr mats
   lS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Store log det S
-  dlS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Sotre deriv of log det S
+  dlS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Store deriv of log det S
   
   # Loop over each dimension
   for (lcv2 in 1:SG$d) {
@@ -113,7 +120,7 @@ glik <- function(x, SG, y) {
   
   pw = rep(0, length(y)) # ???
   
-  dpw = matrix(0, nrow = length(y), ncol = SG$d)
+  dpw = matrix(0, nrow = length(y), ncol = SG$d) # ???
   for (lcv1 in 1:SG$uoCOUNT) {
     if (lcv1 == 1) {
       narrowd = 1
@@ -159,13 +166,16 @@ glik <- function(x, SG, y) {
     for (lcv2 in 1:SG$d) {
       levelnow = SG$uo[lcv1, lcv2]
       if (levelnow > 1.5) {
-        lDet[lcv2] = lDet[lcv2] + (dlS[levelnow, lcv2] - dlS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
+        #lDet = lDet + (lS[levelnow, lcv2] - lS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
+        #  (SG$gridsizes[lcv1, lcv2]) # CBE added this, not needed for ddL, can use to return fn and gr at same time
+        dlDet[lcv2] = dlDet[lcv2] + (dlS[levelnow, lcv2] - dlS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
           (SG$gridsizes[lcv1, lcv2])
       }
     }
   }
  ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *theta +  dlDet / length(y) 
-  return(ddL)
+ 
+ return(ddL)
   
 }
 
@@ -192,6 +202,7 @@ thetaMLE <- function(SG, y,theta0 = rep(0,SG$d),tol=1e-1) {
     method = "BFGS",
     hessian = FALSE,
     control = list(abstol = tol)
+    # Is minimizing, default option of optim.
   )
   return(x2$par)
 }
