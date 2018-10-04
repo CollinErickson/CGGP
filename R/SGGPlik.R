@@ -6,7 +6,7 @@
 #' @param SG SGGP object
 #' @param y Measured values of SG$design
 #'
-#' @return
+#' @return Likelihood
 #' @export
 #'
 #' @examples
@@ -85,14 +85,17 @@ lik <- function(x, SG, y) {
 
 #' Gradient of likelihood. Is it log likelihood?
 #'
-#' @param x Theta??? 
-#' @param SG 
-#' @param y 
+#' @param x Theta on normal scale
+#' @param SG SGGP object
+#' @param y SG$design measured values
 #'
-#' @return
+#' @return Vector for gradient of likelihood w.r.t. x (theta)
 #' @export
 #'
 #' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' glik(c(.1,.1,.1), SG=SG, y=y)
 glik <- function(x, SG, y) {
   theta = x
   
@@ -150,13 +153,8 @@ glik <- function(x, SG, y) {
     }
   }
   sigma_hat = t(y) %*% pw / length(y)
-  
-  
-  
+
   dsigma_hat = t(y) %*% dpw / length(y)
-  
-  
-  
   
   lDet = 0
   
@@ -176,7 +174,6 @@ glik <- function(x, SG, y) {
  ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *theta +  dlDet / length(y) 
  
  return(ddL)
-  
 }
 
 
@@ -188,10 +185,13 @@ glik <- function(x, SG, y) {
 #' @param theta0 Initial theta. Is this on a log scale???
 #' @param tol Tolerance for optimization
 #'
-#' @return
+#' @return theta MLE
 #' @export
 #'
 #' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' thetaMLE(SG=SG, y=y)
 thetaMLE <- function(SG, y,theta0 = rep(0,SG$d),tol=1e-1) {
   x2 = optim(
     theta0,
