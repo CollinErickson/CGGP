@@ -26,6 +26,15 @@ arma::mat rcpparma_hello_world() {
 // another simple example: outer product of a vector, 
 // returning a matrix
 //
+//' Outer
+//' 
+//' description
+//' 
+//' @param x vec
+//' @return outer prod
+//' @export
+//' @examples
+//' rcpparma_outerproduct(c(1,0,3,7))
 // [[Rcpp::export]]
 arma::mat rcpparma_outerproduct(const arma::colvec & x) {
     arma::mat m = x * x.t();
