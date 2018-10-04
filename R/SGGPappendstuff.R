@@ -49,13 +49,29 @@ MSE_calc <- function(xl, theta) {
   
   out1
   MSE = 1 - sum(diag(out1 %*% Ci))
-  MSE # This wasn't here. It wasn't returning anything? Was the code doing anything???
+  
+  MSE # This wasn't here. It still returns it, but invisibly, without this.
 }
 
 
-# No clue what this is either
-# I think it just loops
-# Delta of adding block is product over i=1..d of IMSE(i,j-1) - IMSE(i,j)
+#' Calculate MSE over blocks
+#' 
+#' Delta of adding block is product over i=1..d of IMSE(i,j-1) - IMSE(i,j)
+#'
+#' @param valsinds Block levels to calculate MSEs for
+#' @param MSE_v Matrix of MSE values
+#'
+#' @return All MSE values
+#' @export
+#'
+#' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' theta <- c(.1,.1,.1)
+#' MSE_v <- outer(1:SG$d, 1:8, 
+#'      Vectorize(function(lcv1, lcv2) {
+#'         MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta[lcv1])
+#'  }))
+#' MSE_de(SG$po[1:SG$poCOUNT, ], MSE_v)
 MSE_de <- function(valsinds, MSE_v) {
   if(is.matrix(valsinds)){
     MSE_de = rep(0, dim(valsinds)[1])
@@ -90,10 +106,10 @@ MSE_de <- function(valsinds, MSE_v) {
     }}
   MSE_de = exp(MSE_de)
   
+  MSE_de # CBE added this so it will return normally.
 }
 
 
-# 
 
 #' Add points to SGGP
 #' 
@@ -107,6 +123,8 @@ MSE_de <- function(valsinds, MSE_v) {
 #' @export
 #'
 #' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
 SGappend <- function(SG,batchsize,theta){
   
   # Set up blank matrix to store MSE values
