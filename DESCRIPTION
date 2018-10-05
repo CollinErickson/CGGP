@@ -6,14 +6,16 @@ Date: 2018-09-27
 Authors@R:
     c(
     person("Collin", "Erickson", email = "collinberickson@gmail.com", role = c("aut", "cre")), # Creator is who gets bothered with issues
-    person("Matthew", "Plumlee", email = "collinberickson@gmail.com", role = c("aut"))
+    person("Matthew", "Plumlee", role = c("aut"))
     )
 # Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: Run computer experiments using a sparse grid adaptive Gaussian process. 
-License: GPL-3
+License: GPL-3 | file LICENSE
 Imports: Rcpp (>= 0.12.18)
 LinkingTo: Rcpp, RcppArmadillo
-Suggests: testthat
+Suggests: testthat,
+    covr
 URL: https://github.com/CollinErickson/SGGP
 BugReports: https://github.com/CollinErickson/SGGP/issues
+Encoding: UTF-8
 RoxygenNote: 6.1.0
