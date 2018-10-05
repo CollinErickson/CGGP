@@ -7,6 +7,8 @@
 glik(logtheta, ..., SG, y)
 }
 \arguments{
+\item{...}{Don't use, just forces theta to be named}
+
 \item{SG}{SGGP object}
 
 \item{y}{SG$design measured values}

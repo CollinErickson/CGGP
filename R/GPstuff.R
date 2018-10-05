@@ -15,6 +15,7 @@
 #' CorrMat(c(0,.2,.4),c(.1,.3,.5), 10)
 CorrMat <- function(x1, x2, .., logtheta, theta) {#browser()
   if (missing(theta)) { theta <- exp(logtheta)}
+  if (any(theta<0)) stop("Theta < 0 in CorrMat")
   thetasqrt3 <- theta*sqrt(3)
   d1 = length(x1)
   d2 = length(x2)

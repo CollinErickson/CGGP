@@ -9,6 +9,8 @@ MSE_calc(xl, ..., logtheta, theta)
 \arguments{
 \item{xl}{Vector of points in 1D}
 
+\item{...}{Don't use, just forces theta to be named}
+
 \item{theta}{Correlation parameters}
 }
 \value{

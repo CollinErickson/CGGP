@@ -4,7 +4,7 @@
 \alias{dCorrMat}
 \title{Calculate derivative of CorrMat with respect to theta}
 \usage{
-dCorrMat(x1, x2, theta)
+dCorrMat(x1, x2, ..., logtheta, theta)
 }
 \arguments{
 \item{x1}{First vector of 1D points}

@@ -4,7 +4,7 @@
 \alias{SGGPpred}
 \title{Predict}
 \usage{
-SGGPpred(xp, SG, y, ..., theta)
+SGGPpred(xp, SG, y, ..., logtheta, theta)
 }
 \arguments{
 \item{xp}{x value to predict at}

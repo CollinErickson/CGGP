@@ -130,23 +130,28 @@ y= testf(x)
 formals(aGP)[c("X", "Z", "XX")] <- list(x, y, Xp)
 out3 <- aGP(d = list(max = 20))
 
+goodlogthetaest_old <- c(-0.01932437,  0.82517131,  0.88499983,  0.73263796,  0.86971878,  0.70425694,  0.65443469,  0.80910334)
+goodlogthetaest <- log(exp(goodlogthetaest_old)/sqrt(3))
+use_goodtheta <- !TRUE
+
 SG = SGcreate(rep(0, d), rep(1, d),201) #create the design.  it has so many entries because i am sloppy
 Y = testf(SG$design) #the design is $design, simple enough, right?
 logthetaest = logthetaMLE(SG,Y)
+if (use_goodtheta) logthetaest <- goodlogthetaest
 thetaest <- exp(logthetaest)
+
 for(c in 1:round((N-201)/200)){
-  #print(logthetaest)
+  print(logthetaest)
   print(c)
   SG=SGappend(SG,200,theta=thetaest) #add 200 points to the design based on thetahat
   Y = testf(SG$design)
-  if( c< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
+  if( c< 10 && !use_goodtheta){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
     logthetaest = logthetaMLE(SG,Y) #estimate the parameter (SG structure is important)
     thetaest <- exp(logthetaest)
   }
 }
 Y = testf(SG$design)
-logthetaest = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
-
+if (!use_goodtheta) logthetaest = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
 GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest,2)) #build a full emulator
 
 sum(abs(Yp-out3$mean)^2)

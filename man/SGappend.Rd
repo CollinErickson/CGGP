@@ -11,6 +11,8 @@ SGappend(SG, batchsize, ..., theta)
 
 \item{batchsize}{Number of points to add}
 
+\item{...}{Don't use, just forces theta to be named}
+
 \item{theta}{Correlation parameters}
 }
 \value{

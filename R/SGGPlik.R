@@ -78,7 +78,8 @@ lik <- function(logtheta, ..., SG, y) {
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
     # This next line is really wrong? The paranthese closes off the return before including the lDet.
     warning('should this be 3*theta???')
-    return(log(sigma_hat)+sum(logtheta^2)/length(y) + 1 / length(y) * lDet )
+    logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
+    return(log(sigma_hat)+sum(logthetasqrt3^2)/length(y) + 1 / length(y) * lDet )
   }
   
 }
@@ -89,6 +90,7 @@ lik <- function(logtheta, ..., SG, y) {
 #' @param x Theta on normal scale
 #' @param SG SGGP object
 #' @param y SG$design measured values
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return Vector for gradient of likelihood w.r.t. x (theta)
 #' @export
@@ -173,7 +175,8 @@ glik <- function(logtheta, ..., SG, y) {
     }
   }
   warning("   this one also be theta * sqrt(3)??")
- ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logtheta +  dlDet / length(y) 
+  logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
+ ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logthetasqrt3 +  dlDet / length(y) 
  
  return(ddL)
 }

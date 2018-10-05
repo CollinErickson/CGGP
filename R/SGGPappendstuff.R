@@ -9,6 +9,7 @@
 #'
 #' @param xl Vector of points in 1D
 #' @param theta Correlation parameters
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE value
 #' @export
@@ -120,6 +121,7 @@ MSE_de <- function(valsinds, MSE_v) {
 #' @param SG Sparse grid object
 #' @param batchsize Number of points to add
 #' @param theta Correlation parameters
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return SG with new points added.
 #' @export
