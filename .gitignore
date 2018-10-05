@@ -59,3 +59,8 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 .Rproj.user
+
+# Avoid compiled C files
+src/*.o
+src/*.so
+src/*.dll
