@@ -5,6 +5,15 @@ rcpparma_hello_world <- function() {
     .Call(`_SGGP_rcpparma_hello_world`)
 }
 
+#' Outer
+#' 
+#' description
+#' 
+#' @param x vec
+#' @return outer prod
+#' @export
+#' @examples
+#' rcpparma_outerproduct(c(1,0,3,7))
 rcpparma_outerproduct <- function(x) {
     .Call(`_SGGP_rcpparma_outerproduct`, x)
 }

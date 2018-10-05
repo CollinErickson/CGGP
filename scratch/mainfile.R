@@ -132,19 +132,22 @@ out3 <- aGP(d = list(max = 20))
 
 SG = SGcreate(rep(0, d), rep(1, d),201) #create the design.  it has so many entries because i am sloppy
 Y = testf(SG$design) #the design is $design, simple enough, right?
-thetaest = thetaMLE(SG,Y)
+logthetaest = logthetaMLE(SG,Y)
+thetaest <- exp(logthetaest)
 for(c in 1:round((N-201)/200)){
-   print(c)
-  SG=SGappend(SG,200,thetaest) #add 200 points to the design based on thetahat
-   Y = testf(SG$design)
-   if( c< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
-      thetaest = thetaMLE(SG,Y) #estimate the parameter (SG structure is important)
+  #print(logthetaest)
+  print(c)
+  SG=SGappend(SG,200,theta=thetaest) #add 200 points to the design based on thetahat
+  Y = testf(SG$design)
+  if( c< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
+    logthetaest = logthetaMLE(SG,Y) #estimate the parameter (SG structure is important)
+    thetaest <- exp(logthetaest)
   }
 }
 Y = testf(SG$design)
-thetaest = thetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
+logthetaest = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
 
-GP = SGGPpred(Xp,SG,Y,pmin(thetaest,2)) #build a full emulator
+GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest,2)) #build a full emulator
 
 sum(abs(Yp-out3$mean)^2)
 sum(abs(Yp-GP$mean)^2)  #prediction should be much better
@@ -154,3 +157,6 @@ sum(abs(Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
 
 sum((Yp<= out3$mean+1.96*sqrt(out3$var))&(Yp>= out3$mean-1.96*sqrt(out3$var)))
 sum((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
+
+plot(abs(Yp-out3$mean), sqrt(out3$var), xlab='Absolute error', main='laGP')
+plot(abs(Yp-GP$mean), sqrt(GP$var), xlab="Absolute error", main='SGGP')
