@@ -13,8 +13,8 @@
 #' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' lik(c(.1,.1,.1), SG=SG, y=y)
-lik <- function(x, SG, y) {
-  theta = x
+lik <- function(logtheta, ..., SG, y) {
+  #theta = x
   
   
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
@@ -26,14 +26,14 @@ lik <- function(x, SG, y) {
     for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]] # xb are the possible points
       Xbrn = Xbrn[order(Xbrn)] # Sort them low to high, is this necessary? Probably just needs to be consistent.
-      S = CorrMat(Xbrn, Xbrn , theta[lcv2])
+      S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
       CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
       lS[lcv1, lcv2] = sum(log(eigen(S)$values))
     }
   }
   
   # Return Inf if theta is too large. Why????
-  if (max(x) >= (4 - 10 ^ (-6))) {
+  if (max(logtheta) >= (4 - 10 ^ (-6))) {
     return(Inf)
   } else{
     # We think pw is Sigma^{-1} * y
@@ -77,7 +77,8 @@ lik <- function(x, SG, y) {
     
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
     # This next line is really wrong? The paranthese closes off the return before including the lDet.
-    return(log(sigma_hat)+sum(theta^2)/length(y) + 1 / length(y) * lDet )
+    warning('should this be 3*theta???')
+    return(log(sigma_hat)+sum(logtheta^2)/length(y) + 1 / length(y) * lDet )
   }
   
 }
@@ -96,8 +97,8 @@ lik <- function(x, SG, y) {
 #' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' glik(c(.1,.1,.1), SG=SG, y=y)
-glik <- function(x, SG, y) {
-  theta = x
+glik <- function(logtheta, ..., SG, y) {
+  #theta = x
   
   
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of all blocks
@@ -112,8 +113,8 @@ glik <- function(x, SG, y) {
     for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]]
       Xbrn = Xbrn[order(Xbrn)]
-      S = CorrMat(Xbrn, Xbrn , theta[lcv2])
-      dS = dCorrMat(Xbrn, Xbrn , theta[lcv2])
+      S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
+      dS = dCorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
       CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
       dCiS[[(lcv2-1)*Q+lcv1]] = -CiS[[(lcv2-1)*Q+lcv1]]  %*% dS %*% CiS[[(lcv2-1)*Q+lcv1]] 
       lS[lcv1, lcv2] = sum(log(eigen(S)$values))
@@ -156,9 +157,9 @@ glik <- function(x, SG, y) {
 
   dsigma_hat = t(y) %*% dpw / length(y)
   
-  lDet = 0
+  lDet = 0 # Not needed for glik, only for lik
   
-  dlDet = rep(0, SG$d)
+  dlDet = rep(0, SG$d) # Only needed for glik, not lik
   
   for (lcv1 in 1:SG$uoCOUNT) {
     for (lcv2 in 1:SG$d) {
@@ -171,7 +172,8 @@ glik <- function(x, SG, y) {
       }
     }
   }
- ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *theta +  dlDet / length(y) 
+  warning("   this one also be theta * sqrt(3)??")
+ ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logtheta +  dlDet / length(y) 
  
  return(ddL)
 }
@@ -192,12 +194,12 @@ glik <- function(x, SG, y) {
 #' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' thetaMLE(SG=SG, y=y)
-thetaMLE <- function(SG, y,theta0 = rep(0,SG$d),tol=1e-1) {
+logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-1) {
   x2 = optim(
-    theta0,
+    logtheta0,
     fn = lik,
     gr = glik,
-    y <- y - mean(y),
+    y = y - mean(y),
     SG = SG,
     method = "BFGS",
     hessian = FALSE,

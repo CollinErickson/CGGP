@@ -15,9 +15,11 @@
 #'
 #' @examples
 #' MSE_calc(xl=c(0,.5,.9), theta=-1)
-MSE_calc <- function(xl, theta) {
-  S = CorrMat(xl, xl, theta)
-  t = exp(theta)
+MSE_calc <- function(xl, ..., logtheta, theta) {
+  if (missing(theta)) {theta <- exp(logtheta)}
+  S = CorrMat(xl, xl, theta=theta)
+  #t = exp(theta)
+  t = theta * sqrt(3)
   n = length(xl)
   Ci = solve(S)
   
@@ -125,7 +127,7 @@ MSE_de <- function(valsinds, MSE_v) {
 #' @examples
 #' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 #' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
-SGappend <- function(SG,batchsize,theta){
+SGappend <- function(SG,batchsize,..., theta){
   
   # Set up blank matrix to store MSE values
   MSE_v = matrix(0, SG$d, 8) # 8 because he only defined the 1D designs up to 8.
@@ -134,7 +136,7 @@ SGappend <- function(SG,batchsize,theta){
   for (lcv1 in 1:SG$d) {
     for (lcv2 in 1:8) {
       # Calculate some sort of MSE from above, not sure what it's doing
-      MSE_v[lcv1, lcv2] = max(10 ^ (-7), abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta[lcv1])))
+      MSE_v[lcv1, lcv2] = max(10 ^ (-7), abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1])))
       if (lcv2 > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
         MSE_v[lcv1, lcv2] = min(MSE_v[lcv1, lcv2], MSE_v[lcv1, lcv2 - 1])
       }

@@ -8,6 +8,7 @@
 #' @export
 #'
 #' @examples
+#' d <- 8
 #' SG = SGcreate(rep(0, d), rep(1, d),201)
 SGcreate <- function(xmin, xmax,batchsize) {
   # This is list representing our GP object
@@ -15,7 +16,7 @@ SGcreate <- function(xmin, xmax,batchsize) {
   
   SG$d = length(xmin) # input dimension
   
-  # Levels are blocks
+  # Levels are blocks. Level is like eta from paper.
   SG$ML = min(choose(SG$d + 6, SG$d), 100000) #max levels
   
   # What is levelpoint? The current point? This is not used again in this file!
@@ -37,6 +38,7 @@ SGcreate <- function(xmin, xmax,batchsize) {
   # What are ancestors? Why are we doing this?
   # Are ancestors support blocks? Is this for calculating coefficient?
   # How any of its ancestors be proposed? They should all be used already?
+  # Might be transposed??? Is this right?
   SG$pila = matrix(0, nrow = SG$ML, ncol = 1000) #proposed immediate level ancestors
   SG$pala = matrix(0, nrow = SG$ML, ncol = 1000) #proposedal all level ancestors
   SG$uala = matrix(0, nrow = SG$ML, ncol = 1000) #used all level ancestors
@@ -48,7 +50,7 @@ SGcreate <- function(xmin, xmax,batchsize) {
   SG$pila[1:SG$d, 1] = 1
   
   SG$bss = batchsize#1+4*SG$d  #must be at least 3*d
-  SG$sizes = c(1, 2, 2, 2, 4, 4, 4, 6, 8)
+  SG$sizes = c(1, 2, 2, 2, 4, 4, 4, 6, 8) # Num of points added to 1D design as you go further in any dimension
   # Proposed grid size? More points further along the blocks?
   SG$pogsize = rep(0, 4 * SG$ML)
   SG$pogsize[1:SG$poCOUNT] = apply(matrix(SG$sizes[SG$po[1:SG$poCOUNT, ]], SG$poCOUNT, SG$d), 1, prod)
@@ -203,7 +205,7 @@ SGcreate <- function(xmin, xmax,batchsize) {
   #  [1] 0.50000 0.12500 0.87500 0.25000 0.75000 0.37500 0.62500 0.28125 0.71875 0.31250 0.68750 0.00000 1.00000 0.18750 0.81250
   # [16] 0.06250 0.93750 0.43750 0.56250 0.40625 0.59375 0.09375 0.90625 0.21875 0.78125 0.34375 0.65625 0.46875 0.53125 0.15625
   # [31] 0.84375 0.03125 0.96875
-  SG$sizest = cumsum(SG$sizes)
+  SG$sizest = cumsum(SG$sizes) # Total number of points in 1D design as you go along axis
   
   
   SG$gridsizes = matrix(SG$sizes[SG$uo[1:SG$uoCOUNT, ]], SG$uoCOUNT, SG$d)
