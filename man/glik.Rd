@@ -7,13 +7,13 @@
 glik(logtheta, ..., SG, y)
 }
 \arguments{
+\item{logtheta}{Log of correlation parameters}
+
 \item{...}{Don't use, just forces theta to be named}
 
 \item{SG}{SGGP object}
 
 \item{y}{SG$design measured values}
-
-\item{x}{Theta on normal scale}
 }
 \value{
 Vector for gradient of likelihood w.r.t. x (theta)

@@ -4,14 +4,18 @@
 \alias{CorrMat}
 \title{Calculate correlation matrix for two sets of points in one dimension}
 \usage{
-CorrMat(x1, x2, .., logtheta, theta)
+CorrMat(x1, x2, ..., logtheta, theta)
 }
 \arguments{
 \item{x1}{Vector of coordinates from same dimension}
 
 \item{x2}{Vector of coordinates from same dimension}
 
-\item{theta}{Is this log theta???}
+\item{...}{Don't use, just forces theta to be named}
+
+\item{logtheta}{Log of correlation parameter}
+
+\item{theta}{Correlation parameter}
 }
 \value{
 Matrix
@@ -21,5 +25,5 @@ Note that this isn't the correlation between two vectors.
 It is for two
 }
 \examples{
-CorrMat(c(0,.2,.4),c(.1,.3,.5), 10)
+CorrMat(c(0,.2,.4),c(.1,.3,.5), theta=.1)
 }

@@ -13,7 +13,11 @@ SGGPpred(xp, SG, y, ..., logtheta, theta)
 
 \item{y}{Observations for SG}
 
-\item{theta}{Shouldn't this be part of SG?}
+\item{...}{Don't use, just forces theta to be named}
+
+\item{logtheta}{Log of correlation parameters}
+
+\item{theta}{Correlation parameters}
 }
 \value{
 Predicted mean values
@@ -25,6 +29,6 @@ Shouldn't y values already be stored in SG?
 \examples{
 SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, c(.1,.1,.1))
-cbind(SGGPpred(SG$design, SG=SG, y=y, c(.1,.1,.1))$mean, y) # Should be near equal
+SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, theta=c(.1,.1,.1))
+cbind(SGGPpred(SG$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
 }

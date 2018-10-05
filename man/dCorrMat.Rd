@@ -11,7 +11,11 @@ dCorrMat(x1, x2, ..., logtheta, theta)
 
 \item{x2}{Second vector of 1D points}
 
-\item{theta}{Actually log theta, terrible notation}
+\item{...}{Don't use, just forces theta to be named}
+
+\item{logtheta}{Log correlation parameter}
+
+\item{theta}{Correlation parameter}
 }
 \value{
 Matrix
@@ -20,5 +24,5 @@ Matrix
 Calculate derivative of CorrMat with respect to theta
 }
 \examples{
-dCorrMat(c(0,.2,.4),c(.1,.3,.5), 10)
+dCorrMat(c(0,.2,.4),c(.1,.3,.5), theta=.1)
 }

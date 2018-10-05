@@ -6,14 +6,16 @@
 #'
 #' @param x1 Vector of coordinates from same dimension
 #' @param x2 Vector of coordinates from same dimension
-#' @param theta Is this log theta???
+#' @param logtheta Log of correlation parameter
+#' @param theta Correlation parameter
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return Matrix
 #' @export
 #'
 #' @examples
-#' CorrMat(c(0,.2,.4),c(.1,.3,.5), 10)
-CorrMat <- function(x1, x2, .., logtheta, theta) {#browser()
+#' CorrMat(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+CorrMat <- function(x1, x2, ..., logtheta, theta) {#browser()
   if (missing(theta)) { theta <- exp(logtheta)}
   if (any(theta<0)) stop("Theta < 0 in CorrMat")
   thetasqrt3 <- theta*sqrt(3)
@@ -33,13 +35,15 @@ CorrMat <- function(x1, x2, .., logtheta, theta) {#browser()
 #'
 #' @param x1 First vector of 1D points
 #' @param x2 Second vector of 1D points
-#' @param theta Actually log theta, terrible notation
+#' @param logtheta Log correlation parameter
+#' @param theta Correlation parameter
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return Matrix
 #' @export
 #'
 #' @examples
-#' dCorrMat(c(0,.2,.4),c(.1,.3,.5), 10)
+#' dCorrMat(c(0,.2,.4),c(.1,.3,.5), theta=.1)
 dCorrMat <- function(x1, x2, ..., logtheta, theta) {
   if (missing(theta)) {theta <- exp(logtheta)}
   thetasqrt3 <- theta*sqrt(3)

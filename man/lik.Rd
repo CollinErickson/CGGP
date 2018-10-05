@@ -7,11 +7,13 @@
 lik(logtheta, ..., SG, y)
 }
 \arguments{
+\item{logtheta}{Log of correlation parameters}
+
+\item{...}{Don't use, just forces theta to be named}
+
 \item{SG}{SGGP object}
 
 \item{y}{Measured values of SG$design}
-
-\item{x}{Theta. Terrible variable name.}
 }
 \value{
 Likelihood

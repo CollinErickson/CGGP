@@ -2,9 +2,10 @@
 
 #' Calculate likelihood
 #'
-#' @param x Theta. Terrible variable name.
+#' @param logtheta Log of correlation parameters
 #' @param SG SGGP object
 #' @param y Measured values of SG$design
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return Likelihood
 #' @export
@@ -87,7 +88,7 @@ lik <- function(logtheta, ..., SG, y) {
 
 #' Gradient of likelihood. Is it log likelihood?
 #'
-#' @param x Theta on normal scale
+#' @param logtheta Log of correlation parameters
 #' @param SG SGGP object
 #' @param y SG$design measured values
 #' @param ... Don't use, just forces theta to be named
@@ -187,8 +188,9 @@ glik <- function(logtheta, ..., SG, y) {
 #'
 #' @param SG Sparse grid objects
 #' @param y Output values calculated at SG$design
-#' @param theta0 Initial theta. Is this on a log scale???
+#' @param logtheta0 Initial logtheta
 #' @param tol Tolerance for optimization
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return theta MLE
 #' @export
@@ -196,7 +198,7 @@ glik <- function(logtheta, ..., SG, y) {
 #' @examples
 #' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' thetaMLE(SG=SG, y=y)
+#' logthetaMLE(SG=SG, y=y)
 logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-1) {
   x2 = optim(
     logtheta0,

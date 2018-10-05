@@ -11,7 +11,11 @@ MSEpred_calc(xp, xl, ..., logtheta, theta)
 
 \item{xl}{Levels along dimension, vector???}
 
-\item{theta}{Correlation parameters on log scale}
+\item{...}{Don't use, just forces theta to be named}
+
+\item{logtheta}{Log of correlation parameters}
+
+\item{theta}{Correlation parameters}
 }
 \value{
 MSE predictions
@@ -20,5 +24,5 @@ MSE predictions
 ????????????
 }
 \examples{
-MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), th=.1)
+MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1)
 }

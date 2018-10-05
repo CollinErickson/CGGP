@@ -2,13 +2,15 @@
 #'
 #' @param xp Points at which to calculate MSE
 #' @param xl Levels along dimension, vector???
-#' @param theta Correlation parameters on log scale
+#' @param theta Correlation parameters
+#' @param logtheta Log of correlation parameters
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE predictions
 #' @export
 #'
 #' @examples
-#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), th=.1)
+#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1)
 MSEpred_calc <- function(xp,xl, ..., logtheta, theta) {
   if (missing(theta)) {theta <- exp(logtheta)}
   S = CorrMat(xl, xl, theta=theta)
@@ -33,7 +35,9 @@ MSEpred_calc <- function(xp,xl, ..., logtheta, theta) {
 #' @param xp x value to predict at
 #' @param SG SG object
 #' @param y Observations for SG
-#' @param theta Shouldn't this be part of SG?
+#' @param theta Correlation parameters
+#' @param logtheta Log of correlation parameters
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return Predicted mean values
 #' @export
@@ -41,9 +45,9 @@ MSEpred_calc <- function(xp,xl, ..., logtheta, theta) {
 #' @examples
 #' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, c(.1,.1,.1))
-#' cbind(SGGPpred(SG$design, SG=SG, y=y, c(.1,.1,.1))$mean, y) # Should be near equal
-SGGPpred <- function(xp,SG, y,..., logtheta, theta) {
+#' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, theta=c(.1,.1,.1))
+#' cbind(SGGPpred(SG$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
+SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   if (missing(theta)) {theta <- exp(logtheta)}
   # Center outputs
   my = mean(y)

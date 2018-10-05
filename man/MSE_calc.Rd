@@ -11,6 +11,8 @@ MSE_calc(xl, ..., logtheta, theta)
 
 \item{...}{Don't use, just forces theta to be named}
 
+\item{logtheta}{Log of correlation parameters.}
+
 \item{theta}{Correlation parameters}
 }
 \value{
@@ -20,5 +22,5 @@ MSE value
 Equation found using
 }
 \examples{
-MSE_calc(xl=c(0,.5,.9), theta=-1)
+MSE_calc(xl=c(0,.5,.9), theta=1)
 }

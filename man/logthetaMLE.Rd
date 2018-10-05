@@ -11,9 +11,11 @@ logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 0.1)
 
 \item{y}{Output values calculated at SG$design}
 
-\item{tol}{Tolerance for optimization}
+\item{...}{Don't use, just forces theta to be named}
 
-\item{theta0}{Initial theta. Is this on a log scale???}
+\item{logtheta0}{Initial logtheta}
+
+\item{tol}{Tolerance for optimization}
 }
 \value{
 theta MLE
@@ -24,5 +26,5 @@ Calculate theta MLE given data
 \examples{
 SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-thetaMLE(SG=SG, y=y)
+logthetaMLE(SG=SG, y=y)
 }

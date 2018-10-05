@@ -8,6 +8,7 @@
 #' Equation found using
 #'
 #' @param xl Vector of points in 1D
+#' @param logtheta Log of correlation parameters.
 #' @param theta Correlation parameters
 #' @param ... Don't use, just forces theta to be named
 #'
@@ -15,7 +16,7 @@
 #' @export
 #'
 #' @examples
-#' MSE_calc(xl=c(0,.5,.9), theta=-1)
+#' MSE_calc(xl=c(0,.5,.9), theta=1)
 MSE_calc <- function(xl, ..., logtheta, theta) {
   if (missing(theta)) {theta <- exp(logtheta)}
   S = CorrMat(xl, xl, theta=theta)
@@ -72,7 +73,7 @@ MSE_calc <- function(xl, ..., logtheta, theta) {
 #' theta <- c(.1,.1,.1)
 #' MSE_v <- outer(1:SG$d, 1:8, 
 #'      Vectorize(function(lcv1, lcv2) {
-#'         MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta[lcv1])
+#'         MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1])
 #'  }))
 #' MSE_de(SG$po[1:SG$poCOUNT, ], MSE_v)
 MSE_de <- function(valsinds, MSE_v) {
