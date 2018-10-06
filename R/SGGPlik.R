@@ -28,7 +28,11 @@ lik <- function(logtheta, ..., SG, y) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]] # xb are the possible points
       Xbrn = Xbrn[order(Xbrn)] # Sort them low to high, is this necessary? Probably just needs to be consistent.
       S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
-      CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
+      # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
+      solvetry <- try({
+        CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
+      })
+      if (inherits(solvetry, "try-error")) {return(Inf)}
       lS[lcv1, lcv2] = sum(log(eigen(S)$values))
     }
   }
@@ -78,7 +82,6 @@ lik <- function(logtheta, ..., SG, y) {
     
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
     # This next line is really wrong? The paranthese closes off the return before including the lDet.
-    warning('should this be 3*theta???')
     logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
     return(log(sigma_hat)+sum(logthetasqrt3^2)/length(y) + 1 / length(y) * lDet )
   }
@@ -175,7 +178,7 @@ glik <- function(logtheta, ..., SG, y) {
       }
     }
   }
-  warning("   this one also be theta * sqrt(3)??")
+  
   logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
  ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logthetasqrt3 +  dlDet / length(y) 
  
@@ -199,7 +202,7 @@ glik <- function(logtheta, ..., SG, y) {
 #' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' logthetaMLE(SG=SG, y=y)
-logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-1) {
+logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
   x2 = optim(
     logtheta0,
     fn = lik,
@@ -208,8 +211,9 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-1) {
     SG = SG,
     method = "BFGS",
     hessian = FALSE,
-    control = list(abstol = tol)
+    control = list(reltol=1e-4)#abstol = tol)
     # Is minimizing, default option of optim.
   )
+  return(pmin(2,x2$par)) # CBE adding this
   return(x2$par)
 }
