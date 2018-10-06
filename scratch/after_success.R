@@ -24,7 +24,11 @@ testf<-function (x) {  return(borehole(x))}
 N <- 10001
 Npred <- 1000
 #install.packages(c("lhs"))
-library("lhs")
+#library("lhs")
+if (!require('lhs', quietly = TRUE)) {
+  install.packages('lhs')
+  require('lhs')
+}
 
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
