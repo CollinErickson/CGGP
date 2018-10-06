@@ -192,7 +192,8 @@ glik <- function(logtheta, ..., SG, y) {
 #' @param SG Sparse grid objects
 #' @param y Output values calculated at SG$design
 #' @param logtheta0 Initial logtheta
-#' @param tol Tolerance for optimization
+#' @param tol Relative tolerance for optimization. Can't use absolute tolerance
+#' since lik can be less than zero.
 #' @param ... Don't use, just forces theta to be named
 #'
 #' @return theta MLE

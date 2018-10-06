@@ -4,7 +4,7 @@
 \alias{logthetaMLE}
 \title{Calculate theta MLE given data}
 \usage{
-logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 0.1)
+logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 1e-04)
 }
 \arguments{
 \item{SG}{Sparse grid objects}
@@ -15,7 +15,8 @@ logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 0.1)
 
 \item{logtheta0}{Initial logtheta}
 
-\item{tol}{Tolerance for optimization}
+\item{tol}{Relative tolerance for optimization. Can't use absolute tolerance
+since lik can be less than zero.}
 }
 \value{
 theta MLE

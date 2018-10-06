@@ -58,11 +58,11 @@ if (!use_goodtheta) {
 }
 GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest,2)) #build a full emulator
 
-MSE <- sum(abs(Yp-GP$mean)^2)  #prediction should be much better
-score <- sum(abs(Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
+SumSE <- sum((Yp-GP$mean)^2)  #prediction should be much better
+score <- sum((Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
 coverage <- sum((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
 
-print(paste("MSE is     ", MSE))
+print(paste("SumSE is     ", SumSE))
 print(paste("Score is   ", score))
 print(paste("coverage is", coverage))
 
