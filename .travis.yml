@@ -10,4 +10,4 @@ cache: packages
 
 after_success:
   - Rscript -e 'covr::codecov()'
-  - Rscript -e 'source("./scratch/after_success.R")'
+  - Rscript -e 'devtools::build();source("./scratch/after_success.R")'
