@@ -82,8 +82,8 @@ lik <- function(logtheta, ..., SG, y) {
     
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
     # This next line is really wrong? The paranthese closes off the return before including the lDet.
-    logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
-    return(log(sigma_hat)+sum(logthetasqrt3^2)/length(y) + 1 / length(y) * lDet )
+    #ogthetasqrt3 <- log(exp(logtheta)*sqrt(3))
+    return(log(c(sigma_hat))+sum(logtheta^2)/length(y) + 1 / length(y) * lDet )
   }
   
 }
@@ -208,11 +208,13 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
     logtheta0,
     fn = lik,
     gr = glik,
+    lower = rep(-2, SG$d),
+    upper = rep(1, SG$d),
     y = y - mean(y),
     SG = SG,
-    method = "BFGS",
+    method = "L-BFGS-B", #"BFGS",
     hessian = FALSE,
-    control = list(reltol=1e-4)#abstol = tol)
+    control = list()#reltol=1e-4)#abstol = tol)
     # Is minimizing, default option of optim.
   )
   return(pmin(2,x2$par)) # CBE adding this

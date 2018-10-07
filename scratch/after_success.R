@@ -37,7 +37,7 @@ goodlogthetaest_old <- c(-0.01932437,  0.82517131,  0.88499983,  0.73263796,  0.
 goodlogthetaest <- log(exp(goodlogthetaest_old)/sqrt(3))
 use_goodtheta <- FALSE
 
-
+require("SGGP")
 SG = SGcreate(rep(0, d), rep(1, d),201) #create the design.  it has so many entries because i am sloppy
 Y = testf(SG$design) #the design is $design, simple enough, right?
 logthetaest = logthetaMLE(SG,Y)
@@ -70,6 +70,11 @@ print(paste("SumSE is     ", SumSE))
 print(paste("Score is   ", score))
 print(paste("coverage is", coverage))
 
+if (T) { # Can Travis just skip this?
+  di <- sample(1:nrow(SG$design), 100)
+  Y0pred <- SGGPpred(SG$design[di,],SG,Y,logtheta=pmin(logthetaest,2))
+  plot(Yp, GP$mean, ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m))); points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
+}
 
 print("... FINISHED after_success.R")
 timestamp()
