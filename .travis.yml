@@ -4,6 +4,10 @@ language: R
 sudo: false
 cache: packages
 
+##install:
+##  ## For a CRAN package
+##  - ./travis-tool.sh install_r <package>
+
 after_success:
   - Rscript -e 'covr::codecov()'
   - Rscript -e 'source("./scratch/after_success.R")'

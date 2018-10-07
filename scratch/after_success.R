@@ -25,12 +25,13 @@ N <- 10001
 Npred <- 1000
 #install.packages(c("lhs"))
 #library("lhs")
-if (!require('lhs', quietly = TRUE)) {
-  install.packages('lhs')
-  require('lhs')
-}
+#if (!require('lhs', quietly = TRUE)) {
+#  install.packages('lhs')
+#  require('lhs')
+#}
 
-Xp = randomLHS(Npred, d)
+#Xp = randomLHS(Npred, d)
+Xp <- matrix(runif(Npred*d), Npred, d)
 Yp = testf(Xp)
 
 goodlogthetaest_old <- c(-0.01932437,  0.82517131,  0.88499983,  0.73263796,  0.86971878,  0.70425694,  0.65443469,  0.80910334)

@@ -13,8 +13,6 @@ test_that("lik matches exact calculation", {
   }
   
   # Use borehole
-  
-  
   borehole <- function(x) {
     rw <- x[, 1] * (0.15 - 0.05) + 0.05
     r <-  x[, 2] * (50000 - 100) + 100
