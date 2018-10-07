@@ -179,8 +179,8 @@ glik <- function(logtheta, ..., SG, y) {
     }
   }
   
-  logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
- ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logthetasqrt3 +  dlDet / length(y) 
+  #logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
+  ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logtheta +  dlDet / length(y) 
  
  return(ddL)
 }
