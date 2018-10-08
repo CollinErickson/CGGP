@@ -49,12 +49,15 @@ test_that("Prediction matches exact on small samples", {
   
   # Check mean predictions
   plot(expred, SGpred$mean); abline(a=0,b=1, col=2)
-  expect_equal(SGpred$mean, expred)
+  expect_equal(SGpred$mean, expred, tol=1e-4)
   
   # Test var predictions
-  #s2 <- colSums(t(Y), solve(Sig, Y)) / length(Y)
-  #exvar <- 1 - colSums(t(s) * solve(Sig, t(s)))
-  #plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
-  #expect_equal(SGpred$var, exvar)
+  if (F) {
+    s2 <- c(t(Y) %*%solve(Sig, Y) / length(Y))
+    exvar <- s2 * (1 - colSums(t(s) * solve(Sig, t(s))))
+    print(1/SGpred$var* exvar)
+    plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
+    expect_equal(SGpred$var, exvar)
+  }
 })  
   
