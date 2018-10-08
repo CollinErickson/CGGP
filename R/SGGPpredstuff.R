@@ -61,7 +61,10 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]] # Get x's
       Xbrn = Xbrn[order(Xbrn)] # Sort them
       S = CorrMat(Xbrn, Xbrn , theta=theta[lcv2]) # Calculate corr mat
+      S = S + SG$nugget*diag(nrow(S))
       CiS[[(lcv2-1)*Q+lcv1]] = solve(S) # Store inversion
+      #print(eigen(S)$val)
+      #print(det(S))
     }
   }
   
