@@ -4,16 +4,18 @@
 #' @param xl Levels along dimension, vector???
 #' @param theta Correlation parameters
 #' @param logtheta Log of correlation parameters
+#' @param nugget Nugget to add to diagonal of correlation matrix
 #' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE predictions
 #' @export
 #'
 #' @examples
-#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1)
-MSEpred_calc <- function(xp,xl, ..., logtheta, theta) {
+#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5)
+MSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget) {
   if (missing(theta)) {theta <- exp(logtheta)}
   S = CorrMat(xl, xl, theta=theta)
+  S = S + nugget*diag(nrow(S))
   #t = exp(theta)
   n = length(xl)
   Ci = solve(S)
@@ -103,7 +105,7 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   MSE_v = array(0, c(SG$d, 8,dim(xp)[1]))
   for (lcv1 in 1:SG$d) {
     for (lcv2 in 1:8) {
-      MSE_v[lcv1, lcv2,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1]))
+      MSE_v[lcv1, lcv2,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget))
       if (lcv2 > 1.5) {
         MSE_v[lcv1, lcv2,] = pmin(MSE_v[lcv1, lcv2,], MSE_v[lcv1, lcv2 - 1,])
       }

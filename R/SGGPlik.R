@@ -28,6 +28,7 @@ lik <- function(logtheta, ..., SG, y) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]] # xb are the possible points
       Xbrn = Xbrn[order(Xbrn)] # Sort them low to high, is this necessary? Probably just needs to be consistent.
       S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
+      S = S + SG$nugget*diag(nrow(S))
       # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
       solvetry <- try({
         CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
@@ -120,6 +121,7 @@ glik <- function(logtheta, ..., SG, y) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]]
       Xbrn = Xbrn[order(Xbrn)]
       S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
+      S = S + SG$nugget*diag(nrow(S))
       dS = dCorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
       CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
       dCiS[[(lcv2-1)*Q+lcv1]] = -CiS[[(lcv2-1)*Q+lcv1]]  %*% dS %*% CiS[[(lcv2-1)*Q+lcv1]] 
