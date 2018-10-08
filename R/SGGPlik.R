@@ -209,7 +209,7 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
     fn = lik,
     gr = glik,
     lower = rep(-2, SG$d),
-    upper = rep(1, SG$d),
+    upper = rep(2, SG$d),
     y = y - mean(y),
     SG = SG,
     method = "L-BFGS-B", #"BFGS",

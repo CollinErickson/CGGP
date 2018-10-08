@@ -63,13 +63,13 @@ if (!use_goodtheta) {
 }
 GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest,2)) #build a full emulator
 
-SumSE <- sum((Yp-GP$mean)^2)  #prediction should be much better
-score <- sum((Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
-coverage <- sum((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
+RMSE <- sqrt(mean(((Yp-GP$mean)^2)))  #prediction should be much better
+meanscore <- mean((Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
+meancoverage <- mean((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
 
-print(paste("SumSE is     ", SumSE))
-print(paste("Score is   ", score))
-print(paste("coverage is", coverage))
+print(paste("RMSE is     ", RMSE))
+print(paste("Score is   ", meanscore))
+print(paste("coverage is", meancoverage))
 
 if (T) { # Can Travis just skip this?
   di <- sample(1:nrow(SG$design), 100)
