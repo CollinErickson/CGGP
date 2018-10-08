@@ -47,8 +47,14 @@ test_that("Prediction matches exact on small samples", {
   s <- CorrMat32Full2(xp, SG$design, theta = exp(logtheta))
   expred <- my + s %*% solve(Sig, dy)
   
+  # Check mean predictions
   plot(expred, SGpred$mean); abline(a=0,b=1, col=2)
   expect_equal(SGpred$mean, expred)
   
+  # Test var predictions
+  #s2 <- colSums(t(Y), solve(Sig, Y)) / length(Y)
+  #exvar <- 1 - colSums(t(s) * solve(Sig, t(s)))
+  #plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
+  #expect_equal(SGpred$var, exvar)
 })  
   
