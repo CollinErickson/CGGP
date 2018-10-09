@@ -18,50 +18,55 @@ lik <- function(logtheta, ..., SG, y) {
   #theta = x
   
   
-  Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
-  CiS = list(matrix(1,1,1),Q*SG$d) # A list of matrices, Q for each dimension
-  lS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Save log determinant of matrices
-  # Loop over each dimension
-  for (lcv2 in 1:SG$d) {
-    # Loop over each possible needed correlation matrix
-    for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
-      Xbrn = SG$xb[1:SG$sizest[lcv1]] # xb are the possible points
-      Xbrn = Xbrn[order(Xbrn)] # Sort them low to high, is this necessary? Probably just needs to be consistent.
-      S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
-      S = S + SG$nugget*diag(nrow(S))
-      # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
-      solvetry <- try({
-        CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
-      })
-      if (inherits(solvetry, "try-error")) {return(Inf)}
-      lS[lcv1, lcv2] = sum(log(eigen(S)$values))
-    }
-  }
-  
   # Return Inf if theta is too large. Why????
   if (max(logtheta) >= (4 - 10 ^ (-6))) {
     return(Inf)
   } else{
+    
+    Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
+    # Now going to store choleskys instead of inverses for stability
+    #CiS = list(matrix(1,1,1),Q*SG$d) # A list of matrices, Q for each dimension
+    CCS = list(matrix(1,1,1),Q*SG$d)
+    lS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Save log determinant of matrices
+    # Loop over each dimension
+    for (lcv2 in 1:SG$d) {
+      # Loop over each possible needed correlation matrix
+      for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
+        Xbrn = SG$xb[1:SG$sizest[lcv1]] # xb are the possible points
+        Xbrn = Xbrn[order(Xbrn)] # Sort them low to high, is this necessary? Probably just needs to be consistent.
+        S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
+        S = S + SG$nugget*diag(nrow(S))
+        # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
+        solvetry <- try({
+          #CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
+          CCS[[(lcv2-1)*Q+lcv1]] = chol(S)
+        })
+        if (inherits(solvetry, "try-error")) {return(Inf)}
+        #lS[lcv1, lcv2] = sum(log(eigen(S)$values))
+        lS[lcv1, lcv2] = 2*sum(log(diag(CCS[[(lcv2-1)*Q+lcv1]])))
+      }
+    }
+    
     # We think pw is Sigma^{-1} * y
     pw = rep(0, length(y)) # For each point
     # Loop over blocks selected
     for (lcv1 in 1:SG$uoCOUNT) {
-      narrowd = which(SG$uo[lcv1,] > 1.5) # Indices where block levels are > 1, THIS LINE IS REDUNDANT!!!!
-      Ci = 1
-      if (lcv1 == 1) {
-        narrowd = 1 # First block has no levels above 1
-      } else{
-        narrowd = which(SG$uo[lcv1,] > 1.5) # Indices where block levels are > 1
+      B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
+      for (e in SG$d:1) {
+        if(SG$gridsizest[lcv1,e] > 1.5){
+          B <- matrix(as.vector(B),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
+          B <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B, transpose = TRUE))
+          #B <-  solve(CS[[((e-1)*Q+SG$uo[lcv1,e])]],B)
+          B <- t(B)
+        }
+        else{
+          B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
+        }
       }
-      # Expand correlation matrix on dimensions that are > 1
-      for (e in narrowd) {
-        Ci = kronecker(Ci, CiS[[((e-1)*Q+SG$uo[lcv1,e])]])
-      }
-      # Calculate something??? what is dit?
+      
       pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
-        SG$w[lcv1] * Ci %*% y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
+        SG$w[lcv1] * B
     }
-    # This is not sigma hat?
     sigma_hat = t(y) %*% pw / length(y)
     
     # Log determinant, keep a sum from smaller matrices
@@ -109,10 +114,14 @@ glik <- function(logtheta, ..., SG, y) {
   
   
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of all blocks
-  CiS = list(matrix(1,1,1),Q*SG$d) # To store correlation matrices
-  dCiS = list(matrix(1,1,1),Q*SG$d) # To store derivatives of corr mats
+  # Now storing choleskys instead of inverses
+  CCS = list(matrix(1,1,1),Q*SG$d) # To store choleskys
+  dCS = list(matrix(1,1,1),Q*SG$d)
+  #CiS = list(matrix(1,1,1),Q*SG$d) # To store correlation matrices
+  #dCiS = list(matrix(1,1,1),Q*SG$d) # To store derivatives of corr mats
   lS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Store log det S
   dlS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Store deriv of log det S
+  dlS2 = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # ???? added for chols
   
   # Loop over each dimension
   for (lcv2 in 1:SG$d) {
@@ -123,46 +132,79 @@ glik <- function(logtheta, ..., SG, y) {
       S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
       S = S + SG$nugget*diag(nrow(S))
       dS = dCorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
-      CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
-      dCiS[[(lcv2-1)*Q+lcv1]] = -CiS[[(lcv2-1)*Q+lcv1]]  %*% dS %*% CiS[[(lcv2-1)*Q+lcv1]] 
-      lS[lcv1, lcv2] = sum(log(eigen(S)$values))
-      dlS[lcv1, lcv2] = sum(eigen(CiS[[(lcv2-1)*Q+lcv1]] %*% dS)$values)
+      
+      CCS[[(lcv2-1)*Q+lcv1]] = chol(S)#-CiS[[(lcv2-1)*Q+lcv1]]  %*% 
+      dCS[[(lcv2-1)*Q+lcv1]] = dS
+      lS[lcv1, lcv2] = 2*sum(log(diag(CCS[[(lcv2-1)*Q+lcv1]])))
+      V = solve(S,dS);
+      dlS[lcv1, lcv2] = sum(diag(V))
     }
   }
   
   pw = rep(0, length(y)) # ???
   
   dpw = matrix(0, nrow = length(y), ncol = SG$d) # ???
+  
   for (lcv1 in 1:SG$uoCOUNT) {
-    if (lcv1 == 1) {
-      narrowd = 1
-    } else{
-      narrowd = which(SG$uo[lcv1,] > 1.5)
-    }
-    Ci = 1
-    for (e in narrowd) {
-      Ci = kronecker(Ci, CiS[[((e-1)*Q+SG$uo[lcv1,e])]])
-    }
-    pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
-      SG$w[lcv1] * Ci %*% y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
     
-    for (e in narrowd) {
-      Ci = 1
-    for (e2 in narrowd) {
-      if (e == e2) {
-        Ci = kronecker(Ci,dCiS[[((e2-1)*Q+SG$uo[lcv1,e2])]])
-      } else {
-        Ci = kronecker(Ci, CiS[[((e2-1)*Q+SG$uo[lcv1,e2])]])
+    B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
+    for (e in SG$d:1) {
+      if(SG$gridsizest[lcv1,e] > 1.5){
+        B <- matrix(as.vector(B),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
+        B <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B, transpose = TRUE))
+        B <- t(B)
+      }
+      else{
+        B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
       }
     }
-      
-      dpw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]], e] = dpw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]], e] +
-        SG$w[lcv1] * Ci %*% y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
     
+    pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
+      SG$w[lcv1] * B
+    
+    
+    B3 = B
+    for (e in  SG$d:1) {
+      if(SG$gridsizest[lcv1,e] > 1.5){
+        B3 <- matrix(as.vector(B3),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
+      }
+      
+      B2 = B3
+      
+      if(SG$gridsizest[lcv1,e] > 1.5){
+        B3 <- t(B3)
+      } else{
+        B3 = as.vector(B3)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
+      }
+      
+      
+      if(SG$gridsizest[lcv1,e] > 1.5){
+        B2 <- -dCS[[((e-1)*Q+SG$uo[lcv1,e])]]%*%B2
+        B2 <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B2, transpose = TRUE))
+        B2 = t(B2)
+      }else{
+        B2 =-as.vector(dCS[[((e-1)*Q+SG$uo[lcv1,e])]])*as.vector(B2)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
+      }
+      
+      if(e>1.5){
+        for (e2 in  (e-1):1) {
+          if(SG$gridsizest[lcv1,e2] > 1.5){
+            B2 <- matrix(as.vector(B2),SG$gridsizest[lcv1,e2],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e2])
+            B2 <- t(B2)
+          }
+          else{
+            B2= as.vector(B2)
+          }
+        }
+      }
+      
+      dpw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]],e] = dpw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]],e] +
+        SG$w[lcv1] * B2
     }
+    
   }
   sigma_hat = t(y) %*% pw / length(y)
-
+  
   dsigma_hat = t(y) %*% dpw / length(y)
   
   lDet = 0 # Not needed for glik, only for lik
@@ -183,8 +225,8 @@ glik <- function(logtheta, ..., SG, y) {
   
   #logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
   ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logtheta +  dlDet / length(y) 
- 
- return(ddL)
+  
+  return(ddL)
 }
 
 
