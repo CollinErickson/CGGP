@@ -80,7 +80,9 @@ if (T) { # Can Travis just skip this?
   plot(Yp, Yp-GP$mean , ylim=max(sqrt(GP$var))*c(-2,2))#c(min(-2GP$mean, Y0pred$m),max(GP$mean, Y0pred$m)),pch=19,col='white')#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
   points(Yp, 0*GP$mean + 2*sqrt(GP$var), col=4, pch=19)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
   points(Yp, 0*GP$mean - 2*sqrt(GP$var), col=5)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
-  plot(GP$mean-Yp, sqrt(GP$var));abline(a=0,b=1,col=2)
+  errmax <- max(sqrt(GP$var), abs(GP$mean - Yp))
+  plot(GP$mean-Yp, sqrt(GP$var), xlim=errmax*c(-1,1), ylim=errmax*c(-1,1));abline(a=0,b=1,col=2)
+  polygon(c(0,0,1),c(0,1,1), col=2, density=30)
 }
 
 print("... FINISHED after_success.R")
