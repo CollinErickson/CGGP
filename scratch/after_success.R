@@ -1,5 +1,6 @@
 timestamp()
-print("RUNNING after_success.R ...")
+cat("RUNNING after_success.R ...\n")
+timestart <- Sys.time()
 
 borehole <- function(x) {
   rw <- x[, 1] * (0.15 - 0.05) + 0.05
@@ -44,32 +45,33 @@ Y = testf(SG$design) #the design is $design, simple enough, right?
 logthetaest = logthetaMLE(SG,Y)
 if (use_goodtheta) logthetaest <- goodlogthetaest
 thetaest <- exp(logthetaest)
-print(logthetaest)
+cat(logthetaest, "\n")
 
 for(c in 1:round((N-201)/200)){
-  print(c)
+  cat(c, " ")
   SG=SGappend(SG,200,theta=thetaest) #add 200 points to the design based on thetahat
   Y = testf(SG$design)
   if( c< 10 && !use_goodtheta){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
     logthetaest = logthetaMLE(SG,Y) #estimate the parameter (SG structure is important)
     thetaest <- exp(logthetaest)
-    print(logthetaest)
+    cat(logthetaest,"\n", sep="\t")
   }
 }
+cat("\n")
 Y = testf(SG$design)
 if (!use_goodtheta) {
   logthetaest = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
-  print(logthetaest)
+  cat(logthetaest, "\n")
 }
-GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest,2)) #build a full emulator
+GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest)) #build a full emulator
 
 RMSE <- sqrt(mean(((Yp-GP$mean)^2)))  #prediction should be much better
 meanscore <- mean((Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
 meancoverage <- mean((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
 
-print(paste("RMSE is     ", RMSE))
-print(paste("Score is   ", meanscore))
-print(paste("coverage is", meancoverage))
+cat("RMSE is         ", RMSE, "\n")
+cat("Mean score is   ", meanscore, "\n")
+cat("coverage is     ", meancoverage, "\n")
 
 if (T) { # Can Travis just skip this?
   di <- sample(1:nrow(SG$design), 100)
@@ -81,9 +83,12 @@ if (T) { # Can Travis just skip this?
   points(Yp, 0*GP$mean + 2*sqrt(GP$var), col=4, pch=19)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
   points(Yp, 0*GP$mean - 2*sqrt(GP$var), col=5)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
   errmax <- max(sqrt(GP$var), abs(GP$mean - Yp))
-  plot(GP$mean-Yp, sqrt(GP$var), xlim=errmax*c(-1,1), ylim=errmax*c(-1,1));abline(a=0,b=1,col=2)
-  polygon(c(0,0,1),c(0,1,1), col=2, density=30)
+  plot(GP$mean-Yp, sqrt(GP$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
+  polygon(1.1*errmax*c(0,-2,2),1.1*errmax*c(0,1,1), col=3, density=10, angle=135)
+  polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
+  points(GP$mean-Yp, sqrt(GP$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
 }
 
-print("... FINISHED after_success.R")
+cat(capture.output(Sys.time() - timestart), '\n')
+cat("... FINISHED after_success.R\n")
 timestamp()

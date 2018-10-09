@@ -36,6 +36,7 @@ test_that("Prediction matches exact on small samples", {
   Y = testf(SG$design) #the design is $design, simple enough, right?
   logtheta <- rep(0,8)
   logtheta <- logthetaMLE(SG=SG,y=Y)
+  logtheta <- pmin(logtheta, 2)
   
   n <- 50
   xp <- matrix(runif(d*10),n,8)
