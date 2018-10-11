@@ -22,7 +22,7 @@ MSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget) {
   
   Cp = CorrMat(xp, xl, theta=theta)
   
-  MSE_val = 1-rowSums((Cp%*%Ci)*((Cp)))
+  MSE_val = diag_corrMat(xp, theta=theta, nugget=nugget) - rowSums((Cp%*%Ci)*((Cp)))
   return(MSE_val)
   
 }
@@ -113,30 +113,27 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   #    }
   
   
-  MSE_v = array(0, c(SG$d, 8,dim(xp)[1]))
+  MSE_v = array(0, c(SG$d, 9,dim(xp)[1]))
+  for (lcv1 in 1:SG$d) {
+    MSE_v[lcv1, 1,] = diag_corrMat(xp[,lcv1], theta=theta[lcv1], nugget=SG$nugget)
+  }
   for (lcv1 in 1:SG$d) {
     for (lcv2 in 1:8) {
-      MSE_v[lcv1, lcv2,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget))
-      if (lcv2 > 1.5) {
-        MSE_v[lcv1, lcv2,] = pmin(MSE_v[lcv1, lcv2,], MSE_v[lcv1, lcv2 - 1,])
-      }
+      MSE_v[lcv1, lcv2+1,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget))
+      MSE_v[lcv1, lcv2+1,] = pmin(MSE_v[lcv1, lcv2+1,], MSE_v[lcv1, lcv2,])
     }
   }
-  
-  
-  ME_t = rep(1,dim(xp)[1])
+
+  ME_t = prod(MSE_v[,1,],1)
   for (lcv1 in 1:SG$uoCOUNT) {
     ME_v = rep(1,dim(xp)[1])
     for (e in 1:SG$d) {
       levelnow = SG$uo[lcv1,e]
-      if(levelnow > 1.5){
-        ME_v = ME_v*(1-MSE_v[e,levelnow,])
-      } else {
-        ME_v = ME_v*(1-MSE_v[e,levelnow,])
-      }
+      ME_v = ME_v*(MSE_v[e,1,]-MSE_v[e,levelnow+1,])
     }
     ME_t = ME_t-SG$w[lcv1]*ME_v
   }
+  
   
   # Return list with mean and var predictions
   GP = list("mean" = (my+Cp %*% pw), "var"=sigma_hat[1]*ME_t)

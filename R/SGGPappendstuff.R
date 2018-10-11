@@ -54,7 +54,7 @@ MSE_calc <- function(xl, ..., logtheta, theta, nugget) {
                                                                            6.0)
   
   out1
-  MSE = 1 - sum(diag(out1 %*% Ci))
+  MSE = diag_corrMat(.5, theta=theta, nugget=nugget) - sum(diag(out1 %*% Ci))
   
   MSE # This wasn't here. It still returns it, but invisibly, without this.
 }
