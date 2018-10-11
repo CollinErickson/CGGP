@@ -63,7 +63,10 @@ if (!use_goodtheta) {
   logthetaest = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
   cat(logthetaest, "\n")
 }
+
+timepredstart <- Sys.time()
 GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest)) #build a full emulator
+timepredend <- Sys.time()
 
 RMSE <- sqrt(mean(((Yp-GP$mean)^2)))  #prediction should be much better
 meanscore <- mean((Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
@@ -72,6 +75,11 @@ meancoverage <- mean((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP
 cat("RMSE is         ", RMSE, "\n")
 cat("Mean score is   ", meanscore, "\n")
 cat("coverage is     ", meancoverage, "\n")
+
+# Don't count plotting in run time
+timeend <- Sys.time()
+cat("Total run time is:", capture.output(timeend - timestart), '\n')
+cat("  Prediction time is:", capture.output(timepredend - timepredstart))
 
 if (T) { # Can Travis just skip this?
   di <- sample(1:nrow(SG$design), 100)
@@ -89,6 +97,6 @@ if (T) { # Can Travis just skip this?
   points(GP$mean-Yp, sqrt(GP$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
 }
 
-cat(capture.output(Sys.time() - timestart), '\n')
+# cat(capture.output(Sys.time() - timestart), '\n')
 cat("... FINISHED after_success.R\n")
 timestamp()
