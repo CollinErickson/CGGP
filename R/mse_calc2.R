@@ -82,5 +82,6 @@ MSE_calc2 <- function(xl, theta, check_calcs=FALSE, methodA=FALSE) {
                                                                            6.0)
   
   out1
+  # TODO Nugget should replace 1 below???
   MSE = 1 - sum(diag(out1 %*% Ci))
 }
