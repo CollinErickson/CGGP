@@ -4,7 +4,7 @@
 \alias{MSE_calc}
 \title{Calculate MSE over single dimension for Matern 3/2}
 \usage{
-MSE_calc(xl, ..., logtheta, theta)
+MSE_calc(xl, ..., logtheta, theta, nugget)
 }
 \arguments{
 \item{xl}{Vector of points in 1D}
@@ -14,6 +14,8 @@ MSE_calc(xl, ..., logtheta, theta)
 \item{logtheta}{Log of correlation parameters.}
 
 \item{theta}{Correlation parameters}
+
+\item{nugget}{Nugget to add to diagonal of correlation matrix.}
 }
 \value{
 MSE value
@@ -22,5 +24,5 @@ MSE value
 Equation found using
 }
 \examples{
-MSE_calc(xl=c(0,.5,.9), theta=1)
+MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001)
 }

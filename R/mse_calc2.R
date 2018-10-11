@@ -1,3 +1,4 @@
+# TODO add nugget as param, add to diag(S).
 MSE_calc2 <- function(xl, theta, check_calcs=FALSE, methodA=FALSE) {
   xl = sort(xl)
   if (any(xl>1) || any(xl<0)) {stop("Can't be outside of 0,1")}

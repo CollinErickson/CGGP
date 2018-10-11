@@ -22,7 +22,7 @@ SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
 theta <- c(.1,.1,.1)
 MSE_v <- outer(1:SG$d, 1:8, 
      Vectorize(function(lcv1, lcv2) {
-        MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1])
+        MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=0)
  }))
 MSE_de(SG$po[1:SG$poCOUNT, ], MSE_v)
 }
