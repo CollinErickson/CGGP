@@ -203,6 +203,7 @@ SGcreate <- function(xmin, xmax,batchsize, nugget=0) {
     "each" = 2
   )
   SG$xb = 0.5 + c(0, xb * rep(c(-1, 1), length(xb) / 2))
+  SG$xindex = 1:length(xb)
   # After this xb is
   #  [1] 0.50000 0.12500 0.87500 0.25000 0.75000 0.37500 0.62500 0.28125 0.71875 0.31250 0.68750 0.00000 1.00000 0.18750 0.81250
   # [16] 0.06250 0.93750 0.43750 0.56250 0.40625 0.59375 0.09375 0.90625 0.21875 0.78125 0.34375 0.65625 0.46875 0.53125 0.15625
@@ -219,6 +220,7 @@ SGcreate <- function(xmin, xmax,batchsize, nugget=0) {
   SG$dit = matrix(0, nrow = SG$uoCOUNT, ncol = sum((SG$gridsize)))
   
   SG$design = matrix(0, nrow = sum(SG$gridsize), ncol = SG$d)
+  SG$designindex = matrix(0, nrow = sum(SG$gridsize), ncol = SG$d) # Use this to track which indices have been used
   tv = 0
   for (lcv1 in 1:SG$uoCOUNT) {
     SG$di[lcv1, 1:SG$gridsize[lcv1]] = (tv + 1):(tv + SG$gridsize[lcv1])
@@ -226,20 +228,29 @@ SGcreate <- function(xmin, xmax,batchsize, nugget=0) {
       levelnow = SG$uo[lcv1, lcv2]
       if (levelnow < 1.5) {
         SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(SG$xb[1], SG$gridsize[lcv1])
+        SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(SG$xindex[1], SG$gridsize[lcv1])
       } else{
         x0 = SG$xb[(SG$sizest[levelnow - 1] + 1):SG$sizest[levelnow]]
+        xi0 = SG$xindex[(SG$sizest[levelnow - 1] + 1):SG$sizest[levelnow]]
         if (lcv2 < 1.5) {
           SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(x0, "each" = SG$gridsize[lcv1] /
                                                                      SG$gridsizes[lcv1, lcv2])
+          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(xi0, "each" = SG$gridsize[lcv1] /
+                                                                          SG$gridsizes[lcv1, lcv2])
         }
         if (lcv2 > (SG$d - 0.5)) {
           SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(x0, SG$gridsize[lcv1] /
                                                                      SG$gridsizes[lcv1, lcv2])
+          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(xi0, SG$gridsize[lcv1] /
+                                                                          SG$gridsizes[lcv1, lcv2])
         }
         if (lcv2 < (SG$d - 0.5)  && lcv2 > 1.5) {
           SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(rep(x0, "each" =
                                                                          prod(SG$gridsizes[lcv1, (lcv2 + 1):SG$d])), prod(SG$gridsizes[lcv1, 1:(lcv2 -
                                                                                                                                                   1)]))
+          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(rep(xi0, "each" =
+                                                                              prod(SG$gridsizes[lcv1, (lcv2 + 1):SG$d])), prod(SG$gridsizes[lcv1, 1:(lcv2 -
+                                                                                                                                                       1)]))
         }
       }
     }

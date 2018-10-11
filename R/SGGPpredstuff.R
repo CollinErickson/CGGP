@@ -102,7 +102,9 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   # Cp is sigma(x_0) in paper, correlation vector between design points and xp
   Cp = matrix(1,dim(xp)[1],SG$ss)
   for (e in 1:SG$d) { # Loop over dimensions
-    Cp = Cp*CorrMat(xp[,e], SG$design[,e], theta=theta[e]) # Multiply correlation from each dimension
+    #Cp = Cp*CorrMat(xp[,e], SG$design[,e], theta=theta[e]) # Multiply correlation from each dimension
+    V = CorrMat(xp[,e], SG$xb, theta=theta[e])
+    Cp = Cp*V[,SG$designindex[,e]]
   }
   
   #    Cact = matrix(1,SG$ss,SG$ss)

@@ -271,6 +271,7 @@ SGappend <- function(SG,batchsize,..., theta){
   SG$dit = matrix(0, nrow = SG$uoCOUNT, ncol = sum((SG$gridsize)))
   
   SG$design = matrix(0, nrow = sum(SG$gridsize), ncol = SG$d)
+  SG$designindex = matrix(0, nrow = sum(SG$gridsize), ncol = SG$d)
   tv = 0
   for (lcv1 in 1:SG$uoCOUNT) {
     SG$di[lcv1, 1:SG$gridsize[lcv1]] = (tv + 1):(tv + SG$gridsize[lcv1])
@@ -278,20 +279,29 @@ SGappend <- function(SG,batchsize,..., theta){
       levelnow = SG$uo[lcv1, lcv2]
       if (levelnow < 1.5) {
         SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(SG$xb[1], SG$gridsize[lcv1])
+        SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(SG$xindex[1], SG$gridsize[lcv1])
       } else{
         x0 = SG$xb[(SG$sizest[levelnow - 1] + 1):SG$sizest[levelnow]]
+        xi0 = SG$xindex[(SG$sizest[levelnow - 1] + 1):SG$sizest[levelnow]]
         if (lcv2 < 1.5) {
           SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(x0, "each" = SG$gridsize[lcv1] /
                                                                      SG$gridsizes[lcv1, lcv2])
+          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(xi0, "each" = SG$gridsize[lcv1] /
+                                                                          SG$gridsizes[lcv1, lcv2])
         }
         if (lcv2 > (SG$d - 0.5)) {
           SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(x0, SG$gridsize[lcv1] /
                                                                      SG$gridsizes[lcv1, lcv2])
+          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(xi0, SG$gridsize[lcv1] /
+                                                                          SG$gridsizes[lcv1, lcv2])
         }
         if (lcv2 < (SG$d - 0.5)  && lcv2 > 1.5) {
           SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(rep(x0, "each" =
                                                                          prod(SG$gridsizes[lcv1, (lcv2 + 1):SG$d])), prod(SG$gridsizes[lcv1, 1:(lcv2 -
                                                                                                                                                   1)]))
+          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(rep(xi0, "each" =
+                                                                              prod(SG$gridsizes[lcv1, (lcv2 + 1):SG$d])), prod(SG$gridsizes[lcv1, 1:(lcv2 -
+                                                                                                                                                       1)]))
         }
       }
     }
