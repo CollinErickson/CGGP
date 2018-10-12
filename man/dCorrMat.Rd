@@ -2,7 +2,7 @@
 % Please edit documentation in R/GPstuff.R
 \name{dCorrMat}
 \alias{dCorrMat}
-\title{Calculate derivative of CorrMat with respect to theta}
+\title{Calculate derivative of CorrMat with respect to logtheta}
 \usage{
 dCorrMat(x1, x2, ..., logtheta, theta)
 }
@@ -21,7 +21,7 @@ dCorrMat(x1, x2, ..., logtheta, theta)
 Matrix
 }
 \description{
-Calculate derivative of CorrMat with respect to theta
+Calculate derivative of CorrMat with respect to logtheta
 }
 \examples{
 dCorrMat(c(0,.2,.4),c(.1,.3,.5), theta=.1)

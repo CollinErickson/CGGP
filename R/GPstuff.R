@@ -58,7 +58,7 @@ diag_corrMat <- function(x1, ..., logtheta, theta, nugget) {
 }
 
 
-#' Calculate derivative of CorrMat with respect to theta
+#' Calculate derivative of CorrMat with respect to logtheta
 #'
 #' @param x1 First vector of 1D points
 #' @param x2 Second vector of 1D points
@@ -78,6 +78,6 @@ dCorrMat <- function(x1, x2, ..., logtheta, theta) {
   d2 = length(x2)
   diffmat = abs(t(matrix(rep(x1, each = d2), nrow = d2)) - (matrix(rep(x2, each =
                                                                          d1), nrow = d1)))
-  C = (diffmat / thetasqrt3) ^ 2 * exp(-diffmat / thetasqrt3)
-  return(C)
+  dC = (diffmat / thetasqrt3) ^ 2 * exp(-diffmat / thetasqrt3)
+  return(dC)
 }

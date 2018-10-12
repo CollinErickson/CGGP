@@ -53,10 +53,9 @@ MSE_calc <- function(xl, ..., logtheta, theta, nugget) {
     t8 * (t9 * 6.0 - t12 - a * t * 6.0 + b * t * 6.0 + a ^ 2 + b ^ 2) * (1.0 /
                                                                            6.0)
   
-  out1
   MSE = diag_corrMat(.5, theta=theta, nugget=nugget) - sum(diag(out1 %*% Ci))
   
-  MSE # This wasn't here. It still returns it, but invisibly, without this.
+  MSE
 }
 
 
@@ -141,8 +140,7 @@ SGappend <- function(SG,batchsize,..., theta){
   for (lcv1 in 1:SG$d) {
     for (lcv2 in 1:8) {
       # Calculate some sort of MSE from above, not sure what it's doing
-      MSE_v[lcv1, lcv2] = max(10 ^ (-7),
-                              abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget)))
+      MSE_v[lcv1, lcv2] = max(0, abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget)))
       if (lcv2 > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
         MSE_v[lcv1, lcv2] = min(MSE_v[lcv1, lcv2], MSE_v[lcv1, lcv2 - 1])
       }
