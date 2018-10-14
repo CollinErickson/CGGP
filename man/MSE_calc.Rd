@@ -21,7 +21,8 @@ MSE_calc(xl, ..., logtheta, theta, nugget)
 MSE value
 }
 \description{
-Equation found using
+Calcaluted using grid of integration points.
+Can be calculated exactly, but not much reason in 1D.
 }
 \examples{
 MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001)
