@@ -54,3 +54,18 @@ MSE_calc_Mat32Exact <- function(xl, ..., logtheta, theta, nugget) {
   
   MSE
 }
+
+
+if (F) {
+  xl <- seq(0,1,l=33)
+  # Make sure values are same
+  MSE_calc(xl=xl, theta=.1, nugget=0)
+  MSE_calc_Mat32Exact(xl=xl, theta=.1, nugget=0)
+  # Check timing
+  microbenchmark::microbenchmark(
+    MSE_calc(xl=xl, theta=.1, nugget=0),
+    MSE_calc_Mat32Exact(xl=xl, theta=.1, nugget=0)
+    
+  )
+  # They take similar time, but for large n the approximate one is faster
+}
