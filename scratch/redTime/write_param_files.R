@@ -132,10 +132,14 @@ camb_transfer_z
 #
 # Number of interpolation redshifts:
 12
-#
+# 
 # List of redshifts, from greatest to least, separated by whitespace.  These
 # should span the range z_initial <= z <= 0.
 200 100 50 20 10 5 4 3 2 1 .5 0
 #
-# -----------------------------------------------------------------------")
+# ------------------------------------------------------------------------------")
+  
+  # HAVING ISSUE with spaces at ends of lines, aborts if spaces on end of numeric lines.
+  # Use sed to remove trailing spaces
+  system(paste("sed -i 's/\s*$//' ", outpath))
 }
