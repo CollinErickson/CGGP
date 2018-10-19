@@ -78,7 +78,7 @@ date
 
 qsub_sh_file <- function(fileID) {
   
-  shpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/sub_", fileID, ".dat")
+  shpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/sub_", fileID, ".sh")
   system(paste("chmod +x ", shpath))
   print(paste("About to qsub", shpath))
   system(paste("qsub ", shpath))
