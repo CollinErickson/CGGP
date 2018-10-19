@@ -1,16 +1,30 @@
 # Write out params_redTimexx.out file to run on cluster
 
 convert_x_from_01_to_ranges <- function(x,
-                                        low= c(.85 ,.7,.55,.12,.0215,0,?,-1.3,-1.5),
-                                        high=c(1.05,.9,.85,.155,.0235,.01,?,-.7,1.15)
+                                        low= c(.85 ,.7,.55,.12,.0215,0,-1.3,-1.5),
+                                        high=c(1.05,.9,.85,.155,.0235,.01,-.7,1.15)
                                         ) {
-  
+  if (any(x<0) || any(x>1)) {stop("x must be in range [0,1]^n")}
+  low + (high - low) * x
 }
 
-write_params_file <- function(filenumber) {
+write_params_file <- function(..., x01, fileID, overwrite=F) {
+  x <- convert_x_from_01_to_ranges(x01)
+  n_s <- x[1]
+  sigma_8<- x[2]
+  h<- x[3]
+  Omega_m<- x[4]
+  Omega_b<- x[5]
+  Omega_nu<- x[6]
+  w0<- x[7]
+  wa<- x[8]
   paste0(rep('0',1),as.character(3))
-  outpath <- paste("/home/collin/scratch/redTime_v0.1/params_redTime",,".dat")
-  if (outpath == "params_redTime.dat")
+  outpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_", fileID, ".dat")
+  if (outpath == "/home/collin/scratch/redTime_v0.1/params_redTime.dat") {
+    stop("Pick a new outpath, don't overwrite params_redTime.dat")
+  }
+  if (file.exists(outpath)) {stop(paste("File already exists", outpath))}
+  outpath <- ""
   cout <- function(...) {cat(..., '\n', file=outpath)}
   cout("# n_s: scalar spectral index")
   cout(n_s)
@@ -28,8 +42,7 @@ write_params_file <- function(filenumber) {
   cout(2.726) #T_cmb_K)
   cout("# w0: dark energy equation of state today")
   cout(w0)
-  cout("# wa: derivative -dw/da in CPL parameterization
-")
+  cout("# wa: derivative -dw/da in CPL parameterization")
   cout(wa)
   cout("")
   cout("")
