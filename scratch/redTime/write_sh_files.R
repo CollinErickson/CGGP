@@ -17,10 +17,12 @@ create_LHS_and_submit <- function() {
 
 write_sh_file <- function(fileID) {
   param_path <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_", fileID, ".dat")
-  outpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/sub_", fileID, ".sh")
-  if (file.exists(outpath)) {stop(paste("File already exists", outpath))}
-  #outpath <- ""
-  cout <- function(...) {cat(..., '\n', file=outpath)}
+  shpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/sub_", fileID, ".sh")
+  if (file.exists(shpath)) {stop(paste("File already exists", shpath))}
+  outputpath <- paste0("/home/collin/scratch/redTime_v0.1/output_files/out_", fileID, ".out")
+  if (file.exists(outputpath)) {stop(paste("File already exists", outputpath))}
+  #shpath <- ""
+  cout <- function(...) {cat(..., '\n', file=shpath)}
   cout("
 #!/bin/bash
 #
@@ -71,7 +73,7 @@ write_sh_file <- function(fileID) {
 date
 cd /home/collin/scratch/redTime_v0.1
 ")
-       cout(paste("./redTime.out ", param_path), append=T)
+       cout(paste("./redTime.out ", param_path, " >> ", outputpath), append=T)
        cout("
 date
        ", append=T)
