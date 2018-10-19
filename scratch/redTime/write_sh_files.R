@@ -69,8 +69,9 @@ write_sh_file <- function(fileID) {
 #########################
 
 date
+cd /home/collin/scratch/redTime_v0.1
 ")
-       cout(paste("/home/collin/scratch/redTime_v0.1/redTime.out ", param_path), append=T)
+       cout(paste("./redTime.out ", param_path), append=T)
        cout("
 date
        ", append=T)
