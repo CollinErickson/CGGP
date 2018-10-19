@@ -19,7 +19,7 @@ write_sh_file <- function(fileID) {
   param_path <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_", fileID, ".dat")
   outpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/sub_", fileID, ".sh")
   if (file.exists(outpath)) {stop(paste("File already exists", outpath))}
-  outpath <- ""
+  #outpath <- ""
   cout <- function(...) {cat(..., '\n', file=outpath)}
   cout("
 #!/bin/bash
@@ -70,14 +70,17 @@ write_sh_file <- function(fileID) {
 
 date
 ")
-       cout(paste("./redTime.out ", param_path))
+       cout(paste("/home/collin/scratch/redTime_v0.1/redTime.out ", param_path), append=T)
        cout("
 date
-       ")
+       ", append=T)
 }
 
 qsub_sh_file <- function(fileID) {
   
   shpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_", fileID, ".dat")
+  system(paste("chmod +x ", shpath))
+  print(paste("About to qsub", shpath))
   system(paste("qsub ", shpath))
+  print(paste("qsubbed ", shpath))
 }

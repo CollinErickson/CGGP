@@ -24,9 +24,9 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
     stop("Pick a new outpath, don't overwrite params_redTime.dat")
   }
   if (file.exists(outpath)) {stop(paste("File already exists", outpath))}
-  outpath <- ""
-  cout <- function(...) {cat(..., '\n', file=outpath)}
-  cout("# n_s: scalar spectral index")
+  #outpath <- ""
+  cout <- function(..., append=T) {cat(..., '\n', file=outpath, append=append)}
+  cout("# n_s: scalar spectral index", append=F)
   cout(n_s)
   cout("# sigma_8: z=0 normalization of linear power spectrum")
   cout(sigma_8)
