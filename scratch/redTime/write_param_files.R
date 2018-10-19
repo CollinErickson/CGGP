@@ -26,7 +26,39 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
   if (file.exists(outpath)) {stop(paste("File already exists", outpath))}
   #outpath <- ""
   cout <- function(..., append=T) {cat(..., '\n', file=outpath, append=append)}
-  cout("# n_s: scalar spectral index", append=F)
+  cout("# ==============================================================================
+# =================== Parameter file for Time-RG computation ===================
+# ==============================================================================
+#
+# (Lines beginning with a '#' are ignored by the code.  Parameters must be
+# listed in the following order:
+#   n_s
+#   sigma_8
+#   h
+#   Omega_m
+#   Omega_b
+#   Omega_nu
+#   T_cmb[Kelvins]
+#   w_0
+#   w_a
+#   switch_nonlinear
+#   switch_1loop
+#   switch_print_linear
+#   switch_print_rsd
+#   z_initial
+#   num_z_outputs
+#   z_out_1 z_out_2 ... z_out_{num_z_outputs}
+#   file_transfer_function
+#   num_massive_nu_approx
+#   file_nu_transfer_root
+#   num_interp_redshifts
+#   z_1 z_2 ... z_num_interp_redshifts
+# where parameters beginning with \"switch\" are 0 or 1, those beginning with
+# \"num\" are integers, and those beginning with \"file\" are character strings.)
+#
+# -------------------------- cosmologial parameters ----------------------------
+#", append=T)
+  cout("# n_s: scalar spectral index", append=T)
   cout(n_s)
   cout("# sigma_8: z=0 normalization of linear power spectrum")
   cout(sigma_8)
@@ -46,8 +78,7 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
   cout(wa)
   cout("")
   cout("")
-  cout("
-# ----------------------------- code switches ----------------------------------
+  cout("# ----------------------------- code switches ----------------------------------
 #
 # nonlinear computation: 0 for linear, 1 for nonlinear
 1
@@ -98,7 +129,5 @@ camb_transfer_z
 # List of redshifts, from greatest to least, separated by whitespace.  These
 # should span the range z_initial <= z <= 0.
 200 100 50 20 10 5 4 3 2 1 .5 0
-#
-
-")
+#")
 }
