@@ -60,24 +60,31 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
 #", append=T)
   cout("# n_s: scalar spectral index", append=T)
   cout(n_s)
+  cout("#")
   cout("# sigma_8: z=0 normalization of linear power spectrum")
   cout(sigma_8)
+  cout("#")
   cout("# h: Hubble parameter today, H_0 / (100 km/sec/Mpc)")
   cout(h)
+  cout("#")
   cout("# Omega_m: total matter fraction today (cdm, baryons, massive nu)")
   cout(Omega_m)
+  cout("#")
   cout("# Omega_b: baryon fraction today")
   cout(Omega_b)
+  cout("#")
   cout("# Omega_nu: massive neutrino fraction today (0 if massless)")
   cout(Omega_nu)
+  cout("#")
   cout("# T_cmb_K: CMB temperature today, in units of Kelvins")
   cout(2.726) #T_cmb_K)
+  cout("#")
   cout("# w0: dark energy equation of state today")
   cout(w0)
+  cout("#")
   cout("# wa: derivative -dw/da in CPL parameterization")
   cout(wa)
-  cout("")
-  cout("")
+  cout("#")
   cout("# ----------------------------- code switches ----------------------------------
 #
 # nonlinear computation: 0 for linear, 1 for nonlinear
@@ -129,5 +136,6 @@ camb_transfer_z
 # List of redshifts, from greatest to least, separated by whitespace.  These
 # should span the range z_initial <= z <= 0.
 200 100 50 20 10 5 4 3 2 1 .5 0
-#")
+#
+# -----------------------------------------------------------------------")
 }
