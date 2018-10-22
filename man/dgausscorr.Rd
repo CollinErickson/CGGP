@@ -4,7 +4,7 @@
 \alias{dgausscorr}
 \title{Derivative of Gaussian correlation matrix}
 \usage{
-dgausscorr(x1, x2, theta)
+dgausscorr(x1, x2, theta, logtheta, nugget)
 }
 \arguments{
 \item{x1}{Vector of 1D points}
@@ -12,6 +12,10 @@ dgausscorr(x1, x2, theta)
 \item{x2}{Vector of 1D points}
 
 \item{theta}{Correlation parameter in 1D, one number}
+
+\item{logtheta}{Log of correlation parameters}
+
+\item{nugget}{Nugget to add to each correlation.}
 }
 \value{
 Derivative of Gaussian correlation matrix in 1D w.r.t. theta
@@ -20,5 +24,5 @@ Derivative of Gaussian correlation matrix in 1D w.r.t. theta
 Derivative of Gaussian correlation matrix
 }
 \examples{
-dgausscorr(c(0,.5,1), c(.1,.4,.5,.9), theta=.1)
+dgausscorr(c(0,.5,1), c(.1,.4,.5,.9), theta=.1, nugget=0)
 }

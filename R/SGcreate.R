@@ -20,6 +20,10 @@ SGcreate <- function(xmin, xmax,batchsize, corr="Matern32", nugget=0) {
     SG$CorrMat <- CorrMatMatern32
     SG$dCorrMat <- dCorrMatMatern32
     SG$diag_corrMat <- diag_corrMatMatern32
+  } else if (tolower(corr) %in% c('gaussian', 'gauss')) {
+    SG$CorrMat <- gausscorr
+    SG$dCorrMat <- dgausscorr
+    SG$diag_corrMat <- diag_gausscorr
   } else {
     stop(paste0("corr given was ', corr,', must be one of matern32."))
   }
