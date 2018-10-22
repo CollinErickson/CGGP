@@ -4,9 +4,9 @@
 # 3. Write out sh/pbs files
 # 4. qsub the files
 
-create_LHS_and_submit <- function(prefix='') {
-  X <- lhs::maximinLHS(n=40, k=8)
-  sapply(1:40,
+create_LHS_and_submit <- function(n, prefix='') {
+  X <- lhs::maximinLHS(n=n, k=8)
+  sapply(1:n,
          function(i) {
            write_params_file(x01 = X[i,], fileID = paste0(prefix,i))
            write_sh_file(fileID=paste0(prefix,i))
