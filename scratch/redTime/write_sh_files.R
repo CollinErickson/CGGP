@@ -4,13 +4,13 @@
 # 3. Write out sh/pbs files
 # 4. qsub the files
 
-create_LHS_and_submit <- function() {
+create_LHS_and_submit <- function(prefix='') {
   X <- lhs::maximinLHS(n=40, k=8)
   sapply(1:40,
          function(i) {
-           write_params_file(x01 = X[i,], fileID = i)
-           write_sh_file(fileID=i)
-           qsub_sh_file(fileID=i)
+           write_params_file(x01 = X[i,], fileID = paste0(prefix,i))
+           write_sh_file(fileID=paste0(prefix,i))
+           qsub_sh_file(fileID=paste0(prefix,i))
          }
   )
 }
@@ -70,10 +70,12 @@ write_sh_file <- function(fileID) {
 ##### Your commands #####
 #########################
 
-date
 cd /home/collin/scratch/redTime_v0.1
+date
 ")
+       cout(paste("date >> ", outputpath),append=T)
        cout(paste("./redTime.out ", param_path, " >> ", outputpath), append=T)
+       cout(paste("date >> ", outputpath),append=T)
        cout("
 date
        ", append=T)
