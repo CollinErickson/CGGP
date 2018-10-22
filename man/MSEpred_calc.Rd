@@ -4,7 +4,7 @@
 \alias{MSEpred_calc}
 \title{????????????}
 \usage{
-MSEpred_calc(xp, xl, ..., logtheta, theta, nugget)
+MSEpred_calc(xp, xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat)
 }
 \arguments{
 \item{xp}{Points at which to calculate MSE}
@@ -18,6 +18,11 @@ MSEpred_calc(xp, xl, ..., logtheta, theta, nugget)
 \item{theta}{Correlation parameters}
 
 \item{nugget}{Nugget to add to diagonal of correlation matrix}
+
+\item{CorrMat}{Function that gives correlation matrix for vectors of 1D points.}
+
+\item{diag_corrMat}{Function that gives diagonal of correlation matrix
+for vector of 1D points.}
 }
 \value{
 MSE predictions
@@ -26,5 +31,7 @@ MSE predictions
 ????????????
 }
 \examples{
-MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5)
+MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
+             CorrMat=CorrMatMatern32,
+             diag_corrMat=diag_corrMatMatern32)
 }

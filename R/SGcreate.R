@@ -3,7 +3,9 @@
 #' @param xmin Min x values, vector
 #' @param xmax Max x values, vector
 #' @param batchsize Number added to design each batch
-#' @param nugget Nugget term added to diagonal of correlation matrix, for now only on predictions
+#' @param nugget Nugget term added to diagonal of correlation matrix,
+#' for now only on predictions
+#' @param corr Correlation function to use.
 #'
 #' @return SGGP
 #' @export
@@ -11,9 +13,16 @@
 #' @examples
 #' d <- 8
 #' SG = SGcreate(rep(0, d), rep(1, d),201)
-SGcreate <- function(xmin, xmax,batchsize, nugget=0) {
+SGcreate <- function(xmin, xmax,batchsize, corr="Matern32", nugget=0) {
   # This is list representing our GP object
   SG = list("xmin" = xmin, "xmax" = xmax)
+  if (tolower(corr) %in% c('matern32', 'mat32', 'm32', 'matern3', 'mat3', 'm3')) {
+    SG$CorrMat <- CorrMatMatern32
+    SG$dCorrMat <- dCorrMatMatern32
+    SG$diag_corrMat <- diag_corrMatMatern32
+  } else {
+    stop(paste0("corr given was ', corr,', must be one of matern32."))
+  }
   SG$nugget <- nugget
   
   SG$d = length(xmin) # input dimension

@@ -4,7 +4,7 @@
 \alias{MSE_calc}
 \title{Calculate MSE over single dimension for Matern 3/2}
 \usage{
-MSE_calc(xl, ..., logtheta, theta, nugget)
+MSE_calc(xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat)
 }
 \arguments{
 \item{xl}{Vector of points in 1D}
@@ -16,6 +16,10 @@ MSE_calc(xl, ..., logtheta, theta, nugget)
 \item{theta}{Correlation parameters}
 
 \item{nugget}{Nugget to add to diagonal of correlation matrix.}
+
+\item{CorrMat}{Function that gives correlation matrix for vectors of 1D points.}
+
+\item{diag_corrMat}{Function that gives diagonal of correlation matrix for vector of 1D points.}
 }
 \value{
 MSE value
@@ -25,5 +29,7 @@ Calcaluted using grid of integration points.
 Can be calculated exactly, but not much reason in 1D.
 }
 \examples{
-MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001)
+MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001,
+         CorrMat=CorrMatMatern32,
+         diag_corrMat=diag_corrMatMatern32)
 }

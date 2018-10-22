@@ -34,7 +34,7 @@ lik <- function(logtheta, ..., SG, y) {
       for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
         Xbrn = SG$xb[1:SG$sizest[lcv1]] # xb are the possible points
         Xbrn = Xbrn[order(Xbrn)] # Sort them low to high, is this necessary? Probably just needs to be consistent.
-        S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
+        S = SG$CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
         diag(S) = diag(S) + SG$nugget
         # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
         solvetry <- try({
@@ -129,9 +129,9 @@ glik <- function(logtheta, ..., SG, y) {
     for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]]
       Xbrn = Xbrn[order(Xbrn)]
-      S = CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
+      S = SG$CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
       diag(S) = diag(S) + SG$nugget
-      dS = dCorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
+      dS = SG$dCorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
       
       CCS[[(lcv2-1)*Q+lcv1]] = chol(S)#-CiS[[(lcv2-1)*Q+lcv1]]  %*% 
       dCS[[(lcv2-1)*Q+lcv1]] = dS

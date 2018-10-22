@@ -3,9 +3,11 @@ test_that("MSE_calc for Matern 3/2 works", {
   lth = -1
   xl <- c(0,.5,.9)
   nugget <- 0
-  MSE_calc.out <- MSE_calc(xl=xl, logtheta=lth, nugget=nugget)
+  MSE_calc.out <- MSE_calc(xl=xl, logtheta=lth, nugget=nugget,
+                           CorrMat=CorrMatMatern32,
+                           diag_corrMat=diag_corrMatMatern32)
   
-  S = CorrMat(xl, xl, logtheta = lth)
+  S = CorrMatMatern32(xl, xl, logtheta = lth)
   Ci = solve(S)
   matern32 <- function(x,lth) {(1+abs(x)/exp(lth)/sqrt(3))*exp(-abs(x)/exp(lth)/sqrt(3))}
   integrand <- Vectorize(function(x) {1+nugget-matern32(x-xl,lth=lth) %*% Ci %*% matern32(x-xl,lth=lth)})
@@ -18,9 +20,11 @@ test_that("MSE_calc for Matern 3/2 works with nugget", {
   lth = -1
   xl <- c(0,.5,.9)
   nugget <- 1e-3
-  MSE_calc.out <- MSE_calc(xl=xl, logtheta=lth, nugget=nugget)
+  MSE_calc.out <- MSE_calc(xl=xl, logtheta=lth, nugget=nugget,
+                           CorrMat=CorrMatMatern32,
+                           diag_corrMat=diag_corrMatMatern32)
   
-  S = CorrMat(xl, xl, logtheta = lth)
+  S = CorrMatMatern32(xl, xl, logtheta = lth)
   diag(S) <- diag(S) + nugget
   Ci = solve(S)
   matern32 <- function(x,lth) {(1+abs(x)/exp(lth)/sqrt(3))*exp(-abs(x)/exp(lth)/sqrt(3))}

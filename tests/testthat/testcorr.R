@@ -22,12 +22,13 @@ test_that("Matern 3/2 correlation works", {
   x2 <- runif(4)
   th <- .1
   lth <- log(th)
-  mc <- CorrMat(x1, x2, logtheta=lth)
+  mc <- CorrMatMatern32(x1, x2, logtheta=lth)
   expect_equal(mc[2,3], (1+abs(x1[2]-x2[3])/th/sqrt(3)) * exp(-abs(x1[2]-x2[3])/th/sqrt(3)))
   expect_equal(dim(mc), c(5,4))
   
-  dmc <- dCorrMat(x1, x2, logtheta = lth)
+  dmc <- dCorrMatMatern32(x1, x2, logtheta = lth)
   expect_equal(dim(dmc), c(5,4))
   teps <- 1e-5
-  expect_equal(dmc, (CorrMat(x1, x2,logtheta = lth+teps/2) - CorrMat(x1, x2,logtheta = lth-teps/2))/teps)
+  expect_equal(dmc, (CorrMatMatern32(x1, x2,logtheta = lth+teps/2) - CorrMatMatern32(x1, x2,logtheta = lth-teps/2))/teps)
 })
+

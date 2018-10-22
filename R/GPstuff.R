@@ -14,8 +14,8 @@
 #' @export
 #'
 #' @examples
-#' CorrMat(c(0,.2,.4),c(.1,.3,.5), theta=.1)
-CorrMat <- function(x1, x2, ..., logtheta, theta) {#browser()
+#' CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+CorrMatMatern32 <- function(x1, x2, ..., logtheta, theta) {#browser()
   if (missing(theta)) { theta <- exp(logtheta)}
   if (any(theta<0)) stop("Theta < 0 in CorrMat")
   thetasqrt3 <- theta*sqrt(3)
@@ -45,8 +45,8 @@ CorrMat <- function(x1, x2, ..., logtheta, theta) {#browser()
 #' @export
 #'
 #' @examples
-#' diag_corrMat(c(0,.2,.4,.6,.8,1),theta=.1, nugget=0) # Should be all ones
-diag_corrMat <- function(x1, ..., logtheta, theta, nugget) {
+#' diag_corrMatMatern32(c(0,.2,.4,.6,.8,1),theta=.1, nugget=0) # Should be all ones
+diag_corrMatMatern32 <- function(x1, ..., logtheta, theta, nugget) {
   if (missing(theta)) { theta <- exp(logtheta)}
   if (any(theta<0)) stop("Theta < 0 in CorrMat")
   thetasqrt3 <- theta*sqrt(3)
@@ -70,8 +70,8 @@ diag_corrMat <- function(x1, ..., logtheta, theta, nugget) {
 #' @export
 #'
 #' @examples
-#' dCorrMat(c(0,.2,.4),c(.1,.3,.5), theta=.1)
-dCorrMat <- function(x1, x2, ..., logtheta, theta) {
+#' dCorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+dCorrMatMatern32 <- function(x1, x2, ..., logtheta, theta) {
   if (missing(theta)) {theta <- exp(logtheta)}
   thetasqrt3 <- theta*sqrt(3)
   d1 = length(x1)

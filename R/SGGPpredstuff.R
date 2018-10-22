@@ -5,14 +5,19 @@
 #' @param theta Correlation parameters
 #' @param logtheta Log of correlation parameters
 #' @param nugget Nugget to add to diagonal of correlation matrix
+#' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
+#' @param diag_corrMat Function that gives diagonal of correlation matrix
+#' for vector of 1D points.
 #' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE predictions
 #' @export
 #'
 #' @examples
-#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5)
-MSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget) {
+#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
+#'              CorrMat=CorrMatMatern32,
+#'              diag_corrMat=diag_corrMatMatern32)
+MSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat) {
   if (missing(theta)) {theta <- exp(logtheta)}
   S = CorrMat(xl, xl, theta=theta)
   diag(S) = diag(S) + nugget
@@ -65,7 +70,7 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
     for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]] # Get x's
       Xbrn = Xbrn[order(Xbrn)] # Sort them
-      S = CorrMat(Xbrn, Xbrn , theta=theta[lcv2]) # Calculate corr mat
+      S = SG$CorrMat(Xbrn, Xbrn , theta=theta[lcv2]) # Calculate corr mat
       diag(S) = diag(S) + SG$nugget
       #CiS[[(lcv2-1)*Q+lcv1]] = solve(S) # Store inversion
       CS[[(lcv2-1)*Q+lcv1]] = S
@@ -103,7 +108,7 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   Cp = matrix(1,dim(xp)[1],SG$ss)
   for (e in 1:SG$d) { # Loop over dimensions
     #Cp = Cp*CorrMat(xp[,e], SG$design[,e], theta=theta[e]) # Multiply correlation from each dimension
-    V = CorrMat(xp[,e], SG$xb, theta=theta[e])
+    V = SG$CorrMat(xp[,e], SG$xb, theta=theta[e])
     Cp = Cp*V[,SG$designindex[,e]]
   }
   
@@ -115,11 +120,14 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   
   MSE_v = array(0, c(SG$d, 9,dim(xp)[1]))
   for (lcv1 in 1:SG$d) {
-    MSE_v[lcv1, 1,] = diag_corrMat(xp[,lcv1], theta=theta[lcv1], nugget=SG$nugget)
+    MSE_v[lcv1, 1,] = SG$diag_corrMat(xp[,lcv1], theta=theta[lcv1], nugget=SG$nugget)
   }
   for (lcv1 in 1:SG$d) {
     for (lcv2 in 1:8) {
-      MSE_v[lcv1, lcv2+1,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget))
+      MSE_v[lcv1, lcv2+1,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]],
+                                              theta=theta[lcv1], nugget=SG$nugget,
+                                              CorrMat=SG$CorrMat,
+                                              diag_corrMat=SG$diag_corrMat))
       MSE_v[lcv1, lcv2+1,] = pmin(MSE_v[lcv1, lcv2+1,], MSE_v[lcv1, lcv2,])
     }
   }

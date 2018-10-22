@@ -12,14 +12,18 @@
 #' @param logtheta Log of correlation parameters.
 #' @param theta Correlation parameters
 #' @param nugget Nugget to add to diagonal of correlation matrix.
+#' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
+#' @param diag_corrMat Function that gives diagonal of correlation matrix for vector of 1D points.
 #' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE value
 #' @export
 #'
 #' @examples
-#' MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001)
-MSE_calc <- function(xl, ..., logtheta, theta, nugget) {
+#' MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001,
+#'          CorrMat=CorrMatMatern32,
+#'          diag_corrMat=diag_corrMatMatern32)
+MSE_calc <- function(xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat) {
   if (missing(theta)) {theta <- exp(logtheta)}
   S = CorrMat(xl, xl, theta=theta)
   xp = seq(0,1,l=101)
@@ -51,7 +55,9 @@ MSE_calc <- function(xl, ..., logtheta, theta, nugget) {
 #' theta <- c(.1,.1,.1)
 #' MSE_v <- outer(1:SG$d, 1:8, 
 #'      Vectorize(function(lcv1, lcv2) {
-#'         MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=0)
+#'         MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=0,
+#'          CorrMat=CorrMatMatern32,
+#'          diag_corrMat=diag_corrMatMatern32)
 #'  }))
 #' MSE_de(SG$po[1:SG$poCOUNT, ], MSE_v)
 MSE_de <- function(valsinds, MSE_v) {
@@ -117,7 +123,9 @@ SGappend <- function(SG,batchsize,..., theta){
   for (lcv1 in 1:SG$d) {
     for (lcv2 in 1:8) {
       # Calculate some sort of MSE from above, not sure what it's doing
-      MSE_v[lcv1, lcv2] = max(0, abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget)))
+      MSE_v[lcv1, lcv2] = max(0, abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget,
+                                              CorrMat=SG$CorrMat,
+                                              diag_corrMat=SG$diag_corrMat)))
       if (lcv2 > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
         MSE_v[lcv1, lcv2] = min(MSE_v[lcv1, lcv2], MSE_v[lcv1, lcv2 - 1])
       }

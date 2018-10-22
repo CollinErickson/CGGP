@@ -4,7 +4,7 @@
 \alias{SGcreate}
 \title{Create sparse grid GP}
 \usage{
-SGcreate(xmin, xmax, batchsize, nugget = 0)
+SGcreate(xmin, xmax, batchsize, corr = "Matern32", nugget = 0)
 }
 \arguments{
 \item{xmin}{Min x values, vector}
@@ -13,7 +13,10 @@ SGcreate(xmin, xmax, batchsize, nugget = 0)
 
 \item{batchsize}{Number added to design each batch}
 
-\item{nugget}{Nugget term added to diagonal of correlation matrix, for now only on predictions}
+\item{corr}{Correlation function to use.}
+
+\item{nugget}{Nugget term added to diagonal of correlation matrix,
+for now only on predictions}
 }
 \value{
 SGGP

@@ -1,5 +1,5 @@
 # TODO add nugget as param, add to diag(S).
-MSE_calc2 <- function(xl, theta, check_calcs=FALSE, methodA=FALSE) {
+MSE_calc2 <- function(xl, theta, check_calcs=FALSE, methodA=FALSE, CorrMat=CorrMatMatern32) {
   xl = sort(xl)
   if (any(xl>1) || any(xl<0)) {stop("Can't be outside of 0,1")}
   S = CorrMat(xl, xl, theta)
