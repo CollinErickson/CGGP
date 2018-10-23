@@ -105,7 +105,8 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
 200
 #
 # number of redshifts at which to print results
-7
+# need to match number of redshifts given below 7
+1
 #
 # redshifts of outputs (arranged from greatest to least)
 # trying single redshift below: 4.95 4 3.04 2.02 1.006 0.511 0
