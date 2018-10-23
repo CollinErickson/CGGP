@@ -54,7 +54,7 @@ write_sh_file <- function(fileID) {
 
 #### Run time limit
 #  Specify maximum CPU time after which job is to be killed (format HH:MM:SS).
-#$ -l h_rt=12:00:00    # in this example, we set 10 minutes
+#$ -l h_rt=24:00:00    # in this example, we set 10 minutes
 
 #### Memory limit
 #  specifies the maximum amount of memory this job can take

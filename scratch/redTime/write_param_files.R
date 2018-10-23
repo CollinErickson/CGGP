@@ -108,7 +108,8 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
 7
 #
 # redshifts of outputs (arranged from greatest to least)
-4.95 4 3.04 2.02 1.006 0.511 0
+# trying single redshift below: 4.95 4 3.04 2.02 1.006 0.511 0
+4.95
 #
 # ---------------------------- transfer inputs ---------------------------------
 #
