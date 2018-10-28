@@ -91,7 +91,8 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
 1
 #
 # 1-loop approximation to nonlinear computation (0 for full NL, 1 for 1-loop)
-0
+# 0 # Default is this, the full calc, but takes 8 hours.
+1
 #
 # print linear evolution information: D, f, P_lin for cb and nu
 1
@@ -110,7 +111,7 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
 #
 # redshifts of outputs (arranged from greatest to least)
 # trying single redshift below: 4.95 4 3.04 2.02 1.006 0.511 0
-4.95
+2.02
 #
 # ---------------------------- transfer inputs ---------------------------------
 #

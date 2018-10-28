@@ -4,13 +4,18 @@
 # 3. Write out sh/pbs files
 # 4. qsub the files
 
-create_LHS_and_submit <- function(n, prefix='') {
+create_LHS_and_submit <- function(n, prefix='', holdnum) {
   X <- lhs::maximinLHS(n=n, k=8)
   sapply(1:n,
          function(i) {
            write_params_file(x01 = X[i,], fileID = paste0(prefix,i))
            write_sh_file(fileID=paste0(prefix,i))
-           qsub_sh_file(fileID=paste0(prefix,i))
+           if (is.null(holdnum)) {
+             qsub_sh_file(fileID=paste0(prefix,i))
+           } else {
+             if (as.integer(holdnum) != holdnum) {stop("holdnum isn't integer")}
+             qsub_sh_file(fileID=paste0(prefix,i), holdID=paste0(prefix, i-holdnum))
+           }
          }
   )
 }
@@ -81,11 +86,16 @@ date
        ", append=T)
 }
 
-qsub_sh_file <- function(fileID) {
+qsub_sh_file <- function(fileID, holdID=NULL) {
   
   shpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/sub_", fileID, ".sh")
   system(paste("chmod +x ", shpath))
   print(paste("About to qsub", shpath))
-  system(paste("qsub ", shpath))
+  qsub_string <- paste("qsub -N ", fileID) # Give it a name
+  if (!is.null(holdID)) {
+    qsub_string <- paste(qsub_string, "-hold_jid", holdID)
+  }
+  qsub_string <- paste(qsub_string, shpath) # shpath to run
+  system(qsub_string)
   print(paste("qsubbed ", shpath))
 }
