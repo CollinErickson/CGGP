@@ -4,7 +4,8 @@
 # 3. Write out sh/pbs files
 # 4. qsub the files
 
-create_LHS_and_submit <- function(n, prefix='', holdnum) {
+create_LHS_and_submit <- function(n, prefix='', holdnum=NULL, seed=NULL) {
+  if (!is.null(seed)) {set.seed(seed)}
   X <- lhs::maximinLHS(n=n, k=8)
   sapply(1:n,
          function(i) {
@@ -68,8 +69,8 @@ write_sh_file <- function(fileID) {
 #$ -l h_vmem=2g  # here we choose 4g, so that overall we reserve up to 8*4g=32g total
 
 #### Email after done, -abe is abort, begin, end
-#$ -m ae
-#$ -M collinerickson@u.northwestern.edu
+##### $ -m ae no longer want emails, running too many
+##### $ -M collinerickson@u.northwestern.edu
 
 #########################
 ##### Your commands #####
