@@ -34,12 +34,14 @@ MSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_corr
 #' ????????????
 #'
 #' @param xp Points at which to calculate MSE
-#' @param xl Levels along dimension, vector???
+#' @param xl Levels along dimension
 #' @param theta Correlation parameters
 #' @param logtheta Log of correlation parameters
 #' @param nugget Nugget to add to diagonal of correlation matrix
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
 #' @param diag_corrMat Function that gives diagonal of correlation matrix
+#' @param dCorrMat Derivative of CorrMat
+#' @param ddiag_corrMat Derivative of diagonal of diag_corrMat
 #' for vector of 1D points.
 #' @param ... Don't use, just forces theta to be named
 #'
