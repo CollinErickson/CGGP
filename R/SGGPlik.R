@@ -282,12 +282,11 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
 #' y <- cbind(y1, y2)
 #' likMV(logtheta=c(.1,.2,.3), SG=SG, yMV=y)
 likMV <- function(logtheta, SG, yMV) {
-  #theta = x
   p = dim(yMV)[2]
   
   logLikMV = 0
-  for(c in 1:p){
-    logLikMV = logLikMV+lik(logtheta, SG=SG, y=as.vector(yMV[,c])-mean(yMV[,c])) 
+  for(i in 1:p){
+    logLikMV = logLikMV+lik(logtheta, SG=SG, y=as.vector(yMV[,i])-mean(yMV[,i])) 
   }
   return(logLikMV)
 }
@@ -309,11 +308,10 @@ likMV <- function(logtheta, SG, yMV) {
 #' y <- cbind(y1, y2)
 #' glikMV(logtheta=c(.1,.2,.3), SG=SG, yMV=y)
 glikMV <- function(logtheta, SG, yMV) {
-  #theta = x
   p = dim(yMV)[2]
-  glogLikMV = rep(0,p)
-  for(c in 1:p){
-    glogLikMV = glogLikMV+glik(logtheta, SG=SG, y=as.vector(yMV[,c])-mean(yMV[,c])) 
+  glogLikMV = rep(0,length(logtheta)) #p)
+  for(i in 1:p){
+    glogLikMV = glogLikMV+glik(logtheta, SG=SG, y=as.vector(yMV[,i])-mean(yMV[,i]))[1,] 
   }
   return(glogLikMV)
 }
