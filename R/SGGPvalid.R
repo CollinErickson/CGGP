@@ -1,20 +1,4 @@
-
-
-#' Calculate likelihood
-#'
-#' @param logtheta Log of correlation parameters
-#' @param SG SGGP object
-#' @param y Measured values of SG$design
-#' @param ... Don't use, just forces theta to be named
-#'
-#' @return Likelihood
-#' @export
-#'
-#' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
-#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' lik(c(.1,.1,.1), SG=SG, y=y)
-lik <- function(logtheta, ..., SG, y) {
+validation <- function(logtheta, SG, y,xp,yp) {
   #theta = x
   
   
@@ -22,6 +6,9 @@ lik <- function(logtheta, ..., SG, y) {
   if (max(logtheta) >= (4 - 10 ^ (-6))) {
     return(Inf)
   } else{
+    
+    yp = yp-mean(y)
+    y = y - mean(y)
     
     Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
     # Now going to store choleskys instead of inverses for stability
@@ -67,50 +54,56 @@ lik <- function(logtheta, ..., SG, y) {
       pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
         SG$w[lcv1] * B
     }
-    sigma_hat = t(y) %*% pw / length(y)
     
-    # Log determinant, keep a sum from smaller matrices
-    lDet = 0
+    Cp = matrix(1,dim(xp)[1],SG$ss)
+    for (e in 1:SG$d) { # Loop over dimensions
+      V = SG$CorrMat(xp[,e], SG$xb, logtheta=logtheta[e])
+      Cp = Cp*V[,SG$designindex[,e]]
+    }
     
-    # Calculate log det. See page 1586 of paper.
-    # Loop over evaluated blocks
-    for (lcv1 in 1:SG$uoCOUNT) {
-      # Loop over dimensions
-      for (lcv2 in 1:SG$d) {
-        levelnow = SG$uo[lcv1, lcv2]
-        # Add to log det when multiple points. It is zero when single point.
-        if (levelnow > 1.5) {
-          lDet = lDet + (lS[levelnow, lcv2] - lS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
-            (SG$gridsizes[lcv1, lcv2])
-        }
+    Ciy = Cp%*%pw
+    yhatp = Ciy
+    
+    MSE_v = array(0, c(SG$d, 9,dim(xp)[1]))
+    for (lcv1 in 1:SG$d) {
+      MSE_v[lcv1, 1,] = SG$diag_corrMat(xp[,lcv1], logtheta=logtheta[lcv1], nugget=SG$nugget)
+    }
+    for (lcv1 in 1:SG$d) {
+      for (lcv2 in 1:8) {
+        MSE_v[lcv1, lcv2+1,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]],
+                                                logtheta=logtheta[lcv1], nugget=SG$nugget,
+                                                CorrMat=SG$CorrMat,
+                                                diag_corrMat=SG$diag_corrMat))
       }
     }
     
+    ME_t = prod(MSE_v[,1,],1)
+    for (lcv1 in 1:SG$uoCOUNT) {
+      ME_v = rep(1,dim(xp)[1])
+      for (e in 1:SG$d) {
+        levelnow = SG$uo[lcv1,e]
+        ME_v = ME_v*(MSE_v[e,levelnow,]-MSE_v[e,levelnow+1,]+10^(-12))
+      }
+      ME_t = ME_t-ME_v
+    }
+    
+    #print(ME_t)
+    sigma_hat = mean((yhatp-yp)^2/ME_t)
+    
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
     # This next line is really wrong? The paranthese closes off the return before including the lDet.
-    #ogthetasqrt3 <- log(exp(logtheta)*sqrt(3))
-    return(log(c(sigma_hat))+sum(logtheta^2)/length(y) + 1 / length(y) * lDet )
+    pred_score = log(sigma_hat)+mean(log(ME_t))
   }
   
 }
 
 
-#' Gradient of likelihood. Is it log likelihood?
-#'
-#' @param logtheta Log of correlation parameters
-#' @param SG SGGP object
-#' @param y SG$design measured values
-#' @param ... Don't use, just forces theta to be named
-#'
-#' @return Vector for gradient of likelihood w.r.t. x (theta)
-#' @export
-#'
-#' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
-#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' glik(c(.1,.1,.1), SG=SG, y=y)
-glik <- function(logtheta, ..., SG, y) {
+gvalidation <- function(logtheta, SG, y,xp,yp) {
   #theta = x
+  
+  
+  yp = yp-mean(y)
+  y = y - mean(y)
   
   
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of all blocks
@@ -136,7 +129,7 @@ glik <- function(logtheta, ..., SG, y) {
       CCS[[(lcv2-1)*Q+lcv1]] = chol(S)#-CiS[[(lcv2-1)*Q+lcv1]]  %*% 
       dCS[[(lcv2-1)*Q+lcv1]] = dS
       lS[lcv1, lcv2] = 2*sum(log(diag(CCS[[(lcv2-1)*Q+lcv1]])))
-      V = solve(S,dS);
+      V = solve(S,dS)
       dlS[lcv1, lcv2] = sum(diag(V))
     }
   }
@@ -144,6 +137,7 @@ glik <- function(logtheta, ..., SG, y) {
   pw = rep(0, length(y)) # ???
   
   dpw = matrix(0, nrow = length(y), ncol = SG$d) # ???
+  
   
   for (lcv1 in 1:SG$uoCOUNT) {
     
@@ -203,99 +197,119 @@ glik <- function(logtheta, ..., SG, y) {
     }
     
   }
-  sigma_hat = t(y) %*% pw / length(y)
   
-  dsigma_hat = t(y) %*% dpw / length(y)
   
-  lDet = 0 # Not needed for glik, only for lik
+  Cp = matrix(1,dim(xp)[1],SG$ss)
+  for (e in 1:SG$d) { # Loop over dimensions
+    #Cp = Cp*CorrMat(xp[,e], SG$design[,e], logtheta=logtheta[e]) # Multiply correlation from each dimension
+    V = SG$CorrMat(xp[,e], SG$xb, logtheta=logtheta[e])
+    Cp = Cp*V[,SG$designindex[,e]]
+  }
   
-  dlDet = rep(0, SG$d) # Only needed for glik, not lik
+  dCp = array(1,c(dim(xp)[1],SG$ss,SG$d))
+  for (e in 1:SG$d) { # Loop over dimensions
+    #Cp = Cp*CorrMat(xp[,e], SG$design[,e], logtheta=logtheta[e]) # Multiply correlation from each dimension
+    V = SG$CorrMat(xp[,e], SG$xb, logtheta=logtheta[e])
+    dV = SG$dCorrMat(xp[,e], SG$xb,logtheta=logtheta[e])
+    dCp[,,e] = Cp/V[,SG$designindex[,e]]*dV[,SG$designindex[,e]]
+  }
   
-  for (lcv1 in 1:SG$uoCOUNT) {
-    for (lcv2 in 1:SG$d) {
-      levelnow = SG$uo[lcv1, lcv2]
-      if (levelnow > 1.5) {
-        #lDet = lDet + (lS[levelnow, lcv2] - lS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
-        #  (SG$gridsizes[lcv1, lcv2]) # CBE added this, not needed for ddL, can use to return fn and gr at same time
-        dlDet[lcv2] = dlDet[lcv2] + (dlS[levelnow, lcv2] - dlS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
-          (SG$gridsizes[lcv1, lcv2])
-      }
+  Ciy = Cp%*%pw
+  
+  dCiy = array(1,c(dim(Ciy)[1],SG$d))
+  for (e in 1:SG$d) { # Loop over dimensions
+    dCiy[,e] = as.matrix(dCp[,,e])%*%pw+Cp%*%dpw[,e]
+  }
+  
+  yhatp = Ciy
+  dyhatp = dCiy
+  
+  MSE_v = array(0, c(SG$d, 9,dim(xp)[1]))
+  dMSE_v = array(0, c(SG$d, 9,dim(xp)[1]))
+  for (lcv1 in 1:SG$d) {
+    MSE_v[lcv1, 1,] = SG$diag_corrMat(xp[,lcv1], logtheta=logtheta[lcv1], nugget=SG$nugget)
+    dMSE_v[lcv1, 1,] = SG$ddiag_corrMat(xp[,lcv1], logtheta=logtheta[lcv1], nugget=SG$nugget)
+  }
+  for (lcv1 in 1:SG$d) {
+    for (lcv2 in 1:8) {
+      MSE_v[lcv1, lcv2+1,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]],
+                                              logtheta=logtheta[lcv1], nugget=SG$nugget,
+                                              CorrMat=SG$CorrMat,
+                                              diag_corrMat=SG$diag_corrMat))
+      dMSE_v[lcv1, lcv2+1,] = abs(dMSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]],
+                                                logtheta=logtheta[lcv1], nugget=SG$nugget,
+                                                CorrMat=SG$CorrMat,
+                                                dCorrMat=SG$dCorrMat,
+                                                diag_corrMat=SG$diag_corrMat,
+                                                ddiag_corrMat=SG$ddiag_corrMat))
     }
   }
   
-  #logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
-  ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logtheta +  dlDet / length(y) 
   
-  return(ddL)
+  #print(MSE_v)
+  # print(dMSE_v)
+  
+  ME_t = apply(t(MSE_v[,1,]),1,prod)
+  dME_t = matrix(0,dim(dMSE_v)[3],SG$d)
+  for (e in 1:SG$d) {
+    dME_t[,e] = ME_t/MSE_v[e,1,]*dMSE_v[e,1,]
+  }
+  
+  for (lcv1 in 1:SG$uoCOUNT) {
+    ME_v = rep(1,dim(xp)[1])
+    dME_v = matrix(1,dim(xp)[1],SG$d)
+    for (e in 1:SG$d) {
+      levelnow = SG$uo[lcv1,e]
+      ME_v = ME_v*(MSE_v[e,levelnow,]-MSE_v[e,levelnow+1,]+10^(-12))
+      #   for (e2 in 1:SG$d) {
+      #     levelnow = SG$uo[lcv1,e]
+      #     if(e!=e2){
+      #       dME_v[,e2] = dME_v[,e2]*(MSE_v[e,levelnow,]-MSE_v[e,levelnow+1,])
+      #     } else{
+      #       dME_v[,e2] = dME_v[,e2]*(dMSE_v[e,levelnow,]-dMSE_v[e,levelnow+1,])
+      #     }
+      #}
+    }
+    for (e in 1:SG$d) {
+      levelnow = SG$uo[lcv1,e]
+      dME_v[,e] = ME_v/(MSE_v[e,levelnow,]-MSE_v[e,levelnow+1,]+10^(-12))*(dMSE_v[e,levelnow,]-dMSE_v[e,levelnow+1,])
+    }
+    
+    
+    ME_t = ME_t-ME_v
+    dME_t = dME_t+dME_v
+  }
+  
+  
+  yhatmat = matrix(yhatp,nrow=length(yhatp),ncol=SG$d)
+  ymat = matrix(as.matrix(yp),nrow=length(yp),ncol=SG$d)
+  
+  sigma_hat = mean((yhatp-yp)^2/ME_t)
+  ME_tmat = matrix(ME_t,nrow=length(yp),ncol=SG$d)
+  dsigma_hat =apply(-((yhatmat-ymat)^2/ME_tmat^2)*dME_t+2*(yhatmat-ymat)/(ME_tmat)*dyhatp,2,mean)
+  
+  # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
+  # This next line is really wrong? The paranthese closes off the return before including the lDet.
+  # dpred_score = dsigma_hat/sigma_hat+
+  dpred_score = dsigma_hat/sigma_hat+apply(dME_t/ME_tmat,2,mean)
+  
+  
+  return(dpred_score )
+  
 }
 
 
-
-#' Calculate theta MLE given data
-#'
-#' @param SG Sparse grid objects
-#' @param y Output values calculated at SG$design
-#' @param logtheta0 Initial logtheta
-#' @param tol Relative tolerance for optimization. Can't use absolute tolerance
-#' since lik can be less than zero.
-#' @param ... Don't use, just forces theta to be named
-#'
-#' @return theta MLE
-#' @export
-#'
-#' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
-#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' logthetaMLE(SG=SG, y=y)
-logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
+logthetaVALID <- function(SG, y,xp,yp,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
   x2 = optim(
     logtheta0,
-    fn = lik,
-    gr = glik,
+    fn = validation,
+    gr = gvalidation,
     lower = rep(-2, SG$d),
-    upper = rep(3.9, SG$d),
-    y = y - mean(y),
+    upper = rep(2.9, SG$d),
+    y = y,
+    yp = yp,
+    xp = xp,
     SG = SG,
-    method = "L-BFGS-B", #"BFGS",
-    hessian = FALSE,
-    control = list()#reltol=1e-4)#abstol = tol)
-    # Is minimizing, default option of optim.
-  )
-  #return(pmin(2,x2$par)) # CBE adding this
-  return(x2$par)
-}
-
-
-likMV <- function(logtheta, SG, yMV) {
-  #theta = x
-  p = dim(yMV)[2]
-  
-  logLikMV = 0
-  for(c in 1:p){
-    logLikMV = logLikMV+lik(logtheta, SG=SG, y=as.vector(yMV[,c])-mean(yMV[,c])) 
-  }
-  return(logLikMV)
-}
-
-glikMV <- function(logtheta, SG, yMV) {
-  #theta = x
-  p = dim(yMV)[2]
-  glogLikMV = rep(0,p)
-  for(c in 1:p){
-    glogLikMV = glogLikMV+glik(logtheta, SG=SG, y=as.vector(yMV[,c])-mean(yMV[,c])) 
-  }
-  return(glogLikMV)
-}
-
-logthetaMLEMV <- function(SG, yMV,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
-  x2 = optim(
-    logtheta0,
-    fn = likMV,
-    gr = glikMV,
-    lower = rep(-2, SG$d),
-    upper = rep(3.9, SG$d),
-    SG = SG,
-    yMV = yMV,
     method = "L-BFGS-B", #"BFGS",
     hessian = FALSE,
     control = list()#reltol=1e-4)#abstol = tol)

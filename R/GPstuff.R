@@ -81,3 +81,16 @@ dCorrMatMatern32 <- function(x1, x2, ..., logtheta, theta) {
   dC = (diffmat / thetasqrt3) ^ 2 * exp(-diffmat / thetasqrt3)
   return(dC)
 }
+
+
+ddiag_corrMatMatern32 <- function(x1, ..., logtheta, theta, nugget) {
+  if (missing(theta)) { theta <- exp(logtheta)}
+  if (any(theta<0)) stop("Theta < 0 in CorrMat")
+  thetasqrt3 <- theta*sqrt(3)
+  d1 = length(x1)
+  diffmat = abs(x1-x1) # just zeros, rep(0, d1)
+  #C = 10^(-10)*(diffmat<10^(-6))+(1 + diffmat / exp(theta)) * exp(-diffmat / exp(theta))
+  dC = (diffmat / thetasqrt3) ^ 2 * exp(-diffmat / thetasqrt3)
+  return(dC)
+}
+

@@ -20,6 +20,7 @@ SGcreate <- function(xmin, xmax,batchsize, corr="Matern32", nugget=0) {
     SG$CorrMat <- CorrMatMatern32
     SG$dCorrMat <- dCorrMatMatern32
     SG$diag_corrMat <- diag_corrMatMatern32
+    SG$ddiag_corrMat <- ddiag_corrMatMatern32
   } else if (tolower(corr) %in% c('gaussian', 'gauss')) {
     SG$CorrMat <- gausscorr
     SG$dCorrMat <- dgausscorr
@@ -65,7 +66,7 @@ SGcreate <- function(xmin, xmax,batchsize, corr="Matern32", nugget=0) {
   SG$pila[1:SG$d, 1] = 1
   
   SG$bss = batchsize#1+4*SG$d  #must be at least 3*d
-  SG$sizes = c(1, 2, 2, 2, 4, 4, 4, 6, 8) # Num of points added to 1D design as you go further in any dimension
+  SG$sizes = c(1, 2, 2, 3, 3, 4, 4, 6, 8) # Num of points added to 1D design as you go further in any dimension
   # Proposed grid size? More points further along the blocks?
   SG$pogsize = rep(0, 4 * SG$ML)
   SG$pogsize[1:SG$poCOUNT] = apply(matrix(SG$sizes[SG$po[1:SG$poCOUNT, ]], SG$poCOUNT, SG$d), 1, prod)
