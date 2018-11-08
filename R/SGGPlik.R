@@ -266,6 +266,21 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
 }
 
 
+#' Likelihood for multivariate SGGP
+#'
+#' @param logtheta log of correlation parameters
+#' @param SG SGGP object
+#' @param yMV Matrix with output, number of columns is number of outputs
+#'
+#' @return Likelihood of logtheta
+#' @export
+#'
+#' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' y1 <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' y2 <- apply(SG$design, 1, function(x){x[1]^1.3+.4*sin(6*x[2])+rnorm(1,0,.01)})
+#' y <- cbind(y1, y2)
+#' likMV(logtheta=c(.1,.2,.3), SG=SG, yMV=y)
 likMV <- function(logtheta, SG, yMV) {
   #theta = x
   p = dim(yMV)[2]
@@ -277,6 +292,22 @@ likMV <- function(logtheta, SG, yMV) {
   return(logLikMV)
 }
 
+
+#' Gradient of likelihood for multivariate SGGP
+#'
+#' @param logtheta log of correlation parameters
+#' @param SG SGGP object
+#' @param yMV Matrix with output, number of columns is number of outputs
+#'
+#' @return Vector, Gradient of likelihood of logtheta
+#' @export
+#'
+#' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' y1 <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' y2 <- apply(SG$design, 1, function(x){x[1]^1.3+.4*sin(6*x[2])+rnorm(1,0,.01)})
+#' y <- cbind(y1, y2)
+#' glikMV(logtheta=c(.1,.2,.3), SG=SG, yMV=y)
 glikMV <- function(logtheta, SG, yMV) {
   #theta = x
   p = dim(yMV)[2]
@@ -287,7 +318,26 @@ glikMV <- function(logtheta, SG, yMV) {
   return(glogLikMV)
 }
 
-logthetaMLEMV <- function(SG, yMV,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
+#' Find MLE of logtheta for multivariate output
+#'
+#' @param SG SG object
+#' @param yMV Output matrix
+#' @param ... Don't use
+#' @param logtheta0 Initial values of logtheta for optimization
+#' @param tol Optimization tolerance
+#'
+#' @return Vector, logtheta MLE
+#' @export
+#'
+#' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' y1 <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' y2 <- apply(SG$design, 1, function(x){x[1]^1.3+.4*sin(6*x[2])+rnorm(1,0,.01)})
+#' y <- cbind(y1, y2)
+#' logthetaMLE(SG=SG, y=y1)
+#' logthetaMLE(SG=SG, y=y2)
+#' logthetaMLEMV(SG=SG, yMV=y)
+logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4) {
   x2 = optim(
     logtheta0,
     fn = likMV,
@@ -301,6 +351,6 @@ logthetaMLEMV <- function(SG, yMV,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
     control = list()#reltol=1e-4)#abstol = tol)
     # Is minimizing, default option of optim.
   )
-  #return(pmin(2,x2$par)) # CBE adding this
+  
   return(x2$par)
 }
