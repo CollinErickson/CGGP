@@ -1,3 +1,19 @@
+#' Estimate correlation parameters using validation
+#'
+#' @inheritParams lik
+#' @param xp Validation X matrix
+#' @param yp Validation y vector
+#'
+#' @return logtheta estimates
+#' @export
+#'
+#' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' f1 <- function(x){x[1]+x[2]^2+rnorm(1,0,.01)}
+#' y <- apply(SG$design, 1, f1)
+#' Xval <- matrix(runif(3*100), ncol=3)
+#' Yval <- apply(Xval, 1, f1)
+#' validation(c(.1,.1,.1), SG=SG, y=y, xp=Xval, yp=Yval)
 validation <- function(logtheta, SG, y,xp,yp) {
 
   # Return Inf if theta is too large. Why????
@@ -93,9 +109,24 @@ validation <- function(logtheta, SG, y,xp,yp) {
     pred_score = log(sigma_hat)+mean(log(ME_t))
   }
   
+  pred_score
 }
 
 
+#' Calculate gradient of validation with respect to logtheta
+#'
+#' @inheritParams validation
+#'
+#' @return Vector, gradient of `validation`
+#' @export
+#'
+#' @examples
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' f1 <- function(x){x[1]+x[2]^2+rnorm(1,0,.01)}
+#' y <- apply(SG$design, 1, f1)
+#' Xval <- matrix(runif(3*100), ncol=3)
+#' Yval <- apply(Xval, 1, f1)
+#' gvalidation(c(.1,.1,.1), SG=SG, y=y, xp=Xval, yp=Yval)
 gvalidation <- function(logtheta, SG, y,xp,yp) {
 
   yp = yp-mean(y)
@@ -290,7 +321,7 @@ gvalidation <- function(logtheta, SG, y,xp,yp) {
   dpred_score = dsigma_hat/sigma_hat+apply(dME_t/ME_tmat,2,mean)
   
   
-  return(dpred_score )
+  return(dpred_score)
   
 }
 
