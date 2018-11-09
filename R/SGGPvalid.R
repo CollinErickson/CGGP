@@ -1,7 +1,5 @@
 validation <- function(logtheta, SG, y,xp,yp) {
-  #theta = x
-  
-  
+
   # Return Inf if theta is too large. Why????
   if (max(logtheta) >= (4 - 10 ^ (-6))) {
     return(Inf)
@@ -99,9 +97,7 @@ validation <- function(logtheta, SG, y,xp,yp) {
 
 
 gvalidation <- function(logtheta, SG, y,xp,yp) {
-  #theta = x
-  
-  
+
   yp = yp-mean(y)
   y = y - mean(y)
   
