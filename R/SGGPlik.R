@@ -15,8 +15,6 @@
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' lik(c(.1,.1,.1), SG=SG, y=y)
 lik <- function(logtheta, ..., SG, y) {
-  #theta = x
-  
   
   # Return Inf if theta is too large. Why????
   if (max(logtheta) >= (4 - 10 ^ (-6))) {
