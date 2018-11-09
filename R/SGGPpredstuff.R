@@ -188,17 +188,36 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
 }
 
 
+#' Multivariate SGGP prediction
+#' 
+#' Predict output for an SGGP with multivariate output.
+#'
+#' @param yMV Output matrix, each row is for a design point
+#' @inheritParams SGGPpred
+#'
+#' @return Matrix of predictions
+#' @export
+#'
+#' @examples
+#' 
+#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' y1 <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' y2 <- apply(SG$design, 1, function(x){x[1]^1.3+.4*sin(6*x[2])+rnorm(1,0,.01)})
+#' y <- cbind(y1, y2)
+#' tx <- cbind(SGGPpredMV(SG$design, SG=SG, yMV=y, theta=c(.1,.1,.1))$mean, y)
+#' tx # Columns 1 and 3, and 2 and 4 should be near equal
+#' cor(tx)
 SGGPpredMV <- function(xp,SG, yMV, ..., logtheta, theta) {
   
   p = dim(yMV)[2]
   
   meanMV = matrix(1,dim(xp)[1],p)
   varMV = matrix(1,dim(xp)[1],p)
-  for(c in 1:p){
-    GP1d = SGGPpred(xp,SG,as.vector(yMV[,c]),logtheta=logtheta)
+  for(i in 1:p){
+    GP1d = SGGPpred(xp,SG,as.vector(yMV[,i]),logtheta=logtheta, theta=theta)
     
-    meanMV[,c] = GP1d$mean
-    varMV[,c] = GP1d$var
+    meanMV[,i] = GP1d$mean
+    varMV[,i] = GP1d$var
   }
   
   # Return list with mean and var predictions
