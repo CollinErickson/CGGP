@@ -88,7 +88,7 @@ dMSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_cor
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, theta=c(.1,.1,.1))
 #' cbind(SGGPpred(SG$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
@@ -200,7 +200,7 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
 #'
 #' @examples
 #' 
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' y1 <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' y2 <- apply(SG$design, 1, function(x){x[1]^1.3+.4*sin(6*x[2])+rnorm(1,0,.01)})
 #' y <- cbind(y1, y2)

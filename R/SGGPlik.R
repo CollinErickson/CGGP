@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' lik(c(.1,.1,.1), SG=SG, y=y)
 lik <- function(logtheta, ..., SG, y) {
@@ -104,7 +104,7 @@ lik <- function(logtheta, ..., SG, y) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' glik(c(.1,.1,.1), SG=SG, y=y)
 glik <- function(logtheta, ..., SG, y) {
@@ -242,7 +242,7 @@ glik <- function(logtheta, ..., SG, y) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' logthetaMLE(SG=SG, y=y)
 logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
@@ -274,7 +274,7 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' y1 <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' y2 <- apply(SG$design, 1, function(x){x[1]^1.3+.4*sin(6*x[2])+rnorm(1,0,.01)})
 #' y <- cbind(y1, y2)
@@ -300,7 +300,7 @@ likMV <- function(logtheta, SG, yMV) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' y1 <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' y2 <- apply(SG$design, 1, function(x){x[1]^1.3+.4*sin(6*x[2])+rnorm(1,0,.01)})
 #' y <- cbind(y1, y2)
@@ -326,7 +326,7 @@ glikMV <- function(logtheta, SG, yMV) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' y1 <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' y2 <- apply(SG$design, 1, function(x){x[1]^1.3+.4*sin(6*x[2])+rnorm(1,0,.01)})
 #' y <- cbind(y1, y2)

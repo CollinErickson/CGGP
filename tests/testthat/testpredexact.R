@@ -32,7 +32,7 @@ test_that("Prediction matches exact on small samples", {
     outer(1:nrow(X), 1:nrow(U), Vectorize(function(i,j) {CorrMat32Vecs(X[i,],U[j,],theta)}))
   }
   
-  SG = SGcreate(rep(0, d), rep(1, d),101) #create the design.  it has so many entries because i am sloppy
+  SG = SGcreate(d=d,101) #create the design.  it has so many entries because i am sloppy
   Y = testf(SG$design) #the design is $design, simple enough, right?
   logtheta <- rep(0,8)
   logtheta <- logthetaMLE(SG=SG,y=Y)

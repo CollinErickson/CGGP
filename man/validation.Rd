@@ -24,7 +24,7 @@ logtheta estimates
 Estimate correlation parameters using validation
 }
 \examples{
-SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+SG <- SGcreate(d=3, batchsize=100)
 f1 <- function(x){x[1]+x[2]^2+rnorm(1,0,.01)}
 y <- apply(SG$design, 1, f1)
 Xval <- matrix(runif(3*100), ncol=3)

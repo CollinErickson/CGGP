@@ -22,7 +22,7 @@ Vector for gradient of likelihood w.r.t. x (theta)
 Gradient of likelihood. Is it log likelihood?
 }
 \examples{
-SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+SG <- SGcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 glik(c(.1,.1,.1), SG=SG, y=y)
 }

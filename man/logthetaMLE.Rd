@@ -25,7 +25,7 @@ theta MLE
 Calculate theta MLE given data
 }
 \examples{
-SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+SG <- SGcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 logthetaMLE(SG=SG, y=y)
 }
