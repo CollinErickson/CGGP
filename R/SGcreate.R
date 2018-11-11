@@ -16,6 +16,7 @@
 SGcreate <- function(xmin, xmax,batchsize, corr="Matern32", nugget=0) {
   # This is list representing our GP object
   SG = list("xmin" = xmin, "xmax" = xmax)
+  class(SG) <- c("SGGP", "list")
   if (tolower(corr) %in% c('matern32', 'mat32', 'm32', 'matern3', 'mat3', 'm3')) {
     SG$CorrMat <- CorrMatMatern32
     SG$dCorrMat <- dCorrMatMatern32
