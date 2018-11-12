@@ -15,6 +15,8 @@ calculate_pw_and_dpw(SG, y, logtheta, return_lS = FALSE,
 \item{logtheta}{Log of correlation parameters}
 
 \item{return_lS}{Should lS be returned?}
+
+\item{return_dlS}{Should dlS be returned?}
 }
 \value{
 derivative matrix of pw with respect to logtheta

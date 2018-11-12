@@ -226,7 +226,9 @@ gvalidation <- function(logtheta, SG, y,xval,yval) {
   #   }
   #   
   # }
-  dpw <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta)$dpw  
+  pw_dpw <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta)  
+  pw <- pw_dpw$pw
+  dpw <- pw_dpw$dpw
   
   Cp = matrix(1,dim(xval)[1],SG$ss)
   for (e in 1:SG$d) { # Loop over dimensions
