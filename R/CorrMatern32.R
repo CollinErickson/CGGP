@@ -1,7 +1,7 @@
 
 #' Calculate correlation matrix for two sets of points in one dimension
 #' 
-#' Note that this isn't the correlation between two vectors.
+#' Note that this is not the correlation between two vectors.
 #' It is for two
 #'
 #' @param x1 Vector of coordinates from same dimension
