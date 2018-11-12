@@ -1,8 +1,3 @@
-# No clue what this one is, looks like it's a specific function, but a real mess.
-# But it's actually used in SGappend. This is insane.
-# Maybe it's a convoluted way to calculated MSE over entire region when using given correlation function.
-# Only 1 dimension.
-
 #' Calculate MSE over single dimension for Matern 3/2
 #' 
 #' Calcaluted using grid of integration points.

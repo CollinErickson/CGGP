@@ -17,7 +17,6 @@
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' calculate_pw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
 calculate_pw <- function(SG, y, logtheta) {
-  
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
   # Now going to store choleskys instead of inverses for stability
   #CiS = list(matrix(1,1,1),Q*SG$d) # A list of matrices, Q for each dimension
@@ -57,7 +56,6 @@ calculate_pw <- function(SG, y, logtheta) {
         B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
       }
     }
-    
     pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
       SG$w[lcv1] * B
   }

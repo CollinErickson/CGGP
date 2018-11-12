@@ -1,5 +1,3 @@
-
-
 #' Calculate likelihood
 #'
 #' @param logtheta Log of correlation parameters
