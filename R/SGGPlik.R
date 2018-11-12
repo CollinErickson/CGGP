@@ -139,9 +139,9 @@ glik <- function(logtheta, ..., SG, y) {
     }
   }
   
-  pw = rep(0, length(y)) # ???
+  pw = rep(0, length(y)) # predictive weights
   
-  dpw = matrix(0, nrow = length(y), ncol = SG$d) # ???
+  dpw = matrix(0, nrow = length(y), ncol = SG$d) # derivative of predictive weights
   
   for (lcv1 in 1:SG$uoCOUNT) {
     

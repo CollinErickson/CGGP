@@ -48,7 +48,7 @@ validation <- function(logtheta, SG, y,xval,yval) {
       }
     }
     
-    # We think pw is Sigma^{-1} * y
+    # pw is the predictive weights, i.e., Sigma^{-1} * y
     pw = rep(0, length(y)) # For each point
     # Loop over blocks selected
     for (lcv1 in 1:SG$uoCOUNT) {
@@ -161,9 +161,9 @@ gvalidation <- function(logtheta, SG, y,xval,yval) {
     }
   }
   
-  pw = rep(0, length(y)) # ???
+  pw = rep(0, length(y)) # predictive weights
   
-  dpw = matrix(0, nrow = length(y), ncol = SG$d) # ???
+  dpw = matrix(0, nrow = length(y), ncol = SG$d) # derivative of predictive weights
   
   
   for (lcv1 in 1:SG$uoCOUNT) {
