@@ -1,3 +1,21 @@
+#' Calculate predictive weights for SGGP
+#' 
+#' Predictive weights are Sigma^{-1}*y in standard GP.
+#' This calculation is much faster since we don't need to
+#' solve the full system of equations.
+#'
+#' @param SG SGGP object
+#' @param y Measured values for SG$design
+#' @param logtheta Log of correlation parameters
+#'
+#' @return Vector with predictive weights
+#' @export
+#'
+#' @examples
+#' 
+#' SG <- SGcreate(d=3, batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' calculate_pw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
 calculate_pw <- function(SG, y, logtheta) {
   
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks

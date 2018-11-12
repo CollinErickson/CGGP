@@ -19,8 +19,19 @@ logthetaVALID(SG, y, xval, yval, logtheta0 = rep(0, SG$d), tol = 1e-04)
 
 \item{tol}{Relative tolerance, not used}
 }
+\value{
+Vector, optimal logtheta parameters
+}
 \description{
 Picks the logthetas that will minimize the score when predicting
 on validation data.
 The validation data should be representative of the entire region.
+}
+\examples{
+SG <- SGcreate(d=3, batchsize=100)
+f1 <- function(x){x[1]+x[2]^2+rnorm(1,0,.01)}
+y <- apply(SG$design, 1, f1)
+Xval <- matrix(runif(3*100), ncol=3)
+Yval <- apply(Xval, 1, f1)
+logthetaVALID(SG=SG, y=y, xval=Xval, yval=Yval)
 }

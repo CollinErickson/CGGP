@@ -339,10 +339,16 @@ gvalidation <- function(logtheta, SG, y,xval,yval) {
 #' @param logtheta0 Initial point for optimization
 #' @param tol Relative tolerance, not used
 #'
-#' @return
+#' @return Vector, optimal logtheta parameters
 #' @export
 #'
 #' @examples
+#' SG <- SGcreate(d=3, batchsize=100)
+#' f1 <- function(x){x[1]+x[2]^2+rnorm(1,0,.01)}
+#' y <- apply(SG$design, 1, f1)
+#' Xval <- matrix(runif(3*100), ncol=3)
+#' Yval <- apply(Xval, 1, f1)
+#' logthetaVALID(SG=SG, y=y, xval=Xval, yval=Yval)
 logthetaVALID <- function(SG, y,xval,yval, logtheta0 = rep(0,SG$d),tol=1e-4) {
   x2 = optim(
     logtheta0,
