@@ -68,6 +68,7 @@ calculate_pw <- function(SG, y, logtheta, return_lS=FALSE) {
 #' Calculate derivative of pw
 #'
 #' @inheritParams calculate_pw
+#' @param return_dlS Should dlS be returned?
 #'
 #' @return derivative matrix of pw with respect to logtheta
 #' @export
@@ -76,7 +77,7 @@ calculate_pw <- function(SG, y, logtheta, return_lS=FALSE) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' calculate_pw_and_dpw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
-calculate_pw_and_dpw <- function(SG, y, logtheta, return_lS=FALSE) {
+calculate_pw_and_dpw <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FALSE) {
   
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of all blocks
   # Now storing choleskys instead of inverses
@@ -169,6 +170,13 @@ calculate_pw_and_dpw <- function(SG, y, logtheta, return_lS=FALSE) {
     
   }
   
-  list(pw=pw,
-       dpw=dpw)
+  out <- list(pw=pw,
+              dpw=dpw)
+  if (return_lS) {
+    out$lS <- lS
+  }
+  if (return_dlS) {
+    out$dlS <- dlS
+  }
+  out
 }

@@ -4,7 +4,8 @@
 \alias{calculate_pw_and_dpw}
 \title{Calculate derivative of pw}
 \usage{
-calculate_pw_and_dpw(SG, y, logtheta, return_lS = FALSE)
+calculate_pw_and_dpw(SG, y, logtheta, return_lS = FALSE,
+  return_dlS = FALSE)
 }
 \arguments{
 \item{SG}{SGGP object}
