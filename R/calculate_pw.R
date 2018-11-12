@@ -7,6 +7,7 @@
 #' @param SG SGGP object
 #' @param y Measured values for SG$design
 #' @param logtheta Log of correlation parameters
+#' @param return_lS Should lS be returned?
 #'
 #' @return Vector with predictive weights
 #' @export
@@ -16,7 +17,7 @@
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' calculate_pw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
-calculate_pw <- function(SG, y, logtheta) {
+calculate_pw <- function(SG, y, logtheta, return_lS=FALSE) {
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
   # Now going to store choleskys instead of inverses for stability
   #CiS = list(matrix(1,1,1),Q*SG$d) # A list of matrices, Q for each dimension
@@ -58,6 +59,9 @@ calculate_pw <- function(SG, y, logtheta) {
     }
     pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
       SG$w[lcv1] * B
+  }
+  if (return_lS) {
+    return(list(pw=pw, lS=lS))
   }
   pw
 }

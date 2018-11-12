@@ -18,51 +18,55 @@ lik <- function(logtheta, ..., SG, y) {
   if (max(logtheta) >= (4 - 10 ^ (-6))) {
     return(Inf)
   } else{
+    # Now going to use function calculate_pw instead of having it in here.
+    # Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
+    # # Now going to store choleskys instead of inverses for stability
+    # #CiS = list(matrix(1,1,1),Q*SG$d) # A list of matrices, Q for each dimension
+    # CCS = list(matrix(1,1,1),Q*SG$d)
+    # lS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Save log determinant of matrices
+    # # Loop over each dimension
+    # for (lcv2 in 1:SG$d) {
+    #   # Loop over each possible needed correlation matrix
+    #   for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
+    #     Xbrn = SG$xb[1:SG$sizest[lcv1]] # xb are the possible points
+    #     Xbrn = Xbrn[order(Xbrn)] # Sort them low to high, is this necessary? Probably just needs to be consistent.
+    #     S = SG$CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
+    #     diag(S) = diag(S) + SG$nugget
+    #     # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
+    #     solvetry <- try({
+    #       #CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
+    #       CCS[[(lcv2-1)*Q+lcv1]] = chol(S)
+    #     })
+    #     if (inherits(solvetry, "try-error")) {return(Inf)}
+    #     #lS[lcv1, lcv2] = sum(log(eigen(S)$values))
+    #     lS[lcv1, lcv2] = 2*sum(log(diag(CCS[[(lcv2-1)*Q+lcv1]])))
+    #   }
+    # }
+    # 
+    # # We think pw is Sigma^{-1} * y
+    # pw = rep(0, length(y)) # For each point
+    # # Loop over blocks selected
+    # for (lcv1 in 1:SG$uoCOUNT) {
+    #   B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
+    #   for (e in SG$d:1) {
+    #     if(SG$gridsizest[lcv1,e] > 1.5){
+    #       B <- matrix(as.vector(B),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
+    #       B <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B, transpose = TRUE))
+    #       #B <-  solve(CS[[((e-1)*Q+SG$uo[lcv1,e])]],B)
+    #       B <- t(B)
+    #     }
+    #     else{
+    #       B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
+    #     }
+    #   }
+    #   
+    #   pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
+    #     SG$w[lcv1] * B
+    # }
     
-    Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
-    # Now going to store choleskys instead of inverses for stability
-    #CiS = list(matrix(1,1,1),Q*SG$d) # A list of matrices, Q for each dimension
-    CCS = list(matrix(1,1,1),Q*SG$d)
-    lS = matrix(0, nrow = max(SG$uo[1:SG$uoCOUNT,]), ncol = SG$d) # Save log determinant of matrices
-    # Loop over each dimension
-    for (lcv2 in 1:SG$d) {
-      # Loop over each possible needed correlation matrix
-      for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
-        Xbrn = SG$xb[1:SG$sizest[lcv1]] # xb are the possible points
-        Xbrn = Xbrn[order(Xbrn)] # Sort them low to high, is this necessary? Probably just needs to be consistent.
-        S = SG$CorrMat(Xbrn, Xbrn , logtheta=logtheta[lcv2])
-        diag(S) = diag(S) + SG$nugget
-        # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
-        solvetry <- try({
-          #CiS[[(lcv2-1)*Q+lcv1]] = solve(S)
-          CCS[[(lcv2-1)*Q+lcv1]] = chol(S)
-        })
-        if (inherits(solvetry, "try-error")) {return(Inf)}
-        #lS[lcv1, lcv2] = sum(log(eigen(S)$values))
-        lS[lcv1, lcv2] = 2*sum(log(diag(CCS[[(lcv2-1)*Q+lcv1]])))
-      }
-    }
-    
-    # We think pw is Sigma^{-1} * y
-    pw = rep(0, length(y)) # For each point
-    # Loop over blocks selected
-    for (lcv1 in 1:SG$uoCOUNT) {
-      B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
-      for (e in SG$d:1) {
-        if(SG$gridsizest[lcv1,e] > 1.5){
-          B <- matrix(as.vector(B),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
-          B <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B, transpose = TRUE))
-          #B <-  solve(CS[[((e-1)*Q+SG$uo[lcv1,e])]],B)
-          B <- t(B)
-        }
-        else{
-          B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
-        }
-      }
-      
-      pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
-        SG$w[lcv1] * B
-    }
+    calc_pw <- calculate_pw(SG=SG, y=y, logtheta=logtheta, return_lS=TRUE)
+    pw <- calc_pw$pw
+    lS <- calc_pw$lS
     sigma_hat = t(y) %*% pw / length(y)
     
     # Log determinant, keep a sum from smaller matrices

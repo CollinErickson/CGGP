@@ -98,49 +98,53 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   my = mean(y)
   y = y-my
   
-  Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of evaluated blocks
-  # Now store Choleskys instead of inverses
-  #CiS = list(matrix(1,1,1),Q*SG$d) # Store correlation matrices
-  CS = list(matrix(1,1,1),Q*SG$d)
-  CCS = list(matrix(1,1,1),Q*SG$d)
-  # Loop over dimensions and possible levels
-  for (lcv2 in 1:SG$d) {
-    for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
-      Xbrn = SG$xb[1:SG$sizest[lcv1]] # Get x's
-      Xbrn = Xbrn[order(Xbrn)] # Sort them
-      S = SG$CorrMat(Xbrn, Xbrn , theta=theta[lcv2]) # Calculate corr mat
-      diag(S) = diag(S) + SG$nugget
-      #CiS[[(lcv2-1)*Q+lcv1]] = solve(S) # Store inversion
-      CS[[(lcv2-1)*Q+lcv1]] = S
-      CCS[[(lcv2-1)*Q+lcv1]] = chol(S)
-      #print(eigen(S)$val)
-      #print(det(S))
-    }
-  }
+  # Use calculate_pw now to get pw to reduce code.
+  # Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of evaluated blocks
+  # # Now store Choleskys instead of inverses
+  # #CiS = list(matrix(1,1,1),Q*SG$d) # Store correlation matrices
+  # CS = list(matrix(1,1,1),Q*SG$d)
+  # CCS = list(matrix(1,1,1),Q*SG$d)
+  # # Loop over dimensions and possible levels
+  # for (lcv2 in 1:SG$d) {
+  #   for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
+  #     Xbrn = SG$xb[1:SG$sizest[lcv1]] # Get x's
+  #     Xbrn = Xbrn[order(Xbrn)] # Sort them
+  #     S = SG$CorrMat(Xbrn, Xbrn , theta=theta[lcv2]) # Calculate corr mat
+  #     diag(S) = diag(S) + SG$nugget
+  #     #CiS[[(lcv2-1)*Q+lcv1]] = solve(S) # Store inversion
+  #     CS[[(lcv2-1)*Q+lcv1]] = S
+  #     CCS[[(lcv2-1)*Q+lcv1]] = chol(S)
+  #     #print(eigen(S)$val)
+  #     #print(det(S))
+  #   }
+  # }
+  # 
+  # 
+  # pw = rep(0, length(y)) # ????????????
+  # 
+  # # Loop over blocks
+  # for (lcv1 in 1:SG$uoCOUNT) {
+  #   
+  #   B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
+  #   for (e in SG$d:1) {
+  #     if(SG$gridsizest[lcv1,e] > 1.5){
+  #       B <- matrix(as.vector(B),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
+  #       B <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B, transpose = TRUE))
+  #       #B <-  solve(CS[[((e-1)*Q+SG$uo[lcv1,e])]],B)
+  #       B <- t(B)
+  #     }
+  #     else{
+  #       B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
+  #     }
+  #   }
+  #   
+  #   pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
+  #     SG$w[lcv1] * B
+  # }
   
-  
-  pw = rep(0, length(y)) # ????????????
-  
-  # Loop over blocks
-  for (lcv1 in 1:SG$uoCOUNT) {
-    
-    B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
-    for (e in SG$d:1) {
-      if(SG$gridsizest[lcv1,e] > 1.5){
-        B <- matrix(as.vector(B),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
-        B <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B, transpose = TRUE))
-        #B <-  solve(CS[[((e-1)*Q+SG$uo[lcv1,e])]],B)
-        B <- t(B)
-      }
-      else{
-        B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
-      }
-    }
-    
-    pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
-      SG$w[lcv1] * B
-  }
-  sigma_hat = t(y) %*% pw / length(y)
+  pw <- calculate_pw(SG=SG, y=y, logtheta=log(theta))
+
+    sigma_hat = t(y) %*% pw / length(y)
   
   # Cp is sigma(x_0) in paper, correlation vector between design points and xp
   Cp = matrix(1,dim(xp)[1],SG$ss)

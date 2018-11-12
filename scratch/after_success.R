@@ -78,8 +78,8 @@ cat("coverage is     ", meancoverage, "\n")
 
 # Don't count plotting in run time
 timeend <- Sys.time()
-cat("Total run time is:", capture.output(timeend - timestart), '\n')
-cat("  Prediction time is:", capture.output(timepredend - timepredstart))
+cat("Total run time is: ", capture.output(timeend - timestart), '\n')
+cat("Prediction time is:", capture.output(timepredend - timepredstart), '\n')
 
 if (T) { # Can Travis just skip this?
   di <- sample(1:nrow(SG$design), 100)

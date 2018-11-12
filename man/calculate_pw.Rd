@@ -4,7 +4,7 @@
 \alias{calculate_pw}
 \title{Calculate predictive weights for SGGP}
 \usage{
-calculate_pw(SG, y, logtheta)
+calculate_pw(SG, y, logtheta, return_lS = FALSE)
 }
 \arguments{
 \item{SG}{SGGP object}
@@ -12,6 +12,8 @@ calculate_pw(SG, y, logtheta)
 \item{y}{Measured values for SG$design}
 
 \item{logtheta}{Log of correlation parameters}
+
+\item{return_lS}{Should lS be returned?}
 }
 \value{
 Vector with predictive weights
