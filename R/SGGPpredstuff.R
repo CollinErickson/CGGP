@@ -142,9 +142,13 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   #     SG$w[lcv1] * B
   # }
   
-  pw <- calculate_pw(SG=SG, y=y, logtheta=log(theta))
+  pw <- SG$pw
+  if (is.null(pw)) {
+    pw <- calculate_pw(SG=SG, y=y, logtheta=log(theta))
+    SG$pw <- pw
+  } else {print('Using stored value!')}
 
-    sigma_hat = t(y) %*% pw / length(y)
+  sigma_hat = t(y) %*% pw / length(y)
   
   # Cp is sigma(x_0) in paper, correlation vector between design points and xp
   Cp = matrix(1,dim(xp)[1],SG$ss)

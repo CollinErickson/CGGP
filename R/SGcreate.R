@@ -290,7 +290,8 @@ SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xma
     tv = tv + SG$gridsize[lcv1]
   }
   
-  
+  # Save predictive weights Rinv*y
+  SG$pw <- NULL
   
   return(SG)
 }

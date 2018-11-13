@@ -268,7 +268,10 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
     control = list()#reltol=1e-4)#abstol = tol)
     # Is minimizing, default option of optim.
   )
-  #return(pmin(2,x2$par)) # CBE adding this
+  
+  # Save pw with SG
+  SG$pw <- calculate_pw(SG=SG, y=y, logtheta=x2$par)
+  
   return(x2$par)
 }
 
@@ -357,5 +360,6 @@ logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4) {
     # Is minimizing, default option of optim.
   )
   
+  # Want to save logtheta with SG eventually
   return(x2$par)
 }
