@@ -21,7 +21,7 @@ CorrMatMatern32(x1, x2, ..., logtheta, theta)
 Matrix
 }
 \description{
-Note that this isn't the correlation between two vectors.
+Note that this is not the correlation between two vectors.
 It is for two
 }
 \examples{

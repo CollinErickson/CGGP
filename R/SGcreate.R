@@ -1,7 +1,8 @@
 #' Create sparse grid GP
 #'
-#' @param xmin Min x values, vector
-#' @param xmax Max x values, vector
+#' @param d Input dimension
+#' @param xmin Min x values, vector. Must be rep(0,d).
+#' @param xmax Max x values, vector. Must be rep(1,d).
 #' @param batchsize Number added to design each batch
 #' @param nugget Nugget term added to diagonal of correlation matrix,
 #' for now only on predictions
@@ -12,8 +13,8 @@
 #'
 #' @examples
 #' d <- 8
-#' SG = SGcreate(rep(0, d), rep(1, d),201)
-SGcreate <- function(xmin, xmax,batchsize, corr="Matern32", nugget=0) {
+#' SG = SGcreate(d,201)
+SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xmax=rep(1,d)) {
   # This is list representing our GP object
   SG = list("xmin" = xmin, "xmax" = xmax)
   class(SG) <- c("SGGP", "list")
@@ -31,6 +32,7 @@ SGcreate <- function(xmin, xmax,batchsize, corr="Matern32", nugget=0) {
   }
   SG$nugget <- nugget
   
+  if (any(xmin!=0) || any(xmax!=1)) {stop("For now must use xmin=0 and xmax=1")}
   SG$d = length(xmin) # input dimension
   
   # Levels are blocks. Level is like eta from paper.
@@ -288,7 +290,8 @@ SGcreate <- function(xmin, xmax,batchsize, corr="Matern32", nugget=0) {
     tv = tv + SG$gridsize[lcv1]
   }
   
-  
+  # Save predictive weights Rinv*y
+  SG$pw <- NULL
   
   return(SG)
 }

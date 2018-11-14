@@ -40,7 +40,7 @@ goodlogthetaest <- log(exp(goodlogthetaest_old)/sqrt(3))
 use_goodtheta <- FALSE
 
 require("SGGP")
-SG = SGcreate(rep(0, d), rep(1, d),201, nugget = 0) #create the design.  it has so many entries because i am sloppy
+SG = SGcreate(d=d, batchsize=201, nugget = 0) #create the design.  it has so many entries because i am sloppy
 Y = testf(SG$design) #the design is $design, simple enough, right?
 logthetaest = logthetaMLE(SG,Y)
 if (use_goodtheta) logthetaest <- goodlogthetaest
@@ -78,8 +78,8 @@ cat("coverage is     ", meancoverage, "\n")
 
 # Don't count plotting in run time
 timeend <- Sys.time()
-cat("Total run time is:", capture.output(timeend - timestart), '\n')
-cat("  Prediction time is:", capture.output(timepredend - timepredstart))
+cat("Total run time is: ", capture.output(timeend - timestart), '\n')
+cat("Prediction time is:", capture.output(timepredend - timepredstart), '\n')
 
 if (T) { # Can Travis just skip this?
   di <- sample(1:nrow(SG$design), 100)

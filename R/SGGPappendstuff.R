@@ -1,8 +1,3 @@
-# No clue what this one is, looks like it's a specific function, but a real mess.
-# But it's actually used in SGappend. This is insane.
-# Maybe it's a convoluted way to calculated MSE over entire region when using given correlation function.
-# Only 1 dimension.
-
 #' Calculate MSE over single dimension for Matern 3/2
 #' 
 #' Calcaluted using grid of integration points.
@@ -51,7 +46,7 @@ MSE_calc <- function(xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' theta <- c(.1,.1,.1)
 #' MSE_v <- outer(1:SG$d, 1:8, 
 #'      Vectorize(function(lcv1, lcv2) {
@@ -112,7 +107,7 @@ MSE_de <- function(valsinds, MSE_v) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+#' SG <- SGcreate(d=3, batchsize=100)
 #' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
 SGappend <- function(SG,batchsize,..., theta){
   

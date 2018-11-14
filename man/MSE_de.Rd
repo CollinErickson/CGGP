@@ -18,7 +18,7 @@ All MSE values
 Delta of adding block is product over i=1..d of IMSE(i,j-1) - IMSE(i,j)
 }
 \examples{
-SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+SG <- SGcreate(d=3, batchsize=100)
 theta <- c(.1,.1,.1)
 MSE_v <- outer(1:SG$d, 1:8, 
      Vectorize(function(lcv1, lcv2) {

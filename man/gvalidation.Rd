@@ -4,7 +4,7 @@
 \alias{gvalidation}
 \title{Calculate gradient of validation with respect to logtheta}
 \usage{
-gvalidation(logtheta, SG, y, xp, yp)
+gvalidation(logtheta, SG, y, xval, yval)
 }
 \arguments{
 \item{logtheta}{Log of correlation parameters}
@@ -13,9 +13,9 @@ gvalidation(logtheta, SG, y, xp, yp)
 
 \item{y}{Measured values of SG$design}
 
-\item{xp}{Validation X matrix}
+\item{xval}{Validation X matrix}
 
-\item{yp}{Validation y vector}
+\item{yval}{Validation y vector}
 }
 \value{
 Vector, gradient of `validation`
@@ -24,10 +24,10 @@ Vector, gradient of `validation`
 Calculate gradient of validation with respect to logtheta
 }
 \examples{
-SG <- SGcreate(c(0,0,0), c(1,1,1), batchsize=100)
+SG <- SGcreate(d=3, batchsize=100)
 f1 <- function(x){x[1]+x[2]^2+rnorm(1,0,.01)}
 y <- apply(SG$design, 1, f1)
 Xval <- matrix(runif(3*100), ncol=3)
 Yval <- apply(Xval, 1, f1)
-gvalidation(c(.1,.1,.1), SG=SG, y=y, xp=Xval, yp=Yval)
+gvalidation(c(.1,.1,.1), SG=SG, y=y, xval=Xval, yval=Yval)
 }

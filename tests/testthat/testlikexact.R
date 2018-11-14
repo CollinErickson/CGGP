@@ -32,7 +32,7 @@ test_that("lik matches exact calculation", {
   testf<-function (x) {  return(borehole(x))} 
   
   # Create SG to test on
-  SG = SGcreate(rep(0, d), rep(1, d),21) #create the design.  it has so many entries because i am sloppy
+  SG = SGcreate(d=d,21) #create the design.  it has so many entries because i am sloppy
   Y = testf(SG$design) #the design is $design, simple enough, right?
   logtheta <- rep(0,8)
   lk <- lik(logtheta = logtheta, SG = SG, y = Y)
@@ -42,7 +42,7 @@ test_that("lik matches exact calculation", {
                  sum(logtheta^2)/length(Y)
   )
   
-  SG = SGcreate(rep(0, d), rep(1, d),31) #create the design.  it has so many entries because i am sloppy
+  SG = SGcreate(d=d,31) #create the design.  it has so many entries because i am sloppy
   Y = testf(SG$design) #the design is $design, simple enough, right?
   logtheta <- -(1:8)/10
   lk <- lik(logtheta = logtheta, SG = SG, y = Y)
@@ -52,7 +52,7 @@ test_that("lik matches exact calculation", {
                  sum(logtheta^2)/length(Y)
   )
   
-  SG = SGcreate(rep(0, d), rep(1, d),41) #create the design.  it has so many entries because i am sloppy
+  SG = SGcreate(d=d,41) #create the design.  it has so many entries because i am sloppy
   Y = testf(SG$design) #the design is $design, simple enough, right?
   logtheta <- rep(.1,8)
   lk <- lik(logtheta = logtheta, SG = SG, y = Y)
