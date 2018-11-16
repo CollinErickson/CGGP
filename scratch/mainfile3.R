@@ -1,0 +1,267 @@
+rm(list = ls())
+
+source("../R/SGcreate.R")
+source("../R/CorrMatern32.R")
+source("../R/SGGPlik.R")
+source("../R/SGGPappendstuff.R")
+source("../R/SGGPpredstuff.R")
+
+borehole <- function(x) {
+  rw <- x[, 1] * (0.15 - 0.05) + 0.05
+  r <-  x[, 2] * (50000 - 100) + 100
+  Tu <- x[, 3] * (115600 - 63070) + 63070
+  Hu <- x[, 4] * (1110 - 990) + 990
+  Tl <- x[, 5] * (116 - 63.1) + 63.1
+  Hl <- x[, 6] * (820 - 700) + 700
+  L <-  x[, 7] * (1680 - 1120) + 1120
+  Kw <- x[, 8] * (12045 - 9855) + 9855
+  
+  m1 <- 2 * pi * Tu * (Hu - Hl)
+  m2 <- log(r / rw)
+  m3 <- 1 + 2 * L * Tu / (m2 * rw ^ 2 * Kw) + Tu / Tl
+  return(m1 / m2 / m3)
+}
+
+piston <- function(xx)
+{
+  M  <- xx[,1]*30 + 30
+  S  <- xx[,2]*0.015 + 0.005
+  V0 <- xx[,3]*0.008 + 0.002
+  k  <- xx[,4]*4000 + 1000
+  P0 <- xx[,5]*20000+90000
+  Ta <- xx[,6]*6 + 290
+  T0 <- xx[,7]*20 + 340
+  
+  Aterm1 <- P0 * S
+  Aterm2 <- 19.62 * M
+  Aterm3 <- -k*V0 / S
+  A <- Aterm1 + Aterm2 + Aterm3
+  
+  Vfact1 <- S / (2*k)
+  Vfact2 <- sqrt(A^2 + 4*k*(P0*V0/T0)*Ta)
+  V <- Vfact1 * (Vfact2 - A)
+  
+  fact1 <- M
+  fact2 <- k + (S^2)*(P0*V0/T0)*(Ta/(V^2))
+  
+  C <- 2 * pi * sqrt(fact1/fact2)
+  return(C)
+}
+
+
+wingweight <- function(xx)
+{
+  Sw      <- xx[,1]*50+150
+  Wfw     <- xx[,2]*80+220
+  A       <- xx[,3]*4 + 6
+  LamCaps <- (xx[,4]*20-10)*pi/180
+  q       <- xx[,5]*(45-16)+16
+  lam     <- xx[,6]*0.5+0.5
+  tc      <- xx[,7]*0.1+0.08
+  Nz      <- xx[,8]*3.5 + 2.5
+  Wdg     <- xx[,9]*800+1700
+  Wp      <- xx[,10]*(0.08-0.025)+0.025
+  
+  fact1 <- 0.036 * Sw^0.758 * Wfw^0.0035
+  fact2 <- (A / ((cos(LamCaps))^2))^0.6
+  fact3 <- q^0.006 * lam^0.04
+  fact4 <- (100*tc / cos(LamCaps))^(-0.3)
+  fact5 <- (Nz*Wdg)^0.49
+  
+  term1 <- Sw * Wp
+  
+  y <- fact1*fact2*fact3*fact4*fact5 + term1
+  return(y)
+}
+
+otlcircuit <- function(xx)
+{
+  Rb1  <- xx[,1]*100+50
+  Rb2  <- xx[,2]*45 + 25
+  Rf   <- xx[,3]*2.5 + 0.5
+  Rc1  <- xx[,4]*1.3 + 1.2
+  Rc2  <- xx[,5]*.95 + .25
+  beta <- xx[,6]*250+50
+  
+  Vb1 <- 12*Rb2 / (Rb1+Rb2)
+  term1a <- (Vb1+0.74) * beta * (Rc2+9)
+  term1b <- beta*(Rc2+9) + Rf
+  term1 <- term1a / term1b
+  
+  term2a <- 11.35 * Rf
+  term2b <- beta*(Rc2+9) + Rf
+  term2 <- term2a / term2b
+  
+  term3a <- 0.74 * Rf * beta * (Rc2+9)
+  term3b <- (beta*(Rc2+9)+Rf) * Rc1
+  term3 <- term3a / term3b
+  
+  Vm <- term1 + term2 + term3
+  return(Vm)
+}
+
+# d = 10
+# testf<-function (x) {  return(wingweight(x))} 
+
+ d = 8
+testf<-function (x) {  return(borehole(x))} 
+
+# d = 7
+# testf<-function (x) {  return(piston(x))} 
+
+# d = 6
+# testf<-function (x) {  return(otlcircuit(x))} 
+  
+
+N <- 5001
+Npred <- 1000
+#install.packages(c("lhs"))
+library("lhs")
+
+Xp = randomLHS(Npred, d)
+Yp = testf(Xp)
+
+
+x =randomLHS(N, d)
+y= testf(x)
+
+SG = SGcreate(rep(0, d), rep(1, d),1001) #create the design.  it has so many entries because i am sloppy
+Y = testf(SG$design) #the design is $design, simple enough, right?
+logthetaest = logthetaMLE(SG,Y)
+thetaest <- exp(logthetaest)
+
+for(c in 1:round((N-201)/200)){
+  print(logthetaest)
+  print(c)
+  SG=SGappend(SG,200,theta=thetaest) #add 200 points to the design based on thetahat
+  Y = testf(SG$design)
+  if( c< 10 ){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
+    logthetaest = logthetaMLE(SG,Y) #estimate the parameter (SG structure is important)
+    thetaest <- exp(logthetaest)
+  }
+}
+Y = testf(SG$design)
+logthetaest = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
+
+#install.packages("matrixStats")
+# library("matrixStats")
+#
+library(tictoc)
+
+A = tic()
+GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest,2)) #build a full emulator
+toc()
+
+library(Rcpp)
+
+cppFunction("
+            NumericVector MEEAGA(NumericMatrix Fmat, NumericMatrix I, NumericVector w, NumericVector S, int uc, int L, int d){
+            double V = 1;
+            
+            for (int k = 0; k <= (L-1); k++) {
+            for (int i = 0; i <= (uc-1); i++) {
+            V=1;
+            for (int j = 0; j <= (d-1); j++){
+            V = V*(1-Fmat(I(i,j)-1,k));
+            }
+            S(k) += -w(i)*V;
+            } 
+            }
+            return S;
+            }")
+
+cppFunction("
+            NumericMatrix DouBS(NumericMatrix A, NumericVector B, int n,  int m){
+            
+            NumericMatrix x(n,m);
+            NumericMatrix y(n,m);
+            
+            for(int h = 0; h < m; h++)
+            {
+            for ( int i = 0; i < n; i++)
+            {
+            x(i,h) = B(i,h);
+            for ( int k = i-1; k >=0; k-- ) x(i,h) -= A(k,i) * x(k,h);
+            x(i,h) /= A(i,i);
+            }
+
+            
+            for ( int i = n - 1; i >= 0; i-- )
+            {
+            y(i,h) = x(i,h);
+            for ( int k = i + 1; k < n; k++ ) y(i,h) -= A(i,k) * y(k,h);
+            y(i,h) /= A(i,i);
+            }
+            }
+            
+            return y;
+            }")
+
+
+cppFunction("
+            NumericVector kronDBS(NumericVector A, NumericVector B, NumericVector p, int Al, int Bl,  int d){
+            
+            int sv = 0;
+            
+            NumericVector x(Bl);
+            NumericVector y(Bl);
+
+            sv = Al;
+            for(int dim = d-1; dim>=0;dim--){
+            sv = sv-p(dim)*p(dim);
+            int p0 = p(dim);
+            int n0 = Bl/p0;
+            
+            for(int h = 0; h < n0; h++)
+            {
+            for ( int i = 0; i < p0; i++)
+            {
+            x(h*p0+i) = B(h*p0+i);
+            for ( int k = i-1; k >=0; k-- ) x(h*p0+i) -= A(sv+i*p0+k) * x(h*p0+k);
+            x(h*p0+i) /= A(sv+i*p0+i);
+            }
+            
+            for ( int i = p0-1; i >=0; i--)
+            {
+            y(h*p0+i) = x(h*p0+i);
+            for ( int k=i+1; k < p0; k++) y(h*p0+i) -= A(sv+k*p0+i) *y(h*p0+k);
+            y(h*p0+i) /= A(sv+i*p0+i);
+            }
+            }
+            
+            int c = 0;
+            
+            for ( int i = 0; i < p0; i++)
+            {
+            for(int h = 0; h < n0; h++)
+            {
+            B(c) = y(h*p0+i);
+            c+=1;
+            }
+            }
+            }
+            
+            return B;
+            } ")
+
+
+
+source("SGGP_predspeed_test.R")
+source("lik_speed_test.R")
+
+A = tic()
+GP = SGGPpred2(Xp,SG,Y,logtheta=pmin(logthetaest,2))  #build a full emulator
+toc()
+
+A = tic()
+GP2 = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest,2))  #build a full emulator
+toc()
+
+sum(abs(Yp-GP$mean)^2)
+sum(abs(Yp-GP2$mean)^2)
+
+sum(abs(Yp-GP$mean)^2/GP$var+log(GP$var))
+sum(abs(Yp-GP2$mean)^2/GP$var+log(GP2$var))
+
+
+
