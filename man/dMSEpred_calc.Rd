@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGPpredstuff.R
 \name{dMSEpred_calc}
 \alias{dMSEpred_calc}
-\title{????????????}
+\title{Derivative of MSE calculation}
 \usage{
 dMSEpred_calc(xp, xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat,
   dCorrMat, ddiag_corrMat)
@@ -33,7 +33,7 @@ for vector of 1D points.}
 MSE predictions
 }
 \description{
-????????????
+Derivative of MSE calculation
 }
 \examples{
 MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,

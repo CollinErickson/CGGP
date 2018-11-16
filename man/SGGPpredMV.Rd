@@ -4,7 +4,7 @@
 \alias{SGGPpredMV}
 \title{Multivariate SGGP prediction}
 \usage{
-SGGPpredMV(xp, SG, yMV, ..., logtheta, theta)
+SGGPpredMV(xp, SG, yMV, ..., logtheta = SG$logtheta, theta)
 }
 \arguments{
 \item{xp}{x value to predict at}

@@ -31,7 +31,7 @@ MSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_corr
   return(MSE_val)
   
 }
-#' ????????????
+#' Derivative of MSE calculation
 #'
 #' @param xp Points at which to calculate MSE
 #' @param xl Levels along dimension
@@ -92,7 +92,7 @@ dMSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_cor
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, theta=c(.1,.1,.1))
 #' cbind(SGGPpred(SG$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
-SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
+SGGPpred <- function(xp,SG, y, ..., logtheta=SG$logtheta, theta) {
   if (missing(theta)) {theta <- exp(logtheta)}
   # Center outputs
   my = mean(y)
@@ -215,7 +215,7 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
 #' tx <- cbind(SGGPpredMV(SG$design, SG=SG, yMV=y, theta=c(.1,.1,.1))$mean, y)
 #' tx # Columns 1 and 3, and 2 and 4 should be near equal
 #' cor(tx)
-SGGPpredMV <- function(xp,SG, yMV, ..., logtheta, theta) {
+SGGPpredMV <- function(xp,SG, yMV, ..., logtheta=SG$logtheta, theta) {
   
   p = dim(yMV)[2]
   

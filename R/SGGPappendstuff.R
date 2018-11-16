@@ -248,6 +248,7 @@ SGappend <- function(SG,batchsize,..., theta){
   SG$di = matrix(0, nrow = SG$uoCOUNT, ncol = max(SG$gridsize))
   SG$dit = matrix(0, nrow = SG$uoCOUNT, ncol = sum((SG$gridsize)))
   
+  # THIS OVERWRITES AND RECALCULATES design EVERY TIME, WHY NOT JUST DO FOR NEW ROWS?
   SG$design = matrix(0, nrow = sum(SG$gridsize), ncol = SG$d)
   SG$designindex = matrix(0, nrow = sum(SG$gridsize), ncol = SG$d)
   tv = 0
