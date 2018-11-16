@@ -143,7 +143,7 @@ SGGPpred <- function(xp,SG, y, ..., logtheta=SG$logtheta, theta) {
   # }
   
   pw <- SG$pw
-  if (is.null(pw)) {
+  if (is.null(pw) || any(SG$logtheta!=logtheta)) {
     pw <- calculate_pw(SG=SG, y=y, logtheta=log(theta)) # Already subtracted mean(y) from y
     # SG$pw <- pw
   } else {print('Using stored value!')}

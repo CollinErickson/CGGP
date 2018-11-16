@@ -35,7 +35,8 @@ test_that("Prediction matches exact on small samples", {
   SG = SGcreate(d=d,51) # Need size to be small to avoid computationally singular in solve
   Y = testf(SG$design) #the design is $design, simple enough, right?
   logtheta <- rep(0,8)
-  logtheta <- logthetaMLE(SG=SG,y=Y)
+  SG <- logthetaMLE(SG=SG,y=Y)
+  logtheta <- SG$logtheta
   logtheta <- pmin(logtheta, 1)
   
   n <- 50
