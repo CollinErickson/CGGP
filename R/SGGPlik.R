@@ -270,9 +270,11 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
   )
   
   # Save pw with SG
-  SG$pw <- calculate_pw(SG=SG, y=y, logtheta=x2$par)
+  SG$pw <- calculate_pw(SG=SG, y=y-mean(y), logtheta=x2$par)
   
-  return(x2$par)
+  # return(x2$par)
+  SG$logtheta <- x2$par
+  SG
 }
 
 
@@ -361,5 +363,7 @@ logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4) {
   )
   
   # Want to save logtheta with SG eventually
-  return(x2$par)
+  # return(x2$par)
+  SG$logtheta <- x2$par
+  SG
 }

@@ -144,8 +144,8 @@ SGGPpred <- function(xp,SG, y, ..., logtheta, theta) {
   
   pw <- SG$pw
   if (is.null(pw)) {
-    pw <- calculate_pw(SG=SG, y=y, logtheta=log(theta))
-    SG$pw <- pw
+    pw <- calculate_pw(SG=SG, y=y, logtheta=log(theta)) # Already subtracted mean(y) from y
+    # SG$pw <- pw
   } else {print('Using stored value!')}
 
   sigma_hat = t(y) %*% pw / length(y)

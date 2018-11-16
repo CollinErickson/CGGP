@@ -42,7 +42,9 @@ use_goodtheta <- FALSE
 require("SGGP")
 SG = SGcreate(d=d, batchsize=201, nugget = 0) #create the design.  it has so many entries because i am sloppy
 Y = testf(SG$design) #the design is $design, simple enough, right?
-logthetaest = logthetaMLE(SG,Y)
+# logthetaest = logthetaMLE(SG,Y)
+SG = logthetaMLE(SG,Y)
+logthetaest <- SG$logtheta
 if (use_goodtheta) logthetaest <- goodlogthetaest
 thetaest <- exp(logthetaest)
 cat(logthetaest, "\n")
@@ -52,7 +54,8 @@ for(c in 1:round((N-201)/200)){
   SG=SGappend(SG,200,theta=thetaest) #add 200 points to the design based on thetahat
   Y = testf(SG$design)
   if( c< 10 && !use_goodtheta){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
-    logthetaest = logthetaMLE(SG,Y) #estimate the parameter (SG structure is important)
+    SG = logthetaMLE(SG,Y) #estimate the parameter (SG structure is important)
+    logthetaest <- SG$logtheta
     thetaest <- exp(logthetaest)
     cat(logthetaest,"\n", sep="\t")
   }
@@ -60,12 +63,13 @@ for(c in 1:round((N-201)/200)){
 cat("\n")
 Y = testf(SG$design)
 if (!use_goodtheta) {
-  logthetaest = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
+  SG = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
+  logthetaest <- SG$logtheta
   cat(logthetaest, "\n")
 }
 
 timepredstart <- Sys.time()
-GP = SGGPpred(Xp,SG,Y,logtheta=pmin(logthetaest)) #build a full emulator
+GP = SGGPpred(Xp,SG,Y,logtheta=(logthetaest)) #build a full emulator
 timepredend <- Sys.time()
 
 RMSE <- sqrt(mean(((Yp-GP$mean)^2)))  #prediction should be much better

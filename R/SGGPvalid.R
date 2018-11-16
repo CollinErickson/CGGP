@@ -369,5 +369,7 @@ logthetaVALID <- function(SG, y,xval,yval, logtheta0 = rep(0,SG$d),tol=1e-4) {
     control = list()#reltol=1e-4)#abstol = tol)
     # Is minimizing, default option of optim.
   )
-  return(x2$par)
+  # return(x2$par)
+  SG$logtheta <- x2$par
+  SG
 }
