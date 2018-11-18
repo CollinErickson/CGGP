@@ -73,7 +73,8 @@ updateSG <- function(SG, y, restarts=4, ..., ynew, method="MLE") {
 
   # Find best logtheta from all restarts
   bestlogthetaind <- which.min(sapply(optout, function(x) {x$value}))
-  bestlogtheta <- optout[[logthetaind]]$par
+  bestlogtheta <- optout[[bestlogthetaind]]$par
+  cat('best ind is', bestlogthetaind, 'bestlogtheta is', bestlogtheta, '\n')
   
   # Set new y's
   SG$y <- y

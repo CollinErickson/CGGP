@@ -5,7 +5,7 @@
 \title{Find MLE of logtheta for multivariate output}
 \usage{
 logthetaMLEMV(SG, yMV, ..., logtheta0 = rep(0, SG$d), tol = 1e-04,
-  return_optim)
+  return_optim = FALSE)
 }
 \arguments{
 \item{SG}{SG object}

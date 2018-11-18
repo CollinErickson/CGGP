@@ -356,7 +356,7 @@ glikMV <- function(logtheta, SG, yMV) {
 #' logthetaMLE(SG=SG, y=y1)
 #' logthetaMLE(SG=SG, y=y2)
 #' logthetaMLEMV(SG=SG, yMV=y)
-logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4, return_optim) {
+logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4, return_optim=FALSE) {
   opt.out = optim(
     logtheta0,
     fn = likMV,
@@ -379,7 +379,8 @@ logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4, return
   SG$logtheta <- opt.out$par
   
   # Save pw with SG
-  SG$pw <- calculate_pw(SG=SG, y=y-mean(y), logtheta=SG$logtheta)
+  # Not as simple with multiple y outputs
+  # SG$pw <- calculate_pw(SG=SG, y=yMV-mean(yMV), logtheta=SG$logtheta)
   
   SG
 }

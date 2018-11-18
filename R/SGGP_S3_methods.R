@@ -12,5 +12,11 @@
 #' SG = SGcreate(3,201)
 #' print(SG)
 print.SGGP <- function(x, ...) {
-  "SGGP object"
+  s <- paste0(
+    "SGGP object\n",
+    "  d = ", x$d, '\n',
+    "  number of design points = ", nrow(x$design), '\n',
+    "  logtheta = ", x$logtheta, '\n'
+  )
+  cat(s)
 }

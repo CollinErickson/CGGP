@@ -14,7 +14,8 @@ License: GPL-3 | file LICENSE
 Imports: Rcpp (>= 0.12.18)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: testthat,
-    covr
+    covr,
+    lhs
 URL: https://github.com/CollinErickson/SGGP
 BugReports: https://github.com/CollinErickson/SGGP/issues
 Encoding: UTF-8
