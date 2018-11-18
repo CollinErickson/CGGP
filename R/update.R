@@ -70,9 +70,19 @@ updateSG <- function(SG, y, restarts=4, ..., ynew, method="MLE") {
          function(i) {f(SG, y, logtheta0=lt0[i,], return_optim=T)})
   print("optout is"); print(optout)
   
-  # Find best from optout
-  # Set SG$logtheta, update SG$pw
+
+  # Find best logtheta from all restarts
+  bestlogthetaind <- which.min(sapply(optout, function(x) {x$value}))
+  bestlogtheta <- optout[[logthetaind]]$par
   
+  # Set new y's
   SG$y <- y
+  
+  # Set best logtheta
+  SG$logtheta <- bestlogtheta
+
+  # Save pw with SG
+  SG$pw <- calculate_pw(SG=SG, y=y-mean(y), logtheta=SG$logtheta)
+  
   SG
 }

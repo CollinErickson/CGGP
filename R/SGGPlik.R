@@ -273,11 +273,12 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4, return_opti
     return(opt.out)
   }
   
-  # Save pw with SG
-  SG$pw <- calculate_pw(SG=SG, y=y-mean(y), logtheta=opt.out$par)
-  
-  # return(x2$par)
+  # Set new logtheta
   SG$logtheta <- opt.out$par
+  
+  # Save pw with SG
+  SG$pw <- calculate_pw(SG=SG, y=y-mean(y), logtheta=SG$logtheta)
+  
   SG
 }
 
@@ -370,6 +371,11 @@ logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4, return
     return(opt.out)
   }
   
+  # Set new logtheta
   SG$logtheta <- opt.out$par
+  
+  # Save pw with SG
+  SG$pw <- calculate_pw(SG=SG, y=y-mean(y), logtheta=SG$logtheta)
+  
   SG
 }
