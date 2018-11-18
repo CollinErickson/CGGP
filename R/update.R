@@ -1,22 +1,27 @@
-updateSG <- function(SG, y, ...) {
-  # Can be multioutput or uni
-  # Can be updating params or not
-  # Can be returning new Y or not
-  if (is.matrix(y) && ncol(y)>1) {
-    #multiY
-    logthetaMLEMV(SG=SG, yMV=y, ...)
-  } else {
-    logthetaMLE(SG=SG, y=y, ...)
-  }
-}
-
-updateSG2 <- function(SG, y, restarts=4, ..., ynew, method="MLE") {
+#' Update SGGP object with new data
+#'
+#' @param SG SGGP object
+#' @param y Measured output values
+#' @param restarts Number of optimization restarts
+#' @param ... Not used
+#' @param ynew If only returning new output values from last append, use this
+#' @param method Whether parameters should be updated using MLE or validation.
+#'
+#' @return Updated SG object
+#' @export
+#'
+#' @examples
+#' f <- function(x) {(x[1]-.5)^2 + exp(-x[2]) + sin(2*pi*x[3])}
+#' SG <- SGcreate(d=3, batchsize=100)
+#' SG <- updateSG(SG, apply(SG$design, 1, f))
+#' #SG <- SGappend(SG=SG, batchsize=20)
+updateSG <- function(SG, y, restarts=4, ..., ynew, method="MLE") {
   # Can be multioutput or uni
   # Can be updating params or not
   # Can be returning new Y or not
   
   # If only giving in ynew, create y 
-  if (!is.missing(ynew)) {
+  if (!missing(ynew)) {
     if (!missing(y)) {if (any(y != SG$y)) {stop("ynew was given but y != SG$y")}}
     if (is.matrix(SG$y)) {
       y <- rbind(SG$y, ynew)
