@@ -4,7 +4,8 @@
 \alias{logthetaMLE}
 \title{Calculate theta MLE given data}
 \usage{
-logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 1e-04)
+logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 1e-04,
+  return_optim = FALSE)
 }
 \arguments{
 \item{SG}{Sparse grid objects}
@@ -17,6 +18,9 @@ logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 1e-04)
 
 \item{tol}{Relative tolerance for optimization. Can't use absolute tolerance
 since lik can be less than zero.}
+
+\item{return_optim}{If TRUE, return output from optim().
+If FALSE return updated SG.}
 }
 \value{
 theta MLE

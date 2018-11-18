@@ -342,6 +342,8 @@ gvalidation <- function(logtheta, SG, y,xval,yval) {
 #' @param yval Output of validation points
 #' @param logtheta0 Initial point for optimization
 #' @param tol Relative tolerance, not used
+#' @param return_optim If TRUE, return output from optim().
+#' If FALSE return updated SG.
 #'
 #' @return Vector, optimal logtheta parameters
 #' @export

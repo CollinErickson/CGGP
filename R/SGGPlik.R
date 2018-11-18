@@ -246,6 +246,8 @@ glik <- function(logtheta, ..., SG, y) {
 #' @param tol Relative tolerance for optimization. Can't use absolute tolerance
 #' since lik can be less than zero.
 #' @param ... Don't use, just forces theta to be named
+#' @param return_optim If TRUE, return output from optim().
+#' If FALSE return updated SG.
 #'
 #' @return theta MLE
 #' @export
@@ -340,6 +342,8 @@ glikMV <- function(logtheta, SG, yMV) {
 #' @param ... Don't use
 #' @param logtheta0 Initial values of logtheta for optimization
 #' @param tol Optimization tolerance
+#' @param return_optim If TRUE, return output from optim().
+#' If FALSE return updated SG.
 #'
 #' @return Vector, logtheta MLE
 #' @export

@@ -4,7 +4,8 @@
 \alias{logthetaVALID}
 \title{Calculate correlation parameters using validation data.}
 \usage{
-logthetaVALID(SG, y, xval, yval, logtheta0 = rep(0, SG$d), tol = 1e-04)
+logthetaVALID(SG, y, xval, yval, logtheta0 = rep(0, SG$d), tol = 1e-04,
+  return_optim = FALSE)
 }
 \arguments{
 \item{SG}{SGGP object}
@@ -18,6 +19,9 @@ logthetaVALID(SG, y, xval, yval, logtheta0 = rep(0, SG$d), tol = 1e-04)
 \item{logtheta0}{Initial point for optimization}
 
 \item{tol}{Relative tolerance, not used}
+
+\item{return_optim}{If TRUE, return output from optim().
+If FALSE return updated SG.}
 }
 \value{
 Vector, optimal logtheta parameters

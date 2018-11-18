@@ -4,7 +4,8 @@
 \alias{logthetaMLEMV}
 \title{Find MLE of logtheta for multivariate output}
 \usage{
-logthetaMLEMV(SG, yMV, ..., logtheta0 = rep(0, SG$d), tol = 1e-04)
+logthetaMLEMV(SG, yMV, ..., logtheta0 = rep(0, SG$d), tol = 1e-04,
+  return_optim)
 }
 \arguments{
 \item{SG}{SG object}
@@ -16,6 +17,9 @@ logthetaMLEMV(SG, yMV, ..., logtheta0 = rep(0, SG$d), tol = 1e-04)
 \item{logtheta0}{Initial values of logtheta for optimization}
 
 \item{tol}{Optimization tolerance}
+
+\item{return_optim}{If TRUE, return output from optim().
+If FALSE return updated SG.}
 }
 \value{
 Vector, logtheta MLE
