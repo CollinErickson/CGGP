@@ -60,16 +60,19 @@ updateSG <- function(SG, y, restarts=4, ..., ynew, method="MLE") {
   
   # If still rows left, set using random uniform
   if (rowsset < restarts) {
-    lt0[(rowsset+1):nrow(lt0),] <- runif((nrow(lt0)-(rowsset))*SG$d, -2, 2)
+    # lt0[(rowsset+1):nrow(lt0),] <- runif((nrow(lt0)-(rowsset))*SG$d, -2, 2)
+    lt0[(rowsset+1):nrow(lt0),] <- lhs::maximinLHS(n=nrow(lt0)-(rowsset), k=SG$d)*4-2
   }
   print("Going to run lt0"); print(lt0)
 
   # Run optimization. Use lapply so it can easily be parallelized later
   optout <- lapply(1:restarts,
-         function(i) {f(SG, y, logtheta0=lt0[i,])})
+         function(i) {f(SG, y, logtheta0=lt0[i,], return_optim=T)})
+  print("optout is"); print(optout)
   
   # Find best from optout
   # Set SG$logtheta, update SG$pw
   
   SG$y <- y
+  SG
 }

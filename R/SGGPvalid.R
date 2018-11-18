@@ -353,8 +353,8 @@ gvalidation <- function(logtheta, SG, y,xval,yval) {
 #' Xval <- matrix(runif(3*100), ncol=3)
 #' Yval <- apply(Xval, 1, f1)
 #' logthetaVALID(SG=SG, y=y, xval=Xval, yval=Yval)
-logthetaVALID <- function(SG, y,xval,yval, logtheta0 = rep(0,SG$d),tol=1e-4) {
-  x2 = optim(
+logthetaVALID <- function(SG, y,xval,yval, logtheta0 = rep(0,SG$d),tol=1e-4, return_optim=FALSE) {
+  opt.out = optim(
     logtheta0,
     fn = validation,
     gr = gvalidation,
@@ -369,7 +369,11 @@ logthetaVALID <- function(SG, y,xval,yval, logtheta0 = rep(0,SG$d),tol=1e-4) {
     control = list()#reltol=1e-4)#abstol = tol)
     # Is minimizing, default option of optim.
   )
-  # return(x2$par)
-  SG$logtheta <- x2$par
+  
+  if (return_optim) {
+    return(opt.out)
+  }
+  
+  SG$logtheta <- opt.out$par
   SG
 }

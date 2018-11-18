@@ -254,8 +254,8 @@ glik <- function(logtheta, ..., SG, y) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' logthetaMLE(SG=SG, y=y)
-logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
-  x2 = optim(
+logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4, return_optim=FALSE) {
+  opt.out = optim(
     logtheta0,
     fn = lik,
     gr = glik,
@@ -269,11 +269,15 @@ logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4) {
     # Is minimizing, default option of optim.
   )
   
+  if (return_optim) {
+    return(opt.out)
+  }
+  
   # Save pw with SG
-  SG$pw <- calculate_pw(SG=SG, y=y-mean(y), logtheta=x2$par)
+  SG$pw <- calculate_pw(SG=SG, y=y-mean(y), logtheta=opt.out$par)
   
   # return(x2$par)
-  SG$logtheta <- x2$par
+  SG$logtheta <- opt.out$par
   SG
 }
 
@@ -347,8 +351,8 @@ glikMV <- function(logtheta, SG, yMV) {
 #' logthetaMLE(SG=SG, y=y1)
 #' logthetaMLE(SG=SG, y=y2)
 #' logthetaMLEMV(SG=SG, yMV=y)
-logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4) {
-  x2 = optim(
+logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4, return_optim) {
+  opt.out = optim(
     logtheta0,
     fn = likMV,
     gr = glikMV,
@@ -362,8 +366,10 @@ logthetaMLEMV <- function(SG, yMV, ..., logtheta0 = rep(0,SG$d),tol=1e-4) {
     # Is minimizing, default option of optim.
   )
   
-  # Want to save logtheta with SG eventually
-  # return(x2$par)
-  SG$logtheta <- x2$par
+  if (return_optim) {
+    return(opt.out)
+  }
+  
+  SG$logtheta <- opt.out$par
   SG
 }
