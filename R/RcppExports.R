@@ -26,3 +26,11 @@ rcpparma_bothproducts <- function(x) {
     .Call(`_SGGP_rcpparma_bothproducts`, x)
 }
 
+rcpp_kronDBS <- function(A, B, p, Al, Bl, d) {
+    .Call(`_SGGP_rcpp_kronDBS`, A, B, p, Al, Bl, d)
+}
+
+rcpp_gkronDBS <- function(A, dA, B, p, Bl, d) {
+    .Call(`_SGGP_rcpp_gkronDBS`, A, dA, B, p, Bl, d)
+}
+
