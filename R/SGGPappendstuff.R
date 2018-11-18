@@ -110,6 +110,7 @@ MSE_de <- function(valsinds, MSE_v) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
 SGappend <- function(SG,batchsize,..., theta){
+  n_before <- nrow(SG$design)
   
   # Set up blank matrix to store MSE values
   MSE_v = matrix(0, SG$d, 8) # 8 because he only defined the 1D designs up to 8.
@@ -302,6 +303,9 @@ SGappend <- function(SG,batchsize,..., theta){
     
     tv = tv + SG$gridsize[lcv1]
   }
+  
+  # Save Xnew to make it easy to know which ones to add
+  SG$Xnew <- SG$design[(n_before+1):nrow(SG$design),]
   
   return(SG)
 }

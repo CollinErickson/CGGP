@@ -10,10 +10,20 @@ updateSG <- function(SG, y, ...) {
   }
 }
 
-updateSG2 <- function(SG, y, restarts=4, ...) {
+updateSG2 <- function(SG, y, restarts=4, ..., ynew) {
   # Can be multioutput or uni
   # Can be updating params or not
   # Can be returning new Y or not
+  
+  if (!is.missing(ynew)) {
+    if (!missing(y)) {if (any(y != SG$y)) {stop("ynew was given but y != SG$y")}}
+    if (is.matrix(SG$y)) {
+      y <- rbind(SG$y, ynew)
+    } else { # Just a vector
+      y <- c(SG$y, ynew)
+    }
+  }
+  
   if (is.matrix(y) && ncol(y)>1) {
     #multiY
     f <- logthetaMLEMV
@@ -38,4 +48,5 @@ updateSG2 <- function(SG, y, restarts=4, ...) {
   print("Going to run lt0"); print(lt0)
   lapply(1:restarts,
          function(i) {f(SG, y, logtheta0=lt0[i,])})
+  SG$y <- y
 }
