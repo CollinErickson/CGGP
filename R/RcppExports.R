@@ -26,6 +26,16 @@ rcpparma_bothproducts <- function(x) {
     .Call(`_SGGP_rcpparma_bothproducts`, x)
 }
 
+#' rcpp_kronDBS
+#' 
+#' @param A Vector
+#' @param B Vector
+#' @param p Vector
+#' @param Al Length of A
+#' @param Bl Length of B
+#' @param d Dimension
+#' @return kronDBS calculation
+#' @export
 rcpp_kronDBS <- function(A, B, p, Al, Bl, d) {
     .Call(`_SGGP_rcpp_kronDBS`, A, B, p, Al, Bl, d)
 }

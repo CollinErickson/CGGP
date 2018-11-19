@@ -11,6 +11,16 @@ using namespace Rcpp;
 //   http://gallery.rcpp.org/
 //
 
+//' rcpp_kronDBS
+//' 
+//' @param A Vector
+//' @param B Vector
+//' @param p Vector
+//' @param Al Length of A
+//' @param Bl Length of B
+//' @param d Dimension
+//' @return kronDBS calculation
+//' @export
 // [[Rcpp::export]]
 NumericVector rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p, int Al, int Bl,  int d){
   
