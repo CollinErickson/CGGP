@@ -12,6 +12,13 @@ test_that("Gaussian correlation works", {
   expect_equal(dim(dgc), c(5,4))
   teps <- 1e-5
   expect_equal(dgc, (gausscorr(x1, x2,th+teps/2) - gausscorr(x1, x2,th-teps/2))/teps)
+  
+  # Check theta and logtheta work properly
+  expect_equal(gausscorr(x1, x2, logtheta=log(th)), gausscorr(x1, x2, theta=th))
+  expect_equal(dgausscorr(x1, x2, logtheta=log(th)), dgausscorr(x1, x2, theta=th))
+  
+  expect_equal(diag_gausscorr(x1=x1, theta=th, nugget=.001), rep(1.001, length(x1)))
+  
   rm(list=ls())
 })
 
@@ -30,5 +37,16 @@ test_that("Matern 3/2 correlation works", {
   expect_equal(dim(dmc), c(5,4))
   teps <- 1e-5
   expect_equal(dmc, (CorrMatMatern32(x1, x2,logtheta = lth+teps/2) - CorrMatMatern32(x1, x2,logtheta = lth-teps/2))/teps)
+  
+  # Confirm errors for negative theta
+  expect_error(CorrMatMatern32(x1, x2, theta=-.1))
+  expect_error(diag_corrMatMatern32(x1, theta=-.1, nugget=.001))
+  expect_error(diag_corrMatMatern32(x1, theta=.1)) # Missing nugget
+  
+  # Check diag_CorrMatMatern32
+  expect_equal(diag_corrMatMatern32(x1, theta=.1, nugget=.001), rep(1.001, length(x1)))
+  
+  # Check ddiag
+  expect_equal(ddiag_corrMatMatern32(x1, theta=.1, nugget=.001), rep(0, length(x1)))
 })
 

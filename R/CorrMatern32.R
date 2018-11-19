@@ -83,6 +83,17 @@ dCorrMatMatern32 <- function(x1, x2, ..., logtheta, theta) {
 }
 
 
+#' Derivative of diagonal of Matern 3/2 correlation
+#' 
+#' It's just 0.
+#'
+#' @inheritParams diag_corrMatMatern32 
+#'
+#' @return Vector
+#' @export
+#'
+#' @examples
+#' ddiag_corrMatMatern32(c(0,.2,.4,.6,.8,1),theta=.1, nugget=0) # Should be all zeros
 ddiag_corrMatMatern32 <- function(x1, ..., logtheta, theta, nugget) {
   if (missing(theta)) { theta <- exp(logtheta)}
   if (any(theta<0)) stop("Theta < 0 in CorrMat")
