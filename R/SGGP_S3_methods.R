@@ -16,7 +16,10 @@ print.SGGP <- function(x, ...) {
     "SGGP object\n",
     "  d = ", x$d, '\n',
     "  number of design points = ", nrow(x$design), '\n',
-    "  logtheta = ", x$logtheta, '\n'
+    "  logtheta = ", if (is.null(x$logtheta)) "(not yet calculated)" else x$logtheta, '\n',
+    "To update parameters, run updateSG()\n",
+    "To predict, run SGGPpred()\n",
+    "To get new design points, run SGappend()\n"
   )
   cat(s)
 }
