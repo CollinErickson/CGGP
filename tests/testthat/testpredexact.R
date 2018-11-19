@@ -61,5 +61,23 @@ test_that("Prediction matches exact on small samples", {
     plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
     expect_equal(SGpred$var, exvar)
   }
-})  
+})
+
+test_that("predMV works", {
+  SG <- SGcreate(d=3, batchsize=100)
+  f1 <- function(x){x[1]+x[2]^2}
+  f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])}
+  y1 <- apply(SG$design, 1, f1)+rnorm(1,0,.01)
+  y2 <- apply(SG$design, 1, f2)+rnorm(1,0,.01)
+  y <- cbind(y1, y2)
+  yMVpred <- SGGPpredMV(SG$design, SG=SG, yMV=y, theta=c(.1,.1,.1))$mean
+  expect_equal(yMVpred[,1], y1)
+  expect_equal(yMVpred[,2], y2)
   
+  xpred <- matrix(runif(100*3),100,3)
+  y1pred <- SGGPpred(xpred, SG=SG, y=y1, theta=c(.1,.2,.3))$mean
+  y2pred <- SGGPpred(xpred, SG=SG, y=y2, theta=c(.1,.2,.3))$mean
+  yMVpred <- SGGPpredMV(xpred, SG=SG, yMV=y, theta=c(.1,.2,.3))$mean
+  expect_equal(yMVpred[,1], c(y1pred))
+  expect_equal(yMVpred[,2], c(y2pred))
+})

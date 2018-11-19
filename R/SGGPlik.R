@@ -72,7 +72,7 @@ glik <- function(logtheta, ..., SG, y) {
   
   sigma_hat = t(y) %*% pw / length(y)
   
-  dsigma_hat = t(y) %*% dpw / length(y)
+  dsigma_hat = c(t(y) %*% dpw) / length(y)
   
   lDet = 0 # Not needed for glik, only for lik
   
@@ -190,7 +190,7 @@ glikMV <- function(logtheta, SG, yMV) {
   p = dim(yMV)[2]
   glogLikMV = rep(0,length(logtheta)) #p)
   for(i in 1:p){
-    glogLikMV = glogLikMV+glik(logtheta, SG=SG, y=as.vector(yMV[,i])-mean(yMV[,i]))[1,] 
+    glogLikMV = glogLikMV+glik(logtheta, SG=SG, y=as.vector(yMV[,i])-mean(yMV[,i])) 
   }
   return(glogLikMV)
 }
