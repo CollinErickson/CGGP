@@ -24,3 +24,14 @@ test_that("pw is exact", {
   # summary(pw-Rinvy)
   expect_equal(pw, Rinvy)
 })
+
+test_that("dpw matches numerical derivative", {
+  pw_dpw <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta)
+  dpw <- pw_dpw$dpw
+  numDeriv::grad(function(x)calculate_pw(SG=SG, y=y, logtheta=x), x=logtheta)
+  eps <- 1e-5
+  expect_equal(
+    (calculate_pw(SG=SG, y=y, logtheta=logtheta+c(eps/2,0,0))-calculate_pw(SG=SG, y=y, logtheta=logtheta-c(eps/2,0,0)))/eps,
+    dpw[,1]
+  )
+})

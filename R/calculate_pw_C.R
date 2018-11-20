@@ -16,7 +16,7 @@
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' calculate_pw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
-calculate_pw <- function(SG, y, logtheta, return_lS=FALSE) {
+calculate_pw_C <- function(SG, y, logtheta, return_lS=FALSE) {
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
   # Now going to store choleskys instead of inverses for stability
   #CiS = list(matrix(1,1,1),Q*SG$d) # A list of matrices, Q for each dimension
@@ -42,9 +42,9 @@ calculate_pw <- function(SG, y, logtheta, return_lS=FALSE) {
   pw = rep(0, length(y)) # Predictive weight for each measured point
   # Loop over blocks selected
   for (lcv1 in 1:SG$uoCOUNT) {
-    Av = unlist(CCS[((1:d-1)*Q+SG$uo[lcv1,1:d])])
+    Av = unlist(CCS[((1:SG$d-1)*Q+SG$uo[lcv1,1:SG$d])])
     B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
-    rcpp_kronDBS(Av, B, SG$gridsizest[lcv1,], length(Av), length(B),  d)
+    rcpp_kronDBS(Av, B, SG$gridsizest[lcv1,], length(Av), length(B),  SG$d)
     pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
       SG$w[lcv1] * B
   }
@@ -66,7 +66,7 @@ calculate_pw <- function(SG, y, logtheta, return_lS=FALSE) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' calculate_pw_and_dpw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
-calculate_pw_and_dpw <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FALSE) {
+calculate_pw_and_dpw_C <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FALSE) {
   
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of all blocks
   # Now storing choleskys instead of inverses
@@ -103,7 +103,7 @@ calculate_pw_and_dpw <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FA
   for (lcv1 in 1:SG$uoCOUNT) {
     B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
     dpw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]],] = dpw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]],] +
-        SG$w[lcv1] * rcpp_gkronDBS(unlist(CCS[((1:d-1)*Q+SG$uo[lcv1,1:d])]), unlist(dCS[((1:d-1)*Q+SG$uo[lcv1,1:d])]), B, SG$gridsizest[lcv1,], length(B),  d)
+        SG$w[lcv1] * rcpp_gkronDBS(unlist(CCS[((1:SG$d-1)*Q+SG$uo[lcv1,1:SG$d])]), unlist(dCS[((1:SG$d-1)*Q+SG$uo[lcv1,1:SG$d])]), B, SG$gridsizest[lcv1,], length(B),  SG$d)
     pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
       SG$w[lcv1] * B
   }

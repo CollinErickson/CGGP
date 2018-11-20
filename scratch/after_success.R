@@ -20,7 +20,7 @@ borehole <- function(x) {
 
 
 d = 8
-testf<-function (x) {  return(borehole(x))} 
+testf <- borehole
 
 N <- 10001
 Npred <- 1000
@@ -62,11 +62,13 @@ for(c in 1:round((N-201)/200)){
 }
 cat("\n")
 Y = testf(SG$design)
+timelastlogthetaMLEstart <- Sys.time()
 if (!use_goodtheta) {
   SG = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
   logthetaest <- SG$logtheta
   cat(logthetaest, "\n")
 }
+timelastlogthetaMLEend <- Sys.time()
 
 timepredstart <- Sys.time()
 GP = SGGPpred(Xp,SG,Y,logtheta=(logthetaest)) #build a full emulator
@@ -82,8 +84,9 @@ cat("coverage is     ", meancoverage, "\n")
 
 # Don't count plotting in run time
 timeend <- Sys.time()
-cat("Total run time is: ", capture.output(timeend - timestart), '\n')
-cat("Prediction time is:", capture.output(timepredend - timepredstart), '\n')
+cat("Total run   time is:", capture.output(timeend - timestart), '\n')
+cat("Prediction  time is:", capture.output(timepredend - timepredstart), '\n')
+cat("logthetaMLE time is:", capture.output(timelastlogthetaMLEend - timelastlogthetaMLEstart), '\n')
 
 if (T) { # Can Travis just skip this?
   di <- sample(1:nrow(SG$design), 100)
