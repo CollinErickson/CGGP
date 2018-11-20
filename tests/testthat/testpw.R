@@ -26,12 +26,29 @@ test_that("pw is exact", {
 })
 
 test_that("dpw matches numerical derivative", {
-  pw_dpw <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta)
+  SG <- SGcreate(d=3, batchsize=50)
+  y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+  # Make logtheta pretty small to avoid singularity
+  logtheta <- c(-2,-2.1,-2.2)
+  pw_dpw <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta, useC=F)
   dpw <- pw_dpw$dpw
-  numDeriv::grad(function(x)calculate_pw(SG=SG, y=y, logtheta=x), x=logtheta)
+  
   eps <- 1e-5
   expect_equal(
     (calculate_pw(SG=SG, y=y, logtheta=logtheta+c(eps/2,0,0))-calculate_pw(SG=SG, y=y, logtheta=logtheta-c(eps/2,0,0)))/eps,
-    dpw[,1]
+    dpw[,1],
+    tol=1e-4
   )
+  expect_equal(
+    (calculate_pw(SG=SG, y=y, logtheta=logtheta+c(0,eps/2,0))-calculate_pw(SG=SG, y=y, logtheta=logtheta-c(0,eps/2,0)))/eps,
+    dpw[,2],
+    tol=1e-4
+  )
+  expect_equal(
+    (calculate_pw(SG=SG, y=y, logtheta=logtheta+c(0,0,eps/2))-calculate_pw(SG=SG, y=y, logtheta=logtheta-c(0,0,eps/2)))/eps,
+    dpw[,3],
+    tol=1e-4
+  )
+  
 })
+

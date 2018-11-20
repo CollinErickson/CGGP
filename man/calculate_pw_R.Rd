@@ -4,7 +4,7 @@
 \alias{calculate_pw_R}
 \title{Calculate predictive weights for SGGP}
 \usage{
-calculate_pw_R(SG, y, logtheta, return_lS = FALSE, useC = TRUE)
+calculate_pw_R(SG, y, logtheta, return_lS = FALSE, useC = FALSE)
 }
 \arguments{
 \item{SG}{SGGP object}

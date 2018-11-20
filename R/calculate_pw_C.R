@@ -67,7 +67,7 @@ calculate_pw_C <- function(SG, y, logtheta, return_lS=FALSE) {
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' calculate_pw_and_dpw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
 calculate_pw_and_dpw_C <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FALSE) {
-  
+  warning("calculate_pw_and_dpw_C is not accurate yet!")
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of all blocks
   # Now storing choleskys instead of inverses
   CCS = list(matrix(1,1,1),Q*SG$d) # To store choleskys

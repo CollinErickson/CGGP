@@ -4,7 +4,8 @@
 \alias{calculate_pw_and_dpw}
 \title{Calculate derivative of pw}
 \usage{
-calculate_pw_and_dpw(SG, y, logtheta, return_lS = FALSE, useC = TRUE)
+calculate_pw_and_dpw(SG, y, logtheta, return_lS = FALSE,
+  return_dlS = FALSE, useC = FALSE)
 }
 \arguments{
 \item{SG}{SGGP object}
@@ -15,9 +16,9 @@ calculate_pw_and_dpw(SG, y, logtheta, return_lS = FALSE, useC = TRUE)
 
 \item{return_lS}{Should lS be returned?}
 
-\item{useC}{Should Rcpp code used? This should be faster.}
-
 \item{return_dlS}{Should dlS be returned?}
+
+\item{useC}{Should Rcpp code used? This should be faster.}
 }
 \value{
 derivative matrix of pw with respect to logtheta
