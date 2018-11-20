@@ -50,7 +50,7 @@ test_that("Prediction matches exact on small samples", {
   expred <- my + s %*% solve(Sig, dy)
   
   # Check mean predictions
-  plot(expred, SGpred$mean); abline(a=0,b=1, col=2)
+  # plot(expred, SGpred$mean); abline(a=0,b=1, col=2)
   expect_equal(SGpred$mean, expred, tol=1e-4)
   
   # Test var predictions

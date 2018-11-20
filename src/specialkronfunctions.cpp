@@ -36,7 +36,7 @@ NumericVector rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p, in
     sv = sv-p(dim)*p(dim);
     p0 = p(dim);
     n0 = Bl/p0;
-    if(p0 > 1.5){
+    // if(p0 > 1.5){
     for(int h = 0; h < n0; h++)
     {
       for ( int i = 0; i < p0; i++)
@@ -63,9 +63,9 @@ NumericVector rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p, in
         c++;
       }
     }
-    }else{
-      B = B/(A(sv)*A(sv));
-    }
+    // }else{
+    //   B = B/(A(sv)*A(sv));
+    // }
   }
   
   return B;
@@ -97,7 +97,7 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
     p0 = p(dim);
     n0 = Bl/p0;
     
-    if(p0 > 1.5){
+    // if(p0 > 1.5){
     for(int h = 0; h < n0; h++)
     {
       for ( int i = 0; i < p0; i++)
@@ -158,10 +158,10 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
         c++;
       }
     }
-    }else{
-      B = B/(A(sv)*A(sv));
-      B2 = dA(sv)*y/(A(sv)*A(sv)*A(sv)*A(sv));
-    }
+    // }else{
+    //   B = B/(A(sv)*A(sv));
+    //   B2 = dA(sv)*y/(A(sv)*A(sv)*A(sv)*A(sv));
+    // }
     
     
     if(dA(sv)>0.0000000001){
@@ -171,7 +171,7 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
       p0 = p(dim2);
       n0 = Bl/p0;
       
-      if(p0 > 1.5){
+      // if(p0 > 1.5){
       for(int h = 0; h < n0; h++)
       {
         for ( int i = 0; i < p0; i++)
@@ -197,9 +197,9 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
           c++;
         }
       }
-      }else{
-        B2 = B2/(A(sv)*A(sv));
-      }
+      // }else{
+      //   B2 = B2/(A(sv)*A(sv));
+      // }
     }
     }
     
