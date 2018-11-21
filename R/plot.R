@@ -48,4 +48,33 @@ SGheat <- function(SG) {
 }
 
 
-# SGhist <- function
+#' Histogram of measurements at each design depth of each input dimension
+#' 
+#' A greater design depth signifies a more important dimension.
+#' Thus a larger right tail on the histogram are more important variables.
+#'
+#' @param SG SGGP object
+#' @param ylog Should the y axis be put on a log scale?
+#'
+#' @return Histogram plot made using ggplot2
+#' @export
+#'
+#' @examples
+#' # All dimensions should look similar
+#' d <- 8
+#' SG = SGcreate(d,201)
+#' SGhist(SG)
+#' SGhist(SG, ylog=F)
+#' 
+#' # The first dimension is more active and will have greater depth
+#' SG <- SGcreate(d=5, batchsize=10)
+#' SG <- SGappend(logtheta=c(-2,2,2,2,2), SG=SG, batchsize=100)
+#' SGhist(SG)
+SGhist <- function(SG, ylog=T) {
+  p <- ggplot2::ggplot(reshape2::melt(data.frame(SG$designindex), id.vars=NULL), ggplot2::aes(x=value)) + 
+          ggplot2::geom_histogram(binwidth = 1) + ggplot2::facet_grid(variable ~ .)
+  if (ylog) {
+    p <- p + ggplot2::scale_y_log10() #limits=c(.9999, NA))
+  }
+  p
+}
