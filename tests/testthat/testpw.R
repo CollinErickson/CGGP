@@ -17,7 +17,7 @@ test_that("pw is exact", {
                  CorrMatMatern32(SG$design[i,3],
                                  SG$design[j,3],
                                  logtheta=logtheta[3])
-               })
+             })
   )
   Rinvy <- solve(R, y)
   
@@ -25,27 +25,31 @@ test_that("pw is exact", {
   expect_equal(pw, Rinvy)
 })
 
-test_that("dpw matches numerical derivative", {
+test_that("dpw matches numerical derivative, C and R versions match", {
   SG <- SGcreate(d=3, batchsize=50)
   y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
   # Make logtheta pretty small to avoid singularity
   logtheta <- c(-2,-2.1,-2.2)
   
-  for (useC in c(F, T)) {
-    pw_dpw <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta, useC=F)
-    dpw <- pw_dpw$dpw
-    
-    eps <- 1e-5
-    for (i in 1:3) {
-      lteps <- c(0,0,0)
-      lteps[i] <- eps/2
-      expect_equal(
-        (calculate_pw(SG=SG, y=y, logtheta=logtheta+lteps)-calculate_pw(SG=SG, y=y, logtheta=logtheta-lteps))/eps,
-        dpw[,i],
-        tol=1e-4,
-        info=paste("loop is", i, "useC is", useC)
-      )
-    }
+  # Check that R and C give same result
+  pw_dpwR <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta, useC=F)
+  pw_dpwC <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta, useC=T)
+  expect_equal(pw_dpwR$pw, pw_dpwC$pw)
+  expect_equal(pw_dpwR$dpw, pw_dpwC$dpw)
+  
+  # Now just make sure that R is correct
+  dpw <- pw_dpwR$dpw
+  
+  eps <- 1e-5
+  for (i in 1:3) {
+    lteps <- c(0,0,0)
+    lteps[i] <- eps/2
+    expect_equal(
+      (calculate_pw(SG=SG, y=y, logtheta=logtheta+lteps)-calculate_pw(SG=SG, y=y, logtheta=logtheta-lteps))/eps,
+      dpw[,i],
+      tol=1e-4,
+      info=paste("loop is", i, "useC is", useC)
+    )
   }
   
   
