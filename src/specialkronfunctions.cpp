@@ -22,194 +22,133 @@ using namespace Rcpp;
 //' @return kronDBS calculation
 //' @export
 // [[Rcpp::export]]
-NumericVector rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p, int Al, int Bl,  int d){
+void rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p){
+  int sv=A.size(); int Bl=B.size(); int d=p.size();
+  NumericVector x(Bl); NumericVector y(Bl);
+  int p0; int sv0; int c; int i; int k; int h;
   
-  int sv = 0;
-  
-  NumericVector x(Bl);
-  NumericVector y(Bl);
-  int p0 = 0;
-  int n0 = 0;
-  
-  sv = Al;
-  for(int dim = d-1; dim>=0;dim--){
-    sv = sv-p(dim)*p(dim);
-    p0 = p(dim);
-    n0 = Bl/p0;
-    // if(p0 > 1.5){
-    for(int h = 0; h < n0; h++)
-    {
-      for ( int i = 0; i < p0; i++)
+  for(int dim=d-1; dim>=0;dim--){ //loop over the all demensions
+    if(p[dim]>1.5){ //do not need to do much when kron with respect to one thing
+      p0 = p[dim]; //look at our one demension
+      sv = sv-p0*p0;
+      for(h=0; h<Bl; h+=p0)  //loop over the leftover demensions
       {
-        x(h*p0+i) = B(h*p0+i);
-        for ( int k = i-1; k >=0; k-- ) x(h*p0+i) -= A(sv+i*p0+k) * x(h*p0+k);
-        x(h*p0+i) /= A(sv+i*p0+i);
+        x[h]=B[h]/A[sv];  //do first outside loop
+        for (i=1; i<p0; i++)  //backsolve with respect to dim+1 the first time
+        {
+          x[h+i]=B[h+i];
+          sv0 = sv+i*p0;   //speed up index reference
+          for(k=i-1; k>=0; k--) x[h+i]-=A[sv0+k]*x[h+k];
+          x[h+i]/=A[sv0+i];
+        }
+        
+        y[h+p0-1]=x[h+p0-1]/A[sv+p0*p0-1];   //do first outside loop
+        for (i=p0-2; i>=0; i--) //backsolve with respect to dim+1 the second time
+        {
+          y[h+i]=x[h+i];
+          sv0=sv+i*p0;   //speed up index reference
+          for(k=i+1; k<p0; k++) y[h+i]-=A[sv0+k]*y[h+k];
+          y[h+i]/=A[sv0+i];
+        }
       }
-      
-      for ( int i = p0-1; i >=0; i--)
-      {
-        y(h*p0+i) = x(h*p0+i);
-        for ( int k=i+1; k < p0; k++) y(h*p0+i) -= A(sv+k*p0+i) *y(h*p0+k);
-        y(h*p0+i) /= A(sv+i*p0+i);
-      }
-    }
-    
-    int c = 0;
-    for ( int i = 0; i < p0; i++)
-    {
-      for(int h = 0; h < n0; h++)
-      {
-        B(c) = y(h*p0+i);
-        c++;
-      }
-    }
-    // }else{
-    //   B = B/(A(sv)*A(sv));
-    // }
+      c=0;
+      for(i=0; i<p0; i++) for(h=0; h<Bl; h+=p0){B[c]=y[h+i]; c++;} //spinning the vector to right orientation
+    }else{sv--; B=B/(A[sv]*A[sv]);} // kron with respect to one thing shortcut
   }
   
-  return B;
-}
+  return;}
 
 
 // [[Rcpp::export]]
-NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, NumericVector p, int Bl,  int d){
+NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, NumericVector p){
+  int sv=A.size(); int Bl=B.size(); int d=p.size();
+  NumericVector x(Bl); NumericVector y(Bl); NumericVector B1(Bl); NumericVector B2(Bl); 
+  NumericVector dBn(Bl); NumericVector dBn2(Bl); NumericMatrix dB(d,Bl);
+  int p0; int sv0; int c; int i; int k; int h; int dim2; int p1;
   
-  int sv = 0;
-  int sv2 = 0;
-  
-  NumericVector x(Bl);
-  NumericVector y(Bl);
-  NumericVector B2(Bl);
-  NumericVector x2(Bl);
-  NumericVector y2(Bl);
-  
-  
-  NumericMatrix gz(Bl,d);
-  int c = 0;
-  int p0 = 0;
-  int n0 = 0;
-  
-  for(int dim = d-1; dim>=0;dim--) sv = sv+p(dim)*p(dim);
-  
-  for(int dim = d-1; dim>=0;dim--){
-    sv = sv-p(dim)*p(dim);
-    p0 = p(dim);
-    n0 = Bl/p0;
-    
-    // if(p0 > 1.5){
-    for(int h = 0; h < n0; h++)
-    {
-      for ( int i = 0; i < p0; i++)
+  for(int dim=d-1; dim>=0;dim--){ //loop over the all demensions
+    if(p[dim]>1.5){ //do not need to do much when kron with respect to one thing
+      p0 = p[dim]; //look at our one demension
+      sv = sv-p0*p0;
+      for(h=0; h<Bl; h+=p0)  //loop over the leftover demensions
       {
-        x(h*p0+i) = B(h*p0+i);
-        for ( int k = i-1; k >=0; k-- ) x(h*p0+i) -= A(sv+i*p0+k) * x(h*p0+k);
-        x(h*p0+i) /= A(sv+i*p0+i);
-      }
-      for ( int i = p0-1; i >=0; i--)
-      {
-        y(h*p0+i) = x(h*p0+i);
-        for ( int k=i+1; k < p0; k++) y(h*p0+i) -= A(sv+k*p0+i)*y(h*p0+k);
-        y(h*p0+i) /= A(sv+i*p0+i);
-      }
-    }
-    
-    c = 0;
-    for ( int i = 0; i < p0; i++)
-    {
-      for(int h = 0; h < n0; h++)
-      {
-        B(c) = y(h*p0+i);
-        c++;
-      }
-    }
-    
-    for(int h = 0; h < n0; h++)
-    {
-      for ( int i = 0; i < p0; i++)
-      {
-        B2(h*p0+i) = 0;
-        for ( int k = 0; k <p0; k++) B2(h*p0+i) += dA(sv+k*p0+i)*y(h*p0+k);
-      }
-    }
-    
-    for(int h = 0; h < n0; h++)
-    {
-      for ( int i = 0; i < p0; i++)
-      {
-        x(h*p0+i) = B2(h*p0+i);
-        for ( int k = i-1; k >=0; k-- ) x(h*p0+i) -= A(sv+i*p0+k) * x(h*p0+k);
-        x(h*p0+i) /= A(sv+i*p0+i);
-      }
-      for ( int i = p0-1; i >=0; i--)
-      {
-        y(h*p0+i) = x(h*p0+i);
-        for ( int k=i+1; k < p0; k++) y(h*p0+i) -= A(sv+k*p0+i)*y(h*p0+k);
-        y(h*p0+i) /= A(sv+i*p0+i);
-      }
-    }
-    
-    c = 0;
-    for ( int i = 0; i < p0; i++)
-    {
-      for(int h = 0; h < n0; h++)
-      {
-        B2(c) = y(h*p0+i);
-        c++;
-      }
-    }
-    // }else{
-    //   B = B/(A(sv)*A(sv));
-    //   B2 = dA(sv)*y/(A(sv)*A(sv)*A(sv)*A(sv));
-    // }
-    
-    
-    //if(dA(sv)>0.0000000001){
-    sv2 = sv;
-    for(int dim2 = dim-1; dim2>=0;dim2--){
-      sv2 = sv2-p(dim2)*p(dim2);
-      p0 = p(dim2);
-      n0 = Bl/p0;
-      
-      // if(p0 > 1.5){
-      for(int h = 0; h < n0; h++)
-      {
-        for ( int i = 0; i < p0; i++)
+        x[h]=B[h]/A[sv];  //do first outside loop
+        for (i=1; i<p0; i++)  //backsolve with respect to dim+1 the first time
         {
-          x2(h*p0+i) = B2(h*p0+i);
-          for ( int k = i-1; k >=0; k-- ) x2(h*p0+i) -= A(sv2+i*p0+k) * x2(h*p0+k);
-          x2(h*p0+i) /= A(sv2+i*p0+i);
+          x[h+i]=B[h+i];
+          sv0 = sv+i*p0;   //speed up index reference
+          for(k=i-1; k>=0; k--) x[h+i]-=A[sv0+k]*x[h+k];
+          x[h+i]/=A[sv0+i];
         }
         
-        for ( int i = p0-1; i >=0; i--)
+        y[h+p0-1]=x[h+p0-1]/A[sv+p0*p0-1];   //do first outside loop
+        for (i=p0-2; i>=0; i--) //backsolve with respect to dim+1 the second time
         {
-          y2(h*p0+i) = x2(h*p0+i);
-          for (int k=i+1; k < p0; k++) y2(h*p0+i) -= A(sv2+k*p0+i) *y2(h*p0+k);
-          y2(h*p0+i) /= A(sv2+i*p0+i);
+          y[h+i]=x[h+i];
+          sv0=sv+i*p0;   //speed up index reference
+          for(k=i+1; k<p0; k++) y[h+i]-=A[sv0+k]*y[h+k];
+          y[h+i]/=A[sv0+i];
         }
       }
-      c = 0;
-      for ( int i = 0; i < p0; i++)
-      {
-        for(int h = 0; h < n0; h++)
-        {
-          B2(c) = y2(h*p0+i);
-          c++;
-        }
-      }
-      // }else{
-      //   B2 = B2/(A(sv)*A(sv));
-      // }
-    }
-    //}
-    
-    
-    for(int h2 = 0; h2 < Bl; h2++){
-      gz(h2,dim) = B2(h2); 
-    }
+      c=0;
+      for(i=0; i<p0; i++) for(h=0; h<Bl; h+=p0){B[c]=y[h+i]; c++;} //spinning the vector to right orientation
+    }else{sv--; B=B/(A[sv]*A[sv]);} // kron with respect to one thing shortcut
   }
   
-  return gz;
+  B1=clone(B); //save this value, it will spin
+  sv=A.size();
+  
+  for(int dim=d-1; dim>=0;dim--){ //loop over the all demensions
+    if(p[dim]>1.5){  //do kron with respect to more than one thing
+      p0 = p[dim]; //look at our one demension
+      sv = sv-p0*p0;
+      for(h = 0; h < Bl; h+=p0){
+        for(i=0; i<p0; i++) {
+          sv0=sv+i*p0;
+          dBn(h+i) = 0;
+          for (k = 0; k <p0; k++) dBn[h+i] += dA[sv+i*p0+k]*B1[h+k];
+        }
+      }
+      
+      for(h=0; h<Bl; h+=p0)  //loop over the leftover demensions
+      {
+        x[h]=dBn[h]/A[sv];  //do first outside loop
+        for (i=1; i<p0; i++)  //backsolve with respect to dim+1 the first time
+        {
+          x[h+i]=dBn[h+i];
+          sv0 = sv+i*p0;   //speed up index reference
+          for(k=i-1; k>=0; k--) x[h+i]-=A[sv0+k]*x[h+k];
+          x[h+i]/=A[sv0+i];
+        }
+        
+        y[h+p0-1]=x[h+p0-1]/A[sv+p0*p0-1];   //do first outside loop
+        for (i=p0-2; i>=0; i--) //backsolve with respect to dim+1 the second time
+        {
+          y[h+i]=x[h+i];
+          sv0=sv+i*p0;   //speed up index reference
+          for(k=i+1; k<p0; k++) y[h+i]-=A[sv0+k]*y[h+k];
+          y[h+i]/=A[sv0+i];
+        }
+      }
+      
+      B2 = clone(B1);
+      c=0;
+      for(i=0; i<p0; i++) for(h=0; h<Bl; h+=p0){B1[c]=B2[h+i]; c++;} //spinning the vector to next orientation
+      
+      c=0;
+      for(i=0; i<p0; i++) for(h=0; h<Bl; h+=p0){dBn[c]=y[h+i]; c++;} //spinning the vector to right orientation
+      for(dim2=dim-1;dim2>=0;dim2--){
+        p1 = p(dim2); //look at our one demension
+       if(p(dim2)>1.5){  //spin if we have something to spin over
+          dBn2 = clone(dBn);
+          c=0;
+          for(i=0; i<p1; i++) for(h=0; h<Bl; h+=p1){dBn[c]=dBn2[h+i]; c++;} //spinning the vector to right orientation
+        }
+      }
+      for(i = 0; i < Bl; i++) dB(dim,i) = B[i]*(dA[sv]/(A[sv]*A[sv]));
+    }else{sv--; for(i = 0; i < Bl; i++) dB(dim,i) = B[i]*(dA[sv]/(A[sv]*A[sv]));} // kron with respect to one thing shortcut
+  }
+  return dB;
 }
 
 // You can include R code blocks in C++ files processed with sourceCpp
