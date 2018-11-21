@@ -32,8 +32,12 @@ test_that("dpw matches numerical derivative, C and R versions match", {
   logtheta <- c(-2,-2.1,-2.2)
   
   # Check that R and C give same result
+  pwR <- calculate_pw(SG=SG, y=y, logtheta=logtheta, useC=F)
+  pwC <- calculate_pw(SG=SG, y=y, logtheta=logtheta, useC=T)
   pw_dpwR <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta, useC=F)
   pw_dpwC <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta, useC=T)
+  expect_equal(pwR, pwC)
+  expect_equal(pwR, pw_dpwR$pw)
   expect_equal(pw_dpwR$pw, pw_dpwC$pw)
   expect_equal(pw_dpwR$dpw, pw_dpwC$dpw)
   
