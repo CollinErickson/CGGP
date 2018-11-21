@@ -109,7 +109,8 @@ MSE_de <- function(valsinds, MSE_v) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
-SGappend <- function(SG,batchsize,..., theta){
+SGappend <- function(SG,batchsize,..., logtheta, theta){
+  if (missing(theta)) {theta <- exp(logtheta)}
   n_before <- nrow(SG$design)
   
   # Set up blank matrix to store MSE values

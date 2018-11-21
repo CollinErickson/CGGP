@@ -15,6 +15,7 @@
 #' d <- 8
 #' SG = SGcreate(d,201)
 SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xmax=rep(1,d)) {
+  if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object
   SG = list("xmin" = xmin, "xmax" = xmax)
   class(SG) <- c("SGGP", "list")
