@@ -4,7 +4,7 @@
 \alias{calculate_pw_R}
 \title{Calculate predictive weights for SGGP}
 \usage{
-calculate_pw_R(SG, y, logtheta, return_lS = FALSE, useC = FALSE)
+calculate_pw_R(SG, y, logtheta, return_lS = FALSE)
 }
 \arguments{
 \item{SG}{SGGP object}
@@ -28,10 +28,5 @@ solve the full system of equations.
 \examples{
 SG <- SGcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-calculate_pw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
-
-# microbenchmark::microbenchmark(
-#     withC=calculate_pw(SG=SG, y=Y, logtheta=SG$logtheta, useC=T), 
-#     noC=calculate_pw(SG=SG, y=Y, logtheta=SG$logtheta, useC=F),
-#     times=5)
+calculate_pw_R(SG=SG, y=y, logtheta=c(-.1,.1,.3))
 }

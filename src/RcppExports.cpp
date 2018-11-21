@@ -50,24 +50,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_kronDBS
-NumericVector rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p, int Al, int Bl, int d);
-RcppExport SEXP _SGGP_rcpp_kronDBS(SEXP ASEXP, SEXP BSEXP, SEXP pSEXP, SEXP AlSEXP, SEXP BlSEXP, SEXP dSEXP) {
+void rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p);
+RcppExport SEXP _SGGP_rcpp_kronDBS(SEXP ASEXP, SEXP BSEXP, SEXP pSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type A(ASEXP);
     Rcpp::traits::input_parameter< NumericVector >::type B(BSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< int >::type Al(AlSEXP);
-    Rcpp::traits::input_parameter< int >::type Bl(BlSEXP);
-    Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_kronDBS(A, B, p, Al, Bl, d));
-    return rcpp_result_gen;
+    rcpp_kronDBS(A, B, p);
+    return R_NilValue;
 END_RCPP
 }
 // rcpp_gkronDBS
-NumericMatrix rcpp_gkronDBS(NumericVector A, NumericVector dA, NumericVector B, NumericVector p, int Bl, int d);
-RcppExport SEXP _SGGP_rcpp_gkronDBS(SEXP ASEXP, SEXP dASEXP, SEXP BSEXP, SEXP pSEXP, SEXP BlSEXP, SEXP dSEXP) {
+NumericMatrix rcpp_gkronDBS(NumericVector A, NumericVector dA, NumericVector B, NumericVector p);
+RcppExport SEXP _SGGP_rcpp_gkronDBS(SEXP ASEXP, SEXP dASEXP, SEXP BSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -75,9 +71,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type dA(dASEXP);
     Rcpp::traits::input_parameter< NumericVector >::type B(BSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< int >::type Bl(BlSEXP);
-    Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_gkronDBS(A, dA, B, p, Bl, d));
+    rcpp_result_gen = Rcpp::wrap(rcpp_gkronDBS(A, dA, B, p));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -87,8 +81,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SGGP_rcpparma_outerproduct", (DL_FUNC) &_SGGP_rcpparma_outerproduct, 1},
     {"_SGGP_rcpparma_innerproduct", (DL_FUNC) &_SGGP_rcpparma_innerproduct, 1},
     {"_SGGP_rcpparma_bothproducts", (DL_FUNC) &_SGGP_rcpparma_bothproducts, 1},
-    {"_SGGP_rcpp_kronDBS", (DL_FUNC) &_SGGP_rcpp_kronDBS, 6},
-    {"_SGGP_rcpp_gkronDBS", (DL_FUNC) &_SGGP_rcpp_gkronDBS, 6},
+    {"_SGGP_rcpp_kronDBS", (DL_FUNC) &_SGGP_rcpp_kronDBS, 3},
+    {"_SGGP_rcpp_gkronDBS", (DL_FUNC) &_SGGP_rcpp_gkronDBS, 4},
     {NULL, NULL, 0}
 };
 

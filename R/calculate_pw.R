@@ -17,6 +17,11 @@
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' calculate_pw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
+#' 
+#' # microbenchmark::microbenchmark(
+#' #     withC=calculate_pw(SG=SG, y=Y, logtheta=SG$logtheta, useC=T), 
+#' #     noC=calculate_pw(SG=SG, y=Y, logtheta=SG$logtheta, useC=F),
+#' #     times=5)
 calculate_pw <- function(SG, y, logtheta, return_lS=FALSE, useC=TRUE) {
   if (useC) {
     calculate_pw_C(SG=SG, y=y, logtheta=logtheta, return_lS=return_lS)
@@ -64,13 +69,8 @@ calculate_pw_and_dpw <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FA
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' calculate_pw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
-#' 
-#' # microbenchmark::microbenchmark(
-#' #     withC=calculate_pw(SG=SG, y=Y, logtheta=SG$logtheta, useC=T), 
-#' #     noC=calculate_pw(SG=SG, y=Y, logtheta=SG$logtheta, useC=F),
-#' #     times=5)
-calculate_pw_R <- function(SG, y, logtheta, return_lS=FALSE, useC=FALSE) {
+#' calculate_pw_R(SG=SG, y=y, logtheta=c(-.1,.1,.3))
+calculate_pw_R <- function(SG, y, logtheta, return_lS=FALSE) {
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
   # Now going to store choleskys instead of inverses for stability
   #CiS = list(matrix(1,1,1),Q*SG$d) # A list of matrices, Q for each dimension
@@ -99,21 +99,15 @@ calculate_pw_R <- function(SG, y, logtheta, return_lS=FALSE, useC=FALSE) {
   # Loop over blocks selected
   for (lcv1 in 1:SG$uoCOUNT) {
     B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
-    if (useC) {
-      Av = unlist(CCS[((1:SG$d-1)*Q+SG$uo[lcv1,1:SG$d])])
-      B2=B
-      B = rcpp_kronDBS(Av, B2, SG$gridsizest[lcv1,], length(Av), length(B2),  SG$d)
-    } else {
-      for (e in SG$d:1) {
-        if(SG$gridsizest[lcv1,e] > 1.5){
-          B <- matrix(as.vector(B),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
-          B <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B, transpose = TRUE))
-          #B <-  solve(CS[[((e-1)*Q+SG$uo[lcv1,e])]],B)
-          B <- t(B)
-        }
-        else{
-          B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
-        }
+    for (e in SG$d:1) {
+      if(SG$gridsizest[lcv1,e] > 1.5){
+        B <- matrix(as.vector(B),SG$gridsizest[lcv1,e],SG$gridsizet[lcv1]/SG$gridsizest[lcv1,e])
+        B <-  backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],backsolve(CCS[[((e-1)*Q+SG$uo[lcv1,e])]],B, transpose = TRUE))
+        #B <-  solve(CS[[((e-1)*Q+SG$uo[lcv1,e])]],B)
+        B <- t(B)
+      }
+      else{
+        B = as.vector(B)/(as.vector(CCS[[((e-1)*Q+SG$uo[lcv1,e])]])^2)
       }
     }
     pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +
@@ -136,7 +130,7 @@ calculate_pw_R <- function(SG, y, logtheta, return_lS=FALSE, useC=FALSE) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' calculate_pw_and_dpw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
+#' calculate_pw_and_dpw_R(SG=SG, y=y, logtheta=c(-.1,.1,.3))
 calculate_pw_and_dpw_R <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FALSE) {
   
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of all blocks

@@ -16,9 +16,6 @@ using namespace Rcpp;
 //' @param A Vector
 //' @param B Vector
 //' @param p Vector
-//' @param Al Length of A
-//' @param Bl Length of B
-//' @param d Dimension
 //' @return kronDBS calculation
 //' @export
 // [[Rcpp::export]]
@@ -59,6 +56,15 @@ void rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p){
   return;}
 
 
+//' rcpp_kronDBS
+//' 
+//' @param A Vector
+//' @param B Vector
+//' @param p Vector
+//' @return kronDBS calculation
+//' @export
+//' @examples
+//' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 // [[Rcpp::export]]
 NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, NumericVector p){
   int sv=A.size(); int Bl=B.size(); int d=p.size();

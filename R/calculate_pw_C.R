@@ -15,7 +15,7 @@
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' calculate_pw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
+#' calculate_pw_C(SG=SG, y=y, logtheta=c(-.1,.1,.3))
 calculate_pw_C <- function(SG, y, logtheta, return_lS=FALSE) {
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max value of all blocks
   # Now going to store choleskys instead of inverses for stability
@@ -65,7 +65,7 @@ calculate_pw_C <- function(SG, y, logtheta, return_lS=FALSE) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' calculate_pw_and_dpw(SG=SG, y=y, logtheta=c(-.1,.1,.3))
+#' calculate_pw_and_dpw_C(SG=SG, y=y, logtheta=c(-.1,.1,.3))
 calculate_pw_and_dpw_C <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FALSE) {
   warning("calculate_pw_and_dpw_C is not accurate yet!")
   Q  = max(SG$uo[1:SG$uoCOUNT,]) # Max level of all blocks
@@ -104,6 +104,8 @@ calculate_pw_and_dpw_C <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=
   for (lcv1 in 1:SG$uoCOUNT) {
     B = y[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]]
     dB = rcpp_gkronDBS(unlist(CCS[((1:SG$d-1)*Q+SG$uo[lcv1,1:SG$d])]), unlist(dCS[((1:SG$d-1)*Q+SG$uo[lcv1,1:SG$d])]), B, SG$gridsizest[lcv1,])
+    print('dB is: ')
+    print(dB)
     dpw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]],] = dpw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]],] +
         SG$w[lcv1] * t(dB)
     pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] = pw[SG$dit[lcv1, 1:SG$gridsizet[lcv1]]] +

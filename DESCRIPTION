@@ -16,6 +16,7 @@ LinkingTo: Rcpp, RcppArmadillo
 Suggests: testthat,
     covr,
     ggplot2,
+    reshape2,
     lhs
 URL: https://github.com/CollinErickson/SGGP
 BugReports: https://github.com/CollinErickson/SGGP/issues

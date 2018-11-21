@@ -22,11 +22,11 @@ Thus a larger right tail on the histogram are more important variables.
 # All dimensions should look similar
 d <- 8
 SG = SGcreate(d,201)
-SGhist(SG)
-SGhist(SG, ylog=F)
+#SGhist(SG)
+#SGhist(SG, ylog=F)
 
 # The first dimension is more active and will have greater depth
 SG <- SGcreate(d=5, batchsize=10)
 SG <- SGappend(logtheta=c(-2,2,2,2,2), SG=SG, batchsize=100)
-SGhist(SG)
+#SGhist(SG)
 }

@@ -31,16 +31,22 @@ rcpparma_bothproducts <- function(x) {
 #' @param A Vector
 #' @param B Vector
 #' @param p Vector
-#' @param Al Length of A
-#' @param Bl Length of B
-#' @param d Dimension
 #' @return kronDBS calculation
 #' @export
-rcpp_kronDBS <- function(A, B, p, Al, Bl, d) {
-    .Call(`_SGGP_rcpp_kronDBS`, A, B, p, Al, Bl, d)
+rcpp_kronDBS <- function(A, B, p) {
+    invisible(.Call(`_SGGP_rcpp_kronDBS`, A, B, p))
 }
 
-rcpp_gkronDBS <- function(A, dA, B, p, Bl, d) {
-    .Call(`_SGGP_rcpp_gkronDBS`, A, dA, B, p, Bl, d)
+#' rcpp_kronDBS
+#' 
+#' @param A Vector
+#' @param B Vector
+#' @param p Vector
+#' @return kronDBS calculation
+#' @export
+#' @examples
+#' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
+rcpp_gkronDBS <- function(A, dA, B, p) {
+    .Call(`_SGGP_rcpp_gkronDBS`, A, dA, B, p)
 }
 
