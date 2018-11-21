@@ -23,3 +23,13 @@ print.SGGP <- function(x, ...) {
   )
   cat(s)
 }
+
+#' S3 predict method for SGGP
+#' 
+#' Passes to SGGPpred
+#'
+#' @rdname SGGPpred
+#' @export
+predict.SGGP <- function(object, xp, y, logtheta, theta, ...) {
+  SGGPpred(SG=SG, xp=xp, y=y, ..., logtheta=logtheta, theta=theta)
+}
