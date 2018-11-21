@@ -15,6 +15,7 @@ Imports: Rcpp (>= 0.12.18)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: testthat,
     covr,
+    ggplot2,
     lhs
 URL: https://github.com/CollinErickson/SGGP
 BugReports: https://github.com/CollinErickson/SGGP/issues

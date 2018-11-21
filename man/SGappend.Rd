@@ -4,7 +4,7 @@
 \alias{SGappend}
 \title{Add points to SGGP}
 \usage{
-SGappend(SG, batchsize, ..., theta)
+SGappend(SG, batchsize, ..., logtheta, theta)
 }
 \arguments{
 \item{SG}{Sparse grid object}
@@ -12,6 +12,8 @@ SGappend(SG, batchsize, ..., theta)
 \item{batchsize}{Number of points to add}
 
 \item{...}{Don't use, just forces theta to be named}
+
+\item{logtheta}{Log of theta, give one of theta and logtheta}
 
 \item{theta}{Correlation parameters}
 }

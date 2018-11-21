@@ -101,6 +101,7 @@ MSE_de <- function(valsinds, MSE_v) {
 #' @param SG Sparse grid object
 #' @param batchsize Number of points to add
 #' @param theta Correlation parameters
+#' @param logtheta Log of theta, give one of theta and logtheta
 #' @param ... Don't use, just forces theta to be named
 #'
 #' @return SG with new points added.
