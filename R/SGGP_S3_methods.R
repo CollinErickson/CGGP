@@ -27,9 +27,11 @@ print.SGGP <- function(x, ...) {
 #' S3 predict method for SGGP
 #' 
 #' Passes to SGGPpred
+#' 
+#' @param object SGGP object
 #'
 #' @rdname SGGPpred
 #' @export
 predict.SGGP <- function(object, xp, y, logtheta, theta, ...) {
-  SGGPpred(SG=SG, xp=xp, y=y, ..., logtheta=logtheta, theta=theta)
+  SGGPpred(SG=object, xp=xp, y=y, ..., logtheta=logtheta, theta=theta)
 }

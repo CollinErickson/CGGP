@@ -10,6 +10,8 @@
 SGGPpred(xp, SG, y, ..., logtheta = SG$logtheta, theta)
 }
 \arguments{
+\item{object}{SGGP object}
+
 \item{xp}{x value to predict at}
 
 \item{y}{Observations for SG}
