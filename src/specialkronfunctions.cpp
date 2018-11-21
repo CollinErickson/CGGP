@@ -164,7 +164,7 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
     // }
     
     
-    if(dA(sv)>0.0000000001){
+    //if(dA(sv)>0.0000000001){
     sv2 = sv;
     for(int dim2 = dim-1; dim2>=0;dim2--){
       sv2 = sv2-p(dim2)*p(dim2);
@@ -201,7 +201,7 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
       //   B2 = B2/(A(sv)*A(sv));
       // }
     }
-    }
+    //}
     
     
     for(int h2 = 0; h2 < Bl; h2++){
