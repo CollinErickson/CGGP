@@ -137,7 +137,7 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
         }
       }
       
-      B2 = clone(B1);
+      B2 = B1+0;
       c=0;
       for(i=0; i<p0; i++) for(h=0; h<Bl; h+=p0){B1[c]=B2[h+i]; c++;} //spinning the vector to next orientation
       
@@ -151,7 +151,7 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
           for(i=0; i<p1; i++) for(h=0; h<Bl; h+=p1){dBn[c]=dBn2[h+i]; c++;} //spinning the vector to right orientation
         }
       }
-      for(i = 0; i < Bl; i++) dB(dim,i) = B[i]*(dA[sv]/(A[sv]*A[sv]));
+      for(i = 0; i < Bl; i++) dB(dim,i) = dBn[i];
     }else{sv--; for(i = 0; i < Bl; i++) dB(dim,i) = B[i]*(dA[sv]/(A[sv]*A[sv]));} // kron with respect to one thing shortcut
   }
   return dB;
