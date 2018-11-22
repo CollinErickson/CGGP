@@ -40,6 +40,7 @@ rcpp_kronDBS <- function(A, B, p) {
 #' rcpp_kronDBS
 #' 
 #' @param A Vector
+#' @param dA Vector
 #' @param B Vector
 #' @param p Vector
 #' @return kronDBS calculation

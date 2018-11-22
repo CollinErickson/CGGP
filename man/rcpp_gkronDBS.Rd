@@ -20,5 +20,5 @@ kronDBS calculation
 rcpp_kronDBS
 }
 \examples{
-rcpp_gkronDBS(c(1,1), c(0,0), c(.7496612), c(1,1))
+rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 }

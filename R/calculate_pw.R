@@ -61,7 +61,6 @@ calculate_pw_and_dpw <- function(SG, y, logtheta, return_lS=FALSE, return_dlS=FA
 #' @param y Measured values for SG$design
 #' @param logtheta Log of correlation parameters
 #' @param return_lS Should lS be returned?
-#' @param useC Should Rcpp code used? This should be faster.
 #'
 #' @return Vector with predictive weights
 #' @export
