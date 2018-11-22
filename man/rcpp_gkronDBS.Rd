@@ -9,6 +9,8 @@ rcpp_gkronDBS(A, dA, B, p)
 \arguments{
 \item{A}{Vector}
 
+\item{dA}{Vector}
+
 \item{B}{Vector}
 
 \item{p}{Vector}

@@ -14,8 +14,6 @@ calculate_pw_R(SG, y, logtheta, return_lS = FALSE)
 \item{logtheta}{Log of correlation parameters}
 
 \item{return_lS}{Should lS be returned?}
-
-\item{useC}{Should Rcpp code used? This should be faster.}
 }
 \value{
 Vector with predictive weights
