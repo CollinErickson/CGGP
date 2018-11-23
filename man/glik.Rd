@@ -4,7 +4,7 @@
 \alias{glik}
 \title{Gradient of likelihood. Is it log likelihood?}
 \usage{
-glik(logtheta, ..., SG, y)
+glik(logtheta, ..., SG, y, return_lik = FALSE)
 }
 \arguments{
 \item{logtheta}{Log of correlation parameters}
@@ -14,6 +14,8 @@ glik(logtheta, ..., SG, y)
 \item{SG}{SGGP object}
 
 \item{y}{SG$design measured values}
+
+\item{return_lik}{If yes, it returns a list with lik and glik}
 }
 \value{
 Vector for gradient of likelihood w.r.t. x (theta)
