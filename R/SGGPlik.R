@@ -54,6 +54,7 @@ lik <- function(logtheta, ..., SG, y) {
 #' @param logtheta Log of correlation parameters
 #' @param SG SGGP object
 #' @param y SG$design measured values
+#' @param return_lik If yes, it returns a list with lik and glik
 #' @param ... Don't use, just forces theta to be named
 #'
 #' @return Vector for gradient of likelihood w.r.t. x (theta)
@@ -63,7 +64,7 @@ lik <- function(logtheta, ..., SG, y) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' glik(c(.1,.1,.1), SG=SG, y=y)
-glik <- function(logtheta, ..., SG, y) {
+glik <- function(logtheta, ..., SG, y, return_lik=FALSE) {
   calc_pw_dpw <- calculate_pw_and_dpw(SG=SG, y=y, logtheta=logtheta, return_lS=TRUE, return_dlS=TRUE)
   pw <- calc_pw_dpw$pw
   dpw <- calc_pw_dpw$dpw
@@ -82,8 +83,10 @@ glik <- function(logtheta, ..., SG, y) {
     for (lcv2 in 1:SG$d) {
       levelnow = SG$uo[lcv1, lcv2]
       if (levelnow > 1.5) {
-        #lDet = lDet + (lS[levelnow, lcv2] - lS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
-        #  (SG$gridsizes[lcv1, lcv2]) # CBE added this, not needed for ddL, can use to return fn and gr at same time
+        if (return_lik) {
+          lDet = lDet + (lS[levelnow, lcv2] - lS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
+           (SG$gridsizes[lcv1, lcv2])
+        }
         dlDet[lcv2] = dlDet[lcv2] + (dlS[levelnow, lcv2] - dlS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
           (SG$gridsizes[lcv1, lcv2])
       }
@@ -93,6 +96,10 @@ glik <- function(logtheta, ..., SG, y) {
   #logthetasqrt3 <- log(exp(logtheta)*sqrt(3))
   ddL = dsigma_hat / sigma_hat[1] + 2 / length(y) *logtheta +  dlDet / length(y) 
   
+  if (return_lik) {
+    return(list(lik=log(c(sigma_hat))+sum(logtheta^2)/length(y) + 1 / length(y) * lDet ,
+         glik=ddL))
+  }
   return(ddL)
 }
 
