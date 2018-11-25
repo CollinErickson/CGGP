@@ -19,6 +19,8 @@ logthetaMLE(SG, y, ..., lower = rep(-2, SG$d), upper = rep(3.9, SG$d),
 
 \item{upper}{Upper bound for parameter optimization}
 
+\item{method}{Optimization method, must be "L-BFGS-B" when using lower and upper}
+
 \item{logtheta0}{Initial logtheta}
 
 \item{tol}{Relative tolerance for optimization. Can't use absolute tolerance

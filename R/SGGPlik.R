@@ -116,6 +116,7 @@ glik <- function(logtheta, ..., SG, y, return_lik=FALSE) {
 #' @param return_optim If TRUE, return output from optim().
 #' @param lower Lower bound for parameter optimization
 #' @param upper Upper bound for parameter optimization
+#' @param method Optimization method, must be "L-BFGS-B" when using lower and upper
 #' @param use_splitfngr Should give exact same results but with a slight speed up
 #' If FALSE return updated SG.
 #'
