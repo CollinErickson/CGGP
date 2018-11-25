@@ -114,6 +114,9 @@ glik <- function(logtheta, ..., SG, y, return_lik=FALSE) {
 #' since lik can be less than zero.
 #' @param ... Don't use, just forces theta to be named
 #' @param return_optim If TRUE, return output from optim().
+#' @param lower Lower bound for parameter optimization
+#' @param upper Upper bound for parameter optimization
+#' @param use_splitfngr Should give exact same results but with a slight speed up
 #' If FALSE return updated SG.
 #'
 #' @return theta MLE
@@ -123,20 +126,36 @@ glik <- function(logtheta, ..., SG, y, return_lik=FALSE) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' logthetaMLE(SG=SG, y=y)
-logthetaMLE <- function(SG, y,..., logtheta0 = rep(0,SG$d),tol=1e-4, return_optim=FALSE) {
-  opt.out = optim(
-    logtheta0,
-    fn = lik,
-    gr = glik,
-    lower = rep(-2, SG$d),
-    upper = rep(3.9, SG$d),
-    y = y - mean(y),
-    SG = SG,
-    method = "L-BFGS-B", #"BFGS",
-    hessian = FALSE,
-    control = list()#reltol=1e-4)#abstol = tol)
-    # Is minimizing, default option of optim.
-  )
+logthetaMLE <- function(SG, y, ..., 
+                        lower = rep(-2, SG$d),
+                        upper = rep(3.9, SG$d),
+                        method = "L-BFGS-B", #"BFGS",
+                        logtheta0 = rep(0,SG$d),tol=1e-4, return_optim=FALSE,
+                        use_splitfngr=FALSE) {
+  if (use_splitfngr) {
+    opt.out = splitfngr::optim_share(
+      par=logtheta0,
+      fngr = function(par) glik(logtheta=par, SG=SG, y=y-mean(y), return_lik=T),
+      lower = lower, #rep(-2, SG$d),
+      upper = upper, #rep(3.9, SG$d),
+      method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+      hessian = FALSE,
+      control = list()#reltol=1e-4)#abstol = tol)
+    )
+  } else {
+    opt.out = optim(
+      logtheta0,
+      fn = lik,
+      gr = glik,
+      lower = lower, #rep(-2, SG$d),
+      upper = upper, #rep(3.9, SG$d),
+      y = y - mean(y),
+      SG = SG,
+      method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+      hessian = FALSE,
+      control = list()#reltol=1e-4)#abstol = tol)
+    )
+  }
   
   if (return_optim) {
     return(opt.out)

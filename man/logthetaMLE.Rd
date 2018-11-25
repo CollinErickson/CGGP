@@ -4,8 +4,9 @@
 \alias{logthetaMLE}
 \title{Calculate theta MLE given data}
 \usage{
-logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 1e-04,
-  return_optim = FALSE)
+logthetaMLE(SG, y, ..., lower = rep(-2, SG$d), upper = rep(3.9, SG$d),
+  method = "L-BFGS-B", logtheta0 = rep(0, SG$d), tol = 1e-04,
+  return_optim = FALSE, use_splitfngr = FALSE)
 }
 \arguments{
 \item{SG}{Sparse grid objects}
@@ -14,12 +15,18 @@ logthetaMLE(SG, y, ..., logtheta0 = rep(0, SG$d), tol = 1e-04,
 
 \item{...}{Don't use, just forces theta to be named}
 
+\item{lower}{Lower bound for parameter optimization}
+
+\item{upper}{Upper bound for parameter optimization}
+
 \item{logtheta0}{Initial logtheta}
 
 \item{tol}{Relative tolerance for optimization. Can't use absolute tolerance
 since lik can be less than zero.}
 
-\item{return_optim}{If TRUE, return output from optim().
+\item{return_optim}{If TRUE, return output from optim().}
+
+\item{use_splitfngr}{Should give exact same results but with a slight speed up
 If FALSE return updated SG.}
 }
 \value{
