@@ -28,5 +28,5 @@ This is a basic example which shows you how to solve a common problem:
 ## basic example code
 library(SGGP)
 d <- 8
-SG = SGcreate(rep(0, d), rep(1, d),201)
+SG = SGcreate(d=d,201)
 ```
