@@ -68,11 +68,12 @@ void rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p){
 //' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 // [[Rcpp::export]]
 NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, NumericVector p){
-  int sv=A.size(); int Bl=B.size(); int d=p.size();
+  int sv=A.size(); int sdv=dA.size(); int Bl=B.size(); int d=p.size();
   NumericVector x(Bl); NumericVector y(Bl); NumericVector B1(Bl); NumericVector B2(Bl); 
-  NumericVector dBn(Bl); NumericVector dBn2(Bl); NumericMatrix dB(d,Bl);
-  int p0; int sv0; int c; int i; int k; int h; int dim2; int p1;
- // double *pointersave1; double *pointersave2;
+  int npara = sdv/sv;
+  NumericVector dBn(Bl); NumericVector dBn2(Bl); NumericMatrix dB(d*npara,Bl);
+  int p0; int sv0; int c; int i; int k; int h; int dim2; int p1; int np;
+  double *pointersave1; double *pointersave2;
   
   for(int dim=d-1; dim>=0;dim--){ //loop over the all demensions
     if(p[dim]>1.5){ //do not need to do much when kron with respect to one thing
@@ -106,60 +107,45 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
   B1=clone(B); //save this value, it will spin
   sv=A.size();
   
+  pointersave2 = B1.begin();
   for(int dim=d-1; dim>=0;dim--){ //loop over the all demensions
     if(p[dim]>1.5){  //do kron with respect to more than one thing
       p0 = p[dim]; //look at our one demension
       sv = sv-p0*p0;
-      
-  //    pointersave1 = dA.begin()+sv;
-   //   pointersave2 = B1.begin();
+      for(np=npara-1;np>=0;np--){
+        sdv = sdv-p0*p0;
+        
+        pointersave1 = dA.begin()+sdv;
       for(h = 0; h < Bl; h+=p0){
         for(i=0; i<p0; i++) {
-          sv0=sv+i*p0;
-          dBn(h+i) = 0;
-          for (k = 0; k <p0; k++) dBn[h+i] += dA[sv+i*p0+k]*B1[h+k];
-          //sv0=i*p0;
-          //dBn[h+i] = std::inner_product(pointersave1+sv0,pointersave1+sv0+p0,pointersave2+h,0.0);
+          //sv0=sdv+i*p0;
+          //dBn(h+i) = 0;
+          //for (k = 0; k <p0; k++) dBn[h+i] += dA[sdv+i*p0+k]*B1[h+k];
+          sv0=i*p0;
+          dBn[h+i] = std::inner_product(pointersave1+sv0,pointersave1+sv0+p0,pointersave2+h,0.0);
         }
       }
       
-      for(h=0; h<Bl; h+=p0)  //loop over the leftover demensions
-      {
-        x[h]=dBn[h]/A[sv];  //do first outside loop
-        for (i=1; i<p0; i++)  //backsolve with respect to dim+1 the first time
-        {
-          x[h+i]=dBn[h+i];
-          sv0 = sv+i*p0;   //speed up index reference
-          for(k=i-1; k>=0; k--) x[h+i]-=A[sv0+k]*x[h+k];
-          x[h+i]/=A[sv0+i];
+        for(dim2=dim;dim2>=0;dim2--){
+          if(p(dim2)>1.5){  //spin if we have something to spin over
+            p1 = p(dim2); //look at our one demension
+            dBn2 = clone(dBn);
+            c=0;
+            for(i=0; i<p1; i++) for(h=0; h<Bl; h+=p1){dBn[c]=dBn2[h+i]; c++;} //spinning the vector to right orientation
+          }
         }
-        
-        y[h+p0-1]=x[h+p0-1]/A[sv+p0*p0-1];   //do first outside loop
-        for (i=p0-2; i>=0; i--) //backsolve with respect to dim+1 the second time
-        {
-          y[h+i]=x[h+i];
-          sv0=sv+i*p0;   //speed up index reference
-          for(k=i+1; k<p0; k++) y[h+i]-=A[sv0+k]*y[h+k];
-          y[h+i]/=A[sv0+i];
-        }
+        dB.row(dim*npara+np)  = dBn; 
       }
-      
       B2 = clone(B1);
       c=0;
       for(i=0; i<p0; i++) for(h=0; h<Bl; h+=p0){B1[c]=B2[h+i]; c++;} //spinning the vector to next orientation
       
-      c=0;
-      for(i=0; i<p0; i++) for(h=0; h<Bl; h+=p0){dBn[c]=y[h+i]; c++;} //spinning the vector to right orientation
-      for(dim2=dim-1;dim2>=0;dim2--){
-       if(p(dim2)>1.5){  //spin if we have something to spin over
-         p1 = p(dim2); //look at our one demension
-          dBn2 = clone(dBn);
-          c=0;
-          for(i=0; i<p1; i++) for(h=0; h<Bl; h+=p1){dBn[c]=dBn2[h+i]; c++;} //spinning the vector to right orientation
-        }
+    }else{sv--; 
+      for(int np=npara-1;np>=0;np--){
+        sdv--;
+        dB.row(dim*npara+np) = B*dA[sdv];///(A[sv]*A[sv])); //
       }
-      dB.row(dim) = dBn;
-    }else{sv--; dB.row(dim) = B*(dA[sv]/(A[sv]*A[sv]));} // kron with respect to one thing shortcut
+      } // kron with respect to one thing shortcut
   }
   return dB;
 }

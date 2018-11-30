@@ -1,10 +1,11 @@
 rm(list = ls())
-
-source("SGcreate.R")
-source("GPstuff.R")
-source("SGGPlik.R")
-source("SGGPappendstuff.R")
-source("SGGPpredstuff.R")
+library(Rcpp)
+source("../R/SGcreate.R")
+source("../R/CorrFunctions.R")
+source("../R/SGGPlik.R")
+source("../R/SGGPappendstuff.R")
+source("../R/SGGPpredstuff.R")
+sourceCpp("../src/specialkronfunctions.cpp")
 
 borehole <- function(x) {
   rw <- x[, 1] * (0.15 - 0.05) + 0.05
@@ -113,7 +114,7 @@ testf<-function (x) {  return(borehole(x))}
 # testf<-function (x) {  return(otlcircuit(x))} 
   
 
-N <- 10001
+N <- 5001
 Npred <- 1000
 #install.packages(c("lhs"))
 library("lhs")
@@ -125,18 +126,14 @@ Yp = testf(Xp)
 #install.packages(c("laGP"))
 library(laGP)
 
-x =randomLHS(N, d)
-y= testf(x)
-formals(aGP)[c("X", "Z", "XX")] <- list(x, y, Xp)
-out3 <- aGP(d = list(max = 20))
+#x =randomLHS(N, d)
+#y= testf(x)
+#formals(aGP)[c("X", "Z", "XX")] <- list(x, y, Xp)
+#out3 <- aGP(d = list(max = 20))
 
-goodlogthetaest_old <- c(-0.01932437,  0.82517131,  0.88499983,  0.73263796,  0.86971878,  0.70425694,  0.65443469,  0.80910334)
-goodlogthetaest <- log(exp(goodlogthetaest_old)/sqrt(3))
-use_goodtheta <- !TRUE
-
-SG = SGcreate(rep(0, d), rep(1, d),201) #create the design.  it has so many entries because i am sloppy
+SG = SGcreate(8,201) #create the design.  it has so many entries because i am sloppy
 Y = testf(SG$design) #the design is $design, simple enough, right?
-logthetaest = logthetaMLE(SG,Y)
+theta = thetaMLE(SG,Y)
 if (use_goodtheta) logthetaest <- goodlogthetaest
 thetaest <- exp(logthetaest)
 

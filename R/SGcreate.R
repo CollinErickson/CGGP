@@ -14,30 +14,20 @@
 #' @examples
 #' d <- 8
 #' SG = SGcreate(d,201)
-SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xmax=rep(1,d)) {
+SGcreate <- function(d, batchsize) {
   if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object
-  SG = list("xmin" = xmin, "xmax" = xmax)
-  class(SG) <- c("SGGP", "list")
-  if (tolower(corr) %in% c('matern32', 'mat32', 'm32', 'matern3', 'mat3', 'm3')) {
-    SG$CorrMat <- CorrMatMatern32
-    SG$dCorrMat <- dCorrMatMatern32
-    SG$diag_corrMat <- diag_corrMatMatern32
-    SG$ddiag_corrMat <- ddiag_corrMatMatern32
-  } else if (tolower(corr) %in% c('gaussian', 'gauss')) {
-    SG$CorrMat <- gausscorr
-    SG$dCorrMat <- dgausscorr
-    SG$diag_corrMat <- diag_gausscorr
-  } else {
-    stop(paste0("corr given was ', corr,', must be one of matern32."))
-  }
-  SG$nugget <- nugget
+  SG = list()
   
-  if (any(xmin!=0) || any(xmax!=1)) {stop("For now must use xmin=0 and xmax=1")}
-  SG$d = length(xmin) # input dimension
+  SG$d <- d
+  SG$CorrMat <- CorrMatCauchy
+  SG$numpara <- 2
+  SG$theta <- rep(d*SG$numpara)
+  SG$pw <- NULL
+    
   
   # Levels are blocks. Level is like eta from paper.
-  SG$ML = min(choose(SG$d + 6, SG$d), 100000) #max levels
+  SG$ML = min(choose(SG$d + 6, SG$d), 10000) #max levels
   
   # What is levelpoint? The current point? This is not used again in this file!
   SG$levelpoint = rep(0, SG$ML)
@@ -59,9 +49,10 @@ SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xma
   # Are ancestors support blocks? Is this for calculating coefficient?
   # How any of its ancestors be proposed? They should all be used already?
   # Might be transposed??? Is this right?
-  SG$pila = matrix(0, nrow = SG$ML, ncol = 1000) #proposed immediate level ancestors
-  SG$pala = matrix(0, nrow = SG$ML, ncol = 1000) #proposedal all level ancestors
-  SG$uala = matrix(0, nrow = SG$ML, ncol = 1000) #used all level ancestors
+  SG$maxgridsize = 400
+  SG$pila = matrix(0, nrow = SG$ML, ncol =SG$maxgridsize ) #proposed immediate level ancestors
+  SG$pala = matrix(0, nrow = SG$ML, ncol =SG$maxgridsize ) #proposedal all level ancestors
+  SG$uala = matrix(0, nrow = SG$ML, ncol =SG$maxgridsize ) #used all level ancestors
   SG$pilaCOUNT = rep(0, SG$ML) #count of number of pila
   SG$palaCOUNT = rep(0, SG$ML) #count of number of pala
   SG$ualaCOUNT = rep(0, SG$ML) #count of number of uala
@@ -70,7 +61,8 @@ SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xma
   SG$pila[1:SG$d, 1] = 1
   
   SG$bss = batchsize#1+4*SG$d  #must be at least 3*d
-  SG$sizes = c(1, 2, 2, 3, 3, 4, 4, 6, 8) # Num of points added to 1D design as you go further in any dimension
+  SG$sizes = c(1,2,4,4,8,8) # Num of points added to 1D design as you go further in any dimension
+  SG$maxlevel = length(SG$sizes)
   # Proposed grid size? More points further along the blocks?
   SG$pogsize = rep(0, 4 * SG$ML)
   SG$pogsize[1:SG$poCOUNT] = apply(matrix(SG$sizes[SG$po[1:SG$poCOUNT, ]], SG$poCOUNT, SG$d), 1, prod)
@@ -92,7 +84,7 @@ SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xma
       if (SG$uoCOUNT < (2 * SG$d + 1.5)) {
         pstar = sample(which(SG$pogsize[1:SG$poCOUNT] <= 0.5 + min(SG$pogsize[1:SG$poCOUNT])), 1)
       } else{ # After that randomly select from blocks that still fit
-        pstar = sample(which(SG$pogsize[1:SG$poCOUNT] < (SG$bss - SG$ss + 0.5)), 1)
+        pstar = sample(which(SG$pogsize[1:SG$poCOUNT] < min(SG$bss - SG$ss + 0.5,SG$maxgridsize)), 1)
       }
     }
     
@@ -159,7 +151,7 @@ SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xma
       lp[lcv2] = lp[lcv2] + 1 # Increase THIS dim by 1. This is a new possibility, are we adding it?
       
       # Check if within some bounds??
-      if (max(lp) < 7.5 && SG$poCOUNT < 4 * SG$ML) {
+      if (max(lp) <= SG$maxlevel && SG$poCOUNT < 4*SG$ML) {
         # Dimensions which are past first design level
         kvals = which(lp > 1.5)
         
@@ -290,9 +282,6 @@ SGcreate <- function(d, batchsize, corr="Matern32", nugget=0, xmin=rep(0,d), xma
     
     tv = tv + SG$gridsize[lcv1]
   }
-  
-  # Save predictive weights Rinv*y
-  SG$pw <- NULL
   
   return(SG)
 }
