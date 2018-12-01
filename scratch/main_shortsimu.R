@@ -106,7 +106,6 @@ sum(abs(Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
 sum((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
 
 
-
 # 
 # 
 library(laGP)

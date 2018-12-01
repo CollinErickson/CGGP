@@ -44,7 +44,7 @@ lik <- function(theta,SG, y) {
     
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
     # This next line is really wrong? The paranthese closes off the return before including the lDet.
-    return(log(c(sigma_hat))+1/ length(y) * lDet )
+    return(log(c(sigma_hat))-10*sum(log(4-theta)+log(theta+4))/length(y)+1/ length(y) * lDet )
   }
   
 }
@@ -94,10 +94,10 @@ glik <- function(theta, SG, y, return_lik=FALSE) {
   }
   
   
-  ddL = dsigma_hat / sigma_hat[1]+ dlDet / length(y) 
+  ddL = dsigma_hat / sigma_hat[1]+10/(4-theta)/length(y)-10/(theta+4)/length(y)+ dlDet / length(y) 
   
   if (return_lik) {
-    return(list(lik=log(c(sigma_hat))+ 1 / length(y) * lDet ,
+    return(list(lik=log(c(sigma_hat))-10*sum(log(4-theta)+log(theta+4))/length(y)+ 1 / length(y) * lDet ,
                 glik=ddL))
   }
   return(ddL)
