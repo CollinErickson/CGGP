@@ -126,10 +126,10 @@ Yp = testf(Xp)
 #install.packages(c("laGP"))
 library(laGP)
 
-#x =randomLHS(N, d)
-#y= testf(x)
-#formals(aGP)[c("X", "Z", "XX")] <- list(x, y, Xp)
-#out3 <- aGP(d = list(max = 20))
+x =randomLHS(N, d)
+y= testf(x)
+formals(aGP)[c("X", "Z", "XX")] <- list(x, y, Xp)
+out3 <- aGP(d = list(max = 20))
 
 SG = SGcreate(8,201) #create the design.  it has so many entries because i am sloppy
 Y = testf(SG$design) #the design is $design, simple enough, right?

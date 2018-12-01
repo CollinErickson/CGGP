@@ -30,7 +30,7 @@ calculate_pw_C <- function(SG, y, theta, return_lS=FALSE) {
     for (lcv1 in 1:max(SG$uo[1:SG$uoCOUNT,lcv2])) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]]
       Xbrn = Xbrn[order(Xbrn)]
-      Sstuff = CorrMatCauchy(Xbrn, Xbrn , theta[(lcv2-1)*SG$numpara+1:SG$numpara],return_dCdtheta = TRUE)
+      Sstuff = SG$CorrMat(Xbrn, Xbrn , theta[(lcv2-1)*SG$numpara+1:SG$numpara],return_dCdtheta = TRUE)
       S = Sstuff$C
       # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
       solvetry <- try({
@@ -86,7 +86,7 @@ calculate_pw_and_dpw_C <- function(SG, y, theta, return_lS=FALSE) {
       Xbrn = SG$xb[1:SG$sizest[lcv1]]
       Xbrn = Xbrn[order(Xbrn)]
       nv = length(Xbrn);
-      Sstuff = CorrMatCauchy(Xbrn, Xbrn , theta[(lcv2-1)*SG$numpara+1:SG$numpara],return_dCdtheta = TRUE)
+      Sstuff = SG$CorrMat(Xbrn, Xbrn , theta[(lcv2-1)*SG$numpara+1:SG$numpara],return_dCdtheta = TRUE)
       S = Sstuff$C
       
       cS = chol(S)

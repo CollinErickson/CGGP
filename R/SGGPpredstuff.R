@@ -21,6 +21,7 @@ MSEpred_calc <- function(xp,xl, theta, CorrMat) {
   S = CorrMat(xl, xl, theta)
   n = length(xl)
   cholS = chol(S)
+  
   Cp = CorrMat(xp, xl, theta)
   CiCp = backsolve(cholS,backsolve(cholS,t(Cp), transpose = TRUE))
   

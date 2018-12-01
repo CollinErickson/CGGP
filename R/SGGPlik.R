@@ -65,6 +65,8 @@ lik <- function(theta,SG, y) {
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' glik(c(.1,.1,.1), SG=SG, y=y)
 glik <- function(theta, SG, y, return_lik=FALSE) {
+  
+  #print(theta)
   calc_pw_dpw <- calculate_pw_and_dpw_C(SG=SG, y=y, theta=theta, return_lS=TRUE)
   pw <- calc_pw_dpw$pw
   dpw <- calc_pw_dpw$dpw
@@ -136,7 +138,7 @@ thetaMLE <- function(SG, y, ...,
       lower = lower, #rep(-2, SG$d),
       upper = upper, #rep(3.9, SG$d),
       method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-      hessian = FALSE,
+      hessian = TRUE,
       control = list()#reltol=1e-4)#abstol = tol)
     )
   } else {
@@ -149,11 +151,10 @@ thetaMLE <- function(SG, y, ...,
       y = y - mean(y),
       SG = SG,
       method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-      hessian = FALSE,
+      hessian = TRUE,
       control = list()#reltol=1e-4)#abstol = tol)
     )
   }
-  
   if (return_optim) {
     return(opt.out)
   }

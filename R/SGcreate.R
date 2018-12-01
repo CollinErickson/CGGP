@@ -20,9 +20,9 @@ SGcreate <- function(d, batchsize) {
   SG = list()
   
   SG$d <- d
-  SG$CorrMat <- CorrMatCauchy
-  SG$numpara <- 2
-  SG$theta <- rep(d*SG$numpara)
+  SG$CorrMat <- CorrMatCauchyT
+  SG$numpara <- SG$CorrMat(0,0,0,return_numpara=TRUE)
+  SG$theta <- rep(0,d*SG$numpara)
   SG$pw <- NULL
     
   
@@ -61,7 +61,7 @@ SGcreate <- function(d, batchsize) {
   SG$pila[1:SG$d, 1] = 1
   
   SG$bss = batchsize#1+4*SG$d  #must be at least 3*d
-  SG$sizes = c(1,2,4,4,8,8) # Num of points added to 1D design as you go further in any dimension
+  SG$sizes = c(1,2,4,4,8,12) # Num of points added to 1D design as you go further in any dimension
   SG$maxlevel = length(SG$sizes)
   # Proposed grid size? More points further along the blocks?
   SG$pogsize = rep(0, 4 * SG$ML)
