@@ -13,12 +13,10 @@
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' lik(c(.1,.1,.1), SG=SG, y=y)
 lik <- function(theta,SG, y) {
-  
   # Return Inf if theta is too large. Why????
-  if (max(theta) >= (4 - 10 ^ (-6))) {
+  if (max(theta) >= 0.9999 || min(theta) <= -0.9999) {
     return(Inf)
   } else{
-    
     calc_pw <- calculate_pw_C(SG=SG, y=y, theta=theta, return_lS=TRUE)
     pw <- calc_pw$pw
     lS <- calc_pw$lS
@@ -44,7 +42,7 @@ lik <- function(theta,SG, y) {
     
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
     # This next line is really wrong? The paranthese closes off the return before including the lDet.
-    return(log(c(sigma_hat))-10*sum(log(4-theta)+log(theta+4))/length(y)+1/ length(y) * lDet )
+    return(1/2*(length(y)*log(c(sigma_hat))-10*sum(log(1-theta)+log(theta+1))+lDet) )
   }
   
 }
@@ -94,10 +92,10 @@ glik <- function(theta, SG, y, return_lik=FALSE) {
   }
   
   
-  ddL = dsigma_hat / sigma_hat[1]+10/(4-theta)/length(y)-10/(theta+4)/length(y)+ dlDet / length(y) 
+  ddL =length(y)*dsigma_hat / sigma_hat[1]+10*(1/(1-theta)-1/(theta+1))+ dlDet
   
   if (return_lik) {
-    return(list(lik=log(c(sigma_hat))-10*sum(log(4-theta)+log(theta+4))/length(y)+ 1 / length(y) * lDet ,
+    return(list(lik=1/2*(length(y)*log(c(sigma_hat))-10*sum(log(1-theta)+log(theta+1))+lDet),
                 glik=ddL))
   }
   return(ddL)
@@ -126,22 +124,22 @@ glik <- function(theta, SG, y, return_lik=FALSE) {
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' thetaMLE(SG=SG, y=y)
 thetaMLE <- function(SG, y, ..., 
-                     lower = rep(-3.9, SG$d),
-                     upper = rep(3.9, SG$d),
+                     lower = rep(-0.99, SG$d),
+                     upper = rep(0.99, SG$d),
                      method = "L-BFGS-B", 
                      theta0 = rep(0,SG$numpara*SG$d),tol=1e-4, return_optim=FALSE,
                      use_splitfngr=FALSE) {
-  if (use_splitfngr) {
-    opt.out = splitfngr::optim_share(
-      par=theta0,
-      fngr = function(par) glik(theta=par, SG=SG, y=y-mean(y), return_lik=T),
-      lower = lower, #rep(-2, SG$d),
-      upper = upper, #rep(3.9, SG$d),
-      method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-      hessian = TRUE,
-      control = list()#reltol=1e-4)#abstol = tol)
-    )
-  } else {
+  # if (use_splitfngr) {
+  #   opt.out = splitfngr::optim_share(
+  #     par=theta0,
+  #     fngr = function(par) glik(theta=par, SG=SG, y=y-mean(y), return_lik=T),
+  #     lower = lower, #rep(-2, SG$d),
+  #     upper = upper, #rep(3.9, SG$d),
+  #     method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+  #     hessian = TRUE,
+  #     control = list()#reltol=1e-4)#abstol = tol)
+  #   )
+  # } else {
     opt.out = optim(
       theta0,
       fn = lik,
@@ -154,7 +152,7 @@ thetaMLE <- function(SG, y, ...,
       hessian = TRUE,
       control = list()#reltol=1e-4)#abstol = tol)
     )
-  }
+#  }
   if (return_optim) {
     return(opt.out)
   }
@@ -246,8 +244,8 @@ thetaMLEMV <- function(SG, yMV, ..., theta0 = rep(0,SG$numpara*SG$d),tol=1e-4, r
     theta0,
     fn = likMV,
     gr = glikMV,
-    lower = rep(-2, SG$d),
-    upper = rep(3.9, SG$d),
+    lower = rep(-0,99, SG$d),
+    upper = rep(0.99, SG$d),
     SG = SG,
     yMV = yMV,
     method = "L-BFGS-B", #"BFGS",

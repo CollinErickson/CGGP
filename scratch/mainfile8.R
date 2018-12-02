@@ -116,7 +116,7 @@ x0
 
 source("../R/CorrFunctions.R")
 S1 = CorrMatCauchyT(c(0,1,0.1),c(0.05,1),c(0.5,0.25,-0.45))
-S2 = CorrMatCauchyT(c(0,1,0.1),c(0.05,1),c(0.5,0.25,-0.45+10^(-8)))
+S2 = CorrMatCauchyT(c(0,1,0.1),c(0.05,1),c(0.5+10^(-8),0.25,-0.45))
 (S2-S1)*10^(8)
 Sstuff = CorrMatCauchyT(c(0,1,0.1),c(0.05,1),c(0.5,0.25,-0.45),return_dCdtheta = TRUE)
 Sstuff$dCdtheta

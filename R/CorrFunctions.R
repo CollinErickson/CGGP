@@ -21,16 +21,16 @@ CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_num
   }else{ 
   diffmat =abs(outer(x1,x2,'-')); 
   
-  expLS = exp(theta[1])
-  expHE = exp(theta[2])
+  expLS = exp(3*(theta[1]))
+  expHE = exp(3*(theta[2]))
   h = diffmat/expLS
-  alpha = 2*exp(theta[3]+4)/(1+exp(theta[3]+4))
+  alpha = 2*exp(3*theta[3]+4)/(1+exp(3*theta[3]+4))
   halpha = h^alpha
   pow = -expHE/alpha
   
   C = (1+halpha)^pow
   if(return_dCdtheta){
-    dCdtheta = cbind(expHE*((1+halpha)^(pow-1))*(halpha),dCdHE = C*pow*log(1+halpha), C*(log(halpha+1)/alpha-halpha*log(h)/(halpha+1))*(expHE/(exp(theta[3]+4)+1)))
+    dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),dCdHE =3*C*pow*log(1+halpha), 3*C*(log(halpha+1)/alpha-halpha*log(h)/(halpha+1))*(expHE/(exp(4*theta[3]+4)+1)))
     dCdtheta[is.na(dCdtheta)] = 0
     out <- list(C=C,dCdtheta=dCdtheta)
     return(out)
@@ -61,17 +61,17 @@ CorrMatCauchyT <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_nu
   if(return_numpara){
     return(3);
   } else{
-    expTILT = exp(theta[3])
-    expLS = exp(theta[1])
+    expTILT = exp((theta[3]))
+    expLS = exp(3*(theta[1]))
     x1t = (x1+10^(-2))^expTILT
     x2t = (x2+10^(-2))^expTILT
     x1ts = x1t/expLS
     x2ts = x2t/expLS
     
     diffmat =abs(outer(x1ts,x2ts,'-')); 
-    expHE = exp(theta[2])
+    expHE = exp(3*(theta[2]))
     h = diffmat
-    alpha = 2*exp(4)/(1+exp(4))
+    alpha = 2*exp(5)/(1+exp(5))
     halpha = h^alpha
     pow = -expHE/alpha
     
@@ -84,7 +84,7 @@ CorrMatCauchyT <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_nu
        lh =outer(gt1,gt2,'-')
        hnabs = outer(x1ts,x2ts,'-')
        LO = alpha*expTILT*(pow/expLS)*(abs(h)^(alpha-1)*lh*sign(hnabs))
-      dCdtheta = cbind(expHE*((1+halpha)^(pow-1))*(halpha),C*pow*log(1+halpha),LO*Q)
+      dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha),LO*Q)
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)
     }else{
@@ -118,8 +118,8 @@ CorrMatCauchySQ <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_n
   }else{ 
     diffmat =abs(outer(x1,x2,'-')); 
     
-    expLS = exp(theta[1])
-    expHE = exp(theta[2])
+    expLS = exp(3*theta[1])
+    expHE = exp(3*theta[2])
     h = diffmat/expLS
     alpha = 2*exp(0+4)/(1+exp(0+4))
     halpha = h^alpha
@@ -127,7 +127,7 @@ CorrMatCauchySQ <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_n
     
     C = (1+halpha)^pow
     if(return_dCdtheta){
-      dCdtheta = cbind(expHE*((1+halpha)^(pow-1))*(halpha),C*pow*log(1+halpha))
+      dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)

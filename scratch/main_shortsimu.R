@@ -55,9 +55,8 @@ piston <- function(xx)
 d = 8
 testf<-function (x) {  return(borehole(x))} 
 
-
-d = 7
-testf<-function (x) {  return(piston(x))} 
+#d = 7
+#testf<-function (x) {  return(piston(x))} 
 
 Npred <- 1000
 library("lhs")
