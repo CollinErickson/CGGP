@@ -55,6 +55,8 @@ piston <- function(xx)
 d = 8
 testf<-function (x) {  return(borehole(x))} 
 
+d = 7
+testf<-function (x) {  return(piston(x))} 
 
 Npred <- 1000
 library("lhs")
@@ -78,10 +80,10 @@ sum((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverag
 # sum((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
 
 
-H = rep(0,24)
+H = rep(0,21)
 G = lik(SG$theta,SG,Y)
-for(i in 1:24){
-  rsad = rep(0,24)
+for(i in 1:21){
+  rsad = rep(0,21)
   rsad[i] =10^(-4)
   H[i] = (lik(SG$theta+rsad,SG,Y)-G)*10^(4)
 }
@@ -89,12 +91,12 @@ for(i in 1:24){
 glik(SG$theta,SG,Y)
 
 
-H = matrix(0,nrow=24,ncol=24)
+H = matrix(0,nrow=21,ncol=21)
 library(tictoc)
 tic()
 G = glik(SG$theta,SG,Y)
-for(c in 1:24){
-  rsad = rep(0,24)
+for(c in 1:21){
+  rsad = rep(0,21)
   rsad[c] =10^(-4)
   H[c,] = (glik(SG$theta+rsad,SG,Y)-G)*10^(4)
 }
@@ -111,10 +113,10 @@ U <- function(re){
 grad_U <- function(re){
   return(-((as.vector(glik(theta00-cHa%*%as.vector(re),SG,Y))%*%cHa)))
 }
-q = rep(0,24)
+q = rep(0,21)
 
-Ustar = U(rep(0,24))
-qstar = rep(0,24)
+Ustar = U(rep(0,21))
+qstar = rep(0,21)
 
 Uo = U(q)
 epsilon = 1/sqrt(sum(grad_U(q)^2))
@@ -132,26 +134,28 @@ for(i in 1:200){
   # print(theta00-cHa%*%as.vector(q));
   #print(theta00-cHa%*%as.vector(q));
   if(runif(1)<0.75){
-  if(runif(1) < exp(Uo-Up+K-Kp)){q=qp;Uo=Up;scalev=exp(log(scalev)+1/sqrt(i+4))}else{scalev=exp(log(scalev)-1/sqrt(i+4));scalev = max(scalev,2/sqrt(length(q)))}
+  if(runif(1) < exp(Uo-Up+K-Kp)){q=qp;Uo=Up;scalev=exp(log(scalev)+1/sqrt(i+4))}else{scalev=exp(log(scalev)-1/sqrt(i+4));scalev = max(scalev,1/sqrt(length(q))/10)}
   }else{
   if(runif(1) < exp(Uo-Up+K-Kp)){epsilon = exp(log(epsilon)+1/sqrt(i+4)); q = qp; Uo=Up}else{epsilon = exp(log(epsilon)-1/sqrt(i+4))}
   }
   print(scalev)
   print(epsilon)
 }
-
-q =rep(0,24)
-Bs = matrix(0,nrow=100,ncol=24)
+Uo = U(q)
+Bs = matrix(0,nrow=100,ncol=21)
 for(i in 1:10000){
   p = rnorm(length(q),0,1)*scalev
   K = sum(p^2)/2/scalev^2
   p = p - epsilon * grad_U(q) 
   qp = q + p
+  
   prev = -p + epsilon * grad_U(qp) 
   
   
   Up = U(qp)
   Kp = sum(prev^2)/2/scalev^2
+#  print(Uo)
+#  print(Up)
   # print(theta00-cHa%*%as.vector(q));
   #print(theta00-cHa%*%as.vector(q));
   if(runif(1) < exp(Uo-Up+K-Kp)){q = qp; Uo=Up}

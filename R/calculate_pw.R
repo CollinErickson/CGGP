@@ -42,19 +42,42 @@ calculate_pw_C <- function(SG, y, theta, return_lS=FALSE) {
     }
   }
   
-  pw = rep(0, length(y)) # Predictive weight for each measured point
-  # Loop over blocks selected
-  gg = (1:SG$d-1)*Q
-  for (lcv1 in 1:SG$uoCOUNT) {
-    IS = SG$dit[lcv1, 1:SG$gridsizet[lcv1]];
-    B = y[IS]
-    rcpp_kronDBS(unlist(cholS[gg+SG$uo[lcv1,]]), B, SG$gridsizest[lcv1,])
-    pw[IS] = pw[IS]+SG$w[lcv1] * B
+  if(!is.matrix(y)){
+    pw = rep(0, length(y)) # Predictive weight for each measured point
+    # Loop over blocks selected
+    gg = (1:SG$d-1)*Q
+    for (lcv1 in 1:SG$uoCOUNT) {
+      IS = SG$dit[lcv1, 1:SG$gridsizet[lcv1]];
+      B = y[IS]
+      rcpp_kronDBS(unlist(cholS[gg+SG$uo[lcv1,]]), B, SG$gridsizest[lcv1,])
+      pw[IS] = pw[IS]+SG$w[lcv1] * B
+    }
+    if (return_lS) {
+      return(list(pw=pw, lS=lS))
+    }else{
+      return(pw)
+    }
+  }else{
+    numout = dim(y)[2]
+    pw = matrix(0,nrow=dim(y)[1],ncol=numout) # Predictive weight for each measured point
+    # Loop over blocks selected
+    gg = (1:SG$d-1)*Q
+    for (lcv1 in 1:SG$uoCOUNT) {
+      IS = SG$dit[lcv1, 1:SG$gridsizet[lcv1]];
+      VVV1 = unlist(cholS[gg+SG$uo[lcv1,]]);
+      VVV2 = SG$gridsizest[lcv1,];
+      for(lcv2 in 1:numout){
+        B = y[IS,lcv2]
+        rcpp_kronDBS(VVV1, B, VVV2)
+        pw[IS,lcv2] = pw[IS,lcv2]+SG$w[lcv1] * B
+      }
+    }
+    if (return_lS) {
+      return(list(pw=pw, lS=lS))
+    }else{
+      return(pw)
+    }
   }
-  if (return_lS) {
-    return(list(pw=pw, lS=lS))
-  }
-  pw
 }
 
 #' Calculate derivative of pw
@@ -105,8 +128,9 @@ calculate_pw_and_dpw_C <- function(SG, y, theta, return_lS=FALSE) {
     }
   }
   
-  pw = rep(0, length(y)) # predictive weights
-  dpw = matrix(0, nrow = SG$numpara*SG$d, ncol = length(y)) # derivative of predictive weights
+  if(!is.matrix(y)){
+    pw = matrix(0,nrow=dim(y)[1],ncol=numout) # Predictive weight for each measured point
+    dpw = matrix(0,nrow=dim(y)[1],ncol=numout) # Predictive weight for each measured point
   gg = (1:SG$d-1)*Q
   for (lcv1 in 1:SG$uoCOUNT) {
     IS = SG$dit[lcv1, 1:SG$gridsizet[lcv1]];
@@ -121,6 +145,25 @@ calculate_pw_and_dpw_C <- function(SG, y, theta, return_lS=FALSE) {
   if (return_lS) {
     out$lS <- lS
     out$dlS <- dlS
+  }
+  }else{
+    pw = rep(0, length(y)) # predictive weights
+    dpw = matrix(0, nrow = SG$numpara*SG$d, ncol = length(y)) # derivative of predictive weights
+    gg = (1:SG$d-1)*Q
+    for (lcv1 in 1:SG$uoCOUNT) {
+      IS = SG$dit[lcv1, 1:SG$gridsizet[lcv1]];
+      B = SG$w[lcv1]*y[IS]
+      dB = rcpp_gkronDBS(unlist(cholS[gg+SG$uo[lcv1,]]),unlist(dMatdtheta[gg+SG$uo[lcv1,]]), B, SG$gridsizest[lcv1,])
+      dpw[,IS] = dpw[,IS] +dB
+      pw[IS] = pw[IS] + B
+    }
+    dpw =t(dpw)
+    out <- list(pw=pw,
+                dpw=dpw)
+    if (return_lS) {
+      out$lS <- lS
+      out$dlS <- dlS
+    }
   }
   out
 }

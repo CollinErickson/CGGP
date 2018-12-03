@@ -20,7 +20,11 @@ lik <- function(theta,SG, y) {
     calc_pw <- calculate_pw_C(SG=SG, y=y, theta=theta, return_lS=TRUE)
     pw <- calc_pw$pw
     lS <- calc_pw$lS
-    sigma_hat = t(y) %*% pw / length(y)
+    if(!is.matrix(y)){
+      sigma_hat = sum(y*pw)/ length(y)
+    }else{
+      sigma_hat = colSums(t(y)%*%pw)/(dim(y)[2])
+    }
     
     # Log determinant, keep a sum from smaller matrices
     lDet = 0
@@ -40,9 +44,16 @@ lik <- function(theta,SG, y) {
       }
     }
     
+    
+    if(!is.matrix(y)){
+      negLik = 1/2*(length(y)*log(sigma_hat[1])-3*sum(log(1-theta)+log(theta+1)-theta^2)+lDet)
+    }else{
+      negLik = 1/2*(dim(pw)[1]*sum(log(c(sigma_hat)))-3*sum(log(1-theta)+log(theta+1)-theta^2)+dim(pw)[2]*lDet)
+    }
+    
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
     # This next line is really wrong? The paranthese closes off the return before including the lDet.
-    return(1/2*(length(y)*log(c(sigma_hat))-10*sum(log(1-theta)+log(theta+1))+lDet) )
+    return(negLik)
   }
   
 }
@@ -92,10 +103,10 @@ glik <- function(theta, SG, y, return_lik=FALSE) {
   }
   
   
-  ddL =length(y)*dsigma_hat / sigma_hat[1]+10*(1/(1-theta)-1/(theta+1))+ dlDet
+  ddL =length(y)*dsigma_hat / sigma_hat[1]+3*(1/(1-theta)-1/(theta+1)+2*theta^2)+ dlDet
   
   if (return_lik) {
-    return(list(lik=1/2*(length(y)*log(c(sigma_hat))-10*sum(log(1-theta)+log(theta+1))+lDet),
+    return(list(lik=1/2*(length(y)*log(c(sigma_hat))-3*sum(log(1-theta)+log(theta+1)-theta^2)+lDet),
                 glik=ddL))
   }
   return(ddL)
@@ -124,8 +135,8 @@ glik <- function(theta, SG, y, return_lik=FALSE) {
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' thetaMLE(SG=SG, y=y)
 thetaMLE <- function(SG, y, ..., 
-                     lower = rep(-0.99, SG$d),
-                     upper = rep(0.99, SG$d),
+                     lower = rep(-0.999, SG$d),
+                     upper = rep(0.999, SG$d),
                      method = "L-BFGS-B", 
                      theta0 = rep(0,SG$numpara*SG$d),tol=1e-4, return_optim=FALSE,
                      use_splitfngr=FALSE) {
@@ -244,8 +255,8 @@ thetaMLEMV <- function(SG, yMV, ..., theta0 = rep(0,SG$numpara*SG$d),tol=1e-4, r
     theta0,
     fn = likMV,
     gr = glikMV,
-    lower = rep(-0,99, SG$d),
-    upper = rep(0.99, SG$d),
+    lower = rep(-0.999, SG$d),
+    upper = rep(0.999, SG$d),
     SG = SG,
     yMV = yMV,
     method = "L-BFGS-B", #"BFGS",
