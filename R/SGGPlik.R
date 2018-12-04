@@ -48,7 +48,7 @@ lik <- function(theta,SG, y) {
     if(!is.matrix(y)){
       negLik = 1/2*(length(y)*log(sigma_hat[1])-3*sum(log(1-theta)+log(theta+1)-theta^2)+lDet)
     }else{
-      negLik = 1/2*(dim(pw)[1]*sum(log(c(sigma_hat)))-3*sum(log(1-theta)+log(theta+1)-theta^2)+dim(pw)[2]*lDet)
+      negLik = 1/2*(dim(y)[1]*sum(log(c(sigma_hat)))-3*sum(log(1-theta)+log(theta+1)-theta^2)+dim(y)[2]*lDet)
     }
     
     # Where does sum(theta^2) come from? Looks like regularization? Or from coordinate transformation
@@ -76,15 +76,14 @@ lik <- function(theta,SG, y) {
 glik <- function(theta, SG, y, return_lik=FALSE) {
   
   #print(theta)
-  calc_pw_dpw <- calculate_pw_and_dpw_C(SG=SG, y=y, theta=theta, return_lS=TRUE)
-  pw <- calc_pw_dpw$pw
-  dpw <- calc_pw_dpw$dpw
+  calc_pw_dpw <- calculate_sigma2_and_dsigma2_C(SG=SG, y=y, theta=theta, return_lS=TRUE)
+
   lS <- calc_pw_dpw$lS
   dlS <- calc_pw_dpw$dlS
   
   
-  sigma_hat = t(y) %*% pw / length(y)
-  dsigma_hat = c(t(y) %*% dpw) / length(y)
+  sigma_hat = calc_pw_dpw$sigma2
+  dsigma_hat = calc_pw_dpw$dsigma2
   
   lDet = 0 # Not needed for glik, only for lik
   
@@ -103,13 +102,26 @@ glik <- function(theta, SG, y, return_lik=FALSE) {
   }
   
   
-  ddL =length(y)*dsigma_hat / sigma_hat[1]+3*(1/(1-theta)-1/(theta+1)+2*theta^2)+ dlDet
+  if(!is.matrix(y)){
+    negLik = 1/2*(length(y)*log(sigma_hat[1])-3*sum(log(1-theta)+log(theta+1)-theta^2)+lDet)
+    dnegLik = 3*(1/(1-theta)-1/(theta+1)+2*theta)+ dlDet+ length(y)*dsigma_hat / sigma_hat[1]
+  }else{
+    negLik = 1/2*(dim(y)[1]*sum(log(c(sigma_hat)))-3*sum(log(1-theta)+log(theta+1)-theta^2)+dim(y)[2]*lDet)
+    dnegLik = 3*(1/(1-theta)-1/(theta+1)+2*theta)+dim(y)[2]*dlDet
+    for(i in 1:dim(y)[2]){
+      dnegLik = dnegLik + dim(y)[1]*dsigma_hat[,i] / sigma_hat[i]
+    }
+  }
+  
+  
+  
+  
   
   if (return_lik) {
-    return(list(lik=1/2*(length(y)*log(c(sigma_hat))-3*sum(log(1-theta)+log(theta+1)-theta^2)+lDet),
-                glik=ddL))
+    return(list(lik=negLik,
+                glik=dnegLik))
   }
-  return(ddL)
+  return(dnegLik)
 }
 
 #' Calculate theta MLE given data

@@ -70,3 +70,9 @@ GP = SGGPpred(Xp,SG) #build a full emulator
 sum(abs(Yp-GP$mean)^2)  #prediction should be much better
 sum(abs(Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
 sum((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
+
+
+source("../R/SGGPlik.R")
+source("../R/calculate_pw.R")
+glik(SG$theta,SG,Y)
+glik(SG$theta,SG,cbind(Y,Y^2))
