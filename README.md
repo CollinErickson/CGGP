@@ -22,7 +22,7 @@ devtools::install_github("CollinErickson/SGGP")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+To create a SGGP object:
 
 ``` r
 ## basic example code
