@@ -279,5 +279,7 @@ SGGPcreate <- function(d, batchsize) {
     tv = tv + SGGP$gridsize[blocklcv]
   }
   
+  if(isvector(SGGP$y))
+    SGGP$newdesign = SGGP$design[1:(dim(SGGP$design)[1]-length(SGGP$y)),
   return(SGGP)
 }
