@@ -4,7 +4,7 @@
 #' Can be calculated exactly, but not much reason in 1D.
 #'
 #' @param xl Vector of points in 1D
-#' @param logtheta Log of correlation parameters.
+#' @param theta Log of correlation parameters.
 #' @param theta Correlation parameters
 #' @param nugget Nugget to add to diagonal of correlation matrix.
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
@@ -18,20 +18,17 @@
 #' MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001,
 #'          CorrMat=CorrMatMatern32,
 #'          diag_corrMat=diag_corrMatMatern32)
-MSE_calc <- function(xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat) {
-  if (missing(theta)) {theta <- exp(logtheta)}
-  S = CorrMat(xl, xl, theta=theta)
+MSE_calc <- function(xl, theta, CorrMat) {
+  S = CorrMat(xl, xl, theta)
   xp = seq(0,1,l=101)
-  Sn = CorrMat(xp, xl, theta=theta)
-  diag(S) <- diag(S) + nugget
-  
+  Cp = CorrMat(xp,xl,theta)
   n = length(xl)
-  Ci = solve(S, t(Sn))
+  cholS = chol(S)
+  CiCp = backsolve(cholS,backsolve(cholS,t(Cp), transpose = TRUE))
   
-  #MSE = diag_corrMat(.5, theta=theta, nugget=nugget) - sum(diag(out1 %*% Ci))
-  MSE = mean(diag_corrMat(xp, theta=theta, nugget=nugget) - rowSums(Sn * t(Ci)))
+  MSE_val = mean(1 - rowSums(t(CiCp)*Cp))
   
-  MSE
+  MSE_val
 }
 
 
@@ -101,7 +98,7 @@ MSE_de <- function(valsinds, MSE_v) {
 #' @param SG Sparse grid object
 #' @param batchsize Number of points to add
 #' @param theta Correlation parameters
-#' @param logtheta Log of theta, give one of theta and logtheta
+#' @param theta Log of theta, give one of theta and theta
 #' @param ... Don't use, just forces theta to be named
 #'
 #' @return SG with new points added.
@@ -110,20 +107,17 @@ MSE_de <- function(valsinds, MSE_v) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
-SGappend <- function(SG,batchsize,..., logtheta, theta){
-  if (missing(theta)) {theta <- exp(logtheta)}
+SGappend <- function(SG,batchsize){
   n_before <- nrow(SG$design)
   
   # Set up blank matrix to store MSE values
-  MSE_v = matrix(0, SG$d, 8) # 8 because he only defined the 1D designs up to 8.
+  MSE_v = matrix(0, SG$d, SG$maxgridsize) # 8 because he only defined the 1D designs up to 8.
   # Why do we consider dimensions independent of each other?
   # Loop over dimensions and design refinements
   for (lcv1 in 1:SG$d) {
-    for (lcv2 in 1:8) {
+    for (lcv2 in 1:SG$maxlevel) {
       # Calculate some sort of MSE from above, not sure what it's doing
-      MSE_v[lcv1, lcv2] = max(0, abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]], theta=theta[lcv1], nugget=SG$nugget,
-                                              CorrMat=SG$CorrMat,
-                                              diag_corrMat=SG$diag_corrMat)))
+      MSE_v[lcv1, lcv2] = max(0, abs(MSE_calc(SG$xb[1:SG$sizest[lcv2]],SG$theta[(lcv1-1)*SG$numpara+1:SG$numpara],SG$CorrMat)))
       if (lcv2 > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
         MSE_v[lcv1, lcv2] = min(MSE_v[lcv1, lcv2], MSE_v[lcv1, lcv2 - 1])
       }
@@ -172,8 +166,7 @@ SGappend <- function(SG,batchsize,..., logtheta, theta){
     for (lcv2 in 1:length(total_an)) {
       lo = SG$uo[total_an[lcv2],]
       if (max(abs(lo - l0)) < 1.5) {
-        SG$w[total_an[lcv2]] = SG$w[total_an[lcv2]] + (-1) ^ abs(round(sum(l0 -
-                                                                             lo)))
+        SG$w[total_an[lcv2]] = SG$w[total_an[lcv2]] + (-1) ^ abs(round(sum(l0-lo)))
         
       }
     }
@@ -209,7 +202,7 @@ SGappend <- function(SG,batchsize,..., logtheta, theta){
       
       lp[lcv2] = lp[lcv2] + 1
       
-      if (max(lp) < 7.5 && SG$poCOUNT < 4 * SG$ML) {
+      if (max(lp) < SG$maxlevel && SG$poCOUNT < 4 * SG$ML) {
         kvals = which(lp > 1.5)
         
         canuse = 1

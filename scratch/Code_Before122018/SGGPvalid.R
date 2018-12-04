@@ -1,3 +1,44 @@
+#' Derivative of MSE calculation
+#'
+#' @param xp Points at which to calculate MSE
+#' @param xl Levels along dimension
+#' @param theta Correlation parameters
+#' @param logtheta Log of correlation parameters
+#' @param nugget Nugget to add to diagonal of correlation matrix
+#' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
+#' @param diag_corrMat Function that gives diagonal of correlation matrix
+#' @param dCorrMat Derivative of CorrMat
+#' @param ddiag_corrMat Derivative of diagonal of diag_corrMat
+#' for vector of 1D points.
+#' @param ... Don't use, just forces theta to be named
+#'
+#' @return MSE predictions
+#' @export
+#'
+#' @examples
+#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
+#'              CorrMat=CorrMatMatern32,
+#'              diag_corrMat=diag_corrMatMatern32)
+dMSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat, dCorrMat, ddiag_corrMat) {
+  if (missing(theta)) {theta <- exp(logtheta)}
+  S = CorrMat(xl, xl, theta=theta)
+  dS = dCorrMat(xl, xl, theta=theta)
+  diag(S) = diag(S) + nugget
+  
+  n = length(xl)
+  cholS = chol(S)
+  Cp = CorrMat(xp, xl, theta=theta)
+  CiCp = backsolve(cholS,forwardsolve(t(cholS),t(Cp)))
+  
+  dCiCp = -backsolve(cholS,forwardsolve(t(cholS),dS%*%CiCp))
+  
+  dCp = dCorrMat(xp, xl, theta=theta)
+  
+  dMSE_val = ddiag_corrMat(xp, theta=theta, nugget=nugget)-2*rowSums(t(CiCp)*dCp)-rowSums(t(dCiCp)*Cp)
+  return(dMSE_val)
+}
+
+
 #' Estimate correlation parameters using validation
 #'
 #' @inheritParams lik

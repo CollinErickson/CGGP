@@ -17,60 +17,18 @@
 #' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
 #'              CorrMat=CorrMatMatern32,
 #'              diag_corrMat=diag_corrMatMatern32)
-MSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat) {
-  if (missing(theta)) {theta <- exp(logtheta)}
-  S = CorrMat(xl, xl, theta=theta)
-  diag(S) = diag(S) + nugget
-  #t = exp(theta)
+MSEpred_calc <- function(xp,xl, theta, CorrMat) {
+  S = CorrMat(xl, xl, theta)
   n = length(xl)
   cholS = chol(S)
-  Cp = CorrMat(xp, xl, theta=theta)
-  CiCp = backsolve(cholS,forwardsolve(t(cholS),t(Cp)))
   
-  MSE_val = diag_corrMat(xp, theta=theta, nugget=nugget) - rowSums(t(CiCp)*((Cp)))
+  Cp = CorrMat(xp, xl, theta)
+  CiCp = backsolve(cholS,backsolve(cholS,t(Cp), transpose = TRUE))
+  
+  MSE_val = 1 - rowSums(t(CiCp)*((Cp)))
   return(MSE_val)
   
 }
-#' Derivative of MSE calculation
-#'
-#' @param xp Points at which to calculate MSE
-#' @param xl Levels along dimension
-#' @param theta Correlation parameters
-#' @param logtheta Log of correlation parameters
-#' @param nugget Nugget to add to diagonal of correlation matrix
-#' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
-#' @param diag_corrMat Function that gives diagonal of correlation matrix
-#' @param dCorrMat Derivative of CorrMat
-#' @param ddiag_corrMat Derivative of diagonal of diag_corrMat
-#' for vector of 1D points.
-#' @param ... Don't use, just forces theta to be named
-#'
-#' @return MSE predictions
-#' @export
-#'
-#' @examples
-#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
-#'              CorrMat=CorrMatMatern32,
-#'              diag_corrMat=diag_corrMatMatern32)
-dMSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_corrMat, dCorrMat, ddiag_corrMat) {
-  if (missing(theta)) {theta <- exp(logtheta)}
-  S = CorrMat(xl, xl, theta=theta)
-  dS = dCorrMat(xl, xl, theta=theta)
-  diag(S) = diag(S) + nugget
-  
-  n = length(xl)
-  cholS = chol(S)
-  Cp = CorrMat(xp, xl, theta=theta)
-  CiCp = backsolve(cholS,forwardsolve(t(cholS),t(Cp)))
-  
-  dCiCp = -backsolve(cholS,forwardsolve(t(cholS),dS%*%CiCp))
-  
-  dCp = dCorrMat(xp, xl, theta=theta)
-  
-  dMSE_val = ddiag_corrMat(xp, theta=theta, nugget=nugget)-2*rowSums(t(CiCp)*dCp)-rowSums(t(dCiCp)*Cp)
-  return(dMSE_val)
-}
-
 
 #' Predict
 #' 
@@ -92,44 +50,31 @@ dMSEpred_calc <- function(xp,xl, ..., logtheta, theta, nugget, CorrMat, diag_cor
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, theta=c(.1,.1,.1))
 #' cbind(SGGPpred(SG$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
-SGGPpred <- function(xp,SG, y, ..., logtheta=SG$logtheta, theta) {
-  if (missing(theta)) {theta <- exp(logtheta)}
+SGGPpred <- function(xp,SG) {
   # Center outputs
+  y = SG$y
+  
   my = mean(y)
   y = y-my
+  pw <- calculate_pw_C(SG,y,SG$theta) # Already subtracted mean(y) from y
+  print(length(y))
+  print(length(pw))
   
-  pw <- SG$pw
-  if (is.null(pw) || any(SG$logtheta!=logtheta)) {
-    pw <- calculate_pw(SG=SG, y=y, logtheta=log(theta)) # Already subtracted mean(y) from y
-    # SG$pw <- pw
-  } else {print('Using stored value!')}
-
-  sigma_hat = t(y) %*% pw / length(y)
-  
+  sigma_hat = t(y) %*%pw / length(y)
   # Cp is sigma(x_0) in paper, correlation vector between design points and xp
   Cp = matrix(1,dim(xp)[1],SG$ss)
   for (e in 1:SG$d) { # Loop over dimensions
     #Cp = Cp*CorrMat(xp[,e], SG$design[,e], theta=theta[e]) # Multiply correlation from each dimension
-    V = SG$CorrMat(xp[,e], SG$xb, theta=theta[e])
+    V = SG$CorrMat(xp[,e], SG$xb, SG$theta[(e-1)*SG$numpara+1:SG$numpara])
     Cp = Cp*V[,SG$designindex[,e]]
   }
-  
-  #    Cact = matrix(1,SG$ss,SG$ss)
-  #    for (e in 1:SG$d) {
-  #      Cact = Cact*CorrMat(SG$design[,e], SG$design[,e], theta[e])
-  #    }
-  
-  
-  MSE_v = array(0, c(SG$d, 9,dim(xp)[1]))
+  MSE_v = array(0, c(SG$d, SG$maxgridsize,dim(xp)[1]))
   for (lcv1 in 1:SG$d) {
-    MSE_v[lcv1, 1,] = SG$diag_corrMat(xp[,lcv1], theta=theta[lcv1], nugget=SG$nugget)
+    MSE_v[lcv1, 1,] = 1
   }
   for (lcv1 in 1:SG$d) {
-    for (lcv2 in 1:8) {
-      MSE_v[lcv1, lcv2+1,] = abs(MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]],
-                                              theta=theta[lcv1], nugget=SG$nugget,
-                                              CorrMat=SG$CorrMat,
-                                              diag_corrMat=SG$diag_corrMat))
+    for (lcv2 in 1:max(SG$uo[1:SG$uoCOUNT,lcv1])) {
+      MSE_v[lcv1, lcv2+1,] = MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]],SG$theta[(lcv1-1)*SG$numpara+1:SG$numpara],CorrMat=SG$CorrMat)
       MSE_v[lcv1, lcv2+1,] = pmin(MSE_v[lcv1, lcv2+1,], MSE_v[lcv1, lcv2,])
     }
   }
@@ -146,7 +91,7 @@ SGGPpred <- function(xp,SG, y, ..., logtheta=SG$logtheta, theta) {
   
   
   # Return list with mean and var predictions
-  GP = list("mean" = (my+Cp %*% pw), "var"=sigma_hat[1]*ME_t)
+  GP = list("mean" = (my+Cp %*%pw), "var"=sigma_hat[1]*ME_t)
   
   return(GP)
 }
