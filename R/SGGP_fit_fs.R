@@ -12,7 +12,7 @@
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' lik(c(.1,.1,.1), SG=SG, y=y)
-neglogpost <- function(theta,SG, y) {
+SGGP_internal_neglogpost <- function(theta,SGGP,y) {
   # Return Inf if theta is too large. Why????
   if (max(theta) >= 0.9999 || min(theta) <= -0.9999) {
     return(Inf)
@@ -28,17 +28,16 @@ neglogpost <- function(theta,SG, y) {
     
     # Log determinant, keep a sum from smaller matrices
     lDet = 0
-    
     # Calculate log det. See page 1586 of paper.
     # Loop over evaluated blocks
-    for (lcv1 in 1:SG$uoCOUNT) {
+    for (blocklcv in 1:SG$uoCOUNT) {
       # Loop over dimensions
-      for (lcv2 in 1:SG$d) {
-        levelnow = SG$uo[lcv1, lcv2]
+      for (dimlcv in 1:SG$d) {
+        levelnow = SG$uo[blocklcv, dimlcv]
         # Add to log det when multiple points. It is zero when single point.
         if (levelnow > 1.5) {
-          lDet = lDet + (lS[levelnow, lcv2] - lS[levelnow - 1, lcv2]) * (SG$gridsize[lcv1]) /
-            (SG$gridsizes[lcv1, lcv2])
+          lDet = lDet + (lS[levelnow, dimlcv] - lS[levelnow - 1, dimlcv]) * (SG$gridsize[blocklcv]) /
+            (SG$gridsizes[blocklcv, dimlcv])
         }
       }
     }
@@ -70,7 +69,7 @@ neglogpost <- function(theta,SG, y) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' glik(c(.1,.1,.1), SG=SG, y=y)
-calc_gneglogpost <- function(theta, SG, y, return_lik=FALSE) {
+SGGP_internal_gneglogpost <- function(theta, SG, y, return_lik=FALSE) {
   
   #print(theta)
   calc_pw_dpw <- calculate_sigma2_and_dsigma2_C(SG=SG, y=y, theta=theta, return_lS=TRUE)
@@ -86,15 +85,15 @@ calc_gneglogpost <- function(theta, SG, y, return_lik=FALSE) {
   
   dlDet = rep(0, SG$numpara*SG$d) # Only needed for glik, not lik
   
-  for (lcv1 in 1:SG$uoCOUNT) {
-    nv = SG$gridsize[lcv1]/SG$gridsizes[lcv1,]
-    uonow = SG$uo[lcv1,]
-    for (lcv2 in which(uonow>1.5)) {
+  for (blocklcv in 1:SG$uoCOUNT) {
+    nv = SG$gridsize[blocklcv]/SG$gridsizes[blocklcv,]
+    uonow = SG$uo[blocklcv,]
+    for (dimlcv in which(uonow>1.5)) {
       if (return_lik) {
-        lDet = lDet + (lS[uonow[lcv2], lcv2] - lS[uonow[lcv2] - 1, lcv2])*nv[lcv2]
+        lDet = lDet + (lS[uonow[dimlcv], dimlcv] - lS[uonow[dimlcv] - 1, dimlcv])*nv[dimlcv]
       }
-      IS = (lcv2-1)*SG$numpara+1:SG$numpara
-      dlDet[IS] = dlDet[IS] + (dlS[uonow[lcv2], IS] - dlS[uonow[lcv2]-1, IS])*nv[lcv2]
+      IS = (dimlcv-1)*SG$numpara+1:SG$numpara
+      dlDet[IS] = dlDet[IS] + (dlS[uonow[dimlcv], IS] - dlS[uonow[dimlcv]-1, IS])*nv[dimlcv]
     }
   }
   
@@ -110,11 +109,7 @@ calc_gneglogpost <- function(theta, SG, y, return_lik=FALSE) {
     }
   }
   
-  if (return_lik) {
-    return(list(neglogpost=neglogpost,
-                gneglogpost=gneglogpost))
-  }
-  return(gneglogpost)
+  if(return_lik){ nreturn(list(neglogpost=neglogpost,gneglogpost=gneglogpost))}else{return(gneglogpost)}
 }
 
 #' Calculate theta MLE given data
@@ -139,15 +134,22 @@ calc_gneglogpost <- function(theta, SG, y, return_lik=FALSE) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' thetaMLE(SG=SG, y=y)
-SGGPfit<- function(SG, y, ..., 
-                     lower = rep(-0.999, SG$d),
-                     upper = rep(0.999, SG$d),
+SGGPfit<- function(SGGP, Y, ..., 
+                     lower = rep(-0.999, SGGP$d),
+                     upper = rep(0.999, SGGP$d),
                      method = "L-BFGS-B", 
-                     theta0 = rep(0,SG$numpara*SG$d),tol=1e-4) {
+                     theta0 = rep(0,SGGP$numpara*SGGP$d),tol=1e-4) {
   
     #first do the pre-processing
-  
-    
+    #for cleanness: Y is always the user input, y is after transformation
+    if(!is.matrix(Y)){
+      SG$mean = mean(Y)
+      y = y-SG$mean
+    }else{
+      SG$mean = colMeans(Y)
+      Y_centered = Y - matrix(rep(SG$mean,each=dim(Y)[1]), ncol=n, byrow=TRUE)
+    }
+  colMean(Y_centered)
   
     opt.out = optim(
       theta0,

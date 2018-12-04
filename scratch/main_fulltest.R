@@ -1,11 +1,12 @@
 rm(list = ls())
 library(Rcpp)
-source("../R/SGcreate.R")
-source("../R/CorrFunctions.R")
-source("../R/SGGPlik.R")
-source("../R/SGGPappendstuff.R")
-source("../R/calculate_pw.R")
-source("../R/SGGPpredstuff.R")
+source("../R/SGGP_fit_fs.R")
+source("../R/SGGP_corr_fs.R")
+source("../R/SGGP_create_fs.R")
+source("../R/SGGP_append_fs.R")
+source("../R/SGGP_pred_fs.R")
+source("../R/SGGP_fastcalcassist_fs.R")
+
 sourceCpp("../src/specialkronfunctions.cpp")
 
 borehole <- function(x) {
@@ -63,9 +64,11 @@ library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
-SG = SGcreate(d,801) #create the design.  it has so many entries because i am sloppy
-Y = testf(SG$design) #the design is $design, simple enough, right?
-SG = thetaMLE(SG,Y)
+SGGP = SGGPcreate(d,801) #create the design.  it has so many entries because i am sloppy
+Y = testf(SGGP$design) #the design is $design, simple enough, right?
+SG = SGGPfit(SG,Y)
+
+
 GP = SGGPpred(Xp,SG) #build a full emulator
 sum(abs(Yp-GP$mean)^2)  #prediction should be much better
 sum(abs(Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better

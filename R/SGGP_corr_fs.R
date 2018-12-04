@@ -15,7 +15,7 @@
 #'
 #' @examples
 #' CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
-CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
+SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
   if(return_numpara){
     return(3)
   }else{ 
@@ -57,7 +57,7 @@ CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_num
 #'
 #' @examples
 #' CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
-CorrMatCauchyT <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
+SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
   if(return_numpara){
     return(3);
   } else{
@@ -112,7 +112,7 @@ CorrMatCauchyT <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_nu
 #'
 #' @examples
 #' CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
-CorrMatCauchySQ <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
+SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
   if(return_numpara){
     return(2);
   }else{ 
