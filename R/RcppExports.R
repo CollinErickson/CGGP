@@ -2,7 +2,7 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rcpparma_hello_world <- function() {
-    .Call(`_SGGP_rcpparma_hello_world`)
+    .Call('_SGGP_rcpparma_hello_world', PACKAGE = 'SGGP')
 }
 
 #' Outer
@@ -15,15 +15,15 @@ rcpparma_hello_world <- function() {
 #' @examples
 #' rcpparma_outerproduct(c(1,0,3,7))
 rcpparma_outerproduct <- function(x) {
-    .Call(`_SGGP_rcpparma_outerproduct`, x)
+    .Call('_SGGP_rcpparma_outerproduct', PACKAGE = 'SGGP', x)
 }
 
 rcpparma_innerproduct <- function(x) {
-    .Call(`_SGGP_rcpparma_innerproduct`, x)
+    .Call('_SGGP_rcpparma_innerproduct', PACKAGE = 'SGGP', x)
 }
 
 rcpparma_bothproducts <- function(x) {
-    .Call(`_SGGP_rcpparma_bothproducts`, x)
+    .Call('_SGGP_rcpparma_bothproducts', PACKAGE = 'SGGP', x)
 }
 
 #' rcpp_kronDBS
@@ -34,7 +34,7 @@ rcpparma_bothproducts <- function(x) {
 #' @return kronDBS calculation
 #' @export
 rcpp_kronDBS <- function(A, B, p) {
-    invisible(.Call(`_SGGP_rcpp_kronDBS`, A, B, p))
+    invisible(.Call('_SGGP_rcpp_kronDBS', PACKAGE = 'SGGP', A, B, p))
 }
 
 #' rcpp_kronDBS
@@ -48,6 +48,6 @@ rcpp_kronDBS <- function(A, B, p) {
 #' @examples
 #' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 rcpp_gkronDBS <- function(A, dA, B, p) {
-    .Call(`_SGGP_rcpp_gkronDBS`, A, dA, B, p)
+    .Call('_SGGP_rcpp_gkronDBS', PACKAGE = 'SGGP', A, dA, B, p)
 }
 
