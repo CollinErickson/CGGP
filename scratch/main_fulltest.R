@@ -6,7 +6,6 @@ source("../R/SGGP_create_fs.R")
 source("../R/SGGP_append_fs.R")
 source("../R/SGGP_pred_fs.R")
 source("../R/SGGP_fastcalcassist_fs.R")
-
 sourceCpp("../src/specialkronfunctions.cpp")
 
 borehole <- function(x) {
@@ -26,38 +25,8 @@ borehole <- function(x) {
 }
 
 
-piston <- function(xx)
-{
-  M  <- xx[,1]*30 + 30
-  S  <- xx[,2]*0.015 + 0.005
-  V0 <- xx[,3]*0.008 + 0.002
-  k  <- xx[,4]*4000 + 1000
-  P0 <- xx[,5]*20000+90000
-  Ta <- xx[,6]*6 + 290
-  T0 <- xx[,7]*20 + 340
-  
-  Aterm1 <- P0 * S
-  Aterm2 <- 19.62 * M
-  Aterm3 <- -k*V0 / S
-  A <- Aterm1 + Aterm2 + Aterm3
-  
-  Vfact1 <- S / (2*k)
-  Vfact2 <- sqrt(A^2 + 4*k*(P0*V0/T0)*Ta)
-  V <- Vfact1 * (Vfact2 - A)
-  
-  fact1 <- M
-  fact2 <- k + (S^2)*(P0*V0/T0)*(Ta/(V^2))
-  
-  C <- 2 * pi * sqrt(fact1/fact2)
-  return(C)
-}
-
-
 d = 8
 testf<-function (x) {  return(borehole(x))} 
-
-d = 7
-testf<-function (x) {  return(piston(x))} 
 
 Npred <- 1000
 library("lhs")
@@ -66,13 +35,19 @@ Yp = testf(Xp)
 
 SGGP = SGGPcreate(d,801) #create the design.  it has so many entries because i am sloppy
 Y = testf(SGGP$design) #the design is $design, simple enough, right?
-SG = SGGPfit(SG,Y)
+SGGP = SGGPfit(SGGP,cbind(Y,Y*3,2*Y))
+Pred2 = SGGPpred(Xp,SGGP)
+SGGP=SGGPappend(SGGP,800)
+Y = testf(SGGP$design) #the design is $design, simple enough, right?
+SGGP = SGGPfit(SGGP,cbind(Y,Y*3,2*Y))
+Pred3 = SGGPpred(Xp,SGGP)
+cbind(Pred2$mean[,2],Pred3$mean[,2],Yp^1.001)
+cbind(Pred2$mean[,1],Pred3$mean[,1],Yp)
 
 
-GP = SGGPpred(Xp,SG) #build a full emulator
-sum(abs(Yp-GP$mean)^2)  #prediction should be much better
-sum(abs(Yp-GP$mean)^2/GP$var+log(GP$var)) #score should be much better
-sum((Yp<= GP$mean+1.96*sqrt(GP$var))&(Yp>= GP$mean-1.96*sqrt(GP$var)))  #coverage should be closer to 95 %
+sum(abs(Yp-Pred2$mean)^2)  #prediction should be much better
+sum(abs(Yp-Pred2$mean)^2/Pred2$var+log(Pred2$var)) #score should be much better
+sum((Yp<= Pred2$mean+1.96*sqrt(Pred2$var))&(Yp>= Pred2$mean-1.96*sqrt(Pred2$var)))  #coverage should be closer to 95 %
 
 # SG=SGappend(SG,800) #add 200 points to the design based on thetahat
 # Y = testf(SG$design) #the design is $design, simple enough, right?

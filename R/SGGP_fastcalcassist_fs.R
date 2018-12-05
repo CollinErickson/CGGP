@@ -29,6 +29,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
     for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
       Xbrn = SGGP$xb[1:SGGP$sizest[levellcv]]
       Xbrn = Xbrn[order(Xbrn)]
+      Sstuff = SGGP$CorrMat(Xbrn, Xbrn , theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta = FALSE)
       Sstuff = SGGP$CorrMat(Xbrn, Xbrn , theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta = TRUE)
       S = Sstuff$C
       # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
@@ -91,7 +92,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' calculate_pw_and_dpw_C(SG=SG, y=y, logtheta=c(-.1,.1,.3))
-SGGP_internal_calcpwanddpw <- function(SG, y, theta, return_lS=FALSE) {
+SGGP_internal_calcpwanddpw <- function(SGGP, y, theta, return_lS=FALSE) {
   Q  = max(SGGP$uo[1:SGGP$uoCOUNT,]) # Max level of all blocks
   cholS = list(matrix(1,1,1),Q*SGGP$d) # To store choleskys
   dMatdtheta = list(matrix(1,1,1),Q*SGGP$d)
@@ -150,7 +151,7 @@ SGGP_internal_calcpwanddpw <- function(SG, y, theta, return_lS=FALSE) {
 
 
 
-SGGP_internal_calcsigma2anddsigma2 <- function(SG, y, theta, return_lS=FALSE) {
+SGGP_internal_calcsigma2anddsigma2 <- function(SGGP, y, theta, return_lS=FALSE) {
   Q  = max(SGGP$uo[1:SGGP$uoCOUNT,]) # Max level of all blocks
   cholS = list(matrix(1,1,1),Q*SGGP$d) # To store choleskys
   dMatdtheta = list(matrix(1,1,1),Q*SGGP$d)

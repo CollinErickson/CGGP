@@ -24,7 +24,7 @@ SGGPcreate <- function(d, batchsize) {
   SGGP$numpara <- SGGP$CorrMat(0,0,0,return_numpara=TRUE)
   SGGP$theta <- rep(0,d*SGGP$numpara)
   SGGP$y <- rep(0,0)
-    
+  
   
   # Levels are blocks. Level is like eta from paper.
   SGGP$ML = min(choose(SGGP$d + 6, SGGP$d), 10000) #max levels
@@ -133,11 +133,11 @@ SGGPcreate <- function(d, batchsize) {
     if (pstar < (SGGP$poCOUNT - 0.5) && pstar > 1.5) { # If in between, do this
       SGGP$po[1:(SGGP$poCOUNT - 1), ] = SGGP$po[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT), ]
       SGGP$pila[1:(SGGP$poCOUNT - 1), ] = SGGP$pila[c(1:(pstar - 1), (pstar +
-                                                                  1):SGGP$poCOUNT), ]
+                                                                        1):SGGP$poCOUNT), ]
       SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[c(1:(pstar - 1), (pstar +
-                                                                          1):SGGP$poCOUNT)]
+                                                                                1):SGGP$poCOUNT)]
       SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[c(1:(pstar - 1), (pstar +
-                                                                      1):SGGP$poCOUNT)]
+                                                                            1):SGGP$poCOUNT)]
     }
     # One less option now???
     SGGP$poCOUNT = SGGP$poCOUNT - 1
@@ -243,21 +243,21 @@ SGGPcreate <- function(d, batchsize) {
         xi0 = SGGP$xindex[(SGGP$sizest[levelnow - 1] + 1):SGGP$sizest[levelnow]]
         if (dimlcv < 1.5) {
           SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(x0, "each" = SGGP$gridsize[blocklcv] /
-                                                                     SGGP$gridsizes[blocklcv, dimlcv])
+                                                                               SGGP$gridsizes[blocklcv, dimlcv])
           SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, "each" = SGGP$gridsize[blocklcv] /
-                                                                          SGGP$gridsizes[blocklcv, dimlcv])
+                                                                                    SGGP$gridsizes[blocklcv, dimlcv])
         }
         if (dimlcv > (SGGP$d - 0.5)) {
           SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(x0, SGGP$gridsize[blocklcv] /
-                                                                     SGGP$gridsizes[blocklcv, dimlcv])
+                                                                               SGGP$gridsizes[blocklcv, dimlcv])
           SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, SGGP$gridsize[blocklcv] /
-                                                                          SGGP$gridsizes[blocklcv, dimlcv])
+                                                                                    SGGP$gridsizes[blocklcv, dimlcv])
         }
         if (dimlcv < (SGGP$d - 0.5)  && dimlcv > 1.5) {
           SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, "each" =
-                                                                         prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -1)]))
+                                                                                   prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -1)]))
           SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, "each" =
-                                                                              prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -1)]))
+                                                                                        prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -1)]))
         }
       }
     }
@@ -278,8 +278,5 @@ SGGPcreate <- function(d, batchsize) {
     
     tv = tv + SGGP$gridsize[blocklcv]
   }
-  
-  if(isvector(SGGP$y))
-    SGGP$newdesign = SGGP$design[1:(dim(SGGP$design)[1]-length(SGGP$y)),
   return(SGGP)
 }

@@ -18,7 +18,7 @@
 #' MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001,
 #'          CorrMat=CorrMatMatern32,
 #'          diag_corrMat=diag_corrMatMatern32)
-SGGP_internal_MSEcalc <- function(xl, theta, CorrMat) {
+SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
   S = CorrMat(xl, xl, theta)
   xp = seq(0,1,l=101)
   Cp = CorrMat(xp,xl,theta)
@@ -52,22 +52,21 @@ SGGP_internal_MSEcalc <- function(xl, theta, CorrMat) {
 #'          diag_corrMat=diag_corrMatMatern32)
 #'  }))
 #' MSE_de(SGGP$po[1:SGGP$poCOUNT, ], MSE_v)
-SGGP_internal_MSEde <- function(valsinds, MSE_v) {
+SGGP_internal_calcMSEde <- function(valsinds, MSE_v) {
   if(is.matrix(valsinds)){
     MSE_de = rep(0, dim(valsinds)[1])
     
-    for (lcv1 in 1:dim(valsinds)[1]) {
-      MSE_de[lcv1] = 0
-      
-      for (dimlcv in 1:dim(valsinds)[2]) {
-        if (valsinds[lcv1, dimlcv] > 1.5) {
-          MSE_de[lcv1] = MSE_de[lcv1] + log(-MSE_v[dimlcv, valsinds[lcv1, dimlcv]] + MSE_v[dimlcv, valsinds[lcv1, dimlcv] - 1])
+    for (levellcv2 in 1:dim(valsinds)[1]) {
+      MSE_de[levellcv2] = 0
+      for (levellcv in 1:dim(valsinds)[2]) {
+        if (valsinds[levellcv2, levellcv] > 1.5) {
+          MSE_de[levellcv2] = MSE_de[levellcv2] + log(-MSE_v[levellcv, valsinds[levellcv2, levellcv]] + MSE_v[levellcv, valsinds[levellcv2, levellcv] - 1])
           
         } else {
           # This is when no ancestor block, 1 comes from when there is no data. 
           # 1 is correlation times integrated value over range.
           # This depends on correlation function.
-          MSE_de[lcv1] = MSE_de[lcv1] + log(-MSE_v[dimlcv, valsinds[lcv1, dimlcv]] + 1)
+          MSE_de[levellcv2] = MSE_de[levellcv2] + log(-MSE_v[levellcv, valsinds[levellcv2, levellcv]] + 1)
           
         }
       }
@@ -75,12 +74,12 @@ SGGP_internal_MSEde <- function(valsinds, MSE_v) {
   } else {
     MSE_de = 0
     
-    for (dimlcv in 1:length(valsinds)) {
-      if (valsinds[dimlcv] > 1.5) {
-        MSE_de = MSE_de + log(-MSE_v[dimlcv, valsinds[dimlcv]] + MSE_v[dimlcv, valsinds[dimlcv] -1])
+    for (levellcv in 1:length(valsinds)) {
+      if (valsinds[levellcv] > 1.5) {
+        MSE_de = MSE_de + log(-MSE_v[levellcv, valsinds[levellcv]] + MSE_v[levellcv, valsinds[levellcv] -1])
         
       } else {
-        MSE_de = MSE_de + log(-MSE_v[dimlcv, valsinds[dimlcv]] + 1)
+        MSE_de = MSE_de + log(-MSE_v[levellcv, valsinds[levellcv]] + 1)
         
       }
     }}
@@ -117,7 +116,7 @@ SGGPappend <- function(SGGP,batchsize){
   for (dimlcv in 1:SGGP$d) {
     for (levellcv in 1:SGGP$maxlevel) {
       # Calculate some sort of MSE from above, not sure what it's doing
-      MSE_v[dimlcv, levellcv] = max(0, abs(MSE_calc(SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],SGGP$CorrMat)))
+      MSE_v[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],SGGP$CorrMat)))
       if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
         MSE_v[dimlcv, levellcv] = min(MSE_v[dimlcv, levellcv], MSE_v[dimlcv, levellcv - 1])
       }
@@ -128,7 +127,7 @@ SGGPappend <- function(SGGP,batchsize){
   I_mes = rep(0, SGGP$ML)
   
   # For all possible blocks, calculate MSE_v? Is that all that MSE_de does?
-  I_mes[1:SGGP$poCOUNT] = MSE_de(SGGP$po[1:SGGP$poCOUNT, ], MSE_v)
+  I_mes[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_v)
   
   # Increase count of points evaluated. Do we check this if not reached exactly???
   SGGP$bss = SGGP$bss + batchsize
@@ -230,7 +229,7 @@ SGGPappend <- function(SGGP,batchsize){
           SGGP$pogsize[SGGP$poCOUNT] = prod(SGGP$sizes[lp])
           SGGP$pila[SGGP$poCOUNT, 1:nap] = ap[1:nap]
           SGGP$pilaCOUNT[SGGP$poCOUNT] = nap
-          I_mes[SGGP$poCOUNT] =  MSE_de(as.vector(SGGP$po[SGGP$poCOUNT, ]), MSE_v)
+          I_mes[SGGP$poCOUNT] =  SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), MSE_v)
         }
       }
     }
@@ -302,5 +301,5 @@ SGGPappend <- function(SGGP,batchsize){
   # Save Xnew to make it easy to know which ones to add
   SGGP$Xnew <- SGGP$design[(n_before+1):nrow(SGGP$design),]
   
-  return(SG)
+  return(SGGP)
 }
