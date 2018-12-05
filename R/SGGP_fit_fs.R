@@ -17,15 +17,9 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
   if (max(theta) >= 0.9999 || min(theta) <= -0.9999) {
     return(Inf)
   } else{
-    calc_pw <- SGGP_internal_calcpw(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
-    pw <- calc_pw$pw
-    lS <- calc_pw$lS
-    if(!is.matrix(y)){
-      sigma2_hat = sum(y*pw)/ length(y)
-    }else{
-      sigma2_hat = colSums(t(y)%*%pw)/(dim(y)[2])
-    }
-    
+    calc_sigma2 <- SGGP_internal_calcsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
+    lS <- calc_sigma2$lS
+    sigma2_hat = calc_sigma2$sigma2
     # Log determinant, keep a sum from smaller matrices
     lDet = 0
     # Calculate log det. See page 1586 of paper.
@@ -44,9 +38,9 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
     
     
     if(!is.matrix(y)){
-      neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-3*sum(log(1-theta)+log(theta+1)-theta^2)+lDet)
+      neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.501*sum(log(1-theta)+log(theta+1))+lDet)
     }else{
-      neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-3*sum(log(1-theta)+log(theta+1)-theta^2)+dim(y)[2]*lDet)
+      neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.501*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
     }
     
     return(neglogpost)
@@ -73,7 +67,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP , y, return_lik=FALSE) {
   
   #print(theta)
   sigma2anddsigma2 <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
-
+  
   lS <- sigma2anddsigma2$lS
   dlS <-sigma2anddsigma2$dlS
   
@@ -99,12 +93,12 @@ SGGP_internal_gneglogpost <- function(theta, SGGP , y, return_lik=FALSE) {
   
   
   if(!is.matrix(y)){
-    neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-3*sum(log(1-theta)+log(theta+1)-theta^2)+lDet)
-    gneglogpost = 3*(1/(1-theta)-1/(theta+1)+2*theta)+ dlDet+ length(y)*dsigma2_hat / sigma2_hat[1]
+    neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.501*sum(log(1-theta)+log(theta+1))+lDet)
+    gneglogpost = 0.501*(1/(1-theta)-1/(theta+1))+ dlDet+ length(y)*dsigma2_hat / sigma2_hat[1]
     gneglogpost =  gneglogpost/2
   }else{
-    neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-3*sum(log(1-theta)+log(theta+1)-theta^2)+dim(y)[2]*lDet)
-    gneglogpost = 3*(1/(1-theta)-1/(theta+1)+2*theta)+dim(y)[2]*dlDet
+    neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.501*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+    gneglogpost = 0.501*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
     for(i in 1:dim(y)[2]){
       gneglogpost = gneglogpost + dim(y)[1]*dsigma2_hat[,i] / sigma2_hat[i]
     }
@@ -137,46 +131,96 @@ SGGP_internal_gneglogpost <- function(theta, SGGP , y, return_lik=FALSE) {
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' thetaMLE(SG=SG, y=y)
 SGGPfit<- function(SGGP, Y, ..., 
-                     lower = rep(-0.999, SGGP$d),
-                     upper = rep(0.999, SGGP$d),
-                     method = "L-BFGS-B", 
-                     theta0 = rep(0,SGGP$numpara*SGGP$d),tol=1e-4) {
+                   lower = rep(-0.999, SGGP$d),
+                   upper = rep(0.999, SGGP$d),
+                   method = "L-BFGS-B", 
+                   theta0 = rep(0,SGGP$numpara*SGGP$d),tol=1e-4,laplaceapprox = TRUE) {
   
-    #first do the pre-processing
-    #for cleanness: Y is always the user input, y is after transformation
-    if(!is.matrix(Y)){
-      SGGP$mu = mean(Y)
-      y = Y-SGGP$mu
-    }else{
-      SGGP$mu = colMeans(Y)
-      SGGP$st = sqrt(colMeans(Y^2)- colMeans(Y)^2)
-      Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
-      SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
-      Eigen_result =eigen(SigV)
-      percent_explained = cumsum(Eigen_result$values)/sum(Eigen_result$values)
-      num_PC = max(min(which(percent_explained>0.999)),1)
-      y = Y_centered%*%(Eigen_result$vectors[,1:num_PC])
-      SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
-    }
+  #first do the pre-processing
+  #for cleanness: Y is always the user input, y is after transformation
+  if(!is.matrix(Y)){
+    SGGP$mu = mean(Y)
+    y = Y-SGGP$mu
+  }else{
+    SGGP$mu = colMeans(Y)
+    SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
+    Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+    SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
+    Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+    percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+    num_PC = max(min(which(percent_explained>0.9999)),1)
+    y = Y_centered%*%(Eigen_result$vectors[,1:num_PC])
+    SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+  }
   
-    opt.out = optim(
-      theta0,
-      fn = SGGP_internal_neglogpost,
-      gr = SGGP_internal_gneglogpost,
-      lower = lower, 
-      upper = upper,
-      y = y,
-      SGGP = SGGP,
-      method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-      hessian = TRUE,
-      control = list()#reltol=1e-4)#abstol = tol)
-    )
-    
+  opt.out = optim(
+    theta0,
+    fn = SGGP_internal_neglogpost,
+    gr = SGGP_internal_gneglogpost,
+    lower = lower, 
+    upper = upper,
+    y = y,
+    SGGP = SGGP,
+    method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+    hessian = TRUE,
+    control = list()#reltol=1e-4)#abstol = tol)
+  )
   
   # Set new theta
   SGGP$thetaMAP <- opt.out$par
   SGGP$sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=SGGP$thetaMAP, return_lS=TRUE)$sigma2
   SGGP$pw <- SGGP_internal_calcpw(SGGP=SGGP, y, theta=SGGP$thetaMAP)
+  totnumpara = length(SGGP$thetaMAP)
+  
+  H = matrix(0,nrow=totnumpara,ncol=totnumpara)
+  PSTn=  log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))
+  thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
+  grad0 = SGGP_internal_gneglogpost(thetav,SGGP,y)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)
+  for(c in 1:totnumpara){
+    rsad = rep(0,totnumpara)
+    rsad[c] =10^(-4)
+    PSTn=  log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP)) + rsad
+    thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
+    H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(4)
+  }
+  Hmat = H/2+t(H)/2
+  A = eigen(Hmat)
+  cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
+  if(laplaceapprox){
+    PST= log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP)) + cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP))
+    SGGP$thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
+  }else{
+    
+    U <- function(re){
+      PSTn = log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))+cHa%*%as.vector(re)
+      thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
+      return(SGGP_internal_neglogpost(thetav,SGGP,y))
+    }
+    q = rep(0,totnumpara)
+    Uo = U(q)
+    scalev = 0.5
+    for(i in 1:10000){
+      p = rnorm(length(q),0,1)*scalev
+      qp = q + p
+      
+      Up = U(qp)
+      if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))}else{scalev=exp(log(scalev)-0.1/sqrt(i+4));scalev = max(scalev,1/sqrt(length(q)))}
+      
+    }
+    
+    Uo = U(q)
+    Bs = matrix(0,nrow=100,ncol=totnumpara)
+    for(i in 1:10000){
+      p = rnorm(length(q),0,1)*scalev
+      qp = q + p
+      
+      Up = U(qp)
+      if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;}
+      if((i%%100)==0){Bs[i/100,]=q;}
+    }
+    PSTn = log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))+cHa%*%t(Bs)
+    SGGP$thetaPostSamples = (exp(PSTn)-1)/(exp(PSTn)+1)
+  }
   
   return(SGGP)
 }

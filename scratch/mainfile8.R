@@ -112,13 +112,11 @@ while(Pp < 0){
 x0 = x0 + eps*dphi
 }
 x0
-
-
-source("../R/CorrFunctions.R")
-S1 = CorrMatCauchyT(c(0,1,0.1),c(0.05,1),c(0.5,0.25,-0.45))
-S2 = CorrMatCauchyT(c(0,1,0.1),c(0.05,1),c(0.5+10^(-8),0.25,-0.45))
+source("../R/SGGP_corr_fs.R")
+S1 = SGGP_internal_CorrMatCauchySQT(c(0,1,0.1),c(0.05,1),c(0.5,-0.25,-0.45))
+S2 = SGGP_internal_CorrMatCauchySQT(c(0,1,0.1),c(0.05,1),c(0.5,-0.25,-0.45+10^(-8)))
 (S2-S1)*10^(8)
-Sstuff = CorrMatCauchyT(c(0,1,0.1),c(0.05,1),c(0.5,0.25,-0.45),return_dCdtheta = TRUE)
+Sstuff = SGGP_internal_CorrMatCauchySQT(c(0,1,0.1),c(0.05,1),c(0.5,-0.25,-0.45),return_dCdtheta = TRUE)
 Sstuff$dCdtheta
 
 source("../R/CorrFunctions.R")

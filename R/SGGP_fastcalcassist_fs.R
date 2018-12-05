@@ -151,6 +151,68 @@ SGGP_internal_calcpwanddpw <- function(SGGP, y, theta, return_lS=FALSE) {
 
 
 
+SGGP_internal_calcsigma2 <- function(SGGP, y, theta, return_lS=FALSE) {
+  Q  = max(SGGP$uo[1:SGGP$uoCOUNT,]) # Max level of all blocks
+  cholS = list(matrix(1,1,1),Q*SGGP$d) # To store choleskys
+  if(return_lS){
+    lS = matrix(0, nrow = max(SGGP$uo[1:SGGP$uoCOUNT,]), ncol = SGGP$d) # Save log determinant of matrices
+  }
+  
+  # Loop over each dimension
+  for (dimlcv in 1:SGGP$d) {
+    # Loop over depth of each dim
+    for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+      Xbrn = SGGP$xb[1:SGGP$sizest[levellcv]]
+      Xbrn = Xbrn[order(Xbrn)]
+      nv = length(Xbrn);
+      Sstuff = SGGP$CorrMat(Xbrn, Xbrn , theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta = FALSE)
+      S = Sstuff
+      cS = chol(S)
+      
+      cholS[[(dimlcv-1)*Q+levellcv]] = cS+t(cS)-diag(diag(cS)) #store the symmetric version for C code
+      if(return_lS){
+        lS[levellcv, dimlcv] = 2*sum(log(diag(cS)))
+      }
+    }
+  }
+  if(is.matrix(y)){
+    numout = dim(y)[2]
+    sigma2 = rep(0,numout) # Predictive weight for each measured point
+    gg = (1:SGGP$d-1)*Q
+    for (blocklcv in 1:SGGP$uoCOUNT) {
+      IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
+      VVV1=unlist(cholS[gg+SGGP$uo[blocklcv,]])
+      VVV3=SGGP$gridsizest[blocklcv,]
+      for(outdimlcv in 1:numout){
+        B0 = y[IS,outdimlcv]
+        B = (SGGP$w[blocklcv]/dim(y)[1])*B0
+        rcpp_kronDBS(VVV1,B,VVV3)
+        sigma2[outdimlcv] = sigma2[outdimlcv]  + t(B0)%*%B
+      }
+    }
+    out <- list(sigma2=sigma2)
+    if (return_lS) {
+      out$lS <- lS
+    }
+  }else{
+    sigma2 = 0 # Predictive weight for each measured point
+    dsigma2 = rep(0,nrow=SGGP$d) # Predictive weight for each measured point
+    gg = (1:SGGP$d-1)*Q
+    for (blocklcv in 1:SGGP$uoCOUNT) {
+      IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
+      B0 = y[IS]
+      B = (SGGP$w[blocklcv]/length(y))*B0
+      rcpp_kronDBS(unlist(cholS[gg+SGGP$uo[blocklcv,]]),B, SGGP$gridsizest[blocklcv,])
+      sigma2 = sigma2 + t(B0)%*%B
+    }
+    out <- list(sigma2=sigma2)
+    if (return_lS) {
+      out$lS <- lS
+    }
+  }
+  return(out)
+}
+
 SGGP_internal_calcsigma2anddsigma2 <- function(SGGP, y, theta, return_lS=FALSE) {
   Q  = max(SGGP$uo[1:SGGP$uoCOUNT,]) # Max level of all blocks
   cholS = list(matrix(1,1,1),Q*SGGP$d) # To store choleskys
@@ -199,10 +261,10 @@ SGGP_internal_calcsigma2anddsigma2 <- function(SGGP, y, theta, return_lS=FALSE) 
       VVV3=SGGP$gridsizest[blocklcv,]
       for(outdimlcv in 1:numout){
         B0 = y[IS,outdimlcv]
-        B = SGGP$w[blocklcv]*B0
+        B = (SGGP$w[blocklcv]/dim(y)[1])*B0
         dB = rcpp_gkronDBS(VVV1,VVV2,B,VVV3)
-        dsigma2[,outdimlcv] = dsigma2[,outdimlcv] + as.vector(t(B0)%*%t(dB))/length(y)
-        sigma2[outdimlcv] = sigma2[outdimlcv]  + t(B0)%*%B/length(y)
+        dsigma2[,outdimlcv] = dsigma2[,outdimlcv] + as.vector(dB%*%B0)
+        sigma2[outdimlcv] = sigma2[outdimlcv]  + sum(B0*B)
       }
     }
     out <- list(sigma2=sigma2,
@@ -218,12 +280,11 @@ SGGP_internal_calcsigma2anddsigma2 <- function(SGGP, y, theta, return_lS=FALSE) 
     for (blocklcv in 1:SGGP$uoCOUNT) {
       IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
       B0 = y[IS]
-      B = SGGP$w[blocklcv]*B0
+      B = (SGGP$w[blocklcv]/length(y))*B0
       dB = rcpp_gkronDBS(unlist(cholS[gg+SGGP$uo[blocklcv,]]),unlist(dMatdtheta[gg+SGGP$uo[blocklcv,]]), B, SGGP$gridsizest[blocklcv,])
       
-      dsigma2 = dsigma2 +t(B0)%*%t(dB)/length(y)
-      
-      sigma2 = sigma2 + t(B0)%*%B/length(y)
+      dsigma2 = dsigma2 +t(B0)%*%t(dB)
+      sigma2 = sigma2 + t(B0)%*%B
     }
     out <- list(sigma2=sigma2,
                 dsigma2=dsigma2)

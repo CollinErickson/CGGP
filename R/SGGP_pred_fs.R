@@ -53,7 +53,12 @@ SGGPpred <- function(xp,SGGP) {
   if(is.vector(SGGP$pw)){
     GP = list("mean" = (SGGP$mu+Cp%*%SGGP$pw), "var"=SGGP$sigma2MAP[1]*ME_t)
   }else{
-    GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%SGGP$sigma2MAP%*%(SGGP$M))))
+    if(length(SGGP$sigma2MAP)==1){
+      GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M))))
+      
+    }else{
+    GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
+    }
   }
   
   return(GP)
