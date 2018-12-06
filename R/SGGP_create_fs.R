@@ -4,8 +4,6 @@
 #' @param xmin Min x values, vector. Must be rep(0,d).
 #' @param xmax Max x values, vector. Must be rep(1,d).
 #' @param batchsize Number added to design each batch
-#' @param nugget Nugget term added to diagonal of correlation matrix,
-#' for now only on predictions
 #' @param corr Correlation function to use.
 #'
 #' @return SGGP
