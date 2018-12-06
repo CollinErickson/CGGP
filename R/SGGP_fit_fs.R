@@ -184,13 +184,15 @@ SGGPfit<- function(SGGP, Y, ...,
     H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(4)
   }
   Hmat = H/2+t(H)/2
+ # print(Hmat)
+ # print(sqrt(diag(solve(Hmat))))
   A = eigen(Hmat)
   cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
+  #print( cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP)))
   if(laplaceapprox){
     PST= log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP)) + cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP))
     SGGP$thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
   }else{
-    
     U <- function(re){
       PSTn = log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))+cHa%*%as.vector(re)
       thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
@@ -199,7 +201,7 @@ SGGPfit<- function(SGGP, Y, ...,
     q = rep(0,totnumpara)
     Uo = U(q)
     scalev = 0.5
-    for(i in 1:10000){
+    for(i in 1:(100*SGGP$numPostSamples)){
       p = rnorm(length(q),0,1)*scalev
       qp = q + p
       
@@ -209,16 +211,16 @@ SGGPfit<- function(SGGP, Y, ...,
     }
     
     Uo = U(q)
-    Bs = matrix(0,nrow=100,ncol=totnumpara)
-    for(i in 1:10000){
+    Bs = matrix(0,ncol=totnumpara,nrow=SGGP$numPostSamples)
+    for(i in 1:(100*SGGP$numPostSamples)){
       p = rnorm(length(q),0,1)*scalev
       qp = q + p
       
       Up = U(qp)
       if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;}
-      if((i%%100)==0){Bs[i/100,]=q;}
+      if((i%%100)==0){Bs[,i/100]=q;}
     }
-    PSTn = log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))+cHa%*%t(Bs)
+    PSTn = log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))+cHa%*%Bs
     SGGP$thetaPostSamples = (exp(PSTn)-1)/(exp(PSTn)+1)
   }
   

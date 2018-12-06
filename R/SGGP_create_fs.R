@@ -22,9 +22,10 @@ SGGPcreate <- function(d, batchsize) {
   SGGP$d <- d
   SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT 
   SGGP$numpara <- SGGP$CorrMat(0,0,0,return_numpara=TRUE)
-  SGGP$theta <- rep(0,d*SGGP$numpara)
+  SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
+  SGGP$numPostSamples <- 100
+  SGGP$thetaPostSamples  <- matrix(2*rbeta(d*SGGP$numpara*SGGP$numPostSamples , 0.5, 0.5)-1,ncol=SGGP$numPostSamples )
   SGGP$y <- rep(0,0)
-  
   
   # Levels are blocks. Level is like eta from paper.
   SGGP$ML = min(choose(SGGP$d + 6, SGGP$d), 10000) #max levels
