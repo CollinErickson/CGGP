@@ -15,52 +15,51 @@
 #'
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
-#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, theta=c(.1,.1,.1))
-#' cbind(SGGPpred(SG$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
-SGGPpred <- function(xp,SG) {
+#' cbind(SGGPpred(SGGP$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
+SGGPpred <- function(xp,SGGP) {
   # Require that you run SGGPfit
-  y = SG$y
   
-  
-  my = mean(y)
-  y = y-my
-  pw <- calculate_pw_C(SG,y,SG$theta) # Already subtracted mean(y) from y
-  print(length(y))
-  print(length(pw))
-  
-  sigma_hat = t(y) %*%pw / length(y)
   # Cp is sigma(x_0) in paper, correlation vector between design points and xp
-  Cp = matrix(1,dim(xp)[1],SG$ss)
-  for (e in 1:SG$d) { # Loop over dimensions
-    #Cp = Cp*CorrMat(xp[,e], SG$design[,e], theta=theta[e]) # Multiply correlation from each dimension
-    V = SG$CorrMat(xp[,e], SG$xb, SG$theta[(e-1)*SG$numpara+1:SG$numpara])
-    Cp = Cp*V[,SG$designindex[,e]]
+  Cp = matrix(1,dim(xp)[1],SGGP$ss)
+  for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+    V = SGGP$CorrMat(xp[,dimlcv], SGGP$xb, SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+    Cp = Cp*V[,SGGP$designindex[,dimlcv]]
   }
-  MSE_v = array(0, c(SG$d, SG$maxgridsize,dim(xp)[1]))
-  for (lcv1 in 1:SG$d) {
-    MSE_v[lcv1, 1,] = 1
+  MSE_v = array(0, c(SGGP$d, SGGP$maxgridsize,dim(xp)[1]))
+  for (dimlcv in 1:SGGP$d) {
+    MSE_v[dimlcv, 1,] = 1
   }
-  for (lcv1 in 1:SG$d) {
-    for (lcv2 in 1:max(SG$uo[1:SG$uoCOUNT,lcv1])) {
-      MSE_v[lcv1, lcv2+1,] = MSEpred_calc(xp[,lcv1],SG$xb[1:SG$sizest[lcv2]],SG$theta[(lcv1-1)*SG$numpara+1:SG$numpara],CorrMat=SG$CorrMat)
-      MSE_v[lcv1, lcv2+1,] = pmin(MSE_v[lcv1, lcv2+1,], MSE_v[lcv1, lcv2,])
+  for (dimlcv in 1:SGGP$d) {
+    for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+      MSE_v[dimlcv, levellcv+1,] = SGGP_internal_MSEpredcalc(xp[,dimlcv],SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat)
+      MSE_v[dimlcv, levellcv+1,] = pmin(MSE_v[dimlcv, levellcv+1,], MSE_v[dimlcv, levellcv,])
     }
   }
   
   ME_t = prod(MSE_v[,1,],1)
-  for (lcv1 in 1:SG$uoCOUNT) {
+  for (blocklcv in 1:SGGP$uoCOUNT) {
     ME_v = rep(1,dim(xp)[1])
-    for (e in 1:SG$d) {
-      levelnow = SG$uo[lcv1,e]
-      ME_v = ME_v*(MSE_v[e,1,]-MSE_v[e,levelnow+1,])
+    for (dimlcv in 1:SGGP$d) {
+      levelnow = SGGP$uo[blocklcv,dimlcv]
+      ME_v = ME_v*(MSE_v[dimlcv,1,]-MSE_v[dimlcv,levelnow+1,])
     }
-    ME_t = ME_t-SG$w[lcv1]*ME_v
+    ME_t = ME_t-SGGP$w[blocklcv]*ME_v
   }
   
   
   # Return list with mean and var predictions
-  GP = list("mean" = (my+Cp %*%pw), "var"=sigma_hat[1]*ME_t)
+  if(is.vector(SGGP$pw)){
+    GP = list("mean" = (SGGP$mu+Cp%*%SGGP$pw), "var"=SGGP$sigma2MAP[1]*ME_t)
+  }else{
+    if(length(SGGP$sigma2MAP)==1){
+      GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M))))
+      
+    }else{
+    GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
+    }
+  }
   
   return(GP)
 }
@@ -84,7 +83,7 @@ SGGPpred <- function(xp,SG) {
 #' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
 #'              CorrMat=CorrMatMatern32,
 #'              diag_corrMat=diag_corrMatMatern32)
-MSEpred_calc <- function(xp,xl, theta, CorrMat) {
+SGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
   S = CorrMat(xl, xl, theta)
   n = length(xl)
   cholS = chol(S)
@@ -94,5 +93,4 @@ MSEpred_calc <- function(xp,xl, theta, CorrMat) {
   
   MSE_val = 1 - rowSums(t(CiCp)*((Cp)))
   return(MSE_val)
-  
 }
