@@ -40,7 +40,7 @@ goodlogthetaest <- log(exp(goodlogthetaest_old)/sqrt(3))
 use_goodtheta <- FALSE
 
 require("SGGP")
-SG = SGcreate(d=d, batchsize=201)
+SG = SGcreate(d=d, batchsize=201, nugget = 0) #create the design.  it has so many entries because i am sloppy
 Y = testf(SG$design) #the design is $design, simple enough, right?
 # logthetaest = logthetaMLE(SG,Y)
 SG = logthetaMLE(SG,Y)

@@ -4,6 +4,8 @@
 #' @param xmin Min x values, vector. Must be rep(0,d).
 #' @param xmax Max x values, vector. Must be rep(1,d).
 #' @param batchsize Number added to design each batch
+#' @param nugget Nugget term added to diagonal of correlation matrix,
+#' for now only on predictions
 #' @param corr Correlation function to use.
 #'
 #' @return SGGP
@@ -12,164 +14,164 @@
 #' @examples
 #' d <- 8
 #' SG = SGcreate(d,201)
-SGcreate <- function(d, batchsize) {
+SGGPcreate <- function(d, batchsize) {
   if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object
-  SG = list()
+  SGGP = list()
   
-  SG$d <- d
-  SG$CorrMat <- CorrMatCauchyT
-  SG$numpara <- SG$CorrMat(0,0,0,return_numpara=TRUE)
-  SG$theta <- rep(0,d*SG$numpara)
-  SG$pw <- NULL
-    
+  SGGP$d <- d
+  SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT 
+  SGGP$numpara <- SGGP$CorrMat(0,0,0,return_numpara=TRUE)
+  SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
+  SGGP$numPostSamples <- 100
+  SGGP$thetaPostSamples  <- matrix(2*rbeta(d*SGGP$numpara*SGGP$numPostSamples , 0.5, 0.5)-1,ncol=SGGP$numPostSamples )
+  SGGP$y <- rep(0,0)
   
   # Levels are blocks. Level is like eta from paper.
-  SG$ML = min(choose(SG$d + 6, SG$d), 10000) #max levels
+  SGGP$ML = min(choose(SGGP$d + 6, SGGP$d), 10000) #max levels
   
   # What is levelpoint? The current point? This is not used again in this file!
-  SG$levelpoint = rep(0, SG$ML)
+  SGGP$levelpoint = rep(0, SGGP$ML)
   
   # Track evaluated blocks, aka used levels
-  SG$uo = matrix(0, nrow = SG$ML, ncol = SG$d) #used levels tracker
+  SGGP$uo = matrix(0, nrow = SGGP$ML, ncol = SGGP$d) #used levels tracker
   # First observation is always (1,1,...,1)
-  SG$uo[1, ] = rep(1, SG$d) #first observation in middle of space
-  SG$uoCOUNT = 1 #number of used levels
+  SGGP$uo[1, ] = rep(1, SGGP$d) #first observation in middle of space
+  SGGP$uoCOUNT = 1 #number of used levels
   
   # Track the blocks that are allowed to be evaluated
-  SG$po = matrix(0, nrow = 4 * SG$ML, ncol = SG$d) #proposed levels tracker
+  SGGP$po = matrix(0, nrow = 4 * SGGP$ML, ncol = SGGP$d) #proposed levels tracker
   # Now possible blocks are (2,1,1,1,1), (1,2,1,1,1), (1,1,2,1,1), etc
-  SG$po[1:SG$d, ] = matrix(1, nrow = SG$d, ncol = SG$d) + diag(SG$d) #one at a time
-  SG$poCOUNT = SG$d #number of proposed levels
+  SGGP$po[1:SGGP$d, ] = matrix(1, nrow = SGGP$d, ncol = SGGP$d) + diag(SGGP$d) #one at a time
+  SGGP$poCOUNT = SGGP$d #number of proposed levels
   
   
   # What are ancestors? Why are we doing this?
   # Are ancestors support blocks? Is this for calculating coefficient?
   # How any of its ancestors be proposed? They should all be used already?
   # Might be transposed??? Is this right?
-  SG$maxgridsize = 400
-  SG$pila = matrix(0, nrow = SG$ML, ncol =SG$maxgridsize ) #proposed immediate level ancestors
-  SG$pala = matrix(0, nrow = SG$ML, ncol =SG$maxgridsize ) #proposedal all level ancestors
-  SG$uala = matrix(0, nrow = SG$ML, ncol =SG$maxgridsize ) #used all level ancestors
-  SG$pilaCOUNT = rep(0, SG$ML) #count of number of pila
-  SG$palaCOUNT = rep(0, SG$ML) #count of number of pala
-  SG$ualaCOUNT = rep(0, SG$ML) #count of number of uala
+  SGGP$maxgridsize = 400
+  SGGP$pila = matrix(0, nrow = SGGP$ML, ncol =SGGP$maxgridsize ) #proposed immediate level ancestors
+  SGGP$pala = matrix(0, nrow = SGGP$ML, ncol =SGGP$maxgridsize ) #proposedal all level ancestors
+  SGGP$uala = matrix(0, nrow = SGGP$ML, ncol =SGGP$maxgridsize ) #used all level ancestors
+  SGGP$pilaCOUNT = rep(0, SGGP$ML) #count of number of pila
+  SGGP$palaCOUNT = rep(0, SGGP$ML) #count of number of pala
+  SGGP$ualaCOUNT = rep(0, SGGP$ML) #count of number of uala
   
-  SG$pilaCOUNT[1:SG$d] = 1
-  SG$pila[1:SG$d, 1] = 1
+  SGGP$pilaCOUNT[1:SGGP$d] = 1
+  SGGP$pila[1:SGGP$d, 1] = 1
   
-  SG$bss = batchsize#1+4*SG$d  #must be at least 3*d
-  SG$sizes = c(1,2,4,4,8,12) # Num of points added to 1D design as you go further in any dimension
-  SG$maxlevel = length(SG$sizes)
+  SGGP$bss = batchsize#1+4*SGGP$d  #must be at least 3*d
+  SGGP$sizes = c(1,2,4,4,8,12) # Num of points added to 1D design as you go further in any dimension
+  SGGP$maxlevel = length(SGGP$sizes)
   # Proposed grid size? More points further along the blocks?
-  SG$pogsize = rep(0, 4 * SG$ML)
-  SG$pogsize[1:SG$poCOUNT] = apply(matrix(SG$sizes[SG$po[1:SG$poCOUNT, ]], SG$poCOUNT, SG$d), 1, prod)
+  SGGP$pogsize = rep(0, 4 * SGGP$ML)
+  SGGP$pogsize[1:SGGP$poCOUNT] = apply(matrix(SGGP$sizes[SGGP$po[1:SGGP$poCOUNT, ]], SGGP$poCOUNT, SGGP$d), 1, prod)
   # Selected sample size?
-  SG$ss = 1
+  SGGP$ss = 1
   
   
-  SG$w = rep(0, SG$ML) #keep track of + and - for prediction
-  SG$w[1] = 1 #keep track of + and - for prediction
-  SG$uoCOUNT = 1 # Number of used levels
+  SGGP$w = rep(0, SGGP$ML) #keep track of + and - for prediction
+  SGGP$w[1] = 1 #keep track of + and - for prediction
+  SGGP$uoCOUNT = 1 # Number of used levels
   # While number selected + min sample size <= batch size, i.e., still have enough spots for a block
-  while (SG$bss > (SG$ss + min(SG$pogsize[1:SG$poCOUNT]) - 0.5)) {
-    SG$uoCOUNT = SG$uoCOUNT + 1 #increment used count
+  while (SGGP$bss > (SGGP$ss + min(SGGP$pogsize[1:SGGP$poCOUNT]) - 0.5)) {
+    SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
     
     # First d iterations pick the (2,1,1,1,1),(1,2,1,1,1) blocks b/c we need info on each dimension before going adaptive
-    if (SG$uoCOUNT < (SG$d + 1.5)) {
+    if (SGGP$uoCOUNT < (SGGP$d + 1.5)) {
       pstar = 1 #pick a proposed to add
     } else{ # The next d iterations randomly pick from the boxes with minimal number of points, not sure this makes sense
-      if (SG$uoCOUNT < (2 * SG$d + 1.5)) {
-        pstar = sample(which(SG$pogsize[1:SG$poCOUNT] <= 0.5 + min(SG$pogsize[1:SG$poCOUNT])), 1)
+      if (SGGP$uoCOUNT < (2 * SGGP$d + 1.5)) {
+        pstar = sample(which(SGGP$pogsize[1:SGGP$poCOUNT] <= 0.5 + min(SGGP$pogsize[1:SGGP$poCOUNT])), 1)
       } else{ # After that randomly select from blocks that still fit
-        pstar = sample(which(SG$pogsize[1:SG$poCOUNT] < min(SG$bss - SG$ss + 0.5,SG$maxgridsize)), 1)
+        pstar = sample(which(SGGP$pogsize[1:SGGP$poCOUNT] < min(SGGP$bss - SGGP$ss + 0.5,SGGP$maxgridsize)), 1)
       }
     }
     
-    l0 =  SG$po[pstar, ] # Block name e.g. (2,1,1,2)
-    SG$uo[SG$uoCOUNT, ] = l0 # Store new block
-    SG$ss =  SG$ss + SG$pogsize[pstar] # Update selected sample size
+    l0 =  SGGP$po[pstar, ] # Block name e.g. (2,1,1,2)
+    SGGP$uo[SGGP$uoCOUNT, ] = l0 # Store new block
+    SGGP$ss =  SGGP$ss + SGGP$pogsize[pstar] # Update selected sample size
     
     # New ancestors?
-    new_an = SG$pila[pstar, 1:SG$pilaCOUNT[pstar]]
+    new_an = SGGP$pila[pstar, 1:SGGP$pilaCOUNT[pstar]]
     total_an = new_an
     
     # Loop over ancestors???
-    for (lcv2 in 1:length(total_an)) {
+    for (anlcv in 1:length(total_an)) {
       # If more than one ancestor, update with unique ones.
-      if (total_an[lcv2] > 1.5) {
-        total_an = unique(c(total_an, SG$uala[total_an[lcv2], 1:SG$ualaCOUNT[total_an[lcv2]]]))
+      if (total_an[anlcv] > 1.5) {
+        total_an = unique(c(total_an, SGGP$uala[total_an[anlcv], 1:SGGP$ualaCOUNT[total_an[anlcv]]]))
       }
     }
     # Update storage of ancestors
-    SG$ualaCOUNT[SG$uoCOUNT]  = length(total_an)
-    SG$uala[SG$uoCOUNT, 1:length(total_an)] = total_an
+    SGGP$ualaCOUNT[SGGP$uoCOUNT]  = length(total_an)
+    SGGP$uala[SGGP$uoCOUNT, 1:length(total_an)] = total_an
     
     # Loop over ancestors, update coefficient
-    for (lcv2 in 1:length(total_an)) {
-      lo = SG$uo[total_an[lcv2], ]
+    for (anlcv in 1:length(total_an)) {
+      lo = SGGP$uo[total_an[anlcv], ]
       if (max(abs(lo - l0)) < 1.5) {
-        SG$w[total_an[lcv2]] = SG$w[total_an[lcv2]] + (-1) ^ abs(round(sum(l0 -
-                                                                             lo)))
+        SGGP$w[total_an[anlcv]] = SGGP$w[total_an[anlcv]] + (-1) ^ abs(round(sum(l0-lo)))
         
       }
     }
-    SG$w[SG$uoCOUNT] = SG$w[SG$uoCOUNT] + 1
+    SGGP$w[SGGP$uoCOUNT] = SGGP$w[SGGP$uoCOUNT] + 1
     
     # Update block tracking
     if (pstar < 1.5) { # If you picked the first block, update like this 
-      SG$po[1:(SG$poCOUNT - 1), ] = SG$po[2:SG$poCOUNT, ]
-      SG$pila[1:(SG$poCOUNT - 1), ] = SG$pila[2:SG$poCOUNT, ]
-      SG$pilaCOUNT[1:(SG$poCOUNT - 1)] = SG$pilaCOUNT[2:SG$poCOUNT]
-      SG$pogsize[1:(SG$poCOUNT - 1)] = SG$pogsize[2:SG$poCOUNT]
+      SGGP$po[1:(SGGP$poCOUNT - 1), ] = SGGP$po[2:SGGP$poCOUNT, ]
+      SGGP$pila[1:(SGGP$poCOUNT - 1), ] = SGGP$pila[2:SGGP$poCOUNT, ]
+      SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[2:SGGP$poCOUNT]
+      SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[2:SGGP$poCOUNT]
     }
-    if (pstar > (SG$poCOUNT - 0.5)) { # If you picked the last block, do this
-      SG$po[1:(SG$poCOUNT - 1), ] = SG$po[1:(pstar - 1), ]
-      SG$pila[1:(SG$poCOUNT - 1), ] = SG$pila[1:(pstar - 1), ]
-      SG$pilaCOUNT[1:(SG$poCOUNT - 1)] = SG$pilaCOUNT[1:(pstar - 1)]
-      SG$pogsize[1:(SG$poCOUNT - 1)] = SG$pogsize[1:(pstar - 1)]
+    if (pstar > (SGGP$poCOUNT - 0.5)) { # If you picked the last block, do this
+      SGGP$po[1:(SGGP$poCOUNT - 1), ] = SGGP$po[1:(pstar - 1), ]
+      SGGP$pila[1:(SGGP$poCOUNT - 1), ] = SGGP$pila[1:(pstar - 1), ]
+      SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[1:(pstar - 1)]
+      SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[1:(pstar - 1)]
     }
-    if (pstar < (SG$poCOUNT - 0.5) && pstar > 1.5) { # If in between, do this
-      SG$po[1:(SG$poCOUNT - 1), ] = SG$po[c(1:(pstar - 1), (pstar + 1):SG$poCOUNT), ]
-      SG$pila[1:(SG$poCOUNT - 1), ] = SG$pila[c(1:(pstar - 1), (pstar +
-                                                                  1):SG$poCOUNT), ]
-      SG$pilaCOUNT[1:(SG$poCOUNT - 1)] = SG$pilaCOUNT[c(1:(pstar - 1), (pstar +
-                                                                          1):SG$poCOUNT)]
-      SG$pogsize[1:(SG$poCOUNT - 1)] = SG$pogsize[c(1:(pstar - 1), (pstar +
-                                                                      1):SG$poCOUNT)]
+    if (pstar < (SGGP$poCOUNT - 0.5) && pstar > 1.5) { # If in between, do this
+      SGGP$po[1:(SGGP$poCOUNT - 1), ] = SGGP$po[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT), ]
+      SGGP$pila[1:(SGGP$poCOUNT - 1), ] = SGGP$pila[c(1:(pstar - 1), (pstar +
+                                                                        1):SGGP$poCOUNT), ]
+      SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[c(1:(pstar - 1), (pstar +
+                                                                                1):SGGP$poCOUNT)]
+      SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[c(1:(pstar - 1), (pstar +
+                                                                            1):SGGP$poCOUNT)]
     }
     # One less option now???
-    SG$poCOUNT = SG$poCOUNT - 1
+    SGGP$poCOUNT = SGGP$poCOUNT - 1
     
     # Loop over dimensions WHY???
-    for (lcv2 in 1:SG$d) {
+    for (dimlcv in 1:SGGP$d) {
       # The block e.g. (1,2,1,1,3) just selected
       lp = l0
       
-      lp[lcv2] = lp[lcv2] + 1 # Increase THIS dim by 1. This is a new possibility, are we adding it?
+      lp[dimlcv] = lp[dimlcv] + 1 # Increase THIS dim by 1. This is a new possibility, are we adding it?
       
       # Check if within some bounds??
-      if (max(lp) <= SG$maxlevel && SG$poCOUNT < 4*SG$ML) {
+      if (max(lp) <= SGGP$maxlevel && SGGP$poCOUNT < 4*SGGP$ML) {
         # Dimensions which are past first design level
         kvals = which(lp > 1.5)
         
         canuse = 1 # ????
-        ap = rep(0, SG$d) # ????
+        ap = rep(0, SGGP$d) # ????
         nap = 0 # ?????
         
         # Loop over dims at 2+ and do what?
-        for (lcv3 in 1:length(kvals)) {
+        for (activedimlcv in 1:length(kvals)) {
           lpp = lp # The block selected with 1 dim incremented
-          lpp[kvals[lcv3]] = lpp[kvals[lcv3]] - 1 # ????
+          lpp[kvals[activedimlcv]] = lpp[kvals[activedimlcv]] - 1 # ????
           
-          ismem = rep(1, SG$uoCOUNT) # Boolean???
+          ismem = rep(1, SGGP$uoCOUNT) # Boolean???
           # Loop over dimensions
-          for (lcv4 in 1:SG$d) { # Set to 0 or 1 if all points already selected have same value???????
-            ismem  = ismem * (SG$uo[1:SG$uoCOUNT, lcv4] == lpp[lcv4])
+          for (dimdimlcv in 1:SGGP$d) { # Set to 0 or 1 if all points already selected have same value???????
+            ismem  = ismem * (SGGP$uo[1:SGGP$uoCOUNT, dimdimlcv] == lpp[dimdimlcv])
           }
           # If any are still 1,
           if (max(ismem) > 0.5) {
-            ap[lcv3] = which(ismem > 0.5)
+            ap[activedimlcv] = which(ismem > 0.5)
             nap = nap + 1 # Count number that are >=1
           } else{ # All are 0, so can't use
             canuse = 0
@@ -177,11 +179,11 @@ SGcreate <- function(d, batchsize) {
         }
         # If it can be used, add to possible blocks
         if (canuse > 0.5) {
-          SG$poCOUNT = SG$poCOUNT + 1
-          SG$po[SG$poCOUNT, ] = lp
-          SG$pogsize[SG$poCOUNT] = prod(SG$sizes[lp])
-          SG$pila[SG$poCOUNT, 1:nap] = ap[1:nap]
-          SG$pilaCOUNT[SG$poCOUNT] = nap
+          SGGP$poCOUNT = SGGP$poCOUNT + 1
+          SGGP$po[SGGP$poCOUNT, ] = lp
+          SGGP$pogsize[SGGP$poCOUNT] = prod(SGGP$sizes[lp])
+          SGGP$pila[SGGP$poCOUNT, 1:nap] = ap[1:nap]
+          SGGP$pilaCOUNT[SGGP$poCOUNT] = nap
           
         }
       }
@@ -210,76 +212,72 @@ SGcreate <- function(d, batchsize) {
     ),
     "each" = 2
   )
-  SG$xb = 0.5 + c(0, xb * rep(c(-1, 1), length(xb) / 2))
-  SG$xindex = 1:length(xb)
+  SGGP$xb = 0.5 + c(0, xb * rep(c(-1, 1), length(xb) / 2))
+  SGGP$xindex = 1:length(xb)
   # After this xb is
   #  [1] 0.50000 0.12500 0.87500 0.25000 0.75000 0.37500 0.62500 0.28125 0.71875 0.31250 0.68750 0.00000 1.00000 0.18750 0.81250
   # [16] 0.06250 0.93750 0.43750 0.56250 0.40625 0.59375 0.09375 0.90625 0.21875 0.78125 0.34375 0.65625 0.46875 0.53125 0.15625
   # [31] 0.84375 0.03125 0.96875
-  SG$sizest = cumsum(SG$sizes) # Total number of points in 1D design as you go along axis
+  SGGP$sizest = cumsum(SGGP$sizes) # Total number of points in 1D design as you go along axis
   
   
-  SG$gridsizes = matrix(SG$sizes[SG$uo[1:SG$uoCOUNT, ]], SG$uoCOUNT, SG$d)
-  SG$gridsizest = matrix(SG$sizest[SG$uo[1:SG$uoCOUNT, ]], SG$uoCOUNT, SG$d)
-  SG$gridsize = apply(SG$gridsizes, 1, prod)
-  SG$gridsizet = apply(SG$gridsizest, 1, prod)
+  SGGP$gridsizes = matrix(SGGP$sizes[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
+  SGGP$gridsizest = matrix(SGGP$sizest[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
+  SGGP$gridsize = apply(SGGP$gridsizes, 1, prod)
+  SGGP$gridsizet = apply(SGGP$gridsizest, 1, prod)
   
-  SG$di = matrix(0, nrow = SG$uoCOUNT, ncol = max(SG$gridsize))
-  SG$dit = matrix(0, nrow = SG$uoCOUNT, ncol = sum((SG$gridsize)))
+  SGGP$di = matrix(0, nrow = SGGP$uoCOUNT, ncol = max(SGGP$gridsize))
+  SGGP$dit = matrix(0, nrow = SGGP$uoCOUNT, ncol = sum((SGGP$gridsize)))
   
-  SG$design = matrix(0, nrow = sum(SG$gridsize), ncol = SG$d)
-  SG$designindex = matrix(0, nrow = sum(SG$gridsize), ncol = SG$d) # Use this to track which indices have been used
+  SGGP$design = matrix(0, nrow = sum(SGGP$gridsize), ncol = SGGP$d)
+  SGGP$designindex = matrix(0, nrow = sum(SGGP$gridsize), ncol = SGGP$d) # Use this to track which indices have been used
   tv = 0
-  for (lcv1 in 1:SG$uoCOUNT) {
-    SG$di[lcv1, 1:SG$gridsize[lcv1]] = (tv + 1):(tv + SG$gridsize[lcv1])
-    for (lcv2 in 1:SG$d) {
-      levelnow = SG$uo[lcv1, lcv2]
+  for (blocklcv in 1:SGGP$uoCOUNT) {
+    SGGP$di[blocklcv, 1:SGGP$gridsize[blocklcv]] = (tv + 1):(tv + SGGP$gridsize[blocklcv])
+    for (dimlcv in 1:SGGP$d) {
+      levelnow = SGGP$uo[blocklcv, dimlcv]
       if (levelnow < 1.5) {
-        SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(SG$xb[1], SG$gridsize[lcv1])
-        SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(SG$xindex[1], SG$gridsize[lcv1])
+        SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(SGGP$xb[1], SGGP$gridsize[blocklcv])
+        SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(SGGP$xindex[1], SGGP$gridsize[blocklcv])
       } else{
-        x0 = SG$xb[(SG$sizest[levelnow - 1] + 1):SG$sizest[levelnow]]
-        xi0 = SG$xindex[(SG$sizest[levelnow - 1] + 1):SG$sizest[levelnow]]
-        if (lcv2 < 1.5) {
-          SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(x0, "each" = SG$gridsize[lcv1] /
-                                                                     SG$gridsizes[lcv1, lcv2])
-          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(xi0, "each" = SG$gridsize[lcv1] /
-                                                                          SG$gridsizes[lcv1, lcv2])
+        x0 = SGGP$xb[(SGGP$sizest[levelnow - 1] + 1):SGGP$sizest[levelnow]]
+        xi0 = SGGP$xindex[(SGGP$sizest[levelnow - 1] + 1):SGGP$sizest[levelnow]]
+        if (dimlcv < 1.5) {
+          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(x0, "each" = SGGP$gridsize[blocklcv] /
+                                                                               SGGP$gridsizes[blocklcv, dimlcv])
+          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, "each" = SGGP$gridsize[blocklcv] /
+                                                                                    SGGP$gridsizes[blocklcv, dimlcv])
         }
-        if (lcv2 > (SG$d - 0.5)) {
-          SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(x0, SG$gridsize[lcv1] /
-                                                                     SG$gridsizes[lcv1, lcv2])
-          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(xi0, SG$gridsize[lcv1] /
-                                                                          SG$gridsizes[lcv1, lcv2])
+        if (dimlcv > (SGGP$d - 0.5)) {
+          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(x0, SGGP$gridsize[blocklcv] /
+                                                                               SGGP$gridsizes[blocklcv, dimlcv])
+          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, SGGP$gridsize[blocklcv] /
+                                                                                    SGGP$gridsizes[blocklcv, dimlcv])
         }
-        if (lcv2 < (SG$d - 0.5)  && lcv2 > 1.5) {
-          SG$design[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(rep(x0, "each" =
-                                                                         prod(SG$gridsizes[lcv1, (lcv2 + 1):SG$d])), prod(SG$gridsizes[lcv1, 1:(lcv2 -
-                                                                                                                                                  1)]))
-          SG$designindex[(tv + 1):(tv + SG$gridsize[lcv1]), lcv2] = rep(rep(xi0, "each" =
-                                                                              prod(SG$gridsizes[lcv1, (lcv2 + 1):SG$d])), prod(SG$gridsizes[lcv1, 1:(lcv2 -
-                                                                                                                                                       1)]))
+        if (dimlcv < (SGGP$d - 0.5)  && dimlcv > 1.5) {
+          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, "each" =
+                                                                                   prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -1)]))
+          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, "each" =
+                                                                                        prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -1)]))
         }
       }
     }
     
     tvv = 0
-    if (lcv1 > 1.5) {
-      for (ances in SG$uala[lcv1, 1:SG$ualaCOUNT[lcv1]]) {
-        SG$dit[lcv1, (tvv + 1):(tvv + SG$gridsize[ances])] = SG$di[ances, 1:SG$gridsize[ances]]
-        tvv = tvv + SG$gridsize[ances]
+    if (blocklcv > 1.5) {
+      for (ances in SGGP$uala[blocklcv, 1:SGGP$ualaCOUNT[blocklcv]]) {
+        SGGP$dit[blocklcv, (tvv + 1):(tvv + SGGP$gridsize[ances])] = SGGP$di[ances, 1:SGGP$gridsize[ances]]
+        tvv = tvv + SGGP$gridsize[ances]
       }
-      SG$dit[lcv1, (tvv + 1):(tvv + SG$gridsize[lcv1])] = SG$di[lcv1, 1:SG$gridsize[lcv1]]
-      Xset = SG$design[SG$dit[lcv1, 1:SG$gridsizet[lcv1]], ]
-      reorder = do.call(order, lapply(1:NCOL(Xset), function(kvt)
-        Xset[, kvt]))
-      SG$dit[lcv1, 1:SG$gridsizet[lcv1]] = SG$dit[lcv1, reorder]
+      SGGP$dit[blocklcv, (tvv + 1):(tvv + SGGP$gridsize[blocklcv])] = SGGP$di[blocklcv, 1:SGGP$gridsize[blocklcv]]
+      Xset = SGGP$design[SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]], ]
+      reorder = do.call(order, lapply(1:NCOL(Xset), function(kvt) Xset[, kvt]))
+      SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]] = SGGP$dit[blocklcv, reorder]
     } else{
-      SG$dit[lcv1, 1:SG$gridsize[lcv1]] = SG$di[lcv1, 1:SG$gridsize[lcv1]]
+      SGGP$dit[blocklcv, 1:SGGP$gridsize[blocklcv]] = SGGP$di[blocklcv, 1:SGGP$gridsize[blocklcv]]
     }
     
-    tv = tv + SG$gridsize[lcv1]
+    tv = tv + SGGP$gridsize[blocklcv]
   }
-  
-  return(SG)
+  return(SGGP)
 }
