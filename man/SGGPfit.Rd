@@ -4,15 +4,11 @@
 \alias{SGGPfit}
 \title{Calculate theta MLE given data}
 \usage{
-SGGPfit(SG, y, ..., lower = rep(-0.999, SG$d), upper = rep(0.999,
-  SG$d), method = "L-BFGS-B", theta0 = rep(0, SG$numpara * SG$d),
-  tol = 1e-04)
+SGGPfit(SGGP, Y, ..., lower = rep(-0.999, SGGP$d), upper = rep(0.999,
+  SGGP$d), method = "L-BFGS-B", theta0 = rep(0, SGGP$numpara * SGGP$d),
+  tol = 1e-04, laplaceapprox = TRUE)
 }
 \arguments{
-\item{SG}{Sparse grid objects}
-
-\item{y}{Output values calculated at SG$design}
-
 \item{...}{Don't use, just forces theta to be named}
 
 \item{lower}{Lower bound for parameter optimization}
@@ -25,6 +21,10 @@ SGGPfit(SG, y, ..., lower = rep(-0.999, SG$d), upper = rep(0.999,
 
 \item{tol}{Relative tolerance for optimization. Can't use absolute tolerance
 since lik can be less than zero.}
+
+\item{SG}{Sparse grid objects}
+
+\item{y}{Output values calculated at SGGP$design}
 
 \item{return_optim}{If TRUE, return output from optim().}
 
@@ -39,6 +39,6 @@ Calculate theta MLE given data
 }
 \examples{
 SG <- SGcreate(d=3, batchsize=100)
-y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 thetaMLE(SG=SG, y=y)
 }

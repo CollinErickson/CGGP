@@ -4,7 +4,7 @@
 \alias{SGGPpred}
 \title{Predict}
 \usage{
-SGGPpred(xp, SG)
+SGGPpred(xp, SGGP)
 }
 \arguments{
 \item{xp}{x value to predict at}
@@ -28,7 +28,7 @@ Shouldn't y values already be stored in SG?
 }
 \examples{
 SG <- SGcreate(d=3, batchsize=100)
-y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, theta=c(.1,.1,.1))
-cbind(SGGPpred(SG$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
+cbind(SGGPpred(SGGP$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
 }
