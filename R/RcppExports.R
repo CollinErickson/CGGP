@@ -33,6 +33,7 @@ rcpparma_bothproducts <- function(x) {
 #' @param p Vector
 #' @return kronDBS calculation
 #' @export
+#' @import Rcpp
 rcpp_kronDBS <- function(A, B, p) {
     invisible(.Call('_SGGP_rcpp_kronDBS', PACKAGE = 'SGGP', A, B, p))
 }

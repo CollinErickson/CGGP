@@ -7,6 +7,7 @@
 #'
 #' @return Likelihood
 #' @export
+#' @useDynLib SGGP
 #'
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)

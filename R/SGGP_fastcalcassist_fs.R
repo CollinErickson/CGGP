@@ -87,6 +87,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
 #'
 #' @return derivative matrix of pw with respect to logtheta
 #' @export
+#' @import Rcpp
 #'
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)

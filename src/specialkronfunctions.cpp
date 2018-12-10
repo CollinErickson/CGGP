@@ -18,6 +18,7 @@ using namespace Rcpp;
 //' @param p Vector
 //' @return kronDBS calculation
 //' @export
+//' @import Rcpp
 // [[Rcpp::export]]
 void rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p){
   int sv=A.size(); int Bl=B.size(); int d=p.size();
