@@ -8,6 +8,16 @@ source("../R/SGGP_pred_fs.R")
 source("../R/SGGP_fastcalcassist_fs.R")
 sourceCpp("../src/specialkronfunctions.cpp")
 
+if (F) {
+  source("./R/SGGP_fit_fs.R")
+  source("./R/SGGP_corr_fs.R")
+  source("./R/SGGP_create_fs.R")
+  source("./R/SGGP_append_fs.R")
+  source("./R/SGGP_pred_fs.R")
+  source("./R/SGGP_fastcalcassist_fs.R")
+  sourceCpp("./src/specialkronfunctions.cpp")
+}
+
 borehole <- function(x) {
   rw <- x[, 1] * (0.15 - 0.05) + 0.05
   r <-  x[, 2] * (50000 - 100) + 100
