@@ -35,43 +35,44 @@ Npred <- 1000
 Xp <- matrix(runif(Npred*d), Npred, d)
 Yp = testf(Xp)
 
-goodlogthetaest_old <- c(-0.01932437,  0.82517131,  0.88499983,  0.73263796,  0.86971878,  0.70425694,  0.65443469,  0.80910334)
-goodlogthetaest <- log(exp(goodlogthetaest_old)/sqrt(3))
-use_goodtheta <- FALSE
+# goodlogthetaest_old <- c(-0.01932437,  0.82517131,  0.88499983,  0.73263796,  0.86971878,  0.70425694,  0.65443469,  0.80910334)
+# goodlogthetaest <- log(exp(goodlogthetaest_old)/sqrt(3))
+# use_goodtheta <- FALSE
 
 require("SGGP")
 SG = SGGPcreate(d=d, batchsize=201)
 Y = testf(SG$design) #the design is $design, simple enough, right?
 # logthetaest = logthetaMLE(SG,Y)
 SG = SGGPfit(SG,Y)
-logthetaest <- SG$logtheta
-if (use_goodtheta) logthetaest <- goodlogthetaest
-thetaest <- exp(logthetaest)
-cat(logthetaest, "\n")
+# logthetaest <- SG$logtheta
+# if (use_goodtheta) logthetaest <- goodlogthetaest
+# thetaest <- exp(logthetaest)
+# cat(logthetaest, "\n")
+cat("Now doing Bayesian\n")
 
 for(c in 1:round((N-201)/200)){
   cat(c, " ")
-  SG=SGappend(SG,200,theta=thetaest) #add 200 points to the design based on thetahat
+  SG=SGGPappend(SG,200,theta=thetaest) #add 200 points to the design based on thetahat
   Y = testf(SG$design)
-  if( c< 10 && !use_goodtheta){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
-    SG = logthetaMLE(SG,Y) #estimate the parameter (SG structure is important)
-    logthetaest <- SG$logtheta
-    thetaest <- exp(logthetaest)
-    cat(logthetaest,"\n", sep="\t")
+  if( c< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
+    SG = SGGPfit(SG,Y) #estimate the parameter (SG structure is important)
+    # logthetaest <- SG$logtheta
+    # thetaest <- exp(logthetaest)
+    # cat(logthetaest,"\n", sep="\t")
   }
 }
 cat("\n")
 Y = testf(SG$design)
 timelastlogthetaMLEstart <- Sys.time()
-if (!use_goodtheta) {
-  SG = logthetaMLE(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
-  logthetaest <- SG$logtheta
-  cat(logthetaest, "\n")
-}
+# if (!use_goodtheta) {
+  SG = SGGPfit(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
+  # logthetaest <- SG$logtheta
+  # cat(logthetaest, "\n")
+# }
 timelastlogthetaMLEend <- Sys.time()
 
 timepredstart <- Sys.time()
-GP = SGGPpred(Xp,SG,Y,logtheta=(logthetaest)) #build a full emulator
+GP = SGGPpred(Xp,SG) #build a full emulator
 timepredend <- Sys.time()
 
 RMSE <- sqrt(mean(((Yp-GP$mean)^2)))  #prediction should be much better
@@ -90,7 +91,7 @@ cat("logthetaMLE time is:", capture.output(timelastlogthetaMLEend - timelastlogt
 
 if (T) { # Can Travis just skip this?
   di <- sample(1:nrow(SG$design), 100)
-  Y0pred <- SGGPpred(SG$design[di,],SG,Y,logtheta=logthetaest)
+  Y0pred <- SGGPpred(SG$design[di,],SG) #,Y,logtheta=logthetaest)
   plot(Yp, GP$mean, ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m))); points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
   # Now plot with bars
   #plot(Yp, GP$mean , ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m)),pch=19)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
