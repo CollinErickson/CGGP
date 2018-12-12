@@ -82,7 +82,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
 #' 
 #' Calculate derivative of pw
 #'
-#' @inheritParams calculate_pw
+#' @inheritParams SGGP_internal_calcpw
 #' @param return_dlS Should dlS be returned?
 #'
 #' @return derivative matrix of pw with respect to logtheta
