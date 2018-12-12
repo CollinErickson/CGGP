@@ -7,6 +7,7 @@
 #' @param nugget Nugget term added to diagonal of correlation matrix,
 #' for now only on predictions
 #' @param corr Correlation function to use.
+#' @importFrom stats rbeta
 #'
 #' @return SGGP
 #' @export

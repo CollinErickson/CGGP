@@ -100,6 +100,7 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' @param theta Correlation parameters
 #' @param theta Log of theta, give one of theta and theta
 #' @param ... Don't use, just forces theta to be named
+#' @importFrom stats quantile
 #'
 #' @return SG with new points added.
 #' @export
