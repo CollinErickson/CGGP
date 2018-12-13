@@ -6,9 +6,12 @@
 #' @param x1 Vector of coordinates from same dimension
 #' @param x2 Vector of coordinates from same dimension
 #' @param ... Don't use, just forces theta to be named
-#' @param LS Log of parameter that controls lengthscale
-#' @param FD Logit of 0.5*parameter  that controls the fractal demension
-#' @param HE Log of parameter that controls the hurst effect
+# ' @param LS Log of parameter that controls lengthscale
+# ' @param FD Logit of 0.5*parameter  that controls the fractal demension
+# ' @param HE Log of parameter that controls the hurst effect
+#' @param theta Correlation parameter
+#' @param return_dCdtheta Should dCdtheta be returned?
+#' @param return_numpara Should it just return the number of parameters?
 #'
 #' @return Matrix
 #' @export
@@ -45,12 +48,7 @@ SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FAL
 #' Note that this is not the correlation between two vectors.
 #' It is for two
 #'
-#' @param x1 Vector of coordinates from same dimension
-#' @param x2 Vector of coordinates from same dimension
-#' @param ... Don't use, just forces theta to be named
-#' @param LS Log of parameter that controls lengthscale
-#' @param FD Logit of 0.5*parameter  that controls the fractal demension
-#' @param HE Log of parameter that controls the hurst effect
+#' @inheritParams SGGP_interal_CorrMatCauchy
 #'
 #' @return Matrix
 #' @export

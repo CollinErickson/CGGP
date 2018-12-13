@@ -9,15 +9,7 @@ SGGPpred(xp, SGGP)
 \arguments{
 \item{xp}{x value to predict at}
 
-\item{SG}{SG object}
-
-\item{y}{Observations for SG}
-
-\item{theta}{Correlation parameters}
-
-\item{logtheta}{Log of correlation parameters}
-
-\item{...}{Don't use, just forces theta to be named}
+\item{SGGP}{SG object}
 }
 \value{
 Predicted mean values

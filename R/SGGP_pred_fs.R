@@ -4,11 +4,11 @@
 #' Shouldn't y values already be stored in SG?
 #'
 #' @param xp x value to predict at
-#' @param SG SG object
-#' @param y Observations for SG
-#' @param theta Correlation parameters
-#' @param logtheta Log of correlation parameters
-#' @param ... Don't use, just forces theta to be named
+#' @param SGGP SG object
+# ' @param y Observations for SG
+# ' @param theta Correlation parameters
+# ' @param logtheta Log of correlation parameters
+# ' @param ... Don't use, just forces theta to be named
 #'
 #' @return Predicted mean values
 #' @export

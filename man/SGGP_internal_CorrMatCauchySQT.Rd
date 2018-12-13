@@ -7,19 +7,6 @@
 SGGP_internal_CorrMatCauchySQT(x1, x2, theta, ...,
   return_dCdtheta = FALSE, return_numpara = FALSE)
 }
-\arguments{
-\item{x1}{Vector of coordinates from same dimension}
-
-\item{x2}{Vector of coordinates from same dimension}
-
-\item{...}{Don't use, just forces theta to be named}
-
-\item{LS}{Log of parameter that controls lengthscale}
-
-\item{FD}{Logit of 0.5*parameter  that controls the fractal demension}
-
-\item{HE}{Log of parameter that controls the hurst effect}
-}
 \value{
 Matrix
 }
