@@ -12,20 +12,19 @@ SGGP_internal_CorrMatCauchySQ(x1, x2, theta, ...,
 
 \item{x2}{Vector of coordinates from same dimension}
 
+\item{theta}{Correlation parameter}
+
 \item{...}{Don't use, just forces theta to be named}
 
-\item{LS}{Log of parameter that controls lengthscale}
+\item{return_dCdtheta}{Should dCdtheta be returned?}
 
-\item{FD}{Logit of 0.5*parameter  that controls the fractal demension}
-
-\item{HE}{Log of parameter that controls the hurst effect}
+\item{return_numpara}{Should it just return the number of parameters?}
 }
 \value{
 Matrix
 }
 \description{
 Note that this is not the correlation between two vectors.
-It is for two
 }
 \examples{
 CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)

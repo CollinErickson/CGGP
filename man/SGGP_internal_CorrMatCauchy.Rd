@@ -25,7 +25,6 @@ Matrix
 }
 \description{
 Note that this is not the correlation between two vectors.
-It is for two
 }
 \examples{
 CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)

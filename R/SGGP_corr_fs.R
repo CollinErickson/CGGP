@@ -1,7 +1,6 @@
 #' Calculate correlation matrix for two sets of points in one dimension
 #' 
 #' Note that this is not the correlation between two vectors.
-#' It is for two
 #'
 #' @param x1 Vector of coordinates from same dimension
 #' @param x2 Vector of coordinates from same dimension
@@ -46,9 +45,8 @@ SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FAL
 #' Calculate correlation matrix for two sets of points in one dimension
 #' 
 #' Note that this is not the correlation between two vectors.
-#' It is for two
 #'
-#' @inheritParams SGGP_interal_CorrMatCauchy
+#' @inheritParams SGGP_internal_CorrMatCauchy
 #'
 #' @return Matrix
 #' @export
@@ -96,14 +94,8 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, ..., return_dCdtheta = 
 #' Calculate correlation matrix for two sets of points in one dimension
 #' 
 #' Note that this is not the correlation between two vectors.
-#' It is for two
 #'
-#' @param x1 Vector of coordinates from same dimension
-#' @param x2 Vector of coordinates from same dimension
-#' @param ... Don't use, just forces theta to be named
-#' @param LS Log of parameter that controls lengthscale
-#' @param FD Logit of 0.5*parameter  that controls the fractal demension
-#' @param HE Log of parameter that controls the hurst effect
+#' @inheritParams SGGP_internal_CorrMatCauchy
 #'
 #' @return Matrix
 #' @export

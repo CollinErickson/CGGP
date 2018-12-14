@@ -7,12 +7,24 @@
 SGGP_internal_CorrMatCauchySQT(x1, x2, theta, ...,
   return_dCdtheta = FALSE, return_numpara = FALSE)
 }
+\arguments{
+\item{x1}{Vector of coordinates from same dimension}
+
+\item{x2}{Vector of coordinates from same dimension}
+
+\item{theta}{Correlation parameter}
+
+\item{...}{Don't use, just forces theta to be named}
+
+\item{return_dCdtheta}{Should dCdtheta be returned?}
+
+\item{return_numpara}{Should it just return the number of parameters?}
+}
 \value{
 Matrix
 }
 \description{
 Note that this is not the correlation between two vectors.
-It is for two
 }
 \examples{
 CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
