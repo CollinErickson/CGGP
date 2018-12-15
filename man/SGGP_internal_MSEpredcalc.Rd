@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_pred_fs.R
 \name{SGGP_internal_MSEpredcalc}
 \alias{SGGP_internal_MSEpredcalc}
-\title{????????????}
+\title{Calculate MSE over one dimension}
 \usage{
 SGGP_internal_MSEpredcalc(xp, xl, theta, CorrMat)
 }
@@ -13,22 +13,14 @@ SGGP_internal_MSEpredcalc(xp, xl, theta, CorrMat)
 
 \item{theta}{Correlation parameters}
 
-\item{CorrMat}{Function that gives correlation matrix for vectors of 1D points.}
-
-\item{logtheta}{Log of correlation parameters}
-
-\item{nugget}{Nugget to add to diagonal of correlation matrix}
-
-\item{diag_corrMat}{Function that gives diagonal of correlation matrix
+\item{CorrMat}{Function that gives correlation matrix for vectors of 1D points.
 for vector of 1D points.}
-
-\item{...}{Don't use, just forces theta to be named}
 }
 \value{
 MSE predictions
 }
 \description{
-????????????
+Calculate MSE over one dimension
 }
 \examples{
 MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
