@@ -130,7 +130,7 @@ mean(abs(Yp-PredTS$mean)^2/PredTS$var+log(PredTS$var)) #score should be much bet
 
 
 library(mlegp) #this is gonna be slow, trying to reduce predictions
-Xmlegp = randomLHS(1000, d)
+Xmlegp = randomLHS(200, d)
 Ymlegp = testf(Xmlegp)
 fitMulti = mlegp(Xmlegp, Ymlegp,constantMean = 1, simplex.ntries = 1)
 

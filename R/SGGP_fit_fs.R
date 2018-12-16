@@ -150,8 +150,8 @@ SGGPfit<- function(SGGP, Y, ...,
     Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
     percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
     num_PC = max(min(which(percent_explained>0.9999)),1)
-    y = Y_centered%*%(Eigen_result$vectors[,1:num_PC])
     SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+    y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
   }
   SGGP$y = y
   SGGP$Y = Y

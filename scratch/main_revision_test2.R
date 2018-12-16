@@ -40,18 +40,27 @@ SGGP = SGGPfit(SGGP,Y)
 SGGPGreedy=SGGPappend(SGGP,200,selectionmethod="Greedy")
 YGreedy = testf(SGGPGreedy$design) #the design is $design, simple enough, right?
 SGGPGreedy = SGGPfit(SGGPGreedy,YGreedy)
-SGGPGreedy=SGGPappend(SGGP,200,selectionmethod="Greedy")
+
+SGGPGreedy=SGGPappend(SGGPGreedy,800,selectionmethod="Greedy")
 YGreedy = testf(SGGPGreedy$design) #the design is $design, simple enough, right?
 SGGPGreedy = SGGPfit(SGGPGreedy,YGreedy)
 PredGreedy = SGGPpred(Xp,SGGPGreedy)
 mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
 mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
 
+SGGPGreedy2=SGGPappend(SGGPGreedy,200,selectionmethod="Greedy")
+YGreedy2 = testf(SGGPGreedy2$design) #the design is $design, simple enough, right?
+SGGPGreedy2 = SGGPfit(SGGPGreedy2,YGreedy2)
+PredGreedy = SGGPpred(Xp,SGGPGreedy2)
+mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
+mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+
+
 source("../R/SGGP_supplement_fs.R")
 Xs = randomLHS(200, d)
 Ys = testf(Xs)
-SGGPGreedy = SGGPsupplement(SGGPGreedy,Xs,Ys)
 PredGreedy = SGGPpred(Xp,SGGPGreedy)
+PredGreedy =  SGGPpredsupplement(Xp,SGGPGreedy,Xs,Ys)
 mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
 mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
 
