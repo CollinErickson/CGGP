@@ -153,19 +153,34 @@ SGGPfit<- function(SGGP, Y, ...,
     y = Y_centered%*%(Eigen_result$vectors[,1:num_PC])
     SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
   }
+  SGGP$y = y
+  SGGP$Y = Y
   
-  opt.out = optim(
+  opt.out = nlminb(
     theta0,
-    fn = SGGP_internal_neglogpost,
-    gr = SGGP_internal_gneglogpost,
+    objective = SGGP_internal_neglogpost,
+    gradient = SGGP_internal_gneglogpost,
     lower = lower, 
     upper = upper,
     y = y,
     SGGP = SGGP,
-    method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-    hessian = TRUE,
-    control = list()#reltol=1e-4)#abstol = tol)
+    #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+    #hessian = TRUE,
+    control = list(rel.tol = 1e-8,iter.max = 500)#reltol=1e-4)#abstol = tol)
   )
+  # for(i in 1:5){
+  #   opt.out = nlminb(
+  #     runif(SGGP$numpara*SGGP$d, -0.75,0.75),
+  #     objective = SGGP_internal_neglogpost,
+  #     gradient = SGGP_internal_gneglogpost,
+  #     lower = 0.75*lower, 
+  #     upper = 0.75*upper,
+  #     y = y,
+  #     SGGP = SGGP,
+  #     #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+  #     #hessian = TRUE,
+  #     control = list(rel.tol = 1e-8,iter.max = 500))#reltol=1e-4)#abstol = tol)
+  #   }
   
   # Set new theta
   SGGP$thetaMAP <- opt.out$par

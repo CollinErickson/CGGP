@@ -111,13 +111,13 @@ SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, ..., return_dCdtheta = F
     expLS = exp(3*theta[1])
     expHE = exp(3*theta[2])
     h = diffmat/expLS
-    alpha = 2*exp(0+4)/(1+exp(0+4))
+    alpha = 2*exp(0+6)/(1+exp(0+6))
     halpha = h^alpha
     pow = -expHE/alpha
     
-    C = (1+halpha)^pow
+    C = (1-10^(-10))*(1+halpha)^pow+10^(-10)*(diffmat<10^(-4))
     if(return_dCdtheta){
-      dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
+      dCdtheta = (1-10^(-10))*cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)
