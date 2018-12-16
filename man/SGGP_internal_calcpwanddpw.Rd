@@ -9,6 +9,8 @@ SGGP_internal_calcpwanddpw(SGGP, y, theta, return_lS = FALSE)
 \arguments{
 \item{y}{Measured values for SGGP$design}
 
+\item{theta}{Correlation parameters}
+
 \item{return_lS}{Should lS be returned?}
 
 \item{return_dlS}{Should dlS be returned?}

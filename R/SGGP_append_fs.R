@@ -4,20 +4,15 @@
 #' Can be calculated exactly, but not much reason in 1D.
 #'
 #' @param xl Vector of points in 1D
-#' @param theta Log of correlation parameters.
 #' @param theta Correlation parameters
-#' @param nugget Nugget to add to diagonal of correlation matrix.
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
-#' @param diag_corrMat Function that gives diagonal of correlation matrix for vector of 1D points.
-#' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE value
 #' @export
 #'
 #' @examples
-#' MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001,
-#'          CorrMat=CorrMatMatern32,
-#'          diag_corrMat=diag_corrMatMatern32)
+#' MSE_calc(xl=c(0,.5,.9), theta=1,
+#'          CorrMat=CorrMatMatern32)
 SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
   S = CorrMat(xl, xl, theta)
   xp = seq(0,1,l=101)
