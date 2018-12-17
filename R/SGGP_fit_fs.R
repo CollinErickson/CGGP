@@ -293,40 +293,37 @@ SGGPfit<- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
   }
   
   if(SGGP$supplemented){
-    Cs = matrix(1,dim(Xs)[1],SGGP$ss)
+    Cs = matrix(1,dim(SGGP$Xs)[1],SGGP$ss)
     for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-      V = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb, SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      V = SGGP$CorrMat(SGGP$Xs[,dimlcv], SGGP$xb, SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
       Cs = Cs*V[,SGGP$designindex[,dimlcv]]
     }
     
-    MSE_v = array(0, c(SGGP$d, SGGP$maxlevel,dim(Xs)[1],dim(Xs)[1]))
-    for (dimlcv in 1:SGGP$d) {
-      MSE_v[dimlcv, 1,,] = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
-    }
-    
-    Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1])
+    Sigma_t = matrix(1,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1])
     for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-      V = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      V = SGGP$CorrMat(SGGP$Xs[,dimlcv], SGGP$Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
       Sigma_t = Sigma_t*V
     }
     
-    MSE_v = array(0, c(SGGP$d, SGGP$maxlevel,dim(Xs)[1],dim(Xs)[1]))
+    MSE_s = list(matrix(0,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
     for (dimlcv in 1:SGGP$d) {
       for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
-        MSE_v[dimlcv, levellcv+1,,] =SGGP_internal_postvarmatcalc(Xs[,dimlcv],Xs[,dimlcv],
-                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat)
+        MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],
+                                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
       }
     }
+    
     for (blocklcv in 1:SGGP$uoCOUNT) {
-      ME_v = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
+      ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
       for (dimlcv in 1:SGGP$d) {
         levelnow = SGGP$uo[blocklcv,dimlcv]
-        ME_v = ME_v*(MSE_v[dimlcv,levelnow,,]-MSE_v[dimlcv,levelnow+1,,])
+        ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
       }
-      Sigma_t = Sigma_t-ME_v
+      Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
     }
     
     yhats = Cs%*%SGGP$pw
+    
     Sti_resid = solve(Sigma_t,ys-yhats)
     SGGP$Sti = solve(Sigma_t)
     SGGP$sigma2MAP = (SGGP$sigma2MAP*dim(SGGP$design)[1]+colSums((ys-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])

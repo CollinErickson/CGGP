@@ -65,22 +65,22 @@ SGGPpred <- function(xp,SGGP) {
   } else {
     Cps = matrix(1,dim(xp)[1],dim(SGGP$Xs)[1])
     for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-      V = SGGP$CorrMat(xp[,dimlcv], Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      V = SGGP$CorrMat(xp[,dimlcv], SGGP$Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
       Cps = Cps*V
     }
     
     yhatp = Cp%*%SGGP$pw_uppad + Cps%*%SGGP$supppw
     
-    MSE_ps = list(matrix(0,dim(xp)[1],dim(Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+    MSE_ps = list(matrix(0,dim(xp)[1],dim(SGGP$Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
     for (dimlcv in 1:SGGP$d) {
       for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
-        MSE_ps[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(xp[,dimlcv],Xs[,dimlcv],
+        MSE_ps[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(xp[,dimlcv],SGGP$Xs[,dimlcv],
                                                                   SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
       }
     }
     
     for (blocklcv in 1:SGGP$uoCOUNT) {
-      ME_ps = matrix(1,nrow=dim(xp)[1],ncol=dim(Xs)[1])
+      ME_ps = matrix(1,nrow=dim(xp)[1],ncol=dim(SGGP$Xs)[1])
       for (dimlcv in 1:SGGP$d) {
         levelnow = SGGP$uo[blocklcv,dimlcv]
         ME_ps = ME_ps*MSE_ps[[(dimlcv)*SGGP$maxlevel+levelnow]]
