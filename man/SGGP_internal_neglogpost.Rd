@@ -9,11 +9,9 @@ SGGP_internal_neglogpost(theta, SGGP, y)
 \arguments{
 \item{theta}{Correlation parameters}
 
+\item{SGGP}{SGGP object}
+
 \item{y}{Measured values of SGGP$design}
-
-\item{SG}{SGGP object}
-
-\item{...}{Don't use, just forces theta to be named}
 }
 \value{
 Likelihood

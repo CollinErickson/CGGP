@@ -1,9 +1,8 @@
 #' Calculate negative posterior
 #'
 #' @param theta Correlation parameters
-#' @param SG SGGP object
+#' @param SGGP SGGP object
 #' @param y Measured values of SGGP$design
-#' @param ... Don't use, just forces theta to be named
 #'
 #' @return Likelihood
 #' @export
@@ -14,7 +13,7 @@
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' lik(c(.1,.1,.1), SG=SG, y=y)
 SGGP_internal_neglogpost <- function(theta,SGGP,y) {
-  # Return Inf if theta is too large. Why????
+  # Return Inf if theta is too large
   if (max(theta) >= 0.9999 || min(theta) <= -0.9999) {
     return(Inf)
   } else{
@@ -52,10 +51,9 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
 #' Gradient of likelihood. Is it log likelihood?
 #'
 #' @param theta Log of correlation parameters
-#' @param SG SGGP object
+#' @param SGGP SGGP object
 #' @param y SGGP$design measured values
 #' @param return_lik If yes, it returns a list with lik and glik
-#' @param ... Don't use, just forces theta to be named
 #'
 #' @return Vector for gradient of likelihood w.r.t. x (theta)
 #' @export
@@ -64,9 +62,8 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' glik(c(.1,.1,.1), SG=SG, y=y)
-SGGP_internal_gneglogpost <- function(theta, SGGP , y, return_lik=FALSE) {
+SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
   
-  #print(theta)
   sigma2anddsigma2 <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
   
   lS <- sigma2anddsigma2$lS
@@ -106,7 +103,11 @@ SGGP_internal_gneglogpost <- function(theta, SGGP , y, return_lik=FALSE) {
     gneglogpost =  gneglogpost/2
   }
   
-  if(return_lik){ nreturn(list(neglogpost=neglogpost,gneglogpost=gneglogpost))}else{return(gneglogpost)}
+  if(return_lik){
+    return(list(neglogpost=neglogpost,gneglogpost=gneglogpost))
+  } else {
+    return(gneglogpost)
+  }
 }
 
 #' Calculate theta MLE given data
