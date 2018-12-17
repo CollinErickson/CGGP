@@ -49,6 +49,8 @@ SGGPpred <- function(xp,SGGP) {
   }
   
   
+  if(!SGGP$supplemented){
+  
   # Return list with mean and var predictions
   if(is.vector(SGGP$pw)){
     GP = list("mean" = (SGGP$mu+Cp%*%SGGP$pw), "var"=SGGP$sigma2MAP[1]*ME_t)
@@ -59,6 +61,51 @@ SGGPpred <- function(xp,SGGP) {
     }else{
     GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
     }
+  }
+  } else {
+    Cps = matrix(1,dim(xp)[1],dim(SGGP$Xs)[1])
+    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+      V = SGGP$CorrMat(xp[,dimlcv], Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      Cps = Cps*V
+    }
+    
+    yhatp = Cp%*%SGGP$pw_uppad + Cps%*%SGGP$supppw
+    
+    MSE_ps = array(0, c(SGGP$d, SGGP$maxgridsize,dim(xp)[1],dim(Xs)[1]))
+    #for (dimlcv in 1:SGGP$d) {
+    #  MSE_v[dimlcv, 1,,] = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+    #}
+    for (dimlcv in 1:SGGP$d) {
+      for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+        MSE_ps[dimlcv, levellcv+1,,] =SGGP_internal_postvarmatcalc(xp[,dimlcv],Xs[,dimlcv],
+                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat)
+      }
+    }
+    for (blocklcv in 1:SGGP$uoCOUNT) {
+      ME_ps = matrix(1,nrow=dim(xp)[1],ncol=dim(Xs)[1])
+      for (dimlcv in 1:SGGP$d) {
+        levelnow = SGGP$uo[blocklcv,dimlcv]
+        ME_ps = ME_ps*(MSE_ps[dimlcv,levelnow,,]-MSE_ps[dimlcv,levelnow+1,,])
+      }
+      Cps = Cps-ME_ps
+    }
+    ME_adj = colSums((Cps%*%SGGP$Sti)*Cps)
+    
+    
+    ME_t = ME_t-ME_adj
+    # Return list with mean and var predictions
+    if(is.vector(SGGP$pw)){
+      GP = list("mean" = (SGGP$mu+ yhatp), "var"=SGGP$sigma2MAP[1]*ME_t)
+    }else{
+      if(length(SGGP$sigma2MAP)==1){
+        GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M))))
+        
+      }else{
+        GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
+      }
+    }
+    
+    
   }
   
   return(GP)

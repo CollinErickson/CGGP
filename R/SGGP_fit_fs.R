@@ -139,6 +139,8 @@ SGGPfit<- function(SGGP, Y, ...,
   
   #first do the pre-processing
   #for cleanness: Y is always the user input, y is after transformation
+  SGGP$supplemented = FALSE
+  
   if(!is.matrix(Y)){
     SGGP$mu = mean(Y)
     y = Y-SGGP$mu
