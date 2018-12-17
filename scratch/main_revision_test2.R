@@ -1,4 +1,4 @@
-
+rm(list = ls())
 source("../R/SGGP_fit_fs.R")
 source("../R/SGGP_corr_fs.R")
 source("../R/SGGP_create_fs.R")
@@ -40,21 +40,38 @@ SGGP = SGGPfit(SGGP,Y)
 SGGPGreedy=SGGPappend(SGGP,200,selectionmethod="TS")
 YGreedy = testf(SGGPGreedy$design) #the design is $design, simple enough, right?
 SGGPGreedy = SGGPfit(SGGPGreedy,YGreedy)
-
-SGGPGreedy2=SGGPappend(SGGPGreedy,100,selectionmethod="TS")
-YGreedy2 = testf(SGGPGreedy2$design) #the design is $design, simple enough, right?
-SGGPGreedy2 = SGGPfit(SGGPGreedy2,YGreedy2)
-PredGreedy = SGGPpred(Xp,SGGPGreedy2)
+SGGPGreedy=SGGPappend(SGGPGreedy,200,selectionmethod="TS")
+YGreedy = testf(SGGPGreedy$design) #the design is $design, simple enough, right?
+SGGPGreedy = SGGPfit(SGGPGreedy,YGreedy)
+SGGPGreedy=SGGPappend(SGGPGreedy,200,selectionmethod="TS")
+YGreedy = testf(SGGPGreedy$design) #the design is $design, simple enough, right?
+SGGPGreedy = SGGPfit(SGGPGreedy,YGreedy)
+PredGreedy = SGGPpred(Xp,SGGPGreedy)
 mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
 mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
 
 
-source("../R/SGGP_pred_fs.R")
-source("../R/SGGP_supplement_fs.R")
-Xs = randomLHS(100, d)
-Ys = testf(Xs)
-SGGPSupp =  SGGPsupplement(SGGPGreedy,Xs,Ys)
+SGGPGreedy2=SGGPappend(SGGPGreedy,400,selectionmethod="TS")
+YGreedy2 = testf(SGGPGreedy2$design) #the design is $design, simple enough, right?
+SGGPGreedy2 = SGGPfit(SGGPGreedy2,YGreedy2)
+PredGreedy = SGGPpred(Xp,SGGPGreedy2)
+mean(abs(Yp[1,]-PredGreedy$mean[1,])^2)  #prediction should be much better
+mean(abs(Yp[1,]-PredGreedy$mean[1,])^2/PredGreedy$var[1,]+log(PredGreedy$var[1,])) #score should be much better
 
-PredSupp =  SGGPpred(Xp,SGGPSupp)
-mean(abs(Yp-PredSupp$mean)^2)  #prediction should be much better
-mean(abs(Yp-PredSupp$mean)^2/PredSupp$var+log(PredSupp$var)) #score should be much better
+
+Xs = randomLHS(200, d)
+Ys = testf(Xs)
+SGGPSupp = SGGPfit(SGGPGreedy,YGreedy,Xs=Xs,Ys=Ys)
+
+
+PredSupp = SGGPpred(Xp,SGGPSupp)
+mean(abs(Yp[1,]-PredSupp$mean[1,])^2)  #prediction should be much better
+mean(abs(Yp[1,]-PredSupp$mean[1,])^2/PredSupp$var[1,]+log(PredSupp$var[1,])) #score should be much better
+
+#SGGPSupp =  SGGPsupplement(SGGPGreedy,Xs,Ys)
+
+#PredSupp =  SGGPpred(Xp,SGGPSupp)
+#mean(abs(Yp-PredSupp$mean)^2)  #prediction should be much better
+#mean(abs(Yp-PredSupp$mean)^2/PredSupp$var+log(PredSupp$var)) #score should be much better
+
+

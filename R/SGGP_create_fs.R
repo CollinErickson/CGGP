@@ -21,7 +21,7 @@ SGGPcreate <- function(d, batchsize) {
   SGGP = list()
   
   SGGP$d <- d
-  SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQ 
+  SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
   SGGP$numpara <- SGGP$CorrMat(0,0,0,return_numpara=TRUE)
   SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
   SGGP$numPostSamples <- 100
