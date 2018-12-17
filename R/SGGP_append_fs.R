@@ -103,7 +103,7 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
-#' UCB,TS,Greedy
+#' # UCB,TS,Greedy
 SGGPappend <- function(SGGP,batchsize,...,selectionmethod = "UCB"){
   n_before <- nrow(SGGP$design)
   

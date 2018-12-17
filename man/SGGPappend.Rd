@@ -26,5 +26,5 @@ Add `batchsize` points to `SG` using `theta`.
 \examples{
 SG <- SGcreate(d=3, batchsize=100)
 SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
-UCB,TS,Greedy
+# UCB,TS,Greedy
 }

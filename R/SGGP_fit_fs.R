@@ -123,6 +123,8 @@ SGGP_internal_gneglogpost <- function(theta, SGGP , y, return_lik=FALSE) {
 #' @param method Optimization method, must be "L-BFGS-B" when using lower and upper
 #' @param use_splitfngr Should give exact same results but with a slight speed up
 #' If FALSE return updated SG.
+#' 
+#' @importFrom stats optim rnorm runif
 #'
 #' @return theta MLE
 #' @export
