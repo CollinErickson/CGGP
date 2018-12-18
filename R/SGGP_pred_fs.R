@@ -27,7 +27,7 @@ SGGPpred <- function(xp,SGGP) {
     V = SGGP$CorrMat(xp[,dimlcv], SGGP$xb, SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
     Cp = Cp*V[,SGGP$designindex[,dimlcv]]
   }
-  MSE_v = array(0, c(SGGP$d, SGGP$maxgridsize,dim(xp)[1]))
+  MSE_v = array(0, c(SGGP$d, SGGP$maxlevel,dim(xp)[1]))
   for (dimlcv in 1:SGGP$d) {
     MSE_v[dimlcv, 1,] = 1
   }
@@ -49,6 +49,8 @@ SGGPpred <- function(xp,SGGP) {
   }
   
   
+  if(!SGGP$supplemented){
+  
   # Return list with mean and var predictions
   if(is.vector(SGGP$pw)){
     GP = list("mean" = (SGGP$mu+Cp%*%SGGP$pw), "var"=SGGP$sigma2MAP[1]*ME_t)
@@ -60,17 +62,64 @@ SGGPpred <- function(xp,SGGP) {
     GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
     }
   }
+  } else {
+    Cps = matrix(1,dim(xp)[1],dim(SGGP$Xs)[1])
+    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+      V = SGGP$CorrMat(xp[,dimlcv], SGGP$Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      Cps = Cps*V
+    }
+    
+    yhatp = Cp%*%SGGP$pw_uppad + Cps%*%SGGP$supppw
+    
+    MSE_ps = list(matrix(0,dim(xp)[1],dim(SGGP$Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+    for (dimlcv in 1:SGGP$d) {
+      for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+        MSE_ps[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(xp[,dimlcv],SGGP$Xs[,dimlcv],
+                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
+      }
+    }
+    
+    for (blocklcv in 1:SGGP$uoCOUNT) {
+      ME_ps = matrix(1,nrow=dim(xp)[1],ncol=dim(SGGP$Xs)[1])
+      for (dimlcv in 1:SGGP$d) {
+        levelnow = SGGP$uo[blocklcv,dimlcv]
+        ME_ps = ME_ps*MSE_ps[[(dimlcv)*SGGP$maxlevel+levelnow]]
+      }
+      Cps = Cps-SGGP$w[blocklcv]*(ME_ps)
+    }
+    ME_adj = rowSums((Cps%*%SGGP$Sti)*Cps)
+    
+    
+    ME_t = ME_t-ME_adj
+    # Return list with mean and var predictions
+    if(is.vector(SGGP$pw)){
+      GP = list("mean" = (SGGP$mu+ yhatp), "var"=SGGP$sigma2MAP[1]*ME_t)
+    }else{
+      if(length(SGGP$sigma2MAP)==1){
+        GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M))))
+        
+      }else{
+        GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
+      }
+    }
+    
+    
+  }
   
   return(GP)
 }
 
-#' Calculate MSE over one dimension
+#' ????????????
 #'
 #' @param xp Points at which to calculate MSE
 #' @param xl Levels along dimension, vector???
 #' @param theta Correlation parameters
+#' @param logtheta Log of correlation parameters
+#' @param nugget Nugget to add to diagonal of correlation matrix
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
+#' @param diag_corrMat Function that gives diagonal of correlation matrix
 #' for vector of 1D points.
+#' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE predictions
 #' @export

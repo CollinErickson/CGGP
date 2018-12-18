@@ -38,9 +38,9 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
     
     
     if(!is.matrix(y)){
-      neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.501*sum(log(1-theta)+log(theta+1))+lDet)
+      neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
     }else{
-      neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.501*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+      neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
     }
     
     return(neglogpost)
@@ -91,12 +91,12 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
   
   
   if(!is.matrix(y)){
-    neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.501*sum(log(1-theta)+log(theta+1))+lDet)
-    gneglogpost = 0.501*(1/(1-theta)-1/(theta+1))+ dlDet+ length(y)*dsigma2_hat / sigma2_hat[1]
+    neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+    gneglogpost = 0.500*(1/(1-theta)-1/(theta+1))+ dlDet+ length(y)*dsigma2_hat / sigma2_hat[1]
     gneglogpost =  gneglogpost/2
   }else{
-    neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.501*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
-    gneglogpost = 0.501*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
+    neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+    gneglogpost = 0.500*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
     for(i in 1:dim(y)[2]){
       gneglogpost = gneglogpost + dim(y)[1]*dsigma2_hat[,i] / sigma2_hat[i]
     }
@@ -133,41 +133,108 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' thetaMLE(SG=SG, y=y)
-SGGPfit<- function(SGGP, Y,
-                   lower = rep(-0.999, SGGP$d),
-                   upper = rep(0.999, SGGP$d),
-                   method = "L-BFGS-B", 
-                   theta0 = rep(0,SGGP$numpara*SGGP$d),tol=1e-4,laplaceapprox = TRUE) {
+SGGPfit<- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
+                   theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
+                   lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d)) {
   
   #first do the pre-processing
   #for cleanness: Y is always the user input, y is after transformation
-  if(!is.matrix(Y)){
-    SGGP$mu = mean(Y)
-    y = Y-SGGP$mu
-  }else{
-    SGGP$mu = colMeans(Y)
-    SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
-    Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
-    SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
-    Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
-    percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
-    num_PC = max(min(which(percent_explained>0.9999)),1)
-    y = Y_centered%*%(Eigen_result$vectors[,1:num_PC])
-    SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+  SGGP$Y = Y
+  if(is.null(Xs)){
+    SGGP$supplemented = FALSE
+    
+    if(!is.matrix(Y)){
+      SGGP$mu = mean(Y)
+      y = Y-SGGP$mu
+    }else{
+      SGGP$mu = colMeans(Y)
+      SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
+      Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+      SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
+      Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+      percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+      num_PC = max(min(which(percent_explained>0.99999)),1)
+      SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+      y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+      
+      Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
+      SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
+    }
+    SGGP$y = y
+    
+  } else{
+    SGGP$supplemented = TRUE
+    SGGP$Xs = Xs
+    SGGP$Ys = Ys
+    
+    if(!is.matrix(Y)){
+      SGGP$mu = mean(Ys)
+      y = Y-SGGP$mu
+      ys = Ys-SGGP$mu
+    } else{ 
+      if (dim(SGGP$Xs)[1] > 2*dim(Ys)[2]){
+        SGGP$mu = colMeans(Ys)
+        SGGP$st = (colMeans(Ys^2)- colMeans(Ys)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
+        Ys_centered = (Ys - matrix(rep(SGGP$mu,each=dim(Ys)[1]), ncol=dim(Ys)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+        SigV = 1/dim(Y)[1]*t(Ys_centered)%*%Ys_centered
+        Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+        percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+        num_PC = max(min(which(percent_explained>0.99999)),1)
+        SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+        ys = Ys_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+        
+        Ys_recovered =   matrix(rep(SGGP$mu,each=dim(Xs)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ ys%*%(SGGP$M)
+        SGGP$leftover_variance = colMeans((Ys-Ys_recovered)^2)
+        
+        Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+        y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+      } else {
+        SGGP$mu = colMeans(Y)
+        SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
+        Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+        SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
+        Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+        percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+        num_PC = max(min(which(percent_explained>0.99999)),1)
+        SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+        y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+        
+        Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
+        SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
+        
+        Ys_centered = (Ys - matrix(rep(SGGP$mu,each=dim(Ys)[1]), ncol=dim(Ys)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+        ys = Ys_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+      }
+    }
+    SGGP$y = y
+    SGGP$ys = ys
   }
   
-  opt.out = optim(
+  opt.out = nlminb(
     theta0,
-    fn = SGGP_internal_neglogpost,
-    gr = SGGP_internal_gneglogpost,
+    objective = SGGP_internal_neglogpost,
+    gradient = SGGP_internal_gneglogpost,
     lower = lower, 
     upper = upper,
     y = y,
     SGGP = SGGP,
-    method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-    hessian = TRUE,
-    control = list()#reltol=1e-4)#abstol = tol)
+    #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+    #hessian = TRUE,
+    control = list(rel.tol = 1e-8,iter.max = 500)#reltol=1e-4)#abstol = tol)
   )
+  # for(i in 1:5){
+  #   opt.out = nlminb(
+  #     runif(SGGP$numpara*SGGP$d, -0.75,0.75),
+  #     objective = SGGP_internal_neglogpost,
+  #     gradient = SGGP_internal_gneglogpost,
+  #     lower = 0.75*lower, 
+  #     upper = 0.75*upper,
+  #     y = y,
+  #     SGGP = SGGP,
+  #     #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+  #     #hessian = TRUE,
+  #     control = list(rel.tol = 1e-8,iter.max = 500))#reltol=1e-4)#abstol = tol)
+  #   }
   
   # Set new theta
   SGGP$thetaMAP <- opt.out$par
@@ -187,8 +254,8 @@ SGGPfit<- function(SGGP, Y,
     H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(4)
   }
   Hmat = H/2+t(H)/2
- # print(Hmat)
- # print(sqrt(diag(solve(Hmat))))
+  # print(Hmat)
+  # print(sqrt(diag(solve(Hmat))))
   A = eigen(Hmat)
   cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
   #print( cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP)))
@@ -227,5 +294,80 @@ SGGPfit<- function(SGGP, Y,
     SGGP$thetaPostSamples = (exp(PSTn)-1)/(exp(PSTn)+1)
   }
   
+  if(SGGP$supplemented){
+    Cs = matrix(1,dim(SGGP$Xs)[1],SGGP$ss)
+    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+      V = SGGP$CorrMat(SGGP$Xs[,dimlcv], SGGP$xb, SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      Cs = Cs*V[,SGGP$designindex[,dimlcv]]
+    }
+    
+    Sigma_t = matrix(1,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1])
+    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+      V = SGGP$CorrMat(SGGP$Xs[,dimlcv], SGGP$Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      Sigma_t = Sigma_t*V
+    }
+    
+    MSE_s = list(matrix(0,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+    for (dimlcv in 1:SGGP$d) {
+      for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+        MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],
+                                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
+      }
+    }
+    
+    for (blocklcv in 1:SGGP$uoCOUNT) {
+      ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
+      for (dimlcv in 1:SGGP$d) {
+        levelnow = SGGP$uo[blocklcv,dimlcv]
+        ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+      }
+      Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
+    }
+    
+    yhats = Cs%*%SGGP$pw
+    
+    Sti_resid = solve(Sigma_t,ys-yhats)
+    SGGP$Sti = solve(Sigma_t)
+    SGGP$sigma2MAP = (SGGP$sigma2MAP*dim(SGGP$design)[1]+colSums((ys-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])
+    
+    pw_adj_y = t(Cs)%*%Sti_resid
+    pw_adj <- SGGP_internal_calcpw(SGGP=SGGP, y=pw_adj_y, theta=SGGP$thetaMAP)
+    
+    SGGP$pw_uppadj = SGGP$pw-pw_adj
+    SGGP$supppw = Sti_resid
+  }
   return(SGGP)
+}
+
+
+
+#' ????????????
+#'
+#' @param xp Points at which to calculate MSE
+#' @param xl Levels along dimension, vector???
+#' @param theta Correlation parameters
+#' @param logtheta Log of correlation parameters
+#' @param nugget Nugget to add to diagonal of correlation matrix
+#' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
+#' @param diag_corrMat Function that gives diagonal of correlation matrix
+#' for vector of 1D points.
+#' @param ... Don't use, just forces theta to be named
+#'
+#' @return MSE predictions
+#' @export
+#'
+#' @examples
+#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
+#'              CorrMat=CorrMatMatern32,
+#'              diag_corrMat=diag_corrMatMatern32)
+SGGP_internal_postvarmatcalc <- function(x1,x2,xo,theta,CorrMat) {
+  S = CorrMat(xo, xo, theta)
+  n = length(xo)
+  cholS = chol(S)
+  
+  C1o = CorrMat(x1, xo, theta)
+  CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
+  C2o = CorrMat(x2, xo, theta)
+  Sigma_mat = - t(CoinvC1o)%*%t(C2o)  
+  return(Sigma_mat)
 }

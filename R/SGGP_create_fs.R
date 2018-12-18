@@ -21,7 +21,7 @@ SGGPcreate <- function(d, batchsize) {
   SGGP = list()
   
   SGGP$d <- d
-  SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT 
+  SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
   SGGP$numpara <- SGGP$CorrMat(0,0,0,return_numpara=TRUE)
   SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
   SGGP$numPostSamples <- 100
@@ -62,8 +62,9 @@ SGGPcreate <- function(d, batchsize) {
   SGGP$pilaCOUNT[1:SGGP$d] = 1
   SGGP$pila[1:SGGP$d, 1] = 1
   
+  
   SGGP$bss = batchsize#1+4*SGGP$d  #must be at least 3*d
-  SGGP$sizes = c(1,2,4,4,8,12) # Num of points added to 1D design as you go further in any dimension
+  SGGP$sizes = c(1,2,4,4,8,12,32) # Num of points added to 1D design as you go further in any dimension
   SGGP$maxlevel = length(SGGP$sizes)
   # Proposed grid size? More points further along the blocks?
   SGGP$pogsize = rep(0, 4 * SGGP$ML)
@@ -194,22 +195,23 @@ SGGPcreate <- function(d, batchsize) {
   # Create points for design
   xb = rep(
     c(
+      1 / 2,
       3 / 8,
       1 / 4,
       1 / 8,
-      7 / 32,
-      3 / 16,
-      1 / 2,
-      5 / 16,
+      15 / 32,
       7 / 16,
-      1 / 16,
+      3 / 16,
+      5 / 16,
+      7 / 32,
+      11 / 32,
       3 / 32,
       13 / 32,
       9 / 32,
       5 / 32,
       1 / 32,
-      11 / 32,
-      15 / 32
+      1 / 16,
+      seq(31,1,-2)/64
     ),
     "each" = 2
   )
