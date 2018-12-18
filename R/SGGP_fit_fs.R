@@ -9,9 +9,9 @@
 #' @useDynLib SGGP
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
-#' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' SGGP_internal_neglogpost(c(.1,.1,.1), SG=SG, y=y)
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+#' SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=y)
 SGGP_internal_neglogpost <- function(theta,SGGP,y) {
   # Return Inf if theta is too large
   if (max(theta) >= 0.9999 || min(theta) <= -0.9999) {
@@ -59,9 +59,9 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
-#' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' SGGP_internal_gneglogpost(c(.1,.1,.1), SG=SG, y=y)
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+#' SGGP_internal_gneglogpost(SG$thetaMAP, SG=SG, y=y)
 SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
   
   sigma2anddsigma2 <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
@@ -132,8 +132,8 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
-#' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SGGPfit(SG=SG, Y=y)
 SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                    theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
@@ -356,8 +356,9 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
 #' @export
 #'
 #' @examples
-#' SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1,
-#'              CorrMat=CorrMatMatern32)
+#' SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
+#'              xo=c(.11), theta=c(.1,.2,.3),
+#'              CorrMat=SGGP_internal_CorrMatCauchySQ)
 SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat) {
   S = CorrMat(xo, xo, theta)
   n = length(xo)

@@ -20,5 +20,5 @@ Create sparse grid GP
 }
 \examples{
 d <- 8
-SG = SGcreate(d,201)
+SG = SGGPcreate(d,200)
 }

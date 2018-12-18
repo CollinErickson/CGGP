@@ -25,6 +25,7 @@ MSE predictions
 ????????????
 }
 \examples{
-SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1,
-             CorrMat=CorrMatMatern32)
+SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
+             xo=c(.11), theta=c(.1,.2,.3),
+             CorrMat=SGGP_internal_CorrMatCauchySQ)
 }

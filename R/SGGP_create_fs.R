@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' d <- 8
-#' SG = SGcreate(d,201)
+#' SG = SGGPcreate(d,200)
 SGGPcreate <- function(d, batchsize) {
   if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object

@@ -13,9 +13,9 @@
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
-#' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' calculate_pw_C(SG=SG, y=y, logtheta=c(-.1,.1,.3))
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' SGGP_internal_calcpw(SG=SG, y=y, theta=SG$thetaMAP)
 SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
   Q  = max(SGGP$uo[1:SGGP$uoCOUNT,]) # Max value of all blocks
   # Now going to store choleskys instead of inverses for stability
@@ -79,7 +79,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
     }
   }
 }
-#' 
+
 #' Calculate derivative of pw
 #'
 #' @inheritParams SGGP_internal_calcpw
@@ -90,9 +90,9 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
 #' @import Rcpp
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
-#' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' calculate_pw_and_dpw_C(SG=SG, y=y, logtheta=c(-.1,.1,.3))
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' SGGP_internal_calcpwanddpw(SG=SG, y=y, theta=SG$thetaMAP)
 SGGP_internal_calcpwanddpw <- function(SGGP, y, theta, return_lS=FALSE) {
   Q  = max(SGGP$uo[1:SGGP$uoCOUNT,]) # Max level of all blocks
   cholS = list(matrix(1,1,1),Q*SGGP$d) # To store choleskys

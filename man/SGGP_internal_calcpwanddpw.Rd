@@ -22,7 +22,7 @@ derivative matrix of pw with respect to logtheta
 Calculate derivative of pw
 }
 \examples{
-SG <- SGcreate(d=3, batchsize=100)
-y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-calculate_pw_and_dpw_C(SG=SG, y=y, logtheta=c(-.1,.1,.3))
+SG <- SGGPcreate(d=3, batchsize=100)
+y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+SGGP_internal_calcpwanddpw(SG=SG, y=y, theta=SG$thetaMAP)
 }
