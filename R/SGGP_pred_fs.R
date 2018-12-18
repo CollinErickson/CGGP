@@ -14,9 +14,9 @@
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
-#' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG, y=y, theta=c(.1,.1,.1))
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
+#' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG)
 #' cbind(SGGPpred(SGGP$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
 SGGPpred <- function(xp,SGGP) {
   # Require that you run SGGPfit
@@ -109,7 +109,7 @@ SGGPpred <- function(xp,SGGP) {
   return(GP)
 }
 
-#' ????????????
+#' Calculate MSE prediction along a single dimension
 #'
 #' @param xp Points at which to calculate MSE
 #' @param xl Levels along dimension, vector???
@@ -121,7 +121,7 @@ SGGPpred <- function(xp,SGGP) {
 #'
 #' @examples
 #' SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1,
-#'              CorrMat=CorrMatMatern32)
+#'              CorrMat=SGGP_internal_CorrMatCauchySQ)
 SGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
   S = CorrMat(xl, xl, theta)
   n = length(xl)

@@ -4,7 +4,7 @@
 \alias{SGGP_internal_CorrMatCauchy}
 \title{Calculate correlation matrix for two sets of points in one dimension}
 \usage{
-SGGP_internal_CorrMatCauchy(x1, x2, theta, ..., return_dCdtheta = FALSE,
+SGGP_internal_CorrMatCauchy(x1, x2, theta, return_dCdtheta = FALSE,
   return_numpara = FALSE)
 }
 \arguments{
@@ -13,8 +13,6 @@ SGGP_internal_CorrMatCauchy(x1, x2, theta, ..., return_dCdtheta = FALSE,
 \item{x2}{Vector of coordinates from same dimension}
 
 \item{theta}{Correlation parameter}
-
-\item{...}{Don't use, just forces theta to be named}
 
 \item{return_dCdtheta}{Should dCdtheta be returned?}
 
@@ -27,5 +25,5 @@ Matrix
 Note that this is not the correlation between two vectors.
 }
 \examples{
-CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+SGGP_internal_CorrMatCauchy(c(0,.2,.4),c(.1,.3,.5), theta=.1)
 }

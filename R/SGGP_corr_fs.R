@@ -4,7 +4,6 @@
 #'
 #' @param x1 Vector of coordinates from same dimension
 #' @param x2 Vector of coordinates from same dimension
-#' @param ... Don't use, just forces theta to be named
 # ' @param LS Log of parameter that controls lengthscale
 # ' @param FD Logit of 0.5*parameter  that controls the fractal demension
 # ' @param HE Log of parameter that controls the hurst effect
@@ -16,8 +15,8 @@
 #' @export
 #'
 #' @examples
-#' CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
-SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
+#' SGGP_internal_CorrMatCauchy(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE) {
   if(return_numpara){
     return(3)
   }else{ 
@@ -52,8 +51,8 @@ SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FAL
 #' @export
 #'
 #' @examples
-#' CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
-SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
+#' SGGP_internal_CorrMatCauchySQT(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE) {
   if(return_numpara){
     return(3);
   } else{
@@ -101,8 +100,8 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, ..., return_dCdtheta = 
 #' @export
 #'
 #' @examples
-#' CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=.1)
-SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_numpara =FALSE) {
+#' SGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE) {
   if(return_numpara){
     return(2);
   }else{ 

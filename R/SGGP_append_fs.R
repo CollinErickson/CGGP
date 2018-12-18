@@ -4,20 +4,15 @@
 #' Can be calculated exactly, but not much reason in 1D.
 #'
 #' @param xl Vector of points in 1D
-#' @param theta Log of correlation parameters.
 #' @param theta Correlation parameters
-#' @param nugget Nugget to add to diagonal of correlation matrix.
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
-#' @param diag_corrMat Function that gives diagonal of correlation matrix for vector of 1D points.
-#' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE value
 #' @export
 #'
 #' @examples
-#' SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=1, nugget=.001,
-#'          CorrMat=CorrMatMatern32,
-#'          diag_corrMat=diag_corrMatMatern32)
+#' SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=1,
+#'          CorrMat=CorrMatMatern32)
 SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
   S = CorrMat(xl, xl, theta)
   xp = seq(0,1,l=101)
@@ -43,15 +38,14 @@ SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
+#' SG <- SGGPcreate(d=3, batchsize=100)
 #' theta <- c(.1,.1,.1)
-#' MSE_MAP <- outer(1:SGGP$d, 1:8, 
+#' MSE_MAP <- outer(1:SG$d, 1:8, 
 #'      Vectorize(function(lcv1, dimlcv) {
-#'         MSE_calc(SGGP$xb[1:SGGP$sizest[dimlcv]], theta=theta[lcv1], nugget=0,
-#'          CorrMat=CorrMatMatern32,
-#'          diag_corrMat=diag_corrMatMatern32)
+#'         SGGP_internal_MSEpredcalc(SG$xb[1:SGGP$sizest[dimlcv]], theta=theta[lcv1],
+#'          CorrMat=SGGP_internal_CorrMatCauchySQ)
 #'  }))
-#' SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
+#' SGGP_internal_calcMSEde(SG$po[1:SGGP$poCOUNT, ], MSE_MAP)
 SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
   if(is.matrix(valsinds)){
     MSE_de = rep(0, dim(valsinds)[1])

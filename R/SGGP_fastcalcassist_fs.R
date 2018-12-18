@@ -6,7 +6,7 @@
 #'
 #' @param SGGP SGGP object
 #' @param y Measured values for SGGP$design
-#' @param logtheta Log of correlation parameters
+#' @param theta Correlation parameters
 #' @param return_lS Should lS be returned?
 #'
 #' @return Vector with predictive weights

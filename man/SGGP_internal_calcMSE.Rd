@@ -9,17 +9,9 @@ SGGP_internal_calcMSE(xl, theta, CorrMat)
 \arguments{
 \item{xl}{Vector of points in 1D}
 
-\item{theta}{Log of correlation parameters.}
-
-\item{CorrMat}{Function that gives correlation matrix for vectors of 1D points.}
-
 \item{theta}{Correlation parameters}
 
-\item{nugget}{Nugget to add to diagonal of correlation matrix.}
-
-\item{diag_corrMat}{Function that gives diagonal of correlation matrix for vector of 1D points.}
-
-\item{...}{Don't use, just forces theta to be named}
+\item{CorrMat}{Function that gives correlation matrix for vectors of 1D points.}
 }
 \value{
 MSE value
@@ -29,7 +21,6 @@ Calcaluted using grid of integration points.
 Can be calculated exactly, but not much reason in 1D.
 }
 \examples{
-SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=1, nugget=.001,
-         CorrMat=CorrMatMatern32,
-         diag_corrMat=diag_corrMatMatern32)
+SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=1,
+         CorrMat=CorrMatMatern32)
 }

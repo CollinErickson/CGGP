@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_pred_fs.R
 \name{SGGP_internal_MSEpredcalc}
 \alias{SGGP_internal_MSEpredcalc}
-\title{????????????}
+\title{Calculate MSE prediction along a single dimension}
 \usage{
 SGGP_internal_MSEpredcalc(xp, xl, theta, CorrMat)
 }
@@ -19,9 +19,9 @@ SGGP_internal_MSEpredcalc(xp, xl, theta, CorrMat)
 MSE predictions
 }
 \description{
-????????????
+Calculate MSE prediction along a single dimension
 }
 \examples{
 SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1,
-             CorrMat=CorrMatMatern32)
+             CorrMat=SGGP_internal_CorrMatCauchySQ)
 }

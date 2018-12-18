@@ -18,13 +18,12 @@ All MSE values
 Delta of adding block is product over i=1..d of IMSE(i,j-1) - IMSE(i,j)
 }
 \examples{
-SG <- SGcreate(d=3, batchsize=100)
+SG <- SGGPcreate(d=3, batchsize=100)
 theta <- c(.1,.1,.1)
-MSE_MAP <- outer(1:SGGP$d, 1:8, 
+MSE_MAP <- outer(1:SG$d, 1:8, 
      Vectorize(function(lcv1, dimlcv) {
-        MSE_calc(SGGP$xb[1:SGGP$sizest[dimlcv]], theta=theta[lcv1], nugget=0,
-         CorrMat=CorrMatMatern32,
-         diag_corrMat=diag_corrMatMatern32)
+        SGGP_internal_MSEpredcalc(SG$xb[1:SGGP$sizest[dimlcv]], theta=theta[lcv1],
+         CorrMat=SGGP_internal_CorrMatCauchySQ)
  }))
-SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
+SGGP_internal_calcMSEde(SG$po[1:SGGP$poCOUNT, ], MSE_MAP)
 }
