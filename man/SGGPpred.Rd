@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_pred_fs.R
 \name{SGGPpred}
 \alias{SGGPpred}
-\title{Predict}
+\title{Predict with SGGP object}
 \usage{
 SGGPpred(xp, SGGP)
 }
@@ -21,6 +21,7 @@ Shouldn't y values already be stored in SG?
 \examples{
 SG <- SGGPcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG)
-cbind(SGGPpred(SGGP$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
+SG <- SGGPfit(SG, Y=y)
+SGGPpred(matrix(c(.1,.1,.1),1,3), SGGP=SG)
+cbind(SGGPpred(SG$design, SG=SG)$mean, y) # Should be near equal
 }

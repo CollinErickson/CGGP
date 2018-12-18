@@ -1,14 +1,10 @@
-#' Predict
+#' Predict with SGGP object
 #' 
 #' Predict using SG with y values at xp?
 #' Shouldn't y values already be stored in SG?
 #'
 #' @param xp x value to predict at
 #' @param SGGP SG object
-# ' @param y Observations for SG
-# ' @param theta Correlation parameters
-# ' @param logtheta Log of correlation parameters
-# ' @param ... Don't use, just forces theta to be named
 #'
 #' @return Predicted mean values
 #' @export
@@ -16,8 +12,9 @@
 #' @examples
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' SGGPpred(matrix(c(.1,.1,.1),1,3), SG=SG)
-#' cbind(SGGPpred(SGGP$design, SG=SG, y=y, theta=c(.1,.1,.1))$mean, y) # Should be near equal
+#' SG <- SGGPfit(SG, Y=y)
+#' SGGPpred(matrix(c(.1,.1,.1),1,3), SGGP=SG)
+#' cbind(SGGPpred(SG$design, SG=SG)$mean, y) # Should be near equal
 SGGPpred <- function(xp,SGGP) {
   # Require that you run SGGPfit
   
@@ -48,20 +45,23 @@ SGGPpred <- function(xp,SGGP) {
     ME_t = ME_t-SGGP$w[blocklcv]*ME_v
   }
   
-  
-  if(!SGGP$supplemented){
-  
-  # Return list with mean and var predictions
-  if(is.vector(SGGP$pw)){
-    GP = list("mean" = (SGGP$mu+Cp%*%SGGP$pw), "var"=SGGP$sigma2MAP[1]*ME_t)
-  }else{
-    if(length(SGGP$sigma2MAP)==1){
-      GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M))))
-      
-    }else{
-    GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
-    }
+  if (is.null(SGGP$supplemented)) {
+    stop("You must run SGGPfit on SGGP object before using SGGPpredict")
   }
+
+  if (!SGGP$supplemented) {  
+    
+    # Return list with mean and var predictions
+    if(is.vector(SGGP$pw)){
+      GP = list("mean" = (SGGP$mu+Cp%*%SGGP$pw), "var"=SGGP$sigma2MAP[1]*ME_t)
+    }else{
+      if(length(SGGP$sigma2MAP)==1){
+        GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M))))
+        
+      }else{
+        GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+(Cp%*%SGGP$pw)%*%(SGGP$M)), "var"=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
+      }
+    }
   } else {
     Cps = matrix(1,dim(xp)[1],dim(SGGP$Xs)[1])
     for (dimlcv in 1:SGGP$d) { # Loop over dimensions
@@ -75,7 +75,7 @@ SGGPpred <- function(xp,SGGP) {
     for (dimlcv in 1:SGGP$d) {
       for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
         MSE_ps[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(xp[,dimlcv],SGGP$Xs[,dimlcv],
-                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
+                                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
       }
     }
     
@@ -120,7 +120,7 @@ SGGPpred <- function(xp,SGGP) {
 #' @export
 #'
 #' @examples
-#' SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1,
+#' SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=c(.1,.2,.3),
 #'              CorrMat=SGGP_internal_CorrMatCauchySQ)
 SGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
   S = CorrMat(xl, xl, theta)
