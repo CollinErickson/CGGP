@@ -15,7 +15,7 @@
 #' @export
 #'
 #' @examples
-#' MSE_calc(xl=c(0,.5,.9), theta=1, nugget=.001,
+#' SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=1, nugget=.001,
 #'          CorrMat=CorrMatMatern32,
 #'          diag_corrMat=diag_corrMatMatern32)
 SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
@@ -51,7 +51,7 @@ SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
 #'          CorrMat=CorrMatMatern32,
 #'          diag_corrMat=diag_corrMatMatern32)
 #'  }))
-#' MSE_de(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
+#' SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
 SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
   if(is.matrix(valsinds)){
     MSE_de = rep(0, dim(valsinds)[1])

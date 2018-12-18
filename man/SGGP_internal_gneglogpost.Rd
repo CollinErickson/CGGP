@@ -24,5 +24,5 @@ Gradient of likelihood. Is it log likelihood?
 \examples{
 SG <- SGcreate(d=3, batchsize=100)
 y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-glik(c(.1,.1,.1), SG=SG, y=y)
+SGGP_internal_gneglogpost(c(.1,.1,.1), SG=SG, y=y)
 }

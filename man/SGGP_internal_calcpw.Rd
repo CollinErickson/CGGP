@@ -11,9 +11,9 @@ SGGP_internal_calcpw(SGGP, y, theta, return_lS = FALSE)
 
 \item{y}{Measured values for SGGP$design}
 
-\item{theta}{Correlation parameters}
-
 \item{return_lS}{Should lS be returned?}
+
+\item{logtheta}{Log of correlation parameters}
 }
 \value{
 Vector with predictive weights

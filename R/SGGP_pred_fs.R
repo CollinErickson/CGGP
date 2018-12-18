@@ -114,20 +114,14 @@ SGGPpred <- function(xp,SGGP) {
 #' @param xp Points at which to calculate MSE
 #' @param xl Levels along dimension, vector???
 #' @param theta Correlation parameters
-#' @param logtheta Log of correlation parameters
-#' @param nugget Nugget to add to diagonal of correlation matrix
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
-#' @param diag_corrMat Function that gives diagonal of correlation matrix
-#' for vector of 1D points.
-#' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE predictions
 #' @export
 #'
 #' @examples
-#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
-#'              CorrMat=CorrMatMatern32,
-#'              diag_corrMat=diag_corrMatMatern32)
+#' SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1,
+#'              CorrMat=CorrMatMatern32)
 SGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
   S = CorrMat(xl, xl, theta)
   n = length(xl)

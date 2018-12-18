@@ -22,5 +22,5 @@ Calculate negative posterior
 \examples{
 SG <- SGcreate(d=3, batchsize=100)
 y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-lik(c(.1,.1,.1), SG=SG, y=y)
+SGGP_internal_neglogpost(c(.1,.1,.1), SG=SG, y=y)
 }

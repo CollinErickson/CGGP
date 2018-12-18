@@ -11,7 +11,7 @@
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' lik(c(.1,.1,.1), SG=SG, y=y)
+#' SGGP_internal_neglogpost(c(.1,.1,.1), SG=SG, y=y)
 SGGP_internal_neglogpost <- function(theta,SGGP,y) {
   # Return Inf if theta is too large
   if (max(theta) >= 0.9999 || min(theta) <= -0.9999) {
@@ -61,7 +61,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' glik(c(.1,.1,.1), SG=SG, y=y)
+#' SGGP_internal_gneglogpost(c(.1,.1,.1), SG=SG, y=y)
 SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
   
   sigma2anddsigma2 <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
@@ -114,17 +114,19 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #'
 #' @param SGGP Sparse grid objects
 #' @param Y Output values calculated at SGGP$design
+#' @param Xs Supplemental X matrix
+#' @param Ys Supplemental Y values
+#' @param theta0 Initial theta
+#' @param laplaceapprox Should Laplace approximation be used?
 #' @param lower Lower bound for parameter optimization
 #' @param upper Upper bound for parameter optimization
-#' @param method Optimization method, must be "L-BFGS-B" when using lower and upper
-#' @param theta0 Initial theta
-#' @param tol Relative tolerance for optimization. Can't use absolute tolerance
+# @param method Optimization method, must be "L-BFGS-B" when using lower and upper
+# @param tol Relative tolerance for optimization. Can't use absolute tolerance
 # since lik can be less than zero.
-#' @param laplaceapprox Should Laplace approximation be used?
 # @param return_optim If TRUE, return output from optim().
-#' If FALSE return updated SG.
+# If FALSE return updated SG.
 #' 
-#' @importFrom stats optim rnorm runif
+#' @importFrom stats optim rnorm runif nlminb
 #'
 #' @return theta MLE
 #' @export
@@ -132,8 +134,8 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' thetaMLE(SG=SG, y=y)
-SGGPfit<- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
+#' SGGPfit(SG=SG, y=y)
+SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                    theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
                    lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d)) {
   
@@ -343,24 +345,20 @@ SGGPfit<- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
 
 #' ????????????
 #'
-#' @param xp Points at which to calculate MSE
-#' @param xl Levels along dimension, vector???
+#' @param x1 Points at which to calculate MSE
+#' @param x2 Levels along dimension, vector???
+#' @param xo No clue what this is
 #' @param theta Correlation parameters
-#' @param logtheta Log of correlation parameters
-#' @param nugget Nugget to add to diagonal of correlation matrix
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
-#' @param diag_corrMat Function that gives diagonal of correlation matrix
 #' for vector of 1D points.
-#' @param ... Don't use, just forces theta to be named
 #'
 #' @return MSE predictions
 #' @export
 #'
 #' @examples
-#' MSEpred_calc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1, nugget=1e-5,
-#'              CorrMat=CorrMatMatern32,
-#'              diag_corrMat=diag_corrMatMatern32)
-SGGP_internal_postvarmatcalc <- function(x1,x2,xo,theta,CorrMat) {
+#' SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=.1,
+#'              CorrMat=CorrMatMatern32)
+SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat) {
   S = CorrMat(xo, xo, theta)
   n = length(xo)
   cholS = chol(S)

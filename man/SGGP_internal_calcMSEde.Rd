@@ -26,5 +26,5 @@ MSE_MAP <- outer(1:SGGP$d, 1:8,
          CorrMat=CorrMatMatern32,
          diag_corrMat=diag_corrMatMatern32)
  }))
-MSE_de(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
+SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
 }
