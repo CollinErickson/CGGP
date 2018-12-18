@@ -108,3 +108,9 @@ if (T) { # Can Travis just skip this?
 # cat(capture.output(Sys.time() - timestart), '\n')
 cat("... FINISHED after_success.R\n")
 timestamp()
+
+
+cat("Running second example: wingweight\n")
+print(getwd())
+source("./scratch/after_success_run_one.R")
+run_one_SGGP_example(TestFunctions::wingweight, 10, 2000, 12000, 2000, 1000)

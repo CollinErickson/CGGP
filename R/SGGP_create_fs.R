@@ -19,6 +19,7 @@ SGGPcreate <- function(d, batchsize) {
   if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object
   SGGP = list()
+  class(SGGP) <- c("SGGP", "list") # Give it class SGGP
   
   SGGP$d <- d
   SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT

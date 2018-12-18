@@ -6,4 +6,5 @@ test_that("SGGPcreate works", {
   
   SG <- SGGPcreate(d=3, batchsize=20)
   expect_is(SG, "list")
+  expect_is(SG, "SGGP")
 })
