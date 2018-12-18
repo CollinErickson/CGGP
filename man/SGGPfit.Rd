@@ -4,12 +4,14 @@
 \alias{SGGPfit}
 \title{Calculate theta MLE given data}
 \usage{
-SGGPfit(SGGP, Y, ..., lower = rep(-0.999, SGGP$d), upper = rep(0.999,
+SGGPfit(SGGP, Y, lower = rep(-0.999, SGGP$d), upper = rep(0.999,
   SGGP$d), method = "L-BFGS-B", theta0 = rep(0, SGGP$numpara * SGGP$d),
   tol = 1e-04, laplaceapprox = TRUE)
 }
 \arguments{
-\item{...}{Don't use, just forces theta to be named}
+\item{SGGP}{Sparse grid objects}
+
+\item{Y}{Output values calculated at SGGP$design}
 
 \item{lower}{Lower bound for parameter optimization}
 
@@ -19,16 +21,9 @@ SGGPfit(SGGP, Y, ..., lower = rep(-0.999, SGGP$d), upper = rep(0.999,
 
 \item{theta0}{Initial theta}
 
-\item{tol}{Relative tolerance for optimization. Can't use absolute tolerance
-since lik can be less than zero.}
+\item{tol}{Relative tolerance for optimization. Can't use absolute tolerance}
 
-\item{SG}{Sparse grid objects}
-
-\item{y}{Output values calculated at SGGP$design}
-
-\item{return_optim}{If TRUE, return output from optim().}
-
-\item{use_splitfngr}{Should give exact same results but with a slight speed up
+\item{laplaceapprox}{Should Laplace approximation be used?
 If FALSE return updated SG.}
 }
 \value{

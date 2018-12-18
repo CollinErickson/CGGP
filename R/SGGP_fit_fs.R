@@ -112,17 +112,16 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 
 #' Calculate theta MLE given data
 #'
-#' @param SG Sparse grid objects
-#' @param y Output values calculated at SGGP$design
-#' @param theta0 Initial theta
-#' @param tol Relative tolerance for optimization. Can't use absolute tolerance
-#' since lik can be less than zero.
-#' @param ... Don't use, just forces theta to be named
-#' @param return_optim If TRUE, return output from optim().
+#' @param SGGP Sparse grid objects
+#' @param Y Output values calculated at SGGP$design
 #' @param lower Lower bound for parameter optimization
 #' @param upper Upper bound for parameter optimization
 #' @param method Optimization method, must be "L-BFGS-B" when using lower and upper
-#' @param use_splitfngr Should give exact same results but with a slight speed up
+#' @param theta0 Initial theta
+#' @param tol Relative tolerance for optimization. Can't use absolute tolerance
+# since lik can be less than zero.
+#' @param laplaceapprox Should Laplace approximation be used?
+# @param return_optim If TRUE, return output from optim().
 #' If FALSE return updated SG.
 #' 
 #' @importFrom stats optim rnorm runif
@@ -134,7 +133,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' thetaMLE(SG=SG, y=y)
-SGGPfit<- function(SGGP, Y, ..., 
+SGGPfit<- function(SGGP, Y,
                    lower = rep(-0.999, SGGP$d),
                    upper = rep(0.999, SGGP$d),
                    method = "L-BFGS-B", 

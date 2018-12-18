@@ -4,18 +4,14 @@
 \alias{SGGPappend}
 \title{Add points to SGGP}
 \usage{
-SGGPappend(SGGP, batchsize, ..., selectionmethod = "UCB")
+SGGPappend(SGGP, batchsize, selectionmethod = "UCB")
 }
 \arguments{
+\item{SGGP}{Sparse grid object}
+
 \item{batchsize}{Number of points to add}
 
-\item{...}{Don't use, just forces theta to be named}
-
-\item{SG}{Sparse grid object}
-
-\item{theta}{Correlation parameters}
-
-\item{theta}{Log of theta, give one of theta and theta}
+\item{selectionmethod}{How points will be selected: one of `UCB`, `TS`, and `Greedy`}
 }
 \value{
 SG with new points added.

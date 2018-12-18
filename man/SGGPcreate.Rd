@@ -9,16 +9,8 @@ SGGPcreate(d, batchsize)
 \arguments{
 \item{d}{Input dimension}
 
-\item{batchsize}{Number added to design each batch}
-
-\item{xmin}{Min x values, vector. Must be rep(0,d).}
-
-\item{xmax}{Max x values, vector. Must be rep(1,d).}
-
-\item{nugget}{Nugget term added to diagonal of correlation matrix,
+\item{batchsize}{Number added to design each batch
 for now only on predictions}
-
-\item{corr}{Correlation function to use.}
 }
 \value{
 SGGP
