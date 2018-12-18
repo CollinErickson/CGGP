@@ -34,5 +34,5 @@ Calculate theta MLE given data
 \examples{
 SG <- SGcreate(d=3, batchsize=100)
 y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-SGGPfit(SG=SG, y=y)
+SGGPfit(SG=SG, Y=y)
 }

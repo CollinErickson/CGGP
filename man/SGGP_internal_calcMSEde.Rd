@@ -19,11 +19,15 @@ Delta of adding block is product over i=1..d of IMSE(i,j-1) - IMSE(i,j)
 }
 \examples{
 SG <- SGGPcreate(d=3, batchsize=100)
-theta <- c(.1,.1,.1)
+y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+SG <- SGGPfit(SG, Y=y)
 MSE_MAP <- outer(1:SG$d, 1:8, 
-     Vectorize(function(lcv1, dimlcv) {
-        SGGP_internal_MSEpredcalc(SG$xb[1:SGGP$sizest[dimlcv]], theta=theta[lcv1],
-         CorrMat=SGGP_internal_CorrMatCauchySQ)
+     Vectorize(function(dimlcv, lcv1) {
+     print(c(lcv1, dimlcv))
+     if (lcv1==1 && dimlcv==4) {browser()}
+        SGGP_internal_calcMSE(SG$xb[1:SG$sizest[dimlcv]],
+        theta=SG$thetaMAP[(dimlcv-1)*SG$numpara+1:SG$numpara],
+        CorrMat=SGGP_internal_CorrMatCauchySQ)
  }))
-SGGP_internal_calcMSEde(SG$po[1:SGGP$poCOUNT, ], MSE_MAP)
+SGGP_internal_calcMSEde(SG$po[1:SG$poCOUNT, ], MSE_MAP)
 }

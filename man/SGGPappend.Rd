@@ -11,7 +11,7 @@ SGGPappend(SGGP, batchsize, selectionmethod = "UCB")
 
 \item{batchsize}{Number of points to add}
 
-\item{selectionmethod}{How points will be selected: one of `UCB`, `TS`, and `Greedy`}
+\item{selectionmethod}{How points will be selected: one of `UCB`, `TS`, of `Greedy`}
 }
 \value{
 SG with new points added.
@@ -20,7 +20,9 @@ SG with new points added.
 Add `batchsize` points to `SG` using `theta`.
 }
 \examples{
-SG <- SGcreate(d=3, batchsize=100)
-SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
+SG <- SGGPcreate(d=3, batchsize=100)
+y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+SG <- SGGPfit(SG, Y=y)
+SG <- SGGPappend(SGGP=SG, batchsize=20)
 # UCB,TS,Greedy
 }

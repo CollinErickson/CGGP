@@ -134,7 +134,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' y <- apply(SGGP$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
-#' SGGPfit(SG=SG, y=y)
+#' SGGPfit(SG=SG, Y=y)
 SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                    theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
                    lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d)) {

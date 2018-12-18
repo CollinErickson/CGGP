@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_append_fs.R
 \name{SGGP_internal_calcMSE}
 \alias{SGGP_internal_calcMSE}
-\title{Calculate MSE over single dimension for Matern 3/2}
+\title{Calculate MSE over single dimension}
 \usage{
 SGGP_internal_calcMSE(xl, theta, CorrMat)
 }
@@ -21,6 +21,6 @@ Calcaluted using grid of integration points.
 Can be calculated exactly, but not much reason in 1D.
 }
 \examples{
-SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=1,
-         CorrMat=CorrMatMatern32)
+SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=c(1,2,3),
+         CorrMat=SGGP_internal_CorrMatCauchySQ)
 }

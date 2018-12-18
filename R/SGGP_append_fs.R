@@ -1,4 +1,4 @@
-#' Calculate MSE over single dimension for Matern 3/2
+#' Calculate MSE over single dimension
 #' 
 #' Calcaluted using grid of integration points.
 #' Can be calculated exactly, but not much reason in 1D.
@@ -11,8 +11,8 @@
 #' @export
 #'
 #' @examples
-#' SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=1,
-#'          CorrMat=CorrMatMatern32)
+#' SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=c(1,2,3),
+#'          CorrMat=SGGP_internal_CorrMatCauchySQ)
 SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
   S = CorrMat(xl, xl, theta)
   xp = seq(0,1,l=101)
@@ -39,13 +39,15 @@ SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
 #'
 #' @examples
 #' SG <- SGGPcreate(d=3, batchsize=100)
-#' theta <- c(.1,.1,.1)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+#' SG <- SGGPfit(SG, Y=y)
 #' MSE_MAP <- outer(1:SG$d, 1:8, 
-#'      Vectorize(function(lcv1, dimlcv) {
-#'         SGGP_internal_MSEpredcalc(SG$xb[1:SGGP$sizest[dimlcv]], theta=theta[lcv1],
-#'          CorrMat=SGGP_internal_CorrMatCauchySQ)
+#'      Vectorize(function(dimlcv, lcv1) {
+#'         SGGP_internal_calcMSE(SG$xb[1:SG$sizest[dimlcv]],
+#'         theta=SG$thetaMAP[(dimlcv-1)*SG$numpara+1:SG$numpara],
+#'         CorrMat=SGGP_internal_CorrMatCauchySQ)
 #'  }))
-#' SGGP_internal_calcMSEde(SG$po[1:SGGP$poCOUNT, ], MSE_MAP)
+#' SGGP_internal_calcMSEde(SG$po[1:SG$poCOUNT, ], MSE_MAP)
 SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
   if(is.matrix(valsinds)){
     MSE_de = rep(0, dim(valsinds)[1])
@@ -91,63 +93,65 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #'
 #' @param SGGP Sparse grid object
 #' @param batchsize Number of points to add
-#' @param selectionmethod How points will be selected: one of `UCB`, `TS`, and `Greedy`
+#' @param selectionmethod How points will be selected: one of `UCB`, `TS`, of `Greedy`
 #' @importFrom stats quantile
 #'
 #' @return SG with new points added.
 #' @export
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
-#' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+#' SG <- SGGPfit(SG, Y=y)
+#' SG <- SGGPappend(SGGP=SG, batchsize=20)
 #' # UCB,TS,Greedy
 SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
   n_before <- nrow(SGGP$design)
   
   if(selectionmethod=="Greedy"){
-  # Set up blank matrix to store MSE values
-  MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
-  # Why do we consider dimensions independent of each other?
-  # Loop over dimensions and design refinements
-  for (dimlcv in 1:SGGP$d) {
-    for (levellcv in 1:SGGP$maxlevel) {
-      # Calculate some sort of MSE from above, not sure what it's doing
-      MSE_MAP[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],SGGP$CorrMat)))
-      if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-        MSE_MAP[dimlcv, levellcv] = min(MSE_MAP[dimlcv, levellcv], MSE_MAP[dimlcv, levellcv - 1])
-      }
-    }
-  }
-  
-  # What is this? Integrate MSE
-  IMES_MAP = rep(0, SGGP$ML)
-  
-  # For all possible blocks, calculate MSE_MAP? Is that all that MSE_de does?
-  IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
-  
-  }else{
-  MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples)) # 8 because he only defined the 1D designs up to 8.
-#  MSE_UCB = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
-  # Why do we consider dimensions independent of each other?
-  # Loop over dimensions and design refinements
-  for (dimlcv in 1:SGGP$d) {
-    for (levellcv in 1:SGGP$maxlevel) {
-      for(samplelcv in 1:SGGP$numPostSamples){
+    # Set up blank matrix to store MSE values
+    MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
+    # Why do we consider dimensions independent of each other?
+    # Loop over dimensions and design refinements
+    for (dimlcv in 1:SGGP$d) {
+      for (levellcv in 1:SGGP$maxlevel) {
         # Calculate some sort of MSE from above, not sure what it's doing
-        MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]], SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,samplelcv],SGGP$CorrMat)))
+        MSE_MAP[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],SGGP$CorrMat)))
         if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-          MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv], MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
+          MSE_MAP[dimlcv, levellcv] = min(MSE_MAP[dimlcv, levellcv], MSE_MAP[dimlcv, levellcv - 1])
         }
       }
-   #   MSE_UCB[dimlcv, levellcv] = quantile(MSE_PostSamples[dimlcv, levellcv,],0.99)
     }
-  }
-  IMES_PostSamples = matrix(0, SGGP$ML,SGGP$numPostSamples)
-  for(samplelcv in 1:SGGP$numPostSamples){
-    IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv])
-  }
-  IMES_UCB = matrix(0, SGGP$ML)
-  IMES_UCB[1:SGGP$poCOUNT] = apply(IMES_PostSamples[1:SGGP$poCOUNT,],1,quantile, probs=0.9) 
+    
+    # What is this? Integrate MSE
+    IMES_MAP = rep(0, SGGP$ML)
+    
+    # For all possible blocks, calculate MSE_MAP? Is that all that MSE_de does?
+    IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
+    
+  } else {
+    MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples)) # 8 because he only defined the 1D designs up to 8.
+    #  MSE_UCB = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
+    # Why do we consider dimensions independent of each other?
+    # Loop over dimensions and design refinements
+    for (dimlcv in 1:SGGP$d) {
+      for (levellcv in 1:SGGP$maxlevel) {
+        for(samplelcv in 1:SGGP$numPostSamples){
+          # Calculate some sort of MSE from above, not sure what it's doing
+          MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]], SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,samplelcv],SGGP$CorrMat)))
+          if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
+            MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv], MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
+          }
+        }
+        #   MSE_UCB[dimlcv, levellcv] = quantile(MSE_PostSamples[dimlcv, levellcv,],0.99)
+      }
+    }
+    IMES_PostSamples = matrix(0, SGGP$ML,SGGP$numPostSamples)
+    for(samplelcv in 1:SGGP$numPostSamples){
+      IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv])
+    }
+    IMES_UCB = matrix(0, SGGP$ML)
+    IMES_UCB[1:SGGP$poCOUNT] = apply(IMES_PostSamples[1:SGGP$poCOUNT,],1,quantile, probs=0.9) 
   }
   
   
@@ -328,23 +332,23 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
         xi0 = SGGP$xindex[(SGGP$sizest[levelnow - 1] + 1):SGGP$sizest[levelnow]]
         if (dimlcv < 1.5) {
           SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(x0, "each" = SGGP$gridsize[blocklcv] /
-                                                                     SGGP$gridsizes[blocklcv, dimlcv])
+                                                                               SGGP$gridsizes[blocklcv, dimlcv])
           SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, "each" = SGGP$gridsize[blocklcv] /
-                                                                          SGGP$gridsizes[blocklcv, dimlcv])
+                                                                                    SGGP$gridsizes[blocklcv, dimlcv])
         }
         if (dimlcv > (SGGP$d - 0.5)) {
           SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(x0, SGGP$gridsize[blocklcv] /
-                                                                     SGGP$gridsizes[blocklcv, dimlcv])
+                                                                               SGGP$gridsizes[blocklcv, dimlcv])
           SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, SGGP$gridsize[blocklcv] /
-                                                                          SGGP$gridsizes[blocklcv, dimlcv])
+                                                                                    SGGP$gridsizes[blocklcv, dimlcv])
         }
         if (dimlcv < (SGGP$d - 0.5)  && dimlcv > 1.5) {
           SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, "each" =
-                                                                         prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -
-                                                                                                                                                  1)]))
+                                                                                   prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -
+                                                                                                                                                                            1)]))
           SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, "each" =
-                                                                              prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -
-                                                                                                                                                       1)]))
+                                                                                        prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -
+                                                                                                                                                                                 1)]))
         }
       }
     }
