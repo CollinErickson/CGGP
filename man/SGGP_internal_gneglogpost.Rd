@@ -9,13 +9,11 @@ SGGP_internal_gneglogpost(theta, SGGP, y, return_lik = FALSE)
 \arguments{
 \item{theta}{Log of correlation parameters}
 
+\item{SGGP}{SGGP object}
+
 \item{y}{SGGP$design measured values}
 
 \item{return_lik}{If yes, it returns a list with lik and glik}
-
-\item{SG}{SGGP object}
-
-\item{...}{Don't use, just forces theta to be named}
 }
 \value{
 Vector for gradient of likelihood w.r.t. x (theta)

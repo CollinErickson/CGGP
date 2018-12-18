@@ -4,7 +4,7 @@
 #' This calculation is much faster since we don't need to
 #' solve the full system of equations.
 #'
-#' @param SG SGGP object
+#' @param SGGP SGGP object
 #' @param y Measured values for SGGP$design
 #' @param logtheta Log of correlation parameters
 #' @param return_lS Should lS be returned?
@@ -83,7 +83,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
 #' Calculate derivative of pw
 #'
 #' @inheritParams SGGP_internal_calcpw
-#' @param return_dlS Should dlS be returned?
+#' @param return_lS Should lS and dlS be returned?
 #'
 #' @return derivative matrix of pw with respect to logtheta
 #' @export

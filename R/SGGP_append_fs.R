@@ -95,11 +95,9 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' 
 #' Add `batchsize` points to `SG` using `theta`.
 #'
-#' @param SG Sparse grid object
+#' @param SGGP Sparse grid object
 #' @param batchsize Number of points to add
-#' @param theta Correlation parameters
-#' @param theta Log of theta, give one of theta and theta
-#' @param ... Don't use, just forces theta to be named
+#' @param selectionmethod How points will be selected: one of `UCB`, `TS`, and `Greedy`
 #' @importFrom stats quantile
 #'
 #' @return SG with new points added.
@@ -108,8 +106,8 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' @examples
 #' SG <- SGcreate(d=3, batchsize=100)
 #' SG <- SGappend(theta=c(.1,.1,.1), SG=SG, batchsize=20)
-#' UCB,TS,Greedy
-SGGPappend <- function(SGGP,batchsize,...,selectionmethod = "UCB"){
+#' # UCB,TS,Greedy
+SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
   n_before <- nrow(SGGP$design)
   
   if(selectionmethod=="Greedy"){
