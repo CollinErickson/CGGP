@@ -52,7 +52,7 @@ cat("Now doing Bayesian\n")
 
 for(c in 1:round((N-201)/200)){
   cat(c, " ")
-  SG=SGGPappend(SG,200,theta=thetaest) #add 200 points to the design based on thetahat
+  SG=SGGPappend(SG,200) #add 200 points to the design based on thetahat
   Y = testf(SG$design)
   if( c< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
     SG = SGGPfit(SG,Y) #estimate the parameter (SG structure is important)
@@ -65,7 +65,7 @@ cat("\n")
 Y = testf(SG$design)
 timelastlogthetaMLEstart <- Sys.time()
 # if (!use_goodtheta) {
-  SG = SGGPfit(SG,Y,tol = 1e-3) #do one final parameter estimation,  this should be speed up, but I was lazy
+  SG = SGGPfit(SG, Y) #do one final parameter estimation,  this should be speed up, but I was lazy
   # logthetaest <- SG$logtheta
   # cat(logthetaest, "\n")
 # }
