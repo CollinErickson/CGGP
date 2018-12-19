@@ -30,8 +30,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
       Xbrn = SGGP$xb[1:SGGP$sizest[levellcv]]
       Xbrn = Xbrn[order(Xbrn)]
       Sstuff = SGGP$CorrMat(Xbrn, Xbrn , theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta = FALSE)
-      Sstuff = SGGP$CorrMat(Xbrn, Xbrn , theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta = TRUE)
-      S = Sstuff$C
+      S = Sstuff
       # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
       solvetry <- try({
         cS = chol(S)
@@ -47,10 +46,12 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
     # Loop over blocks selected
     gg = (1:SGGP$d-1)*Q
     for (blocklcv in 1:SGGP$uoCOUNT) {
+      if(abs(SGGP$w[blocklcv])>0.5){
       IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
       B = y[IS]
       rcpp_kronDBS(unlist(cholS[gg+SGGP$uo[blocklcv,]]), B, SGGP$gridsizest[blocklcv,])
       pw[IS] = pw[IS]+SGGP$w[blocklcv] * B
+      }
     }
     if (return_lS) {
       return(list(pw=pw, lS=lS))
@@ -63,6 +64,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
     # Loop over blocks selected
     gg = (1:SGGP$d-1)*Q
     for (blocklcv in 1:SGGP$uoCOUNT) {
+      if(abs(SGGP$w[blocklcv])>0.5){
       IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
       VVV1 = unlist(cholS[gg+SGGP$uo[blocklcv,]]);
       VVV2 = SGGP$gridsizest[blocklcv,];
@@ -70,6 +72,7 @@ SGGP_internal_calcpw <- function(SGGP, y, theta, return_lS=FALSE) {
         B = y[IS,outdimlcv]
         rcpp_kronDBS(VVV1, B, VVV2)
         pw[IS,outdimlcv] = pw[IS,outdimlcv]+SGGP$w[blocklcv] * B
+      }
       }
     }
     if (return_lS) {
@@ -133,11 +136,13 @@ SGGP_internal_calcpwanddpw <- function(SGGP, y, theta, return_lS=FALSE) {
   dpw = matrix(0, nrow = SGGP$numpara*SGGP$d, ncol = length(y)) # derivative of predictive weights
   gg = (1:SGGP$d-1)*Q
   for (blocklcv in 1:SGGP$uoCOUNT) {
+    if(abs(SGGP$w[blocklcv])>0.5){
     IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
     B = SGGP$w[blocklcv]*y[IS]
     dB = rcpp_gkronDBS(unlist(cholS[gg+SGGP$uo[blocklcv,]]),unlist(dMatdtheta[gg+SGGP$uo[blocklcv,]]), B, SGGP$gridsizest[blocklcv,])
     dpw[,IS] = dpw[,IS] +dB
     pw[IS] = pw[IS] + B
+    }
   }
   dpw =t(dpw)
   out <- list(pw=pw,
@@ -181,6 +186,7 @@ SGGP_internal_calcsigma2 <- function(SGGP, y, theta, return_lS=FALSE) {
     sigma2 = rep(0,numout) # Predictive weight for each measured point
     gg = (1:SGGP$d-1)*Q
     for (blocklcv in 1:SGGP$uoCOUNT) {
+      if(abs(SGGP$w[blocklcv])>0.5){
       IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
       VVV1=unlist(cholS[gg+SGGP$uo[blocklcv,]])
       VVV3=SGGP$gridsizest[blocklcv,]
@@ -189,6 +195,7 @@ SGGP_internal_calcsigma2 <- function(SGGP, y, theta, return_lS=FALSE) {
         B = (SGGP$w[blocklcv]/dim(y)[1])*B0
         rcpp_kronDBS(VVV1,B,VVV3)
         sigma2[outdimlcv] = sigma2[outdimlcv]  + t(B0)%*%B
+      }
       }
     }
     out <- list(sigma2=sigma2)
@@ -200,11 +207,13 @@ SGGP_internal_calcsigma2 <- function(SGGP, y, theta, return_lS=FALSE) {
     dsigma2 = rep(0,nrow=SGGP$d) # Predictive weight for each measured point
     gg = (1:SGGP$d-1)*Q
     for (blocklcv in 1:SGGP$uoCOUNT) {
+      if(abs(SGGP$w[blocklcv])>0.5){
       IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
       B0 = y[IS]
       B = (SGGP$w[blocklcv]/length(y))*B0
       rcpp_kronDBS(unlist(cholS[gg+SGGP$uo[blocklcv,]]),B, SGGP$gridsizest[blocklcv,])
       sigma2 = sigma2 + t(B0)%*%B
+      }
     }
     out <- list(sigma2=sigma2)
     if (return_lS) {
@@ -256,6 +265,7 @@ SGGP_internal_calcsigma2anddsigma2 <- function(SGGP, y, theta, return_lS=FALSE) 
     dsigma2 = matrix(0,nrow=SGGP$numpara*SGGP$d,ncol=numout) # Predictive weight for each measured point
     gg = (1:SGGP$d-1)*Q
     for (blocklcv in 1:SGGP$uoCOUNT) {
+      if(abs(SGGP$w[blocklcv])>0.5){
       IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
       VVV1=unlist(cholS[gg+SGGP$uo[blocklcv,]])
       VVV2=unlist(dMatdtheta[gg+SGGP$uo[blocklcv,]])
@@ -266,6 +276,7 @@ SGGP_internal_calcsigma2anddsigma2 <- function(SGGP, y, theta, return_lS=FALSE) 
         dB = rcpp_gkronDBS(VVV1,VVV2,B,VVV3)
         dsigma2[,outdimlcv] = dsigma2[,outdimlcv] + as.vector(dB%*%B0)
         sigma2[outdimlcv] = sigma2[outdimlcv]  + sum(B0*B)
+      }
       }
     }
     out <- list(sigma2=sigma2,
@@ -279,6 +290,7 @@ SGGP_internal_calcsigma2anddsigma2 <- function(SGGP, y, theta, return_lS=FALSE) 
     dsigma2 = rep(0,nrow=SGGP$d) # Predictive weight for each measured point
     gg = (1:SGGP$d-1)*Q
     for (blocklcv in 1:SGGP$uoCOUNT) {
+      if(abs(SGGP$w[blocklcv])>0.5){
       IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
       B0 = y[IS]
       B = (SGGP$w[blocklcv]/length(y))*B0
@@ -286,6 +298,7 @@ SGGP_internal_calcsigma2anddsigma2 <- function(SGGP, y, theta, return_lS=FALSE) 
       
       dsigma2 = dsigma2 +t(B0)%*%t(dB)
       sigma2 = sigma2 + t(B0)%*%B
+      }
     }
     out <- list(sigma2=sigma2,
                 dsigma2=dsigma2)

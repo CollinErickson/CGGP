@@ -108,13 +108,16 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
   n_before <- nrow(SGGP$design)
   
+  max_polevels = apply(SGGP$po[1:SGGP$poCOUNT,], 2, max)
+  
+  
   if(selectionmethod=="Greedy"){
     # Set up blank matrix to store MSE values
     MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
     # Why do we consider dimensions independent of each other?
     # Loop over dimensions and design refinements
     for (dimlcv in 1:SGGP$d) {
-      for (levellcv in 1:SGGP$maxlevel) {
+      for (levellcv in 1:max_polevels[dimlcv]) {
         # Calculate some sort of MSE from above, not sure what it's doing
         MSE_MAP[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],SGGP$CorrMat)))
         if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
@@ -135,7 +138,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
     # Why do we consider dimensions independent of each other?
     # Loop over dimensions and design refinements
     for (dimlcv in 1:SGGP$d) {
-      for (levellcv in 1:SGGP$maxlevel) {
+      for (levellcv in 1:max_polevels[dimlcv]) {
         for(samplelcv in 1:SGGP$numPostSamples){
           # Calculate some sort of MSE from above, not sure what it's doing
           MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]], SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,samplelcv],SGGP$CorrMat)))
@@ -289,6 +292,35 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
           SGGP$pogsize[SGGP$poCOUNT] = prod(SGGP$sizes[lp])
           SGGP$pila[SGGP$poCOUNT, 1:nap] = ap[1:nap]
           SGGP$pilaCOUNT[SGGP$poCOUNT] = nap
+          
+          max_polevels_old = max_polevels
+          max_polevels = apply(SGGP$po[1:SGGP$poCOUNT,], 2, max)
+          
+          if(selectionmethod=="Greedy"){
+            for (dimlcv in 1:SGGP$d) {
+              if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
+                    levellcv = max_polevels[dimlcv]
+                    MSE_MAP[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],SGGP$CorrMat)))
+                    if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
+                      MSE_MAP[dimlcv, levellcv] = min(MSE_MAP[dimlcv, levellcv], MSE_MAP[dimlcv, levellcv - 1])
+                }
+              }
+            }
+          }else{
+            for (dimlcv in 1:SGGP$d) {
+              if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
+                levellcv = max_polevels[dimlcv]
+                for(samplelcv in 1:SGGP$numPostSamples){
+                  # Calculate some sort of MSE from above, not sure what it's doing
+                  MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]], SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,samplelcv],SGGP$CorrMat)))
+                  if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
+                    MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv], MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
+                  }
+                }
+              }
+            }
+          }
+          
           if(selectionmethod=="Greedy"){
             IMES_MAP[SGGP$poCOUNT] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), MSE_MAP)
           }
