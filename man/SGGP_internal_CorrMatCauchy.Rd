@@ -12,14 +12,19 @@ SGGP_internal_CorrMatCauchy(x1, x2, theta, return_dCdtheta = FALSE,
 
 \item{x2}{Vector of coordinates from same dimension}
 
-\item{theta}{Correlation parameter}
+\item{theta}{Correlation parameters:
+\itemize{
+    \item LS Log of parameter that controls lengthscale
+    \item FD Logit of 0.5*parameter  that controls the fractal demension
+    \item HE Log of parameter that controls the hurst effect
+}}
 
 \item{return_dCdtheta}{Should dCdtheta be returned?}
 
 \item{return_numpara}{Should it just return the number of parameters?}
 }
 \value{
-Matrix
+Matrix of correlation values between x1 and x2
 }
 \description{
 Note that this is not the correlation between two vectors.

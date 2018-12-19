@@ -7,11 +7,16 @@
 # ' @param LS Log of parameter that controls lengthscale
 # ' @param FD Logit of 0.5*parameter  that controls the fractal demension
 # ' @param HE Log of parameter that controls the hurst effect
-#' @param theta Correlation parameter
+#' @param theta Correlation parameters:
+#' \itemize{
+#'     \item LS Log of parameter that controls lengthscale
+#'     \item FD Logit of 0.5*parameter  that controls the fractal demension
+#'     \item HE Log of parameter that controls the hurst effect
+#' }
 #' @param return_dCdtheta Should dCdtheta be returned?
 #' @param return_numpara Should it just return the number of parameters?
 #'
-#' @return Matrix
+#' @return Matrix of correlation values between x1 and x2
 #' @export
 #'
 #' @examples

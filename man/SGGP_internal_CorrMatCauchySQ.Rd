@@ -12,7 +12,12 @@ SGGP_internal_CorrMatCauchySQ(x1, x2, theta, return_dCdtheta = FALSE,
 
 \item{x2}{Vector of coordinates from same dimension}
 
-\item{theta}{Correlation parameter}
+\item{theta}{Correlation parameters:
+\itemize{
+    \item LS Log of parameter that controls lengthscale
+    \item FD Logit of 0.5*parameter  that controls the fractal demension
+    \item HE Log of parameter that controls the hurst effect
+}}
 
 \item{return_dCdtheta}{Should dCdtheta be returned?}
 
