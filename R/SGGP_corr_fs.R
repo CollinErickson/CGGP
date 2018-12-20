@@ -25,24 +25,24 @@ SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, return_dCdtheta = FALSE, r
   if(return_numpara){
     return(3)
   }else{ 
-  diffmat =abs(outer(x1,x2,'-')); 
-  
-  expLS = exp(3*(theta[1]))
-  expHE = exp(3*(theta[2]))
-  h = diffmat/expLS
-  alpha = 2*exp(3*theta[3]+4)/(1+exp(3*theta[3]+4))
-  halpha = h^alpha
-  pow = -expHE/alpha
-  
-  C = (1+halpha)^pow
-  if(return_dCdtheta){
-    dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),dCdHE =3*C*pow*log(1+halpha), 3*C*(log(halpha+1)/alpha-halpha*log(h)/(halpha+1))*(expHE/(exp(4*theta[3]+4)+1)))
-    dCdtheta[is.na(dCdtheta)] = 0
-    out <- list(C=C,dCdtheta=dCdtheta)
-    return(out)
-  }else{
-    return(C)
-  }
+    diffmat =abs(outer(x1,x2,'-')); 
+    
+    expLS = exp(3*(theta[1]))
+    expHE = exp(3*(theta[2]))
+    h = diffmat/expLS
+    alpha = 2*exp(3*theta[3]+4)/(1+exp(3*theta[3]+4))
+    halpha = h^alpha
+    pow = -expHE/alpha
+    
+    C = (1+halpha)^pow
+    if(return_dCdtheta){
+      dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),dCdHE =3*C*pow*log(1+halpha), 3*C*(log(halpha+1)/alpha-halpha*log(h)/(halpha+1))*(expHE/(exp(4*theta[3]+4)+1)))
+      dCdtheta[is.na(dCdtheta)] = 0
+      out <- list(C=C,dCdtheta=dCdtheta)
+      return(out)
+    }else{
+      return(C)
+    }
   }
 }
 
@@ -78,12 +78,12 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
     C = (1+halpha)^pow
     
     if(return_dCdtheta){
-       Q = ((1+halpha)^(pow-1))
-       gt1 = x1t*log(x1+10^(-2))
-       gt2 = x2t*log(x2+10^(-2))
-       lh =outer(gt1,gt2,'-')
-       hnabs = outer(x1ts,x2ts,'-')
-       LO = alpha*expTILT*(pow/expLS)*(abs(h)^(alpha-1)*lh*sign(hnabs))
+      Q = ((1+halpha)^(pow-1))
+      gt1 = x1t*log(x1+10^(-2))
+      gt2 = x2t*log(x2+10^(-2))
+      lh =outer(gt1,gt2,'-')
+      hnabs = outer(x1ts,x2ts,'-')
+      LO = alpha*expTILT*(pow/expLS)*(abs(h)^(alpha-1)*lh*sign(hnabs))
       dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha),LO*Q)
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)

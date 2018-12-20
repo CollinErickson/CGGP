@@ -43,7 +43,7 @@ require("SGGP")
 SG = SGGPcreate(d=d, batchsize=201)
 Y = testf(SG$design) #the design is $design, simple enough, right?
 # logthetaest = logthetaMLE(SG,Y)
-SG = SGGPfit(SG,Y)
+SG = SGGPfit(SG, Y)
 # logthetaest <- SG$logtheta
 # if (use_goodtheta) logthetaest <- goodlogthetaest
 # thetaest <- exp(logthetaest)
@@ -113,4 +113,4 @@ timestamp()
 cat("Running second example: wingweight\n")
 print(getwd())
 source("./scratch/after_success_run_one.R")
-run_one_SGGP_example(TestFunctions::wingweight, 10, 2000, 12000, 2000, 1000)
+run_one_SGGP_example(TestFunctions::wingweight, 10, 1000, 6000, 1000, 1000)

@@ -1,4 +1,4 @@
-run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred) {
+run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=F, plotwith="base") {
   Xp <- matrix(runif(Npred*d), Npred, d)
   Yp = testf(Xp)
   
@@ -44,4 +44,38 @@ run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred) {
   cat("Prediction  time is:", capture.output(timepredend - timepredstart), '\n')
   cat("logthetaMLE time is:", capture.output(timelastlogthetaMLEend - timelastlogthetaMLEstart), '\n')
   
+  if (plotit) {
+    if (plotwith=="base") {
+      
+      di <- sample(1:nrow(SG$design), 100)
+      Y0pred <- SGGPpred(SG$design[di,],SG) #,Y,logtheta=logthetaest)
+      plot(Yp, GP$mean, ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m))); points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
+      # Now plot with bars
+      #plot(Yp, GP$mean , ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m)),pch=19)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
+      plot(Yp, Yp-GP$mean , ylim=max(sqrt(GP$var))*c(-2,2))#c(min(-2GP$mean, Y0pred$m),max(GP$mean, Y0pred$m)),pch=19,col='white')#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
+      points(Yp, 0*GP$mean + 2*sqrt(GP$var), col=4, pch=19)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
+      points(Yp, 0*GP$mean - 2*sqrt(GP$var), col=5)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
+      errmax <- max(sqrt(GP$var), abs(GP$mean - Yp))
+      plot(GP$mean-Yp, sqrt(GP$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
+      polygon(1.1*errmax*c(0,-2,2),1.1*errmax*c(0,1,1), col=3, density=10, angle=135)
+      polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
+      points(GP$mean-Yp, sqrt(GP$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
+    } else if (plotwith == "ggplot2") {
+      library(ggplot2)
+      tdf <- data.frame(err=GP$mean-Yp, psd=sqrt(GP$var))
+      # ggplot(tdf, aes(x=err, y=psd)) + geom_point()
+      values <- data.frame(id=factor(c(1, 2)), value=factor(c(1,2)))
+      positions <- data.frame(id=rep(values$id, each=3),
+                              x=1.1*c(0,errmax*2,-errmax*2, 0,errmax,-errmax),
+                              y=1.1*c(0,errmax,errmax,0,errmax,errmax))
+      # Currently we need to manually merge the two together
+      datapoly <- merge(values, positions, by = c("id"))
+      
+      # ggplot(datapoly, aes(x = x, y = y)) +
+        # geom_polygon(aes(fill = value, group = id))
+      ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), datapoly, alpha=.2) + geom_point() +
+        xlab("Predicted - Actual") + ylab("Predicted error") + coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
+      
+    }
+  }
 }
