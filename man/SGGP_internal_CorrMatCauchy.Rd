@@ -30,5 +30,5 @@ Matrix of correlation values between x1 and x2
 Note that this is not the correlation between two vectors.
 }
 \examples{
-SGGP_internal_CorrMatCauchy(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+SGGP_internal_CorrMatCauchy(c(0,.2,.4),c(.1,.3,.5), theta=c(-1,.9,.1))
 }

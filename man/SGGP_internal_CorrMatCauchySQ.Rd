@@ -30,5 +30,5 @@ Matrix
 Note that this is not the correlation between two vectors.
 }
 \examples{
-SGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=.1)
+SGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,-.5,.8))
 }
