@@ -80,9 +80,10 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
       }
     }
   }
+  
   MSE_de = exp(MSE_de)
   
-  MSE_de # CBE added this so it will return normally.
+  MSE_de
 }
 
 
@@ -403,8 +404,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
     tv = tv + SGGP$gridsize[blocklcv]
   }
   
-  # Save Xnew to make it easy to know which ones to add
-  SGGP$Xnew <- SGGP$design[(n_before+1):nrow(SGGP$design),]
+  # Save design_unevaluated to make it easy to know which ones to add
+  SGGP$design_unevaluated <- SGGP$design[(n_before+1):nrow(SGGP$design),]
   
   return(SGGP)
 }

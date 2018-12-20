@@ -4,13 +4,15 @@
 \alias{SGGPcreate}
 \title{Create sparse grid GP}
 \usage{
-SGGPcreate(d, batchsize)
+SGGPcreate(d, batchsize, corr = "CauchySQT")
 }
 \arguments{
 \item{d}{Input dimension}
 
 \item{batchsize}{Number added to design each batch
 for now only on predictions}
+
+\item{corr}{Name of correlation function to use. Must be one of "CauchySQT", "CauchySQ".}
 }
 \value{
 SGGP

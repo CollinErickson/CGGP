@@ -6,7 +6,7 @@
 #' @param batchsize Number added to design each batch
 # @param nugget Nugget term added to diagonal of correlation matrix,
 #' for now only on predictions
-# @param corr Correlation function to use.
+#' @param corr Name of correlation function to use. Must be one of "CauchySQT", "CauchySQ".
 #' @importFrom stats rbeta
 #'
 #' @return SGGP
@@ -15,15 +15,22 @@
 #' @examples
 #' d <- 8
 #' SG = SGGPcreate(d,200)
-SGGPcreate <- function(d, batchsize) {
+SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
   if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object
   SGGP = list()
   class(SGGP) <- c("SGGP", "list") # Give it class SGGP
   
   SGGP$d <- d
-  SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
-  SGGP$numpara <- SGGP$CorrMat(0,0,0,return_numpara=TRUE)
+  # SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
+  if (tolower(corr) %in% c("cauchysqt")) {
+    SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
+  } else if (tolower(corr) %in% c("cauchysq")) {
+    SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQ
+  } else {
+    stop("corr given to SGGPcreate should be one of CauchySQT or CauchySQ")
+  }
+  SGGP$numpara <- SGGP$CorrMat(return_numpara=TRUE)
   SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
   SGGP$numPostSamples <- 100
   SGGP$thetaPostSamples  <- matrix(2*rbeta(d*SGGP$numpara*SGGP$numPostSamples , 0.5, 0.5)-1,ncol=SGGP$numPostSamples )
@@ -280,6 +287,8 @@ SGGPcreate <- function(d, batchsize) {
     } else{
       SGGP$dit[blocklcv, 1:SGGP$gridsize[blocklcv]] = SGGP$di[blocklcv, 1:SGGP$gridsize[blocklcv]]
     }
+    
+    SGGP$design_unevaluated <- SGGP$design
     
     tv = tv + SGGP$gridsize[blocklcv]
   }

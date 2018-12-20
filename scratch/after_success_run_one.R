@@ -1,4 +1,4 @@
-run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=F, plotwith="base") {
+run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=T, plotwith="base") {
   Xp <- matrix(runif(Npred*d), Npred, d)
   Yp = testf(Xp)
   
@@ -61,7 +61,7 @@ run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=
       polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
       points(GP$mean-Yp, sqrt(GP$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
     } else if (plotwith == "ggplot2") {
-      library(ggplot2)
+      # library(ggplot2)
       tdf <- data.frame(err=GP$mean-Yp, psd=sqrt(GP$var))
       # ggplot(tdf, aes(x=err, y=psd)) + geom_point()
       values <- data.frame(id=factor(c(1, 2)), value=factor(c(1,2)))
@@ -73,8 +73,13 @@ run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=
       
       # ggplot(datapoly, aes(x = x, y = y)) +
         # geom_polygon(aes(fill = value, group = id))
-      ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), datapoly, alpha=.2) + geom_point() +
-        xlab("Predicted - Actual") + ylab("Predicted error") + coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
+      # ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), datapoly, alpha=.2) + geom_point() +
+        # xlab("Predicted - Actual") + ylab("Predicted error") + coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
+      ggplot2::ggplot(tdf, ggplot2::aes_string(x='err', y='psd')) + 
+        ggplot2::geom_polygon(ggplot2::aes_string(fill = 'value', group = 'id', x='x', y='y'), datapoly, alpha=.2) + 
+        ggplot2::geom_point() +
+        ggplot2::xlab("Predicted - Actual") + ggplot2::ylab("Predicted error") + 
+        ggplot2::coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
       
     }
   }

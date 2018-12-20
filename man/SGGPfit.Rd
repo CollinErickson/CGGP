@@ -6,7 +6,7 @@
 \usage{
 SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = rep(0, SGGP$numpara *
   SGGP$d), laplaceapprox = TRUE, lower = rep(-1, SGGP$numpara *
-  SGGP$d), upper = rep(1, SGGP$numpara * SGGP$d))
+  SGGP$d), upper = rep(1, SGGP$numpara * SGGP$d), Ynew)
 }
 \arguments{
 \item{SGGP}{Sparse grid objects}
@@ -24,6 +24,8 @@ SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = rep(0, SGGP$numpara *
 \item{lower}{Lower bound for parameter optimization}
 
 \item{upper}{Upper bound for parameter optimization}
+
+\item{Ynew}{Values of `SGGP$design_unevaluated`}
 }
 \value{
 theta MLE
@@ -34,5 +36,5 @@ Calculate theta MLE given data
 \examples{
 SG <- SGGPcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
-SGGPfit(SG=SG, Y=y)
+SG <- SGGPfit(SG=SG, Y=y)
 }

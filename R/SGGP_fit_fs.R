@@ -120,6 +120,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' @param laplaceapprox Should Laplace approximation be used?
 #' @param lower Lower bound for parameter optimization
 #' @param upper Upper bound for parameter optimization
+#' @param Ynew Values of `SGGP$design_unevaluated`
 # @param method Optimization method, must be "L-BFGS-B" when using lower and upper
 # @param tol Relative tolerance for optimization. Can't use absolute tolerance
 # since lik can be less than zero.
@@ -134,10 +135,27 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' @examples
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
-#' SGGPfit(SG=SG, Y=y)
+#' SG <- SGGPfit(SG=SG, Y=y)
 SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                    theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
-                   lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d)) {
+                   lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
+                   Ynew) {
+  # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
+  if (!missing(Ynew)) {
+    if (is.matrix(SGGP$Y)) {
+      if (!is.matrix(Ynew)) {stop("Ynew should be a matrix")}
+      if (nrow(Ynew) != nrow(SGGP$design_unevaluated)) {stop("Ynew is wrong size")}
+      Y <- rbind(SGGP$Y, Ynew)
+    } else {
+      if (length(Ynew) != nrow(SGGP$design_unevaluated)) {stop("Ynew is wrong size")}
+      Y <- c(SGGP$Y, Ynew)
+    }
+  }
+  if ((is.matrix(Y) && nrow(Y) == nrow(SGGP$design)) || (length(Y) == nrow(SGGP$design))) {
+    SGGP$design_unevaluated <- NULL
+  } else {
+    stop("SGGP$design and Y have different length")
+  }
   
   #first do the pre-processing
   #for cleanness: Y is always the user input, y is after transformation

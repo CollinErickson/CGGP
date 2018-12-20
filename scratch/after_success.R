@@ -24,30 +24,14 @@ testf <- borehole
 
 N <- 10001
 Npred <- 1000
-#install.packages(c("lhs"))
-#library("lhs")
-#if (!require('lhs', quietly = TRUE)) {
-#  install.packages('lhs')
-#  require('lhs')
-#}
 
-#Xp = randomLHS(Npred, d)
 Xp <- matrix(runif(Npred*d), Npred, d)
 Yp = testf(Xp)
 
-# goodlogthetaest_old <- c(-0.01932437,  0.82517131,  0.88499983,  0.73263796,  0.86971878,  0.70425694,  0.65443469,  0.80910334)
-# goodlogthetaest <- log(exp(goodlogthetaest_old)/sqrt(3))
-# use_goodtheta <- FALSE
-
 require("SGGP")
 SG = SGGPcreate(d=d, batchsize=201)
-Y = testf(SG$design) #the design is $design, simple enough, right?
-# logthetaest = logthetaMLE(SG,Y)
+Y = testf(SG$design)
 SG = SGGPfit(SG, Y)
-# logthetaest <- SG$logtheta
-# if (use_goodtheta) logthetaest <- goodlogthetaest
-# thetaest <- exp(logthetaest)
-# cat(logthetaest, "\n")
 cat("Now doing Bayesian\n")
 
 for(c in 1:round((N-201)/200)){
@@ -56,19 +40,12 @@ for(c in 1:round((N-201)/200)){
   Y = testf(SG$design)
   if( c< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
     SG = SGGPfit(SG,Y) #estimate the parameter (SG structure is important)
-    # logthetaest <- SG$logtheta
-    # thetaest <- exp(logthetaest)
-    # cat(logthetaest,"\n", sep="\t")
   }
 }
 cat("\n")
 Y = testf(SG$design)
 timelastlogthetaMLEstart <- Sys.time()
-# if (!use_goodtheta) {
-  SG = SGGPfit(SG, Y) #do one final parameter estimation,  this should be speed up, but I was lazy
-  # logthetaest <- SG$logtheta
-  # cat(logthetaest, "\n")
-# }
+SG = SGGPfit(SG, Y) #do one final parameter estimation
 timelastlogthetaMLEend <- Sys.time()
 
 timepredstart <- Sys.time()
@@ -113,4 +90,4 @@ timestamp()
 cat("Running second example: wingweight\n")
 print(getwd())
 source("./scratch/after_success_run_one.R")
-run_one_SGGP_example(TestFunctions::wingweight, 10, 1000, 6000, 1000, 1000)
+run_one_SGGP_example(TestFunctions::wingweight, 10, 1000, 6000, 1000, 1000, plotwith = 'ggplot2')
