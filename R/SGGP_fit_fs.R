@@ -178,7 +178,10 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
       SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
       Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
-      percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+      # Had an error with small negative eigenvalues, so set those to zero force
+      nonneg_Eigen_result_values <- pmax(Eigen_result$values, 0)
+      percent_explained = cumsum(sqrt(nonneg_Eigen_result_values))/sum(sqrt(nonneg_Eigen_result_values))
+      # percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
       num_PC = max(min(which(percent_explained>0.99999)),1)
       SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
       y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
