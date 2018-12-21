@@ -12,7 +12,8 @@ convert_x_from_01_to_ranges <- function(x,
   low + (high - low) * x
 }
 
-write_params_file <- function(..., x01, fileID, overwrite=F) {
+write_params_file <- function(..., x01, fileID, overwrite=F,
+                              parampathbase="/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_") {
   x <- convert_x_from_01_to_ranges(x01)
   n_s <- x[1]
   sigma_8<- x[2]
@@ -24,7 +25,7 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
   wa<- x[8]
   redshift <- x[9] # This is new, used to be set for whole system
   paste0(rep('0',1),as.character(3))
-  outpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_", fileID, ".dat")
+  outpath <- paste0(parampathbase, fileID, ".dat")
   if (outpath == "/home/collin/scratch/redTime_v0.1/params_redTime.dat") {
     stop("Pick a new outpath, don't overwrite params_redTime.dat")
   }

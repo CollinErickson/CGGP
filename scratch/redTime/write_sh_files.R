@@ -21,11 +21,15 @@ create_LHS_and_submit <- function(n, prefix='', holdnum=NULL, seed=NULL) {
   )
 }
 
-write_sh_file <- function(fileID) {
-  param_path <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_", fileID, ".dat")
-  shpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/sub_", fileID, ".sh")
+write_sh_file <- function(fileID,
+                          parampathbase="/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_",
+                          shpathbase="/home/collin/scratch/redTime_v0.1/sub_files/sub_",
+                          outpathbase="/home/collin/scratch/redTime_v0.1/output_files/out_"
+                          ) {
+  param_path <- paste0(parampathbase, fileID, ".dat")
+  shpath <- paste0(shpathbase, fileID, ".sh")
   if (file.exists(shpath)) {stop(paste("File already exists", shpath))}
-  outputpath <- paste0("/home/collin/scratch/redTime_v0.1/output_files/out_", fileID, ".out")
+  outputpath <- paste0(outpathbase, fileID, ".out")
   if (file.exists(outputpath)) {stop(paste("File already exists", outputpath))}
   #shpath <- ""
   cout <- function(...) {cat(..., '\n', file=shpath)}
@@ -87,9 +91,9 @@ date
        ", append=T)
 }
 
-qsub_sh_file <- function(fileID, holdID=NULL) {
+qsub_sh_file <- function(fileID, holdID=NULL, shpathbase="/home/collin/scratch/redTime_v0.1/sub_files/sub_") {
   
-  shpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/sub_", fileID, ".sh")
+  shpath <- paste0(shpathbase, fileID, ".sh")
   system(paste("chmod +x ", shpath))
   print(paste("About to qsub", shpath))
   qsub_string <- paste("qsub -N ", fileID) # Give it a name

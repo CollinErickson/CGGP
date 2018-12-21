@@ -2,6 +2,7 @@
 extract_redTime_output <- function(fileID, outpath=NULL) {
   if (is.null(outpath)) {
     outpath <- paste0("/home/collin/scratch/redTime_v0.1/output_files/out_", fileID, ".out")
+    outpath <- paste0("/home/collin/scratch/redTime_v0.1/output_files/out_", fileID, ".out")
   }
   # outpath <- "../../../Downloads/out_LHS1LCompv1_1L_1rs_15.out"
   

@@ -8,14 +8,18 @@ source('write_sh_files.R')
 for (i in 1:nrow(SG$design_unevaluated)) {
   # Write param files
   write_params_file(x01=SG$design_unevaluated[i,],
-                    fileID=paste0(fileIDbase, "_", SG$ss, "_", i))
+                    parampathbase=parampathbase,
+                    fileID=paste0("_", SG$ss, "_", i))
   
   # Write sh files
-  write_sh_file(fileID=paste0(fileIDbase, "_", SG$ss, "_", i))
+  write_sh_file(fileID=paste0("_", SG$ss, "_", i),
+                shpathbase=shpathbase,
+                parampathbase=parampathbase,
+                outpathbase=outpathbase)
   
   # qsub .sh files
-  qsub_sh_file(fileID=paste0(fileIDbase, "_", SG$ss, "_", i), 
-               holdID=paste0(fileIDbase, "_", SG$ss, "_", i - number_cores))
+  qsub_sh_file(fileID=paste0(parampathbase, "_", SG$ss, "_", i), 
+               holdID=paste0(parampathbase, "_", SG$ss, "_", i - number_cores))
 }
 
 # qsub continue redTime (this file) so it will run after rest are finished

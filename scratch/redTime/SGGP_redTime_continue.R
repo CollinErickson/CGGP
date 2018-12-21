@@ -8,15 +8,21 @@ source("SGGP_redTime_parameters.R")
 # Function to check if all runs are completed
 # This is terrible method now, since unrelated jobs of mine could still be running
 all_done <- function() {
+  # If this is only job running, then qstat will have three lines, something like
+  # job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID
+  # -----------------------------------------------------------------------------------------------------------------
+  #   168501 0.55500 testsub.sh collin       r     12/21/2018 09:00:20 all.q@crunch.local                 1
+  
   timestamp()
   qstatout <- system('qstat', intern=TRUE)
   print(qstatout)
-  length(qstatout) < 3
+  length(qstatout) <= 3
 }
 
 # Check if all evaluations are done, if not, sleep until it is
 while (!all_done()) {
-  system('sleep 100')
+  # system('sleep 100')
+  Sys.sleep(10)
 }
 
 if (!all_done()) {
@@ -31,7 +37,7 @@ print(getwd())
 source("extract_redTime.R")
 Ynew <- NULL
 for (i in 1:nrow(SG$design_unevaluated)) {
-  newrow <- extract_redTime_output(paste0(fileIDbase, "_", SG$ss, "_", i))
+  newrow <- extract_redTime_output(paste0(outpathbase, "_", SG$ss, "_", i))
   if (is.null(Ynew)) {Ynew <- newrow}
   else {Ynew <- rbind(Ynew, newrow)}
 }
