@@ -3,8 +3,8 @@
 # Now need to evaluate SG$design_unevaluated
 
 # Write param files and sh files, then qsub them with hold to avoid overload
-source('write_param_files.R')
-source('write_sh_files.R')
+source(paste0(sourcefilepath, 'write_param_files.R'))
+source(paste0(sourcefilepath, 'write_sh_files.R'))
 for (i in 1:nrow(SG$design_unevaluated)) {
   # Write param files
   write_params_file(x01=SG$design_unevaluated[i,],
