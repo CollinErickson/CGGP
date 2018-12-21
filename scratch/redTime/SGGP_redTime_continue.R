@@ -51,7 +51,7 @@ for (i in 1:nrow(SG$design_unevaluated)) {
   else {Ynew <- rbind(Ynew, newrow)}
 }
 cat("Extracted all values\n", Ynew, "\n")
-cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew))
+cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew), "\n")
 
 # Update params with new data
 library("SGGP")
@@ -63,7 +63,7 @@ saveRDS(object = SG, file = paste0(SGGP_after_fit_RDS_path))
 cat("Saved SG successfully\n")
 
 # Check if done
-if (SGGP$ss >= Nfinal) {
+if (SG$ss >= Nfinal) {
   cat("Simulation completed!")
   stop("All done")
 }
@@ -77,5 +77,5 @@ saveRDS(object = SG, file = paste0(SGGP_after_append_RDS_path))
 cat("saveRDS successful\n")
 
 # write params, write .sh, qsub, and prepare next R script
-source("SGGP_redTime_qsub_unevaluated.R")
+source(paste0(sourcefilepath, "SGGP_redTime_qsub_unevaluated.R"))
 cat("SGGP_redTime_qsub_unevaluated.R successful, this ends SGGP_redTime_continue.R\n")

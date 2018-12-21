@@ -70,7 +70,7 @@ write_sh_file <- function(fileID,
 #$ -l h_rt=4:00:00    # in this example, we set 10 minutes
 ")
   if (!is.null(node)) {
-    cout("#$ -l h=crunch.local")
+    cout("#$ -l h=crunch.local", append=TRUE)
   }
   cout("
 
@@ -90,8 +90,10 @@ write_sh_file <- function(fileID,
 
 cd /home/collin/scratch/redTime_v0.1
 date
-")
+", append=TRUE)
        cout(paste("date >> ", outputpath),append=T)
+       cout(paste("pwd >> ", outputpath), append=T)
+       cout("source ~/.bashrc", append=T)
        cout(paste("./redTime.out ", param_path, " >> ", outputpath), append=T)
        cout(paste("date >> ", outputpath),append=T)
        cout("

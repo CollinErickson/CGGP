@@ -1,6 +1,7 @@
 
 
 # Now need to evaluate SG$design_unevaluated
+cat(getwd(), '\n')
 
 # Write param files and sh files, then qsub them with hold to avoid overload
 source(paste0(sourcefilepath, 'write_param_files.R'))
