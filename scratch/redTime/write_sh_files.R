@@ -24,7 +24,9 @@ create_LHS_and_submit <- function(n, prefix='', holdnum=NULL, seed=NULL) {
 write_sh_file <- function(fileID,
                           parampathbase="/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_",
                           shpathbase="/home/collin/scratch/redTime_v0.1/sub_files/sub_",
-                          outpathbase="/home/collin/scratch/redTime_v0.1/output_files/out_"
+                          outpathbase="/home/collin/scratch/redTime_v0.1/output_files/out_",
+                          additional_command="",
+                          email="a"
                           ) {
   param_path <- paste0(parampathbase, fileID, ".dat")
   shpath <- paste0(shpathbase, fileID, ".sh")
@@ -64,7 +66,7 @@ write_sh_file <- function(fileID,
 
 #### Run time limit
 #  Specify maximum CPU time after which job is to be killed (format HH:MM:SS).
-#$ -l h_rt=24:00:00    # in this example, we set 10 minutes
+#$ -l h_rt=4:00:00    # in this example, we set 10 minutes
 
 #### Memory limit
 #  specifies the maximum amount of memory this job can take
@@ -89,6 +91,7 @@ date
        cout("
 date
        ", append=T)
+       cout(additional_command, append=T)
 }
 
 qsub_sh_file <- function(fileID, holdID=NULL, shpathbase="/home/collin/scratch/redTime_v0.1/sub_files/sub_") {

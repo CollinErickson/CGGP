@@ -3,7 +3,7 @@
 groupID <- "redTimeTest1"
 
 number_cores <- 10
-d <- 8
+d <- 9
 N0 <- 10
 corr <- "CauchySQT"
 
@@ -11,6 +11,14 @@ batchsize <- 10
 Nfinal <- 50
 
 sourcefilepath <- "/home/collin/scratch/SGGP/scratch/redTime/"
+
+dir.create(paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID))
+dir.create(paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/param_files"))
+
+dir.create(paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/sh_files"))
+dir.create(paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/output_files"))
+
+
 
 parampathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/param_files/params_", groupID)
 shpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/sh_files/sh_", groupID)

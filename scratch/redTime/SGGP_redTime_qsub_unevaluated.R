@@ -15,18 +15,21 @@ for (i in 1:nrow(SG$design_unevaluated)) {
   write_sh_file(fileID=paste0("_", SG$ss, "_", i),
                 shpathbase=shpathbase,
                 parampathbase=parampathbase,
-                outpathbase=outpathbase)
+                outpathbase=outpathbase,
+                additional_command=if (i == nrow(SG$design_unevaluated)) {paste0("Rscript ", sourcefilepath, "SGGP_redTime_continue.R")} else {""})
   
   # qsub .sh files
-  qsub_sh_file(fileID=paste0(parampathbase, "_", SG$ss, "_", i), 
-               holdID=paste0(parampathbase, "_", SG$ss, "_", i - number_cores))
+  qsub_sh_file(fileID=paste0("_", SG$ss, "_", i), 
+               holdID=paste0("_", SG$ss, "_", i - number_cores),
+               shpathbase=shpathbase)
 }
 
-# qsub continue redTime (this file) so it will run after rest are finished
-qsub_string <- "qsub "
-qsub_string <- paste0(qsub_string, " -N SGGPmaster", SG$ss) # Identify it with size of design
-qsub_string <- paste0(qsub_string, " -hold_jid ", prefix, i) # Hold until last one submitted finishes, might still be others running though
-qsub_string <- paste(qsub_string, " SGGPmaster.sh")
-# qsub_string <- paste(qsub_string, )
-# system('qsub -N SGGPmaster -hold_jid paste0(prefix, i - number_cores) thisfile.sh')
-system(qsub_string)
+## qsub continue redTime (this file) so it will run after rest are finished
+#qsub_string <- "qsub "
+#qsub_string <- paste0(qsub_string, " -N SGGPmaster", SG$ss) # Identify it with size of design
+#qsub_string <- paste0(qsub_string, " -hold_jid ", "_", SG$ss, "_", i) # Hold until last one submitted finishes, might still be others running though
+#qsub_string <- paste(qsub_string, " SGGPmaster.sh")
+## qsub_string <- paste(qsub_string, )
+## system('qsub -N SGGPmaster -hold_jid paste0(prefix, i - number_cores) thisfile.sh')
+#cat("qsub_string is ", qsub_string, " \n")
+#system(qsub_string)
