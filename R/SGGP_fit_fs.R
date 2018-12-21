@@ -142,15 +142,21 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                    Ynew) {
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
-    if (is.matrix(SGGP$Y)) {
+    if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}
+    if (is.null(SGGP$Y)) {
+      if (is.matrix(Ynew) && nrow(Ynew) != nrow(SGGP$design_unevaluated)) {stop("nrow(Ynew) doesn't match")}
+      if (!is.matrix(Ynew) && length(Ynew) != nrow(SGGP$design_unevaluated)) {stop("length(Ynew) doesn't match")}
+      Y <- Ynew
+    } else if (is.matrix(SGGP$Y)) {
       if (!is.matrix(Ynew)) {stop("Ynew should be a matrix")}
       if (nrow(Ynew) != nrow(SGGP$design_unevaluated)) {stop("Ynew is wrong size")}
       Y <- rbind(SGGP$Y, Ynew)
-    } else {
+    } else { # is numeric vector
       if (length(Ynew) != nrow(SGGP$design_unevaluated)) {stop("Ynew is wrong size")}
       Y <- c(SGGP$Y, Ynew)
     }
   }
+
   if ((is.matrix(Y) && nrow(Y) == nrow(SGGP$design)) || (length(Y) == nrow(SGGP$design))) {
     SGGP$design_unevaluated <- NULL
   } else {

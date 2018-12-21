@@ -4,7 +4,8 @@
 cat("Starting SGGP_redTime_continue.R\n")
 
 # This file will reload number_cores, d, SGGP_RDS_path, ???
-source("SGGP_redTime_parameters.R")
+# WILL NEED TO LET THIS FILE NAME CHANGE LATER
+source("/home/collin/scratch/SGGP/scratch/redTime/SGGP_redTime_parameters.R")
 cat("Reloaded parameters successfully\n")
 
 # Function to check if all runs are completed
@@ -37,21 +38,23 @@ if (!all_done()) {
 cat("All other jobs done, moving on\n")
 
 # Load SGGP object, the one that had new design points appended but not measured yet
-readRDS(SGGP_after_append_RDS_path)
-cat("Read back in RDS\n")
+SG <- readRDS(SGGP_after_append_RDS_path)
+cat("Read back in RDS successfully\n")
 
 # Read in all new output values
 print(getwd())
-source("extract_redTime.R")
+source(paste0(sourcefilepath, "extract_redTime.R"))
 Ynew <- NULL
 for (i in 1:nrow(SG$design_unevaluated)) {
-  newrow <- extract_redTime_output(paste0(outpathbase, "_", SG$ss, "_", i))
+  newrow <- extract_redTime_output(outpath = paste0(outpathbase, "_", SG$ss, "_", i, ".out"))
   if (is.null(Ynew)) {Ynew <- newrow}
   else {Ynew <- rbind(Ynew, newrow)}
 }
 cat("Extracted all values\n", Ynew, "\n")
+cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew))
 
 # Update params with new data
+library("SGGP")
 SG <- SGGPfit(SG, Ynew=Ynew)
 cat("SGGPfit successful\n")
 
