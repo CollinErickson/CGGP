@@ -2,9 +2,13 @@
 
 convert_x_from_01_to_ranges <- function(x,
                                         low= c(.85 ,.7,.55,.12,.0215,0,-1.3,-1.5),
-                                        high=c(1.05,.9,.85,.155,.0235,.01,-.7,1.15)
+                                        high=c(1.05,.9,.85,.155,.0235,.01,-.7,1.15),
+                                        low_redshift=0, high_redshift=5
                                         ) {
   if (any(x<0) || any(x>1)) {stop("x must be in range [0,1]^n")}
+  if (length(x)==9) {low <- c(low, low_redshift); high <- c(high, high_redshift)}
+  else if (length(x)==8) {}
+  else {stop(paste("x in convert_x_from_01_to_ranges is bad length", length(x), "values are", x))}
   low + (high - low) * x
 }
 
@@ -18,6 +22,7 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
   Omega_nu<- x[6]
   w0<- x[7]
   wa<- x[8]
+  redshift <- x[9] # This is new, used to be set for whole system
   paste0(rep('0',1),as.character(3))
   outpath <- paste0("/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_", fileID, ".dat")
   if (outpath == "/home/collin/scratch/redTime_v0.1/params_redTime.dat") {
@@ -111,8 +116,10 @@ write_params_file <- function(..., x01, fileID, overwrite=F) {
 #
 # redshifts of outputs (arranged from greatest to least)
 # trying single redshift below: 4.95 4 3.04 2.02 1.006 0.511 0
-2.02
-#
+# 2.02
+# Now setting redshift as input")
+  cout(redshift)
+  cout("#
 # ---------------------------- transfer inputs ---------------------------------
 #
 # Transfer function at z=0, in CAMB standard format (7 columns:

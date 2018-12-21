@@ -5,7 +5,7 @@
 \alias{SGGPpred}
 \title{S3 predict method for SGGP}
 \usage{
-\method{predict}{SGGP}(object, xp)
+\method{predict}{SGGP}(object, xp, ...)
 
 SGGPpred(xp, SGGP)
 }
@@ -13,6 +13,8 @@ SGGPpred(xp, SGGP)
 \item{object}{SGGP object}
 
 \item{xp}{x value to predict at}
+
+\item{...}{Required for S3 consistency}
 
 \item{SGGP}{SG object}
 }
