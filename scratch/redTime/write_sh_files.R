@@ -26,7 +26,8 @@ write_sh_file <- function(fileID,
                           shpathbase="/home/collin/scratch/redTime_v0.1/sub_files/sub_",
                           outpathbase="/home/collin/scratch/redTime_v0.1/output_files/out_",
                           additional_command="",
-                          email="a"
+                          email="a",
+                          node=NULL
                           ) {
   param_path <- paste0(parampathbase, fileID, ".dat")
   shpath <- paste0(shpathbase, fileID, ".sh")
@@ -67,6 +68,11 @@ write_sh_file <- function(fileID,
 #### Run time limit
 #  Specify maximum CPU time after which job is to be killed (format HH:MM:SS).
 #$ -l h_rt=4:00:00    # in this example, we set 10 minutes
+")
+  if (!is.null(node)) {
+    cout("#$ -l h=crunch.local")
+  }
+  cout("
 
 #### Memory limit
 #  specifies the maximum amount of memory this job can take

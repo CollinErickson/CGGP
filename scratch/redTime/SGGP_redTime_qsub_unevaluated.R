@@ -16,7 +16,8 @@ for (i in 1:nrow(SG$design_unevaluated)) {
                 shpathbase=shpathbase,
                 parampathbase=parampathbase,
                 outpathbase=outpathbase,
-                additional_command=if (i == nrow(SG$design_unevaluated)) {paste0("Rscript ", sourcefilepath, "SGGP_redTime_continue.R")} else {""})
+                additional_command=if (i == nrow(SG$design_unevaluated)) {paste0("Rscript ", sourcefilepath, "SGGP_redTime_continue.R")} else {""},
+                node= if (i == nrow(SG$design_unevaluated)) {"crunch.local"} else {NULL})
   
   # qsub .sh files
   qsub_sh_file(fileID=paste0("_", SG$ss, "_", i), 
