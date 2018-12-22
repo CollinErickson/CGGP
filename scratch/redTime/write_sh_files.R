@@ -93,7 +93,7 @@ date
 ", append=TRUE)
        cout(paste("date >> ", outputpath),append=T)
        cout(paste("pwd >> ", outputpath), append=T)
-       cout("source ~/.bashrc", append=T)
+       # cout("source ~/.bashrc", append=T)
        cout(paste("./redTime.out ", param_path, " >> ", outputpath), append=T)
        cout(paste("date >> ", outputpath),append=T)
        cout("
