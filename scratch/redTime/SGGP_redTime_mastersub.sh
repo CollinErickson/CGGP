@@ -39,7 +39,7 @@
 #$ -l h_vmem=2g  # here we choose 4g, so that overall we reserve up to 8*4g=32g total
 
 #### Email after done, -abe is abort, begin, end
-#$ -m abe no longer want emails, running too many
+#$ -m abe
 #$ -M collinerickson@u.northwestern.edu
 
 #########################
