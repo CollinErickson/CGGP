@@ -81,7 +81,7 @@ cat("saveRDS successful\n")
 source(paste0(sourcefilepath, "SGGP_redTime_qsub_unevaluated.R"))
 cat("SGGP_redTime_qsub_unevaluated.R successful, this ends SGGP_redTime_continue.R\n")
 
-# Start master now
-source()
-cat("Master has completed\n")
-cat(timestamp(), '\n')
+# # Start master now
+# source()
+# cat("Master has completed\n")
+# cat(timestamp(), '\n')

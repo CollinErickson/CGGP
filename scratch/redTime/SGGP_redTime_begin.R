@@ -25,3 +25,8 @@ cat("saveRDS successful\n")
 # write params, write .sh, qsub, and prepare next R script
 source("SGGP_redTime_qsub_unevaluated.R")
 cat("qsub_unevaluated.R succesful\n")
+
+# Start master job on crunch.local
+system('qsub SGGP_redTime_mastersub.sh')
+cat("mastersub.sh completed\n")
+cat(timestamp(), '\n')
