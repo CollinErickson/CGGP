@@ -27,6 +27,7 @@ source("SGGP_redTime_qsub_unevaluated.R")
 cat("qsub_unevaluated.R succesful\n")
 
 # Start master job on crunch.local
-system('qsub SGGP_redTime_mastersub.sh')
+system(paste("chmod 777 ", "SGGP_redTime_mastersub.sh"))
+system('qsub -n SGGPmaster SGGP_redTime_mastersub.sh')
 cat("mastersub.sh completed\n")
 cat(timestamp(), '\n')
