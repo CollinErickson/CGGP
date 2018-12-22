@@ -26,9 +26,9 @@ all_done <- function() {
 while (!all_done()) {
   # system('sleep 100')
   Sys.sleep(10)
-  cat("Still files running\n")
-  timestamp()
-  cat(system('qstat', intern=TRUE))
+  # cat("Still files running\n")
+  # timestamp()
+  # cat(system('qstat', intern=TRUE))
 }
 
 if (!all_done()) {
