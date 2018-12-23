@@ -92,6 +92,7 @@ SGGPhist <- function(SGGP, ylog=T) {
 #' @param SGGP SGGP object that has been fitted
 #' @param Xval X validation data
 #' @param Yval Y validation data
+#' @param plot_with Should the plot be made with "base" or "ggplot2"?
 #'
 #' @return None, makes a plot
 #' @export
@@ -105,11 +106,34 @@ SGGPhist <- function(SGGP, ylog=T) {
 #' Xval <- matrix(runif(3*100), ncol=3)
 #' Yval <- apply(Xval, 1, f1)
 #' SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
-SGGPvalplot <- function(SGGP, Xval, Yval) {
+SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2") {
   ypred <- SGGPpred(xp=Xval, SGGP=SGGP)
   errmax <- max(sqrt(ypred$var), abs(ypred$mean - Yval))
-  plot(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
-  polygon(1.1*errmax*c(0,-2,2),1.1*errmax*c(0,1,1), col=3, density=10, angle=135)
-  polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
-  points(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
+  if (plot_with == "base") {
+    plot(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
+    polygon(1.1*errmax*c(0,-2,2),1.1*errmax*c(0,1,1), col=3, density=10, angle=135)
+    polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
+    points(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
+  } else {
+    
+    tdf <- data.frame(err=ypred$mean-Yval, psd=sqrt(ypred$var))
+    # ggplot(tdf, aes(x=err, y=psd)) + geom_point()
+    values <- data.frame(id=factor(c(1, 2)), value=factor(c(1,2)))
+    positions <- data.frame(id=rep(values$id, each=3),
+                            x=1.1*c(0,errmax*2,-errmax*2, 0,errmax,-errmax),
+                            y=1.1*c(0,errmax,errmax,0,errmax,errmax))
+    # Currently we need to manually merge the two together
+    datapoly <- merge(values, positions, by = c("id"))
+    
+    # ggplot(datapoly, aes(x = x, y = y)) +
+    # geom_polygon(aes(fill = value, group = id))
+    # ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), datapoly, alpha=.2) + geom_point() +
+    # xlab("Predicted - Actual") + ylab("Predicted error") + coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
+    ggplot2::ggplot(tdf, ggplot2::aes_string(x='err', y='psd')) + 
+      ggplot2::geom_polygon(ggplot2::aes_string(fill = 'value', group = 'id', x='x', y='y'), datapoly, alpha=.2) + 
+      ggplot2::geom_point() +
+      ggplot2::xlab("Predicted - Actual") + ggplot2::ylab("Predicted error") + 
+      ggplot2::coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
+    
+  }
 }
