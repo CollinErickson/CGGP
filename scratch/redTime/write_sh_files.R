@@ -6,7 +6,7 @@
 
 create_LHS_and_submit <- function(n, prefix='', holdnum=NULL, seed=NULL) {
   if (!is.null(seed)) {set.seed(seed)}
-  X <- lhs::maximinLHS(n=n, k=8)
+  X <- lhs::maximinLHS(n=n, k=9)
   sapply(1:n,
          function(i) {
            write_params_file(x01 = X[i,], fileID = paste0(prefix,i))

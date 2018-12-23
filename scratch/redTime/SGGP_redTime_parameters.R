@@ -1,6 +1,7 @@
 # Parameters for the SGGP/redTime run
 
 groupID <- "redTimeTest1"
+groupID_short <- "T1"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
 number_cores <- 40

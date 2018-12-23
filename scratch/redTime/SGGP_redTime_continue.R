@@ -8,18 +8,28 @@ cat("Starting SGGP_redTime_continue.R\n")
 source("/home/collin/scratch/SGGP/scratch/redTime/SGGP_redTime_parameters.R")
 cat("Reloaded parameters successfully\n")
 
-# Function to check if all runs are completed
-# This is terrible method now, since unrelated jobs of mine could still be running
+# # Function to check if all runs are completed
+# # This is terrible method now, since unrelated jobs of mine could still be running
+# all_done <- function() {
+#   # If this is only job running, then qstat will have three lines, something like
+#   # job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID
+#   # -----------------------------------------------------------------------------------------------------------------
+#   #   168501 0.55500 testsub.sh collin       r     12/21/2018 09:00:20 all.q@crunch.local                 1
+#   
+#   timestamp()
+#   qstatout <- system('qstat', intern=TRUE)
+#   print(qstatout)
+#   length(qstatout) <= 3
+# }
+
+# Better version of all_done using groupID
+# qstat -xml | tr '\n' ' ' | sed 's#<job_list[^>]*>#\n#g' | sed 's#<[^>]*>##g' | grep " " | column -t
+# from https://stackoverflow.com/questions/26104116/qstat-and-long-job-names
 all_done <- function() {
-  # If this is only job running, then qstat will have three lines, something like
-  # job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID
-  # -----------------------------------------------------------------------------------------------------------------
-  #   168501 0.55500 testsub.sh collin       r     12/21/2018 09:00:20 all.q@crunch.local                 1
-  
-  timestamp()
-  qstatout <- system('qstat', intern=TRUE)
-  print(qstatout)
-  length(qstatout) <= 3
+  qstat <- system("qstat -xml | tr '\n' ' ' | sed 's#<job_list[^>]*>#\\n#g' | sed 's#<[^>]*>##g' | grep \" \" | column -t", intern = T)
+  jobnames <- sapply( qstat, function(x) strsplit(x,"  ")[[1]][3])
+
+  !any(sapply(jobnames, function(xxx) substring(xxx, 1, nchar(groupID_short)) == groupID_short))
 }
 
 # Check if all evaluations are done, if not, sleep until it is
