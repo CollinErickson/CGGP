@@ -4,14 +4,10 @@
 \alias{SGGPvalplot}
 \title{Plot validation prediction errors}
 \usage{
-SGGPvalplot(SG, y, xval, yval, ypred)
+SGGPvalplot(SGGP, Xval, Yval)
 }
 \arguments{
-\item{SG}{SGGP object}
-
-\item{y}{Measurements at SG$design}
-
-\item{ypred}{(optional) Predictions of SG at Xval}
+\item{SGGP}{SGGP object that has been fitted}
 
 \item{Xval}{X validation data}
 
@@ -24,11 +20,11 @@ None, makes a plot
 Plot validation prediction errors
 }
 \examples{
-SG <- SGcreate(d=3, batchsize=100)
-f1 <- function(x){x[1]+x[2]^2+rnorm(1,0,.01)}
+SG <- SGGPcreate(d=3, batchsize=100)
+f1 <- function(x){x[1]+x[2]^2}
 y <- apply(SG$design, 1, f1)
+SG <- SGGPfit(SG, y)
 Xval <- matrix(runif(3*100), ncol=3)
 Yval <- apply(Xval, 1, f1)
-SG <- logthetaVALID(SG=SG, y=y, xval=Xval, yval=Yval)
-SGGPvalplot(SG=SG, y=y, xval=Xval, yval=Yval)
+SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
 }

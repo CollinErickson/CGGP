@@ -58,23 +58,25 @@ SGGPheat <- function(SGGP) {
 #' A greater design depth signifies a more important dimension.
 #' Thus a larger right tail on the histogram are more important variables.
 #'
-#' @param SG SGGP object
+#' @param SGGP SGGP object
 #' @param ylog Should the y axis be put on a log scale?
 #'
 #' @return Histogram plot made using ggplot2
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' # All dimensions should look similar
 #' d <- 8
 #' SG = SGGPcreate(d,201)
 #' SGGPhist(SG)
-#' SGGPhist(SG, ylog=F)
+#' SGGPhist(SG, ylog=FALSE)
 #' 
 #' # The first dimension is more active and will have greater depth
 #' SG <- SGGPreate(d=5, batchsize=10)
-#' SG <- SGGPappend(logtheta=c(-2,2,2,2,2), SG=SG, batchsize=100)
-#' #SGhist(SG)
+#' SG <- SGGPappend(SGGP=SG, batchsize=100)
+#' SGGPhist(SG)
+#' }
 SGGPhist <- function(SGGP, ylog=T) {
   p <- ggplot2::ggplot(reshape2::melt(data.frame(SGGP$designindex), id.vars=NULL),
                        ggplot2::aes_string(x='value')) + 
@@ -87,28 +89,27 @@ SGGPhist <- function(SGGP, ylog=T) {
 
 #' Plot validation prediction errors
 #'
-#' @param SG SGGP object
-#' @param y Measurements at SG$design
+#' @param SGGP SGGP object that has been fitted
 #' @param Xval X validation data
 #' @param Yval Y validation data
-#' @param ypred (optional) Predictions of SG at Xval
 #'
 #' @return None, makes a plot
 #' @export
+#' @importFrom graphics plot points polygon
 #'
 #' @examples
-#' SG <- SGcreate(d=3, batchsize=100)
-#' f1 <- function(x){x[1]+x[2]^2+rnorm(1,0,.01)}
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' f1 <- function(x){x[1]+x[2]^2}
 #' y <- apply(SG$design, 1, f1)
+#' SG <- SGGPfit(SG, y)
 #' Xval <- matrix(runif(3*100), ncol=3)
 #' Yval <- apply(Xval, 1, f1)
-#' SG <- logthetaVALID(SG=SG, y=y, xval=Xval, yval=Yval)
-#' SGGPvalplot(SG=SG, y=y, xval=Xval, yval=Yval)
-SGGPvalplot <- function(SG, y, xval, yval, ypred) {
-  if (missing(xpred)) {xpred <- SGGPpred(xp=Xval, SG=SG, y=y)}
-  errmax <- max(sqrt(ypred$var), abs(Ypred$mean - Yp))
+#' SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
+SGGPvalplot <- function(SGGP, Xval, Yval) {
+  ypred <- SGGPpred(xp=Xval, SGGP=SGGP)
+  errmax <- max(sqrt(ypred$var), abs(ypred$mean - Yval))
   plot(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
   polygon(1.1*errmax*c(0,-2,2),1.1*errmax*c(0,1,1), col=3, density=10, angle=135)
   polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
-  points(SG$mean-Yp, sqrt(SG$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
+  points(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
 }

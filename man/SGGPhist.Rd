@@ -7,9 +7,9 @@
 SGGPhist(SGGP, ylog = T)
 }
 \arguments{
-\item{ylog}{Should the y axis be put on a log scale?}
+\item{SGGP}{SGGP object}
 
-\item{SG}{SGGP object}
+\item{ylog}{Should the y axis be put on a log scale?}
 }
 \value{
 Histogram plot made using ggplot2
@@ -19,14 +19,16 @@ A greater design depth signifies a more important dimension.
 Thus a larger right tail on the histogram are more important variables.
 }
 \examples{
+\dontrun{
 # All dimensions should look similar
 d <- 8
 SG = SGGPcreate(d,201)
 SGGPhist(SG)
-SGGPhist(SG, ylog=F)
+SGGPhist(SG, ylog=FALSE)
 
 # The first dimension is more active and will have greater depth
 SG <- SGGPreate(d=5, batchsize=10)
-SG <- SGGPappend(logtheta=c(-2,2,2,2,2), SG=SG, batchsize=100)
-#SGhist(SG)
+SG <- SGGPappend(SGGP=SG, batchsize=100)
+SGGPhist(SG)
+}
 }
