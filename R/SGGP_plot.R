@@ -49,7 +49,9 @@ SGGPheat <- function(SGGP) {
   ggplot2::ggplot(skdf, ggplot2::aes_string('Var1', 'Var2')) +
     ggplot2::geom_tile(ggplot2::aes_string(fill = 'value')) + 
     ggplot2::geom_text(ggplot2::aes_string(label = 'round(value, 1)')) +
-    ggplot2::scale_fill_gradient(low = "white", high = "red") 
+    ggplot2::scale_fill_gradient(low = "white", high = "red") +
+    ggplot2::scale_x_continuous(breaks = 1:SGGP$d)  +
+    ggplot2::scale_y_continuous(breaks = 1:SGGP$d) # labels=c() to set names
 }
 
 
@@ -77,13 +79,24 @@ SGGPheat <- function(SGGP) {
 #' SG <- SGGPappend(SGGP=SG, batchsize=100)
 #' SGGPhist(SG)
 #' }
-SGGPhist <- function(SGGP, ylog=T) {
-  p <- ggplot2::ggplot(reshape2::melt(data.frame(SGGP$designindex), id.vars=NULL),
-                       ggplot2::aes_string(x='value')) + 
-          ggplot2::geom_histogram(binwidth = 1) + ggplot2::facet_grid(variable ~ .)
+SGGPhist <- function(SGGP, ylog=TRUE) {
+  p <- ggplot2::ggplot(reshape2::melt(data.frame(SGGP$uo), id.vars=NULL),
+                       ggplot2::aes_string(x='value'))
+  # Tried a power transformation, but I can't get breaks to work as expected
+  # p <- p + ggplot2::coord_trans(y=scales::trans_new(name="test", 
+  #                                                   transform=function(x) x^.1,
+  #                                                   inverse=function(x) x^10,
+  #                                                   breaks=function(...) c(0,.3,.5,1),
+  #                                                   minor_breaks=c(0,1,2)
+  #                                                   )
+  #                               )
+  # p <- p + ggplot2::coord_trans(y=scales::boxcox_trans(p=.2)  )
+  p <- p +ggplot2::geom_histogram(binwidth = 1) + ggplot2::facet_grid(variable ~ .)
   if (ylog) {
     p <- p + ggplot2::scale_y_log10() #limits=c(.9999, NA))
   }
+  p <- p + ggplot2::theme(strip.text.y = ggplot2::element_text(angle = 0)) # rotates labels from vert to hor
+  
   p
 }
 
