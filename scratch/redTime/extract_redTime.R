@@ -33,6 +33,6 @@ extract_redTime_from_completed_LHS <- function(n, prefix='') {
   
   rownames(Ynew) <- NULL
   
-  outpath <- paste0("/home/collin/scratch/redTime_v0.1/important_files/", prefix, "all_output.csv")
+  outpath <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/", prefix, "all_output.csv")
   write.csv(x=Ynew, file = outpath)
 }
