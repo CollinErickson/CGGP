@@ -17,3 +17,10 @@ extract_redTime_output <- function(fileID, outpath=NULL) {
   # We have the 8th column, which is P_dd = Time-RG density-density power spectrum
   df[,8]
 }
+
+extract_redTime_from_completed_LHS <- function(n, prefix='') {
+  for (i in 1:n) {
+    # outputpath <- paste0(outpathbase, fileID, ".out")
+    extract_redTime_output(fileID= paste0(prefix, i)) #outpath=outpath)
+  }
+}
