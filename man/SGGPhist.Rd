@@ -4,7 +4,7 @@
 \alias{SGGPhist}
 \title{Histogram of measurements at each design depth of each input dimension}
 \usage{
-SGGPhist(SGGP, ylog = T)
+SGGPhist(SGGP, ylog = TRUE)
 }
 \arguments{
 \item{SGGP}{SGGP object}
