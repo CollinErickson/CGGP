@@ -106,6 +106,7 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' @param Xval X validation data
 #' @param Yval Y validation data
 #' @param plot_with Should the plot be made with "base" or "ggplot2"?
+#' @param d If output is multivariate, which column to use
 #'
 #' @return None, makes a plot
 #' @export
@@ -119,8 +120,12 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' Xval <- matrix(runif(3*100), ncol=3)
 #' Yval <- apply(Xval, 1, f1)
 #' SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
-SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2") {
+SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
   ypred <- SGGPpred(xp=Xval, SGGP=SGGP)
+  if (!is.null(d)) {
+    ypred <- list(mean=ypred$mean[,d], var=ypred$var[,d])
+    Yval <- Yval[,d]
+  }
   errmax <- max(sqrt(ypred$var), abs(ypred$mean - Yval))
   if (plot_with == "base") {
     plot(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
@@ -131,7 +136,7 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2") {
     
     tdf <- data.frame(err=ypred$mean-Yval, psd=sqrt(ypred$var))
     # ggplot(tdf, aes(x=err, y=psd)) + geom_point()
-    values <- data.frame(id=factor(c(1, 2)), value=factor(c(1,2)))
+    values <- data.frame(id=factor(c(1, 2)), value=factor(c('095%','68%')))
     positions <- data.frame(id=rep(values$id, each=3),
                             x=1.1*c(0,errmax*2,-errmax*2, 0,errmax,-errmax),
                             y=1.1*c(0,errmax,errmax,0,errmax,errmax))

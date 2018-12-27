@@ -4,7 +4,7 @@
 \alias{SGGPvalplot}
 \title{Plot validation prediction errors}
 \usage{
-SGGPvalplot(SGGP, Xval, Yval, plot_with = "ggplot2")
+SGGPvalplot(SGGP, Xval, Yval, plot_with = "ggplot2", d = NULL)
 }
 \arguments{
 \item{SGGP}{SGGP object that has been fitted}
@@ -14,6 +14,8 @@ SGGPvalplot(SGGP, Xval, Yval, plot_with = "ggplot2")
 \item{Yval}{Y validation data}
 
 \item{plot_with}{Should the plot be made with "base" or "ggplot2"?}
+
+\item{d}{If output is multivariate, which column to use}
 }
 \value{
 None, makes a plot
