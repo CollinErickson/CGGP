@@ -155,3 +155,29 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
     
   }
 }
+
+#' Calculate stats for SGGP prediction on validation data
+#'
+#' @param SGGP SGGP object
+#' @param Xval X validation matrix
+#' @param Yval Y validation data
+#' @param d Dimension if multivariate output
+#'
+#' @return data frame
+#' @export
+#'
+#' @examples
+#' SGGPvalstats
+SGGPvalstats <- function(SGGP, Xval, Yval, d=NULL) {
+  
+  ypred <- SGGPpred(xp=Xval, SGGP=SGGP)
+  if (!is.null(d)) {
+    ypred <- list(mean=ypred$mean[,d], var=ypred$var[,d])
+    Yval <- Yval[,d]
+  }
+  
+  RMSE <- NA
+  score <- NA
+  coverage <- NA
+  data.frame(RMSE=RMSE, score=score, coverage=coverage)
+}
