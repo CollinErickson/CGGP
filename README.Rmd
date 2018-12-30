@@ -37,5 +37,5 @@ To create a SGGP object:
 ## basic example code
 library(SGGP)
 d <- 8
-SG = SGcreate(d=d,201)
+SG = SGGPcreate(d=d,201)
 ```
