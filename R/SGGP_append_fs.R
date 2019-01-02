@@ -187,6 +187,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
     }
     
     l0 =  SGGP$po[pstar,] # Selected block
+    # Getting an error here when uoCOUNT goes beyond nrow(SGGP$uo).
+    # print(list(dim(SGGP$uo), SGGP$uoCOUNT, SGGP$uo[SGGP$uoCOUNT,], l0))
     SGGP$uo[SGGP$uoCOUNT,] = l0 # Save selected block
     SGGP$ss =  SGGP$ss + SGGP$pogsize[pstar] # Update selected size
     

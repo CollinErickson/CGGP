@@ -57,7 +57,7 @@ test_that("Prediction matches exact on small samples", {
   SG <- SGGPfit(SG=SG, Y=Y)
   
   n <- 50
-  xp <- matrix(runif(d*10),n,8)
+  xp <- matrix(runif(d*n),n,d)
   SGpred <- SGGPpred(xp=xp, SG=SG)
   
   my <- mean(Y)
@@ -101,4 +101,35 @@ test_that("predMV works", {
   # yMVpred <- SGGPpred(xpred, SG=SG)$mean
   # expect_equal(yMVpred[,1], c(y1pred), tol=1e-2)
   # expect_equal(yMVpred[,2], c(y2pred), tol=1e-2)
+})
+
+test_that("Supplemented works", {
+  set.seed(0)
+  d <- 3
+  SG <- SGGPcreate(d=d, batchsize=100)
+  f1 <- function(x){x[1]+x[2]^2}
+  y1 <- apply(SG$design, 1, f1)
+  SG <- SGGPfit(SG, Y=y1)
+  
+  # Add supplemental data
+  nsup <- 20
+  xsup <- matrix(runif(d*nsup), nsup, d)
+  ysup <- apply(xsup, 1, f1)
+  # SG$supplemented <- TRUE
+  # SG$Xs <- xsup
+  # SG$Ys <- ysup
+  
+  # # Get error when not fit
+  # expect_error(SGGPpred(xp=xsup, SG=SG))
+  
+  # Should work after fitting
+  SG <- SGGPfit(SG, Y=y1)#, Xs=xsup, Ys=ysup)
+  
+  # Predictions should match values at supplemented points
+  expect_equal(c(SGGPpred(xp=xsup, SG=SG)$me), ysup, tol=1e-4)
+  
+  # # Predict at points
+  # n <- 50
+  # xp <- matrix(runif(d*10),n,d)
+  # SGpred <- SGGPpred(xp=xp, SG=SG)
 })
