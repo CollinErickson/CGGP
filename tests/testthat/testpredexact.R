@@ -104,7 +104,6 @@ test_that("predMV works", {
 })
 
 test_that("Supplemented works", {
-  set.seed(0)
   d <- 3
   SG <- SGGPcreate(d=d, batchsize=100)
   f1 <- function(x){x[1]+x[2]^2}

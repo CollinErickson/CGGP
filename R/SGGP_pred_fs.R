@@ -24,7 +24,7 @@ SGGPpred <- function(xp,SGGP) {
     V = SGGP$CorrMat(xp[,dimlcv], SGGP$xb, SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
     Cp = Cp*V[,SGGP$designindex[,dimlcv]]
   }
-  MSE_v = array(0, c(SGGP$d, SGGP$maxlevel,dim(xp)[1]))
+  MSE_v = array(0, c(SGGP$d, SGGP$maxlevel + 1,dim(xp)[1])) # Add 1 to maxlevel so it doesn't go outside of array size
   for (dimlcv in 1:SGGP$d) {
     MSE_v[dimlcv, 1,] = 1
   }
