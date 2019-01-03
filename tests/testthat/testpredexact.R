@@ -106,7 +106,7 @@ test_that("predMV works", {
 test_that("Supplemented works", {
   d <- 3
   SG <- SGGPcreate(d=d, batchsize=100)
-  f1 <- function(x){x[1]+x[2]^2}
+  f1 <- function(x){x[1]+sin(2*pi*x[1]) + x[2]^2}
   y1 <- apply(SG$design, 1, f1)
   SG <- SGGPfit(SG, Y=y1)
   
@@ -122,7 +122,7 @@ test_that("Supplemented works", {
   # expect_error(SGGPpred(xp=xsup, SG=SG))
   
   # Should work after fitting
-  SG <- SGGPfit(SG, Y=y1)#, Xs=xsup, Ys=ysup)
+  SG <- SGGPfit(SG, Y=y1, Xs=xsup, Ys=ysup)
   
   # Predictions should match values at supplemented points
   expect_equal(c(SGGPpred(xp=xsup, SG=SG)$me), ysup, tol=1e-4)
