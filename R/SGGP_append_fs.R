@@ -56,7 +56,8 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
       MSE_de[levellcv2] = 0
       for (levellcv in 1:dim(valsinds)[2]) {
         if (valsinds[levellcv2, levellcv] > 1.5) {
-          MSE_de[levellcv2] = MSE_de[levellcv2] + log(-MSE_MAP[levellcv, valsinds[levellcv2, levellcv]] + MSE_MAP[levellcv, valsinds[levellcv2, levellcv] - 1])
+          MSE_de[levellcv2] = MSE_de[levellcv2] + log(-MSE_MAP[levellcv, valsinds[levellcv2, levellcv]] + 
+                                                        MSE_MAP[levellcv, valsinds[levellcv2, levellcv] - 1])
           
         } else {
           # This is when no ancestor block, 1 comes from when there is no data. 
@@ -124,7 +125,10 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
     for (dimlcv in 1:SGGP$d) {
       for (levellcv in 1:max_polevels[dimlcv]) {
         # Calculate some sort of MSE from above, not sure what it's doing
-        MSE_MAP[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],SGGP$CorrMat)))
+        MSE_MAP[dimlcv, levellcv] = max(0, 
+                                        abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                  SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                  SGGP$CorrMat)))
         if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
           MSE_MAP[dimlcv, levellcv] = min(MSE_MAP[dimlcv, levellcv], MSE_MAP[dimlcv, levellcv - 1])
         }
@@ -146,9 +150,17 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
       for (levellcv in 1:max_polevels[dimlcv]) {
         for(samplelcv in 1:SGGP$numPostSamples){
           # Calculate some sort of MSE from above, not sure what it's doing
-          MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]], SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,samplelcv],SGGP$CorrMat)))
+          MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0, 
+                                                            abs(
+                                                              SGGP_internal_calcMSE(
+                                                                SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,samplelcv],
+                                                                SGGP$CorrMat)
+                                                            )
+          )
           if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-            MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv], MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
+            MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv],
+                                                              MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
           }
         }
         #   MSE_UCB[dimlcv, levellcv] = quantile(MSE_PostSamples[dimlcv, levellcv,],0.99)
@@ -171,24 +183,28 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
     
     if(selectionmethod=="Greedy"){
       IMES = IMES_MAP
-    }
-    if(selectionmethod=="UCB"){
+    } else if(selectionmethod=="UCB"){
       IMES = IMES_UCB
-    }
-    if(selectionmethod=="TS"){
+    } else if(selectionmethod=="TS"){
       IMES = IMES_PostSamples[,sample(1:SGGP$numPostSamples,1)]
+    } else {
+      stop("Selection method not acceptable")
     }
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
+    
     # Find the best one that still fits
     M_comp = max(IMES[which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))])
     # Find which ones are close to M_comp and
     possibleO =which((IMES[1:SGGP$poCOUNT] >= 0.99*M_comp)&(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5)))
-    # If more than one is possible, randomly pick among them.
+    # If more than one is possible and near the best, randomly pick among them.
     if(length(possibleO)>1.5){
       pstar = sample(possibleO,1)
     } else{
       pstar = possibleO
     }
+    # THIS IGNORES THE SIZE OF EACH BLOCK. DIVIDE BY BLOCK SIZE TO GET BETTER FIT? DO KNAPSACK? SOMETHING LIKE FOLLOWING
+    # IMES[which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))] / 
+    #     SGGP$pogsize[which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))]
     
     l0 =  SGGP$po[pstar,] # Selected block
     # Need to make sure there is still an open row in uo to set with new values
@@ -196,8 +212,6 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
       numrowstoadd <- 20
       SGGP$uo <- rbind(SGGP$uo, 20)
       SGGP$ML <- nrow(SGGP$uo)
-      # SGGP$ualaCOUNT
-      # SGGP$uala
       
       # Need to get everything else upsized too
       SGGP$po = rbind(SGGP$po, matrix(0, nrow = 4 * numrowstoadd, ncol = ncol(SGGP$po))) #proposed levels tracker
@@ -326,7 +340,9 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
             for (dimlcv in 1:SGGP$d) {
               if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
                 levellcv = max_polevels[dimlcv]
-                MSE_MAP[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],SGGP$CorrMat)))
+                MSE_MAP[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                             SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                             SGGP$CorrMat)))
                 if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
                   MSE_MAP[dimlcv, levellcv] = min(MSE_MAP[dimlcv, levellcv], MSE_MAP[dimlcv, levellcv - 1])
                 }
@@ -338,9 +354,15 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
                 levellcv = max_polevels[dimlcv]
                 for(samplelcv in 1:SGGP$numPostSamples){
                   # Calculate some sort of MSE from above, not sure what it's doing
-                  MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]], SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,samplelcv],SGGP$CorrMat)))
+                  MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0,
+                                                                    abs(SGGP_internal_calcMSE(
+                                                                      SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                      SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,
+                                                                                            samplelcv],
+                                                                      SGGP$CorrMat)))
                   if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-                    MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv], MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
+                    MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv],
+                                                                      MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
                   }
                 }
               }
@@ -352,13 +374,15 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
           }
           if(selectionmethod=="UCB"){
             for(samplelcv in 1:SGGP$numPostSamples){
-              IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), MSE_PostSamples[,,samplelcv])
+              IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
+                                                                                 MSE_PostSamples[,,samplelcv])
             }
             IMES_UCB[SGGP$poCOUNT] = quantile(IMES_PostSamples[SGGP$poCOUNT,],probs=0.9)
           }
           if(selectionmethod=="TS"){
             for(samplelcv in 1:SGGP$numPostSamples){
-              IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), MSE_PostSamples[,,samplelcv])
+              IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
+                                                                                 MSE_PostSamples[,,samplelcv])
             }
           }
         }
@@ -401,12 +425,20 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
                                                                                     SGGP$gridsizes[blocklcv, dimlcv])
         }
         if (dimlcv < (SGGP$d - 0.5)  && dimlcv > 1.5) {
-          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, "each" =
-                                                                                   prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -
-                                                                                                                                                                            1)]))
-          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, "each" =
-                                                                                        prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -
-                                                                                                                                                                                 1)]))
+          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] =
+            rep(
+              rep(x0,
+                  each=prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])
+              ),
+              prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)])
+            )
+          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] =
+            rep(
+              rep(xi0,
+                  each=prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])
+              ),
+              prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)])
+            )
         }
       }
     }
@@ -429,8 +461,12 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
     tv = tv + SGGP$gridsize[blocklcv]
   }
   
-  # Save design_unevaluated to make it easy to know which ones to add
-  SGGP$design_unevaluated <- SGGP$design[(n_before+1):nrow(SGGP$design),]
-  
+  # Check if none were added, return warning/error
+  if (n_before == nrow(SGGP$design)) {
+    warning("No points could be added. You may need a larger batch size.")
+  } else {
+    # Save design_unevaluated to make it easy to know which ones to add
+    SGGP$design_unevaluated <- SGGP$design[(n_before+1):nrow(SGGP$design),]
+  }
   return(SGGP)
 }

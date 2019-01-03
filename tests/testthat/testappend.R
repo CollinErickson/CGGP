@@ -17,7 +17,7 @@ test_that("SGGPappend works", {
 test_that("SGGPappend works with large number", {
   # Start it small
   SG <- SGGPcreate(d=3, batchsize=20)
-  f <- function(x){x[1]+x[2]^2}
+  f <- function(x){x[1]+log(x[1]+.1)+sin(2*pi*4*x[2]^2) + cos(2*pi*5*x[3])}
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
   lastN <- nrow(SG$design)
@@ -37,6 +37,6 @@ test_that("SGGPappend works with large number", {
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
   ypred <- SGGPpred(SG$design, SG)
-  expect_equal(y, c(ypred$mean), tol=1e-6)
+  expect_equal(y, c(ypred$mean), tol=1e-4)
 })
 

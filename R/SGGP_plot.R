@@ -176,7 +176,7 @@ SGGPvalstats <- function(SGGP, Xval, Yval, d=NULL) {
     Yval <- Yval[,d]
   }
   
-  RMSE <- NA
+  RMSE <- sqrt(mean((ypred$mean - Yval)^2))
   score <- NA
   coverage <- NA
   data.frame(RMSE=RMSE, score=score, coverage=coverage)
