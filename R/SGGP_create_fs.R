@@ -40,7 +40,8 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
   SGGP$ML = min(choose(SGGP$d + 6, SGGP$d), 10000) #max levels
   
   # What is levelpoint? The current point? This is not used again in this file!
-  SGGP$levelpoint = rep(0, SGGP$ML)
+  # Not used ever, so I am removing it.
+  # SGGP$levelpoint = rep(0, SGGP$ML)
   
   # Track evaluated blocks, aka used levels
   SGGP$uo = matrix(0, nrow = SGGP$ML, ncol = SGGP$d) #used levels tracker
