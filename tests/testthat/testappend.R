@@ -40,3 +40,12 @@ test_that("SGGPappend works with large number", {
   expect_equal(y, c(ypred$mean), tol=1e-4)
 })
 
+test_that("SGGPappend gives warning if it can't add any data", {
+  
+  SG <- SGGPcreate(d=3, batchsize=20)
+  f <- function(x){x[1]+log(x[1]+.1)+sin(2*pi*4*x[2]^2) + cos(2*pi*5*x[3])}
+  y <- apply(SG$design, 1, f)
+  SG <- SGGPfit(SG, Y=y)
+  
+  expect_warning(SGGPappend(SGGP=SG, batchsize=1))
+})
