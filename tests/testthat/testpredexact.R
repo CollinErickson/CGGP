@@ -132,3 +132,24 @@ test_that("Supplemented works", {
   # xp <- matrix(runif(d*10),n,d)
   # SGpred <- SGGPpred(xp=xp, SG=SG)
 })
+
+test_that("supplemental with MV output works", {
+  
+  SG <- SGGPcreate(d=3, batchsize=100)
+  f1 <- function(x){x[1]+x[2]^2}
+  f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
+  y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
+  y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
+  y <- cbind(y1, y2)
+  
+  xsup <- matrix(runif(3*30), ncol=3)
+  ysup1 <- apply(xsup, 1, f1)
+  ysup2 <- apply(xsup, 1, f2)
+  ysup <- cbind(ysup1, ysup2)
+  
+  SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup)
+  yMVpred <- SGGPpred(SG$design, SG=SG)$mean
+  expect_equal(yMVpred[,1], y1, 1e-4)
+  expect_equal(yMVpred[,2], y2, 1e-4)
+  
+})
