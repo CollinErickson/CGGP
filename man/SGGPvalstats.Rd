@@ -22,5 +22,11 @@ data frame
 Calculate stats for SGGP prediction on validation data
 }
 \examples{
-SGGPvalstats
+SG <- SGGPcreate(d=3, batchsize=100)
+f1 <- function(x){x[1]+x[2]^2}
+y <- apply(SG$design, 1, f1)
+SG <- SGGPfit(SG, y)
+Xval <- matrix(runif(3*100), ncol=3)
+Yval <- apply(Xval, 1, f1)
+SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval)
 }
