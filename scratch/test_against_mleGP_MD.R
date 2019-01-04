@@ -15,8 +15,8 @@ boreholeMV <- function(x) {
   m3 <- 1 + 2 * L * Tu / (m2 * rw ^ 2 * Kw) + Tu / Tl
   
   Tot_v = abs(m1 / m2 / m3)
-  G1=1/100*(Tot_v)^matrix(seq(0.5,1.5,0.02),nrow=dim(x)[1],ncol=51,byrow=TRUE)
-  G = cos(0.05*G1)*G1*10
+  G1=(Tot_v)^matrix(seq(0.5,1.5,0.02),nrow=dim(x)[1],ncol=51,byrow=TRUE)
+  G = cos(G1/400)*G1
   return(G)
   
 }
@@ -51,7 +51,7 @@ fitMulti_PCA = mlegp(Xmlegp,t(Ymlegp),PC.num=5)
 predmlegp_PCA = fitMulti_PCA$UD%*%t(cbind(predict(fitMulti_PCA[[1]],Xp),predict(fitMulti_PCA[[2]],Xp),predict(fitMulti_PCA[[3]],Xp),predict(fitMulti_PCA[[4]],Xp),predict(fitMulti_PCA[[5]],Xp)))
 
 
-outputindex = 51
+outputindex =25#also try 1,11, 25,37, 51
 SGGPTS2 = SGGPfit(SGGPTS,YTS[,outputindex])
 PredTS2 = SGGPpred(Xp,SGGPTS2)
 fitMulti_NOPCA = mlegp(Xmlegp,Ymlegp[,outputindex])
