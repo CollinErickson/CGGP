@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_fit_fs.R
 \name{SGGP_internal_gneglogpost}
 \alias{SGGP_internal_gneglogpost}
-\title{Gradient of likelihood. Is it log likelihood?}
+\title{Gradient of negative log likelihood posterior}
 \usage{
 SGGP_internal_gneglogpost(theta, SGGP, y, return_lik = FALSE)
 }
@@ -19,7 +19,7 @@ SGGP_internal_gneglogpost(theta, SGGP, y, return_lik = FALSE)
 Vector for gradient of likelihood w.r.t. x (theta)
 }
 \description{
-Gradient of likelihood. Is it log likelihood?
+Gradient of negative log likelihood posterior
 }
 \examples{
 SG <- SGGPcreate(d=3, batchsize=100)

@@ -202,11 +202,12 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
   }
   
   # Create points for design
+  #  These are distances from the center 0.5.
   xb = rep(
     c(
-      1 / 2,
-      3 / 8,
-      1 / 4,
+      1 / 2, # 0, 1
+      3 / 8, # 1/8, 7/8
+      1 / 4, # 1/4, 3/4
       1 / 8,
       15 / 32,
       7 / 16,

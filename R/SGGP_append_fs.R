@@ -145,7 +145,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
   } else {
     MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples)) # 8 because he only defined the 1D designs up to 8.
     #  MSE_UCB = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
-    # Why do we consider dimensions independent of each other?
+    # Dimensions can be considered independently
     # Loop over dimensions and design refinements
     for (dimlcv in 1:SGGP$d) {
       for (levellcv in 1:max_polevels[dimlcv]) {

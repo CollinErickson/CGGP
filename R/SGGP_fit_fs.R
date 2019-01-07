@@ -1,4 +1,4 @@
-#' Calculate negative posterior
+#' Calculate negative log posterior
 #'
 #' @param theta Correlation parameters
 #' @param SGGP SGGP object
@@ -48,7 +48,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
   
 }
 
-#' Gradient of likelihood. Is it log likelihood?
+#' Gradient of negative log likelihood posterior
 #'
 #' @param theta Log of correlation parameters
 #' @param SGGP SGGP object

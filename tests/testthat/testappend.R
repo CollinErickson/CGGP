@@ -37,7 +37,7 @@ test_that("SGGPappend works with large number", {
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
   ypred <- SGGPpred(SG$design, SG)
-  expect_equal(y, c(ypred$mean), tol=1e-4)
+  expect_equal(y, c(ypred$mean), tol=1e-2)
 })
 
 test_that("SGGPappend gives warning if it can't add any data", {

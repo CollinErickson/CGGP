@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_fit_fs.R
 \name{SGGP_internal_neglogpost}
 \alias{SGGP_internal_neglogpost}
-\title{Calculate negative posterior}
+\title{Calculate negative log posterior}
 \usage{
 SGGP_internal_neglogpost(theta, SGGP, y)
 }
@@ -17,7 +17,7 @@ SGGP_internal_neglogpost(theta, SGGP, y)
 Likelihood
 }
 \description{
-Calculate negative posterior
+Calculate negative log posterior
 }
 \examples{
 SG <- SGGPcreate(d=3, batchsize=100)
