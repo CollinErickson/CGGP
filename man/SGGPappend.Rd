@@ -4,14 +4,17 @@
 \alias{SGGPappend}
 \title{Add points to SGGP}
 \usage{
-SGGPappend(SGGP, batchsize, selectionmethod = "UCB")
+SGGPappend(SGGP, batchsize, selectionmethod = "UCB",
+  RIMSEperpoint = FALSE)
 }
 \arguments{
 \item{SGGP}{Sparse grid object}
 
 \item{batchsize}{Number of points to add}
 
-\item{selectionmethod}{How points will be selected: one of `UCB`, `TS`, of `Greedy`}
+\item{selectionmethod}{How points will be selected: one of `UCB`, `TS`, or `Greedy`}
+
+\item{RIMSEperpoint}{Should RIMSE per point be used?}
 }
 \value{
 SG with new points added.

@@ -95,7 +95,8 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #'
 #' @param SGGP Sparse grid object
 #' @param batchsize Number of points to add
-#' @param selectionmethod How points will be selected: one of `UCB`, `TS`, of `Greedy`
+#' @param selectionmethod How points will be selected: one of `UCB`, `TS`, or `Greedy`
+#' @param RIMSEperpoint Should RIMSE per point be used?
 #' @importFrom stats quantile
 #'
 #' @return SG with new points added.
@@ -107,7 +108,7 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' SG <- SGGPfit(SG, Y=y)
 #' SG <- SGGPappend(SGGP=SG, batchsize=20)
 #' # UCB,TS,Greedy
-SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
+SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FALSE){
   if (!(selectionmethod %in% c("UCB", "TS", "Greedy"))) {
     stop("selectionmethod in SGGPappend must be one of UCB, TS, or Greedy")
   }
@@ -191,20 +192,36 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB"){
       stop("Selection method not acceptable")
     }
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
+
     
+    # Old way, no RIMSEperpoint option
+    # # Find the best one that still fits
+    # M_comp = max(IMES[which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))])
+    # # Find which ones are close to M_comp and
+    # possibleO =which((IMES[1:SGGP$poCOUNT] >= 0.99*M_comp)&(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5)))
+    
+    # New way, now you can pick best IMES per point in the block, more efficient
+    stillpossible <- which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))
+    
+    # Either pick block with max IMES or with max IMES per point in the block.
+    if (RIMSEperpoint) {
+      metric <- IMES[1:SGGP$poCOUNT] / SGGP$pogsize[1:SGGP$poCOUNT]
+    } else {
+      metric <- IMES[1:SGGP$poCOUNT]
+    }
     # Find the best one that still fits
-    M_comp = max(IMES[which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))])
+    M_comp = max(metric[stillpossible])
     # Find which ones are close to M_comp and
-    possibleO =which((IMES[1:SGGP$poCOUNT] >= 0.99*M_comp)&(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5)))
+    # possibleO =which((IMES[stillpossible] >= 0.99*M_comp)&(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5)))
+    possibleO = stillpossible[metric[stillpossible] >= 0.99*M_comp]
+    
+    
     # If more than one is possible and near the best, randomly pick among them.
     if(length(possibleO)>1.5){
       pstar = sample(possibleO,1)
     } else{
       pstar = possibleO
     }
-    # THIS IGNORES THE SIZE OF EACH BLOCK. DIVIDE BY BLOCK SIZE TO GET BETTER FIT? DO KNAPSACK? SOMETHING LIKE FOLLOWING
-    # IMES[which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))] / 
-    #     SGGP$pogsize[which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))]
     
     l0 =  SGGP$po[pstar,] # Selected block
     # Need to make sure there is still an open row in uo to set with new values
