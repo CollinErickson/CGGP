@@ -129,7 +129,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' 
 #' @importFrom stats optim rnorm runif nlminb
 #'
-#' @return theta MLE
+#' @return Updated SGGP object fit to data given
 #' @export
 #'
 #' @examples
@@ -137,9 +137,10 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- SGGPfit(SG=SG, Y=y)
 SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
-                   theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
-                   lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
-                   Ynew) {
+                    theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
+                    lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
+                    use_PCA=SGGP$use_PCA,
+                    Ynew) {
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
     if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}
@@ -156,11 +157,19 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       Y <- c(SGGP$Y, Ynew)
     }
   }
-
+  
   if ((is.matrix(Y) && nrow(Y) == nrow(SGGP$design)) || (length(Y) == nrow(SGGP$design))) {
     SGGP$design_unevaluated <- NULL
   } else {
     stop("SGGP$design and Y have different length")
+  }
+  
+  if (is.matrix(Y)) {
+    SGGP$use_PCA <- use_PCA
+    rm(use_PCA)
+    if (is.null(SGGP$use_PCA)) {
+      SGGP$use_PCA <- TRUE
+    }
   }
   
   #first do the pre-processing
@@ -172,22 +181,28 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     if(!is.matrix(Y)){
       SGGP$mu = mean(Y)
       y = Y-SGGP$mu
-    }else{
+    }else{ # Y is matrix
       SGGP$mu = colMeans(Y)
-      SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
-      Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
-      SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
-      Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
-      # Had an error with small negative eigenvalues, so set those to zero force
-      nonneg_Eigen_result_values <- pmax(Eigen_result$values, 0)
-      percent_explained = cumsum(sqrt(nonneg_Eigen_result_values))/sum(sqrt(nonneg_Eigen_result_values))
-      # percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
-      num_PC = max(min(which(percent_explained>0.99999)),1)
-      SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
-      y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
-      
-      Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
-      SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
+      if (SGGP$use_PCA) { # Use PCA
+        print("Using PCA")
+        SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
+        Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+        SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
+        Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+        # Had an error with small negative eigenvalues, so set those to zero force
+        nonneg_Eigen_result_values <- pmax(Eigen_result$values, 0)
+        percent_explained = cumsum(sqrt(nonneg_Eigen_result_values))/sum(sqrt(nonneg_Eigen_result_values))
+        # percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+        num_PC = max(min(which(percent_explained>0.99999)),1)
+        SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+        y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+        
+        Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
+        SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
+      } else { # No PCA
+        print("Not using PCA")
+        y <- sweep(Y, 2, SGGP$mu)
+      }
     }
     SGGP$y = y
     
@@ -200,39 +215,45 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       SGGP$mu = mean(Ys)
       y = Y-SGGP$mu
       ys = Ys-SGGP$mu
-    } else{ 
-      if (dim(SGGP$Xs)[1] > 2*dim(Ys)[2]){
-        SGGP$mu = colMeans(Ys)
-        SGGP$st = (colMeans(Ys^2)- colMeans(Ys)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
-        Ys_centered = (Ys - matrix(rep(SGGP$mu,each=dim(Ys)[1]), ncol=dim(Ys)[2], byrow=FALSE))%*%diag(1/SGGP$st)
-        SigV = 1/dim(Y)[1]*t(Ys_centered)%*%Ys_centered
-        Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
-        percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
-        num_PC = max(min(which(percent_explained>0.99999)),1)
-        SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
-        ys = Ys_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
-        
-        Ys_recovered =   matrix(rep(SGGP$mu,each=dim(Xs)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ ys%*%(SGGP$M)
-        SGGP$leftover_variance = colMeans((Ys-Ys_recovered)^2)
-        
-        Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
-        y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
-      } else {
-        SGGP$mu = colMeans(Y)
-        SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
-        Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
-        SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
-        Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
-        percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
-        num_PC = max(min(which(percent_explained>0.99999)),1)
-        SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
-        y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
-        
-        Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
-        SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
-        
-        Ys_centered = (Ys - matrix(rep(SGGP$mu,each=dim(Ys)[1]), ncol=dim(Ys)[2], byrow=FALSE))%*%diag(1/SGGP$st)
-        ys = Ys_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+    } else{
+      if (SGGP$use_PCA) {
+        if (dim(SGGP$Xs)[1] > 2*dim(Ys)[2]){
+          SGGP$mu = colMeans(Ys)
+          SGGP$st = (colMeans(Ys^2)- colMeans(Ys)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
+          Ys_centered = (Ys - matrix(rep(SGGP$mu,each=dim(Ys)[1]), ncol=dim(Ys)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+          SigV = 1/dim(Y)[1]*t(Ys_centered)%*%Ys_centered
+          Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+          percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+          num_PC = max(min(which(percent_explained>0.99999)),1)
+          SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+          ys = Ys_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+          
+          Ys_recovered =   matrix(rep(SGGP$mu,each=dim(Xs)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ ys%*%(SGGP$M)
+          SGGP$leftover_variance = colMeans((Ys-Ys_recovered)^2)
+          
+          Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+          y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+        } else {
+          SGGP$mu = colMeans(Y)
+          SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
+          Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+          SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
+          Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+          percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+          num_PC = max(min(which(percent_explained>0.99999)),1)
+          SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
+          y = Y_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+          
+          Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
+          SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
+          
+          Ys_centered = (Ys - matrix(rep(SGGP$mu,each=dim(Ys)[1]), ncol=dim(Ys)[2], byrow=FALSE))%*%diag(1/SGGP$st)
+          ys = Ys_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
+        }
+      } else { # no PCA
+        SGGP$mu = colMeans(Ys) # Could use Y, or colMeans(rbind(Y, Ys)), or make sure Ys is big enough for this
+        y  <- Y  - SGGP$mu
+        ys <- Ys - SGGP$mu
       }
     }
     SGGP$y = y
@@ -340,7 +361,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     for (dimlcv in 1:SGGP$d) {
       for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
         MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],
-                                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
+                                                                                 SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
       }
     }
     
