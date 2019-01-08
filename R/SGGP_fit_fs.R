@@ -126,6 +126,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 # since lik can be less than zero.
 # @param return_optim If TRUE, return output from optim().
 # If FALSE return updated SG.
+#' @param use_PCA Should PCA be used if output is multivariate?
 #' 
 #' @importFrom stats optim rnorm runif nlminb
 #'

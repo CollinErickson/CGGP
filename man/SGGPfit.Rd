@@ -26,6 +26,8 @@ SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = rep(0, SGGP$numpara *
 
 \item{upper}{Upper bound for parameter optimization}
 
+\item{use_PCA}{Should PCA be used if output is multivariate?}
+
 \item{Ynew}{Values of `SGGP$design_unevaluated`}
 }
 \value{
