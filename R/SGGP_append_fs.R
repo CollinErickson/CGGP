@@ -123,6 +123,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
     MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
     # Why do we consider dimensions independent of each other?
     # Loop over dimensions and design refinements
+    print("Add loop over output dimensions, MSE_MAP needs a dim for each output dim")
     for (dimlcv in 1:SGGP$d) {
       for (levellcv in 1:max_polevels[dimlcv]) {
         # Calculate some sort of MSE from above, not sure what it's doing
@@ -141,12 +142,13 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
     
     # For all possible blocks, calculate MSE_MAP? Is that all that MSE_de does?
     IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
-    
-  } else {
+    print("Then average over MSE_MAP to get IMES_MAP somehow")
+  } else { # selectionmethod is UCB or TS
     MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples)) # 8 because he only defined the 1D designs up to 8.
     #  MSE_UCB = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
     # Dimensions can be considered independently
     # Loop over dimensions and design refinements
+    print("Loop over output dim")
     for (dimlcv in 1:SGGP$d) {
       for (levellcv in 1:max_polevels[dimlcv]) {
         for(samplelcv in 1:SGGP$numPostSamples){
@@ -176,6 +178,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
   }
   
   
+  
   # Increase count of points evaluated. Do we check this if not reached exactly???
   SGGP$bss = SGGP$bss + batchsize
   
@@ -192,6 +195,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
       stop("Selection method not acceptable")
     }
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
+    print("IMES should be something right by now, and check on 2nd and later iterations!!!")
 
     
     # Old way, no RIMSEperpoint option
@@ -353,6 +357,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
           max_polevels_old = max_polevels
           max_polevels = apply(SGGP$po[1:SGGP$poCOUNT,], 2, max)
           
+          print("Need to fix this too")
           if(selectionmethod=="Greedy"){
             for (dimlcv in 1:SGGP$d) {
               if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){

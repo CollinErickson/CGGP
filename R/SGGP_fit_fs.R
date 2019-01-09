@@ -142,6 +142,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                     use_PCA=SGGP$use_PCA,
                     Ynew) {
+  print("Fix theta0 parameter")
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
     if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}
@@ -208,6 +209,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     SGGP$y = y
     
   } else{
+    stop("Not working for supp")
     SGGP$supplemented = TRUE
     SGGP$Xs = Xs
     SGGP$Ys = Ys
