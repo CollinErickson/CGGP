@@ -169,7 +169,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   
   if (is.matrix(Y)) {
     SGGP$use_PCA <- use_PCA
-    rm(use_PCA)
+    rm(use_PCA) # Just to make sure it uses fixed version
     if (is.null(SGGP$use_PCA)) {
       SGGP$use_PCA <- TRUE
     }
@@ -205,6 +205,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       } else { # No PCA
         print("Not using PCA")
         y <- sweep(Y, 2, SGGP$mu)
+        # Need to set SGGP$M somewhere so that it doesn't use transformation
       }
     }
     SGGP$y = y
@@ -270,6 +271,17 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   } else {
     1
   }
+  
+  # Fix theta0
+  if (nnn > 1) {
+    if (is.vector(theta0)) {
+      theta0 <- matrix(theta0, nrow=length(theta0), ncol=nnn, byrow=F)
+      browser()
+    }
+  }
+  
+  
+  if (!SGGP$use_PCA) {SGGP$M <- diag(ncol(y))} # Use identity transformation instead of PCA
   for (opdlcv in 1:nnn) { # output parameter dimension
     browser()
     y.thisloop <- if (nnn==1) {y} else {y[,opdlcv]} # All of y or single column
@@ -418,10 +430,11 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       browser('this is important, not initialized yet')
       if (opdlcv==1) { # First time, initialize matrix/array for all
         
-        SGGP$thetaMAP[,opdlcv] <- thetaMAP
-        SGGP$sigma2MAP[opdlcv] <- sigma2MAP[1,1]
-        SGGP$pw[,opdlcv] <- pw
-        SGGP$thetaPostSamples[,,opdlcv] <- thetaPostSamples
+        SGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nnn)
+        if (length(sigma2MAP) != 1) {stop("ERROR HERE, sigma2map can be matrix???")}
+        SGGP$sigma2MAP <- numeric(nnn)
+        SGGP$pw <- matrix(NaN, length(pw), nnn)
+        SGGP$thetaPostSamples <- array(data = NaN, dim=c(dim(thetaPostSamples), nnn))
       }
       SGGP$thetaMAP[,opdlcv] <- thetaMAP
       SGGP$sigma2MAP[opdlcv] <- sigma2MAP[1,1]
