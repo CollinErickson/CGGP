@@ -281,7 +281,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   }
   
   
-  if (!SGGP$use_PCA) {SGGP$M <- diag(ncol(y))} # Use identity transformation instead of PCA
+  if (is.matrix(Y) && !SGGP$use_PCA) {SGGP$M <- diag(ncol(y))} # Use identity transformation instead of PCA
   for (opdlcv in 1:nnn) { # output parameter dimension
     browser()
     y.thisloop <- if (nnn==1) {y} else {y[,opdlcv]} # All of y or single column
