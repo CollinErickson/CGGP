@@ -276,14 +276,14 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   if (nnn > 1) {
     if (is.vector(theta0)) {
       theta0 <- matrix(theta0, nrow=length(theta0), ncol=nnn, byrow=F)
-      browser()
+      # browser()
     }
   }
   
   
   if (is.matrix(Y) && !SGGP$use_PCA) {SGGP$M <- diag(ncol(y))} # Use identity transformation instead of PCA
   for (opdlcv in 1:nnn) { # output parameter dimension
-    browser()
+    # browser()
     y.thisloop <- if (nnn==1) {y} else {y[,opdlcv]} # All of y or single column
     theta0.thisloop <- if (nnn==1) {theta0} else {theta0[,opdlcv]}
     
@@ -427,7 +427,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         SGGP$sigma2MAP <- sigma2MAP
       }
     } else { # More than 1 opd, so need to set as columns of matrix
-      browser('this is important, not initialized yet')
+      # browser('this is important, not initialized yet')
       if (opdlcv==1) { # First time, initialize matrix/array for all
         
         SGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nnn)

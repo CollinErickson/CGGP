@@ -42,7 +42,7 @@ SGGPpred <- function(xp,SGGP,
     # Cp is sigma(x_0) in paper, correlation vector between design points and xp
     Cp = matrix(1,dim(xp)[1],SGGP$ss)
     for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-      V = SGGP$CorrMat(xp[,dimlcv], SGGP$xb, thetaMAP.thisloop)
+      V = SGGP$CorrMat(xp[,dimlcv], SGGP$xb, thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
       Cp = Cp*V[,SGGP$designindex[,dimlcv]]
     }
     MSE_v = array(0, c(SGGP$d, SGGP$maxlevel + 1,dim(xp)[1])) # Add 1 to maxlevel so it doesn't go outside of array size
@@ -53,7 +53,7 @@ SGGPpred <- function(xp,SGGP,
       for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
         MSE_v[dimlcv, levellcv+1,] = SGGP_internal_MSEpredcalc(xp[,dimlcv],
                                                                SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                               thetaMAP.thisloop,
+                                                               thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
                                                                CorrMat=SGGP$CorrMat)
         MSE_v[dimlcv, levellcv+1,] = pmin(MSE_v[dimlcv, levellcv+1,], MSE_v[dimlcv, levellcv,])
       }
@@ -143,6 +143,8 @@ SGGPpred <- function(xp,SGGP,
     if (nnn > 1) {meanall[,opdlcv] <- mean}
     if (nnn > 1) {varall[,opdlcv] <- var}
   }
+  browser()
+  if (nnn > 1) {meanall <- sweep(sweep(meanall,2,SGGP$mu) %*% SGGP$M,2,SGGP$mu, `+`)}
   if (nnn > 1) GP <- list(mean=meanall, var=varall)
   else GP <- list(mean=mean, var=var)
   return(GP)

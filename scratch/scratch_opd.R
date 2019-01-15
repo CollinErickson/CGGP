@@ -23,10 +23,12 @@ expect_equal(yMVpred[,1], y1, 1e-4)
 expect_equal(yMVpred[,2], y2, 1e-4)
 
 # 3. MV with PCA, separate output par dims
+set.seed(0)
 SG <- SGGPcreate(d=3, batchsize=100)
 y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
 y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
 y <- cbind(y1, y2)
+set.seed(1)
 SG <- SGGPfit(SG, Y=y, separateoutputparameterdimensions = T)
 yMVpred <- SGGPpred(SG$design, SG=SG)$mean
 expect_equal(yMVpred[,1], y1, 1e-4)
@@ -35,6 +37,30 @@ expect_equal(yMVpred[,2], y2, 1e-4)
 set.seed(0)
 SG <- SGGPcreate(d=3, batchsize=100)
 y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
+set.seed(1)
+SG <- SGGPfit(SG, Y=y1)
+SG$thetaMAP
+SG$pw
+y1Vpred <- SGGPpred(SG$design, SG=SG)$mean
+expect_equal(y1Vpred[,1], y1, 1e-4)
+
+
+# 4. MV without PCA, separate output par dims
+set.seed(0)
+SG <- SGGPcreate(d=3, batchsize=100)
+y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
+y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
+y <- cbind(y1, y2)
+set.seed(1)
+SG <- SGGPfit(SG, Y=y, separateoutputparameterdimensions = T, use_PCA = F)
+yMVpred <- SGGPpred(SG$design, SG=SG)$mean
+expect_equal(yMVpred[,1], y1, 1e-4)
+expect_equal(yMVpred[,2], y2, 1e-4)
+
+set.seed(0)
+SG <- SGGPcreate(d=3, batchsize=100)
+y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
+set.seed(1)
 SG <- SGGPfit(SG, Y=y1)
 SG$thetaMAP
 SG$pw
