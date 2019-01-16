@@ -178,7 +178,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   #first do the pre-processing
   #for cleanness: Y is always the user input, y is after transformation
   SGGP$Y = Y
-  if(is.null(Xs)){
+  if(is.null(Xs)){ # No supplemental data
     SGGP$supplemented = FALSE
     
     if(!is.matrix(Y)){
@@ -210,8 +210,8 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     }
     SGGP$y = y
     
-  } else{
-    stop("Not working for supp")
+  } else{ # Has supplemental data, used for prediction but not for fitting params
+    # stop("Not working for supp")
     SGGP$supplemented = TRUE
     SGGP$Xs = Xs
     SGGP$Ys = Ys
@@ -257,8 +257,8 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         }
       } else { # no PCA
         SGGP$mu = colMeans(Ys) # Could use Y, or colMeans(rbind(Y, Ys)), or make sure Ys is big enough for this
-        y  <- Y  - SGGP$mu
-        ys <- Ys - SGGP$mu
+        y <- sweep(Y, 2, SGGP$mu)
+        ys <- sweep(Ys, 2, SGGP$mu)
       }
     }
     SGGP$y = y
@@ -285,6 +285,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   for (opdlcv in 1:nnn) { # output parameter dimension
     # browser()
     y.thisloop <- if (nnn==1) {y} else {y[,opdlcv]} # All of y or single column
+    if (!is.null(Ys)) {ys.thisloop <- if (nnn==1) {ys} else {ys[,opdlcv]}} # All of y or single column
     theta0.thisloop <- if (nnn==1) {theta0} else {theta0[,opdlcv]}
     
     opt.out = nlminb(
@@ -353,7 +354,11 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         qp = q + p
         
         Up = U(qp)
-        if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))}else{scalev=exp(log(scalev)-0.1/sqrt(i+4));scalev = max(scalev,1/sqrt(length(q)))}
+        if(runif(1) < exp(Uo-Up)){
+          q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))
+        }else{
+          scalev=exp(log(scalev)-0.1/sqrt(i+4));scalev = max(scalev,1/sqrt(length(q)))
+        }
         
       }
       
@@ -388,7 +393,9 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       for (dimlcv in 1:SGGP$d) {
         for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
           MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],
-                                                                                   SGGP$xb[1:SGGP$sizest[levellcv]],thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
+                                                                                   SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                                   thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                                   CorrMat=SGGP$CorrMat))
         }
       }
       
@@ -400,12 +407,12 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         }
         Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
       }
-      
+      # browser()
       yhats = Cs%*%pw
       
-      Sti_resid = solve(Sigma_t,ys-yhats)
+      Sti_resid = solve(Sigma_t,ys.thisloop-yhats)
       Sti = solve(Sigma_t)
-      sigma2MAP = (sigma2MAP*dim(SGGP$design)[1]+colSums((ys-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])
+      sigma2MAP = (sigma2MAP*dim(SGGP$design)[1]+colSums((ys.thisloop-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])
       
       pw_adj_y = t(Cs)%*%Sti_resid
       pw_adj <- SGGP_internal_calcpw(SGGP=SGGP, y=pw_adj_y, theta=thetaMAP)
@@ -431,20 +438,28 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       if (opdlcv==1) { # First time, initialize matrix/array for all
         
         SGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nnn)
-        if (length(sigma2MAP) != 1) {stop("ERROR HERE, sigma2map can be matrix???")}
+        if (length(sigma2MAP) != 1) {
+          stop("ERROR HERE, sigma2map can be matrix??? It is always a 1x1 matrix from what I've seen before.")
+        }
         SGGP$sigma2MAP <- numeric(nnn)
-        SGGP$pw <- matrix(NaN, length(pw), nnn)
+        SGGP$pw <- matrix(NaN, length(pw), nnn) 
+        # thetaPostSamples is matrix, so this is 3dim array below
         SGGP$thetaPostSamples <- array(data = NaN, dim=c(dim(thetaPostSamples), nnn))
       }
       SGGP$thetaMAP[,opdlcv] <- thetaMAP
       SGGP$sigma2MAP[opdlcv] <- sigma2MAP[1,1]
       SGGP$pw[,opdlcv] <- pw
       SGGP$thetaPostSamples[,,opdlcv] <- thetaPostSamples
-      if (SGGP$supplemented) {stop()('need to fix this')
-        SGGP$pw_uppadj <- pw_uppadj
-        SGGP$supppw <- supppw
-        SGGP$Sti = Sti
-        SGGP$sigma2MAP <- sigma2MAP
+      if (SGGP$supplemented) {#browser('need to fix this')
+        if (opdlcv==1) { # First time initialize all
+          
+          SGGP$pw_uppadj <- matrix(NaN, nrow(pw_uppadj), nnn)
+          SGGP$supppw <- matrix(NaN, nrow(supppw), nnn)
+          SGGP$Sti = array(NaN, dim=c(dim(Sti), nnn)) # Sti is matrix, so this is 3 dim array
+        }
+        SGGP$pw_uppadj[,opdlcv] <- pw_uppadj
+        SGGP$supppw[,opdlcv] <- supppw
+        SGGP$Sti[,,opdlcv] = Sti
       }
     }
   }

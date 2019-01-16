@@ -120,8 +120,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
   
   if(selectionmethod=="Greedy"){
     # Set up blank matrix to store MSE values
-    MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
-    # Why do we consider dimensions independent of each other?
+    MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel)
     # Loop over dimensions and design refinements
     print("Add loop over output dimensions, MSE_MAP needs a dim for each output dim")
     for (dimlcv in 1:SGGP$d) {
@@ -144,8 +143,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
     IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
     print("Then average over MSE_MAP to get IMES_MAP somehow")
   } else { # selectionmethod is UCB or TS
-    MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples)) # 8 because he only defined the 1D designs up to 8.
-    #  MSE_UCB = matrix(0, SGGP$d, SGGP$maxlevel) # 8 because he only defined the 1D designs up to 8.
+    MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples))
+    #  MSE_UCB = matrix(0, SGGP$d, SGGP$maxlevel)
     # Dimensions can be considered independently
     # Loop over dimensions and design refinements
     print("Loop over output dim")

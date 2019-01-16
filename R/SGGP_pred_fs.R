@@ -100,14 +100,18 @@ SGGPpred <- function(xp,SGGP,
         }
       }
     } else {
-      stop("Fix pred for sggp$supp supplemented data THIS IS NOT FIXED")
+      # browser("Fix pred for sggp$supp supplemented data THIS IS NOT FIXED")
+      pw_uppad.thisloop <- if (nnn==1) SGGP$pw_uppad else SGGP$pw_uppad[,opdlcv]
+      supppw.thisloop <- if (nnn==1) SGGP$supppw else SGGP$supppw[,opdlcv]
+      Sti.thisloop <- if (nnn==1) SGGP$Sti else SGGP$Sti[,,opdlcv]
+      
       Cps = matrix(1,dim(xp)[1],dim(SGGP$Xs)[1])
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-        V = SGGP$CorrMat(xp[,dimlcv], SGGP$Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+        V = SGGP$CorrMat(xp[,dimlcv], SGGP$Xs[,dimlcv], thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
         Cps = Cps*V
       }
       
-      yhatp = Cp%*%SGGP$pw_uppad + Cps%*%SGGP$supppw
+      yhatp = Cp%*%pw_uppad.thisloop + Cps%*%supppw.thisloop
       
       MSE_ps = list(matrix(0,dim(xp)[1],dim(SGGP$Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
       for (dimlcv in 1:SGGP$d) {
@@ -116,7 +120,7 @@ SGGPpred <- function(xp,SGGP,
             -SGGP_internal_postvarmatcalc(xp[,dimlcv],
                                           SGGP$Xs[,dimlcv],
                                           SGGP$xb[1:SGGP$sizest[levellcv]],
-                                          SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                          thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
                                           CorrMat=SGGP$CorrMat))
         }
       }
@@ -129,21 +133,34 @@ SGGPpred <- function(xp,SGGP,
         }
         Cps = Cps-SGGP$w[blocklcv]*(ME_ps)
       }
-      ME_adj = rowSums((Cps%*%SGGP$Sti)*Cps)
+      ME_adj = rowSums((Cps%*%Sti.thisloop)*Cps)
       
       
       ME_t = ME_t-ME_adj
       # Return list with mean and var predictions
-      if(is.vector(SGGP$pw)){
-        GP = list("mean" = (SGGP$mu+ yhatp), "var"=SGGP$sigma2MAP[1]*ME_t)
+      if(is.vector(pw.thisloop)){
+        if (nnn == 1) {
+          mean = (SGGP$mu+ yhatp)
+          var=SGGP$sigma2MAP[1]*ME_t
+        }
+        
+        # browser()
+        # With sepparout and PCA (or not), do this
+        if (nnn > 1) {
+          meanall2 <- meanall2 + outer(c(yhatp), SGGP$M[opdlcv,])
+          leftvar <- if (is.null(SGGP$leftover_variance)) {0} else {SGGP$leftover_variance}
+          var <- (as.vector(ME_t)%*%t(leftvar+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))[,opdlcv]
+          print("Need to do something with var and M here. Did something, maybe this is right, maybe not?")
+        }
+        
       }else{
-        if(length(SGGP$sigma2MAP)==1){
-          GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M)),
-                    "var"=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M))))
+        if(length(SGGP$sigma2MAP)==1){stop("Does this ever happen? #952570")
+          mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
+          var=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M)))
           
         }else{
-          GP = list("mean" = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M)),
-                    "var"=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))
+          mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
+          var=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M)))
         }
       }
       
