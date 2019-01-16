@@ -117,21 +117,33 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
   
   max_polevels = apply(SGGP$po[1:SGGP$poCOUNT,], 2, max)
   
+  separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
+  # nnn is numberofoutputparameterdimensions
+  nnn <- if (separateoutputparameterdimensions) {
+    ncol(y)
+  } else {
+    1
+  }
   
   if(selectionmethod=="Greedy"){
     # Set up blank matrix to store MSE values
-    MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel)
+    # MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel)
+    # Now use an array for nnn
+    MSE_MAP = array(0, dim=c(SGGP$d, SGGP$maxlevel,nnn))
+    
     # Loop over dimensions and design refinements
-    print("Add loop over output dimensions, MSE_MAP needs a dim for each output dim")
-    for (dimlcv in 1:SGGP$d) {
-      for (levellcv in 1:max_polevels[dimlcv]) {
-        # Calculate some sort of MSE from above, not sure what it's doing
-        MSE_MAP[dimlcv, levellcv] = max(0, 
-                                        abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                  SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
-                                                                  SGGP$CorrMat)))
-        if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-          MSE_MAP[dimlcv, levellcv] = min(MSE_MAP[dimlcv, levellcv], MSE_MAP[dimlcv, levellcv - 1])
+    for (opdlcv in 1:nnn) {
+      thetaMAP.thisloop <- if (nnn==1) SGGP$thetaMAP else SGGP$thetaMAP[, opdlcv]
+      for (dimlcv in 1:SGGP$d) {
+        for (levellcv in 1:max_polevels[dimlcv]) {
+          # Calculate some sort of MSE from above, not sure what it's doing
+          MSE_MAP[dimlcv, levellcv, opdlcv] = max(0, 
+                                                  abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                            thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                            SGGP$CorrMat)))
+          if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
+            MSE_MAP[dimlcv, levellcv, opdlcv] = min(MSE_MAP[dimlcv, levellcv, opdlcv], MSE_MAP[dimlcv, levellcv - 1, opdlcv])
+          }
         }
       }
     }
@@ -140,42 +152,58 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
     IMES_MAP = rep(0, SGGP$ML)
     
     # For all possible blocks, calculate MSE_MAP? Is that all that MSE_de does?
-    IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
-    print("Then average over MSE_MAP to get IMES_MAP somehow")
+    # IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
+    # Need to apply it over nnn
+    IMES_MAP_beforemean = apply(MSE_MAP, 3, function(x) SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], x))
+    # IMES_MAP_apply has a column for each opdlcv, so take rowMeans
+    IMES_MAP[1:SGGP$poCOUNT] = rowMeans(IMES_MAP_beforemean)
+    
+    # Clean up to avoid silly errors
+    rm(opdlcv, thetaMAP.thisloop)
   } else { # selectionmethod is UCB or TS
-    MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples))
+    # MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples))
+    # Array needs another dimension for nnn
+    MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples, nnn))
     #  MSE_UCB = matrix(0, SGGP$d, SGGP$maxlevel)
     # Dimensions can be considered independently
     # Loop over dimensions and design refinements
-    print("Loop over output dim")
-    for (dimlcv in 1:SGGP$d) {
-      for (levellcv in 1:max_polevels[dimlcv]) {
-        for(samplelcv in 1:SGGP$numPostSamples){
-          # Calculate some sort of MSE from above, not sure what it's doing
-          MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0, 
-                                                            abs(
-                                                              SGGP_internal_calcMSE(
-                                                                SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,samplelcv],
-                                                                SGGP$CorrMat)
-                                                            )
-          )
-          if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-            MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv],
-                                                              MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
+    for (opdlcv in 1:nnn) { # Loop over output parameter dimensions
+      thetaPostSamples.thisloop <- if (nnn==1) SGGP$thetaPostSamples else SGGP$thetaPostSamples[, , opdlcv]
+      for (dimlcv in 1:SGGP$d) {
+        for (levellcv in 1:max_polevels[dimlcv]) {
+          for(samplelcv in 1:SGGP$numPostSamples){
+            # Calculate some sort of MSE from above, not sure what it's doing
+            MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv] = 
+              max(0, 
+                  abs(
+                    SGGP_internal_calcMSE(
+                      SGGP$xb[1:SGGP$sizest[levellcv]],
+                      thetaPostSamples.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,
+                                                samplelcv],
+                      SGGP$CorrMat)
+                  )
+              )
+            if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
+              MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv],
+                                                                        MSE_PostSamples[dimlcv, levellcv - 1,samplelcv, opdlcv])
+            }
           }
+          #  done below MSE_UCB[dimlcv, levellcv] = quantile(MSE_PostSamples[dimlcv, levellcv,],0.99)
         }
-        #   MSE_UCB[dimlcv, levellcv] = quantile(MSE_PostSamples[dimlcv, levellcv,],0.99)
       }
     }
     IMES_PostSamples = matrix(0, SGGP$ML,SGGP$numPostSamples)
     for(samplelcv in 1:SGGP$numPostSamples){
-      IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv])
+      # IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv])
+      # It's an array, need to average over opdlcv. Over 3rd dim since samplelcv removes 3rd dim of array.
+      IMES_PostSamples_beforemean <- apply(MSE_PostSamples[,,samplelcv,], 3, function(x){SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], x)})
+      IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] <- apply(IMES_PostSamples_beforemean, 1, mean)
     }
     IMES_UCB = matrix(0, SGGP$ML)
     IMES_UCB[1:SGGP$poCOUNT] = apply(IMES_PostSamples[1:SGGP$poCOUNT,],1,quantile, probs=0.9) 
+    # Clean up to avoid silly errors
+    rm(opdlcv, thetaPostSamples.thisloop)
   }
-  
   
   
   # Increase count of points evaluated. Do we check this if not reached exactly???
@@ -194,7 +222,6 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
       stop("Selection method not acceptable")
     }
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
-    print("IMES should be something right by now, and check on 2nd and later iterations!!!")
     
     
     # Old way, no RIMSEperpoint option
@@ -335,56 +362,73 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
           max_polevels_old = max_polevels
           max_polevels = apply(SGGP$po[1:SGGP$poCOUNT,], 2, max)
           
-          print("Need to fix this too")
           if(selectionmethod=="Greedy"){
-            for (dimlcv in 1:SGGP$d) {
-              if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
-                levellcv = max_polevels[dimlcv]
-                MSE_MAP[dimlcv, levellcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                             SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
-                                                                             SGGP$CorrMat)))
-                if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-                  MSE_MAP[dimlcv, levellcv] = min(MSE_MAP[dimlcv, levellcv], MSE_MAP[dimlcv, levellcv - 1])
-                }
-              }
-            }
-          }else{
-            for (dimlcv in 1:SGGP$d) {
-              if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
-                levellcv = max_polevels[dimlcv]
-                for(samplelcv in 1:SGGP$numPostSamples){
-                  # Calculate some sort of MSE from above, not sure what it's doing
-                  MSE_PostSamples[dimlcv, levellcv,samplelcv] = max(0,
-                                                                    abs(SGGP_internal_calcMSE(
-                                                                      SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                      SGGP$thetaPostSamples[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,
-                                                                                            samplelcv],
-                                                                      SGGP$CorrMat)))
+            for (opdlcv in 1:nnn) { # Loop over output parameter dimensions
+              thetaMAP.thisloop <- if (nnn==1) SGGP$thetaMAP else SGGP$thetaMAP[, opdlcv]
+              for (dimlcv in 1:SGGP$d) {
+                if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
+                  levellcv = max_polevels[dimlcv]
+                  MSE_MAP[dimlcv, levellcv, opdlcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                               thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                               SGGP$CorrMat)))
                   if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-                    MSE_PostSamples[dimlcv, levellcv,samplelcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv],
-                                                                      MSE_PostSamples[dimlcv, levellcv - 1,samplelcv])
+                    MSE_MAP[dimlcv, levellcv, opdlcv] = min(MSE_MAP[dimlcv, levellcv, opdlcv], MSE_MAP[dimlcv, levellcv - 1, opdlcv])
                   }
                 }
               }
             }
+            # Clean up
+            rm(thetaMAP.thisloop, opdlcv)
+          }else{
+            for (opdlcv in 1:nnn) {
+              thetaPostSamples.thisloop <- if (nnn==1) SGGP$thetaPostSamples else SGGP$thetaPostSamples[, , opdlcv]
+              for (dimlcv in 1:SGGP$d) {
+                if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
+                  levellcv = max_polevels[dimlcv]
+                  for(samplelcv in 1:SGGP$numPostSamples){
+                    # Calculate some sort of MSE from above, not sure what it's doing
+                    MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv] = max(0,
+                                                                      abs(SGGP_internal_calcMSE(
+                                                                        SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                        thetaPostSamples.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,
+                                                                                                  samplelcv],
+                                                                        SGGP$CorrMat)))
+                    if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
+                      MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv],
+                                                                                MSE_PostSamples[dimlcv, levellcv - 1,samplelcv, opdlcv])
+                    }
+                  }
+                }
+              }
+            }
+            # Clean up
+            rm(thetaPostSamples.thisloop, opdlcv)
           }
           
           if(selectionmethod=="Greedy"){
-            IMES_MAP[SGGP$poCOUNT] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), MSE_MAP)
-          }
-          if(selectionmethod=="UCB"){
+            # IMES_MAP[SGGP$poCOUNT] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), MSE_MAP)
+            # Need to apply first
+            IMES_MAP_beforemeannewpoint <- apply(MSE_MAP, 3, function(x) {SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)})
+            IMES_MAP[SGGP$poCOUNT] <- mean(IMES_MAP_beforemeannewpoint)
+          } else if (selectionmethod=="UCB" || selectionmethod=="TS"){
             for(samplelcv in 1:SGGP$numPostSamples){
-              IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
-                                                                                 MSE_PostSamples[,,samplelcv])
+              # IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
+              #                                                                    MSE_PostSamples[,,samplelcv])
+              IMES_PostSamples_beforemeannewpoint = apply(MSE_PostSamples[,,samplelcv,],
+                                                          3, # 3rd dim since samplelcv removes 3rd
+                                                          function(x) {SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)}
+              )
+              IMES_PostSamples[SGGP$poCOUNT,samplelcv] <- mean(IMES_PostSamples_beforemeannewpoint)
             }
             IMES_UCB[SGGP$poCOUNT] = quantile(IMES_PostSamples[SGGP$poCOUNT,],probs=0.9)
-          }
-          if(selectionmethod=="TS"){
-            for(samplelcv in 1:SGGP$numPostSamples){
-              IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
-                                                                                 MSE_PostSamples[,,samplelcv])
-            }
-          }
+          } else {stop("Not possible #9235058")}
+          # Removing below and adding it as part of UCB above
+          # if(selectionmethod=="TS"){
+          #   for(samplelcv in 1:SGGP$numPostSamples){
+          #     IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
+          #                                                                        MSE_PostSamples[,,samplelcv])
+          #   }
+          # }
         }
       }
     }

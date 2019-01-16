@@ -43,6 +43,9 @@ SG <- SGGPfit(SG, Y=y, separateoutputparameterdimensions = T)
 yMVpred <- SGGPpred(SG$design, SG=SG)$mean
 expect_equal(yMVpred[,1], y1, 1e-4)
 expect_equal(yMVpred[,2], y2, 1e-4)
+SGGPappend(SG, 30, selectionmethod = "Greedy")
+SGGPappend(SG, 30, selectionmethod = "UCB")
+SGGPappend(SG, 30, selectionmethod = "TS")
 
 set.seed(0)
 SG <- SGGPcreate(d=3, batchsize=100)
@@ -66,6 +69,9 @@ SG <- SGGPfit(SG, Y=y, separateoutputparameterdimensions = T, use_PCA = F)
 yMVpred <- SGGPpred(SG$design, SG=SG)$mean
 expect_equal(yMVpred[,1], y1, 1e-4)
 expect_equal(yMVpred[,2], y2, 1e-4)
+SGGPappend(SG, 30, selectionmethod = "Greedy")
+SGGPappend(SG, 30, selectionmethod = "UCB")
+SGGPappend(SG, 30, selectionmethod = "TS")
 
 set.seed(0)
 SG <- SGGPcreate(d=3, batchsize=100)
@@ -108,6 +114,9 @@ expect_equal(yMVpred[,2], y2, 1e-4)
 yMVpredsup <- SGGPpred(xsup, SG=SG)$mean
 expect_equal(yMVpredsup[,1], ysup1, 1e-4)
 expect_equal(yMVpredsup[,2], ysup2, 1e-4)
+SGGPappend(SG, 30, selectionmethod = "Greedy")
+SGGPappend(SG, 30, selectionmethod = "UCB")
+SGGPappend(SG, 30, selectionmethod = "TS")
 
 
 
@@ -132,3 +141,6 @@ expect_equal(yMVpred[,2], y2, 1e-4)
 yMVpredsup <- SGGPpred(xsup, SG=SG)$mean
 expect_equal(yMVpredsup[,1], ysup1, 1e-4)
 expect_equal(yMVpredsup[,2], ysup2, 1e-4)
+SGGPappend(SG, 30, selectionmethod = "Greedy")
+SGGPappend(SG, 30, selectionmethod = "UCB")
+SGGPappend(SG, 30, selectionmethod = "TS")
