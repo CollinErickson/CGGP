@@ -15,8 +15,7 @@
 #' SG <- SGGPfit(SG, Y=y)
 #' SGGPpred(matrix(c(.1,.1,.1),1,3), SGGP=SG)
 #' cbind(SGGPpred(SG$design, SG=SG)$mean, y) # Should be near equal
-SGGPpred <- function(xp,SGGP,
-                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP)) {
+SGGPpred <- function(xp,SGGP) {
   # Require that you run SGGPfit first
   if (is.null(SGGP$supplemented)) {
     stop("You must run SGGPfit on SGGP object before using SGGPpredict")
@@ -24,6 +23,7 @@ SGGPpred <- function(xp,SGGP,
   # We could check for design_unevaluated, maybe give warning?
   
   
+  separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
   # nnn is numberofoutputparameterdimensions
   nnn <- if (separateoutputparameterdimensions) {
     ncol(y)

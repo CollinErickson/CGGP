@@ -195,7 +195,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
     }
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
     print("IMES should be something right by now, and check on 2nd and later iterations!!!")
-
+    
     
     # Old way, no RIMSEperpoint option
     # # Find the best one that still fits
@@ -270,62 +270,41 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
     SGGP$w[SGGP$uoCOUNT] = SGGP$w[SGGP$uoCOUNT] + 1
     
     
-    # If on the first block
+    # Update data. Remove selected item, move rest up.
+    # First get correct indices to change
+    new_indices <- 1:(SGGP$poCOUNT - 1)
     if (pstar < 1.5) {
-      SGGP$po[1:(SGGP$poCOUNT - 1),] = SGGP$po[2:SGGP$poCOUNT,]
-      SGGP$pila[1:(SGGP$poCOUNT - 1),] = SGGP$pila[2:SGGP$poCOUNT,]
-      SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[2:SGGP$poCOUNT]
-      SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[2:SGGP$poCOUNT]
-      
-      if(selectionmethod=="Greedy"){
-        IMES_MAP[1:(SGGP$poCOUNT - 1)] = IMES_MAP[2:SGGP$poCOUNT]
-      }
-      if(selectionmethod=="UCB"){
-        IMES_UCB[1:(SGGP$poCOUNT - 1)] = IMES_UCB[2:SGGP$poCOUNT]
-      }
-      if(selectionmethod=="TS"){
-        IMES_PostSamples[1:(SGGP$poCOUNT - 1),] = IMES_PostSamples[2:SGGP$poCOUNT,]
-      }
+      old_indices <- 2:SGGP$poCOUNT
+    } else if (pstar > (SGGP$poCOUNT - 0.5)) {
+      old_indices <- 1:(pstar - 1)
+    } else if (pstar < (SGGP$poCOUNT - 0.5) && pstar > 1.5) {
+      old_indices <- c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT)
+    } else {stop("Not possible #729588")}
+    # Then change the data
+    SGGP$po[new_indices,] = SGGP$po[old_indices,]
+    SGGP$pila[new_indices,] = SGGP$pila[old_indices,]
+    SGGP$pilaCOUNT[new_indices] = SGGP$pilaCOUNT[old_indices]
+    SGGP$pogsize[new_indices] = SGGP$pogsize[old_indices]
+    if(selectionmethod=="Greedy"){
+      IMES_MAP[new_indices] = IMES_MAP[old_indices]
     }
-    if (pstar > (SGGP$poCOUNT - 0.5)) {
-      SGGP$po[1:(SGGP$poCOUNT - 1),] = SGGP$po[1:(pstar - 1),]
-      SGGP$pila[1:(SGGP$poCOUNT - 1),] = SGGP$pila[1:(pstar - 1),]
-      SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[1:(pstar - 1)]
-      SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[1:(pstar - 1)]
-      if(selectionmethod=="Greedy"){
-        IMES_MAP[1:(SGGP$poCOUNT - 1)] = IMES_MAP[1:(pstar - 1)]
-      }
-      if(selectionmethod=="UCB"){
-        IMES_UCB[1:(SGGP$poCOUNT - 1)] = IMES_UCB[1:(pstar - 1)]
-      }
-      if(selectionmethod=="TS"){
-        IMES_PostSamples[1:(SGGP$poCOUNT - 1),] = IMES_PostSamples[1:(pstar - 1),]
-      }
+    if(selectionmethod=="UCB"){
+      IMES_UCB[new_indices] = IMES_UCB[old_indices]
     }
-    if (pstar < (SGGP$poCOUNT - 0.5) && pstar > 1.5) {
-      SGGP$po[1:(SGGP$poCOUNT - 1),] = SGGP$po[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT),]
-      SGGP$pila[1:(SGGP$poCOUNT - 1),] = SGGP$pila[c(1:(pstar - 1), (pstar +1):SGGP$poCOUNT),]
-      SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT)]
-      SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT)]
-      if(selectionmethod=="Greedy"){
-        IMES_MAP[1:(SGGP$poCOUNT - 1)] = IMES_MAP[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT)]
-      }
-      if(selectionmethod=="UCB"){
-        IMES_UCB[1:(SGGP$poCOUNT - 1)] = IMES_UCB[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT)]
-      }
-      if(selectionmethod=="TS"){
-        IMES_PostSamples[1:(SGGP$poCOUNT - 1),] = IMES_PostSamples[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT),]
-      }
+    if(selectionmethod=="TS"){
+      IMES_PostSamples[new_indices,] = IMES_PostSamples[old_indices,]
     }
+    # And reduce number of available blocks by one.
     SGGP$poCOUNT = SGGP$poCOUNT - 1
     
+    # Loop over possible descendents of selected block, add them if possible    
     for (dimlcv in 1:SGGP$d) {
       lp = l0
       
       lp[dimlcv] = lp[dimlcv] + 1
       
       if (max(lp) < SGGP$maxlevel && SGGP$poCOUNT < 4 * SGGP$ML) {
-        kvals = which(lp > 1.5)
+        kvals = which(lp > 1.5) # Dimensions above base level
         
         canuse = 1
         ap = rep(0, SGGP$d)
@@ -346,7 +325,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
             canuse = 0
           }
         }
-        if (canuse > 0.5) {
+        if (canuse > 0.5) { # If it can be used, add to possible blocks
           SGGP$poCOUNT = SGGP$poCOUNT + 1
           SGGP$po[SGGP$poCOUNT,] = lp
           SGGP$pogsize[SGGP$poCOUNT] = prod(SGGP$sizes[lp])
