@@ -22,6 +22,6 @@ MSE predictions
 Calculate MSE prediction along a single dimension
 }
 \examples{
-SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=c(.1,.2,.3),
+SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=c(.1,.2),
              CorrMat=SGGP_internal_CorrMatCauchySQ)
 }

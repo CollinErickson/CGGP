@@ -127,6 +127,8 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 # @param return_optim If TRUE, return output from optim().
 # If FALSE return updated SG.
 #' @param use_PCA Should PCA be used if output is multivariate?
+#' @param separateoutputparameterdimensions If multiple output dimensions,
+#' should separate parameters be fit to each dimension?
 #' 
 #' @importFrom stats optim rnorm runif nlminb
 #'
@@ -141,6 +143,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
                     lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                     use_PCA=SGGP$use_PCA,
+                    separateoutputparameterdimensions=FALSE,
                     Ynew) {
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
@@ -167,7 +170,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   
   if (is.matrix(Y)) {
     SGGP$use_PCA <- use_PCA
-    rm(use_PCA)
+    rm(use_PCA) # Just to make sure it uses fixed version
     if (is.null(SGGP$use_PCA)) {
       SGGP$use_PCA <- TRUE
     }
@@ -176,7 +179,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   #first do the pre-processing
   #for cleanness: Y is always the user input, y is after transformation
   SGGP$Y = Y
-  if(is.null(Xs)){
+  if(is.null(Xs)){ # No supplemental data
     SGGP$supplemented = FALSE
     
     if(!is.matrix(Y)){
@@ -185,7 +188,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     }else{ # Y is matrix
       SGGP$mu = colMeans(Y)
       if (SGGP$use_PCA) { # Use PCA
-        print("Using PCA")
+        # print("Using PCA")
         SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
         Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
         SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
@@ -201,13 +204,15 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
         SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
       } else { # No PCA
-        print("Not using PCA")
+        # print("Not using PCA")
         y <- sweep(Y, 2, SGGP$mu)
+        # Need to set SGGP$M somewhere so that it doesn't use transformation
       }
     }
     SGGP$y = y
     
-  } else{
+  } else{ # Has supplemental data, used for prediction but not for fitting params
+    # stop("Not working for supp")
     SGGP$supplemented = TRUE
     SGGP$Xs = Xs
     SGGP$Ys = Ys
@@ -253,140 +258,213 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         }
       } else { # no PCA
         SGGP$mu = colMeans(Ys) # Could use Y, or colMeans(rbind(Y, Ys)), or make sure Ys is big enough for this
-        y  <- Y  - SGGP$mu
-        ys <- Ys - SGGP$mu
+        y <- sweep(Y, 2, SGGP$mu)
+        ys <- sweep(Ys, 2, SGGP$mu)
       }
     }
     SGGP$y = y
     SGGP$ys = ys
   }
   
-  opt.out = nlminb(
-    theta0,
-    objective = SGGP_internal_neglogpost,
-    gradient = SGGP_internal_gneglogpost,
-    lower = lower, 
-    upper = upper,
-    y = y,
-    SGGP = SGGP,
-    #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-    #hessian = TRUE,
-    control = list(rel.tol = 1e-8,iter.max = 500)#reltol=1e-4)#abstol = tol)
-  )
-  # for(i in 1:5){
-  #   opt.out = nlminb(
-  #     runif(SGGP$numpara*SGGP$d, -0.75,0.75),
-  #     objective = SGGP_internal_neglogpost,
-  #     gradient = SGGP_internal_gneglogpost,
-  #     lower = 0.75*lower, 
-  #     upper = 0.75*upper,
-  #     y = y,
-  #     SGGP = SGGP,
-  #     #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-  #     #hessian = TRUE,
-  #     control = list(rel.tol = 1e-8,iter.max = 500))#reltol=1e-4)#abstol = tol)
-  #   }
+  # nnn is numberofoutputparameterdimensions
+  nnn <- if (separateoutputparameterdimensions) {
+    ncol(y)
+  } else {
+    1
+  }
   
-  # Set new theta
-  SGGP$thetaMAP <- opt.out$par
-  SGGP$sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=SGGP$thetaMAP, return_lS=TRUE)$sigma2
-  SGGP$pw <- SGGP_internal_calcpw(SGGP=SGGP, y, theta=SGGP$thetaMAP)
-  totnumpara = length(SGGP$thetaMAP)
+  # Fix theta0
+  if (nnn > 1) {
+    if (is.vector(theta0)) {
+      theta0 <- matrix(theta0, nrow=length(theta0), ncol=nnn, byrow=F)
+      # browser()
+    }
+  }
   
-  H = matrix(0,nrow=totnumpara,ncol=totnumpara)
-  PSTn=  log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))
-  thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
-  grad0 = SGGP_internal_gneglogpost(thetav,SGGP,y)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)
-  for(c in 1:totnumpara){
-    rsad = rep(0,totnumpara)
-    rsad[c] =10^(-4)
-    PSTn=  log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP)) + rsad
+  
+  if (is.matrix(Y) && !SGGP$use_PCA) {SGGP$M <- diag(ncol(y))} # Use identity transformation instead of PCA
+  for (opdlcv in 1:nnn) { # output parameter dimension
+    # browser()
+    y.thisloop <- if (nnn==1) {y} else {y[,opdlcv]} # All of y or single column
+    if (!is.null(Ys)) {ys.thisloop <- if (nnn==1) {ys} else {ys[,opdlcv]}} # All of y or single column
+    theta0.thisloop <- if (nnn==1) {theta0} else {theta0[,opdlcv]}
+    
+    opt.out = nlminb(
+      theta0.thisloop,
+      objective = SGGP_internal_neglogpost,
+      gradient = SGGP_internal_gneglogpost,
+      lower = lower, 
+      upper = upper,
+      y = y.thisloop,
+      SGGP = SGGP,
+      #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+      #hessian = TRUE,
+      control = list(rel.tol = 1e-8,iter.max = 500)#reltol=1e-4)#abstol = tol)
+    )
+    # for(i in 1:5){
+    #   opt.out = nlminb(
+    #     runif(SGGP$numpara*SGGP$d, -0.75,0.75),
+    #     objective = SGGP_internal_neglogpost,
+    #     gradient = SGGP_internal_gneglogpost,
+    #     lower = 0.75*lower, 
+    #     upper = 0.75*upper,
+    #     y = y,
+    #     SGGP = SGGP,
+    #     #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
+    #     #hessian = TRUE,
+    #     control = list(rel.tol = 1e-8,iter.max = 500))#reltol=1e-4)#abstol = tol)
+    #   }
+    
+    # Set new theta
+    thetaMAP <- opt.out$par
+    sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=TRUE)$sigma2
+    pw <- SGGP_internal_calcpw(SGGP=SGGP, y.thisloop, theta=thetaMAP)
+    totnumpara = length(thetaMAP)
+    
+    H = matrix(0,nrow=totnumpara,ncol=totnumpara)
+    PSTn=  log((1+thetaMAP)/(1-thetaMAP))
     thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
-    H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(4)
-  }
-  Hmat = H/2+t(H)/2
-  # print(Hmat)
-  # print(sqrt(diag(solve(Hmat))))
-  A = eigen(Hmat)
-  cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
-  #print( cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP)))
-  if(laplaceapprox){
-    PST= log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP)) + cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP))
-    SGGP$thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
-  }else{
-    U <- function(re){
-      PSTn = log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))+cHa%*%as.vector(re)
-      thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
-      return(SGGP_internal_neglogpost(thetav,SGGP,y))
+    grad0 = SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)
+    for(c in 1:totnumpara){
+      rsad = rep(0,totnumpara)
+      rsad[c] =10^(-4)
+      PSTn=  log((1+thetaMAP)/(1-thetaMAP)) + rsad
+      thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
+      H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(4)
     }
-    q = rep(0,totnumpara)
-    Uo = U(q)
-    scalev = 0.5
-    for(i in 1:(100*SGGP$numPostSamples)){
-      p = rnorm(length(q),0,1)*scalev
-      qp = q + p
+    Hmat = H/2+t(H)/2
+    # print(Hmat)
+    # print(sqrt(diag(solve(Hmat))))
+    A = eigen(Hmat)
+    cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
+    #print( cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP)))
+    if(laplaceapprox){
+      PST= log((1+thetaMAP)/(1-thetaMAP)) + cHa%*%matrix(rnorm(100*length(thetaMAP),0,1),nrow=length(thetaMAP))
+      thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
+    }else{
+      U <- function(re){
+        PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%as.vector(re)
+        thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
+        return(SGGP_internal_neglogpost(thetav,SGGP,y.thisloop))
+      }
+      q = rep(0,totnumpara)
+      Uo = U(q)
+      scalev = 0.5
+      for(i in 1:(100*SGGP$numPostSamples)){
+        p = rnorm(length(q),0,1)*scalev
+        qp = q + p
+        
+        Up = U(qp)
+        if(runif(1) < exp(Uo-Up)){
+          q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))
+        }else{
+          scalev=exp(log(scalev)-0.1/sqrt(i+4));scalev = max(scalev,1/sqrt(length(q)))
+        }
+        
+      }
       
-      Up = U(qp)
-      if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))}else{scalev=exp(log(scalev)-0.1/sqrt(i+4));scalev = max(scalev,1/sqrt(length(q)))}
-      
+      Uo = U(q)
+      Bs = matrix(0,ncol=totnumpara,nrow=SGGP$numPostSamples)
+      for(i in 1:(100*SGGP$numPostSamples)){
+        p = rnorm(length(q),0,1)*scalev
+        qp = q + p
+        
+        Up = U(qp)
+        if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;}
+        if((i%%100)==0){Bs[,i/100]=q;}
+      }
+      PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%Bs
+      thetaPostSamples = (exp(PSTn)-1)/(exp(PSTn)+1)
     }
     
-    Uo = U(q)
-    Bs = matrix(0,ncol=totnumpara,nrow=SGGP$numPostSamples)
-    for(i in 1:(100*SGGP$numPostSamples)){
-      p = rnorm(length(q),0,1)*scalev
-      qp = q + p
+    if(SGGP$supplemented){
+      Cs = matrix(1,dim(SGGP$Xs)[1],SGGP$ss)
+      for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+        V = SGGP$CorrMat(SGGP$Xs[,dimlcv], SGGP$xb, thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+        Cs = Cs*V[,SGGP$designindex[,dimlcv]]
+      }
       
-      Up = U(qp)
-      if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;}
-      if((i%%100)==0){Bs[,i/100]=q;}
+      Sigma_t = matrix(1,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1])
+      for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+        V = SGGP$CorrMat(SGGP$Xs[,dimlcv], SGGP$Xs[,dimlcv], thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+        Sigma_t = Sigma_t*V
+      }
+      
+      MSE_s = list(matrix(0,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+      for (dimlcv in 1:SGGP$d) {
+        for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+          MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],
+                                                                                   SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                                   thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                                   CorrMat=SGGP$CorrMat))
+        }
+      }
+      
+      for (blocklcv in 1:SGGP$uoCOUNT) {
+        ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
+        for (dimlcv in 1:SGGP$d) {
+          levelnow = SGGP$uo[blocklcv,dimlcv]
+          ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+        }
+        Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
+      }
+      # browser()
+      yhats = Cs%*%pw
+      
+      Sti_resid = solve(Sigma_t,ys.thisloop-yhats)
+      Sti = solve(Sigma_t)
+      sigma2MAP = (sigma2MAP*dim(SGGP$design)[1]+colSums((ys.thisloop-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])
+      
+      pw_adj_y = t(Cs)%*%Sti_resid
+      pw_adj <- SGGP_internal_calcpw(SGGP=SGGP, y=pw_adj_y, theta=thetaMAP)
+      
+      pw_uppadj = pw-pw_adj
+      supppw = Sti_resid
     }
-    PSTn = log((1+SGGP$thetaMAP)/(1-SGGP$thetaMAP))+cHa%*%Bs
-    SGGP$thetaPostSamples = (exp(PSTn)-1)/(exp(PSTn)+1)
+    
+    # Add all new variables to SGGP that are needed
+    if (nnn==1) { # Only 1 output parameter dim, so just set them
+      SGGP$thetaMAP <- thetaMAP
+      SGGP$sigma2MAP <- sigma2MAP
+      SGGP$pw <- pw
+      SGGP$thetaPostSamples <- thetaPostSamples
+      if (SGGP$supplemented) {
+        SGGP$pw_uppadj <- pw_uppadj
+        SGGP$supppw <- supppw
+        SGGP$Sti = Sti
+        SGGP$sigma2MAP <- sigma2MAP
+      }
+    } else { # More than 1 opd, so need to set as columns of matrix
+      # browser('this is important, not initialized yet')
+      if (opdlcv==1) { # First time, initialize matrix/array for all
+        
+        SGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nnn)
+        if (length(sigma2MAP) != 1) {
+          stop("ERROR HERE, sigma2map can be matrix??? It is always a 1x1 matrix from what I've seen before.")
+        }
+        SGGP$sigma2MAP <- numeric(nnn)
+        SGGP$pw <- matrix(NaN, length(pw), nnn) 
+        # thetaPostSamples is matrix, so this is 3dim array below
+        SGGP$thetaPostSamples <- array(data = NaN, dim=c(dim(thetaPostSamples), nnn))
+      }
+      SGGP$thetaMAP[,opdlcv] <- thetaMAP
+      SGGP$sigma2MAP[opdlcv] <- sigma2MAP[1,1]
+      SGGP$pw[,opdlcv] <- pw
+      SGGP$thetaPostSamples[,,opdlcv] <- thetaPostSamples
+      if (SGGP$supplemented) {#browser('need to fix this')
+        if (opdlcv==1) { # First time initialize all
+          
+          SGGP$pw_uppadj <- matrix(NaN, nrow(pw_uppadj), nnn)
+          SGGP$supppw <- matrix(NaN, nrow(supppw), nnn)
+          SGGP$Sti = array(NaN, dim=c(dim(Sti), nnn)) # Sti is matrix, so this is 3 dim array
+        }
+        SGGP$pw_uppadj[,opdlcv] <- pw_uppadj
+        SGGP$supppw[,opdlcv] <- supppw
+        SGGP$Sti[,,opdlcv] = Sti
+      }
+    }
   }
   
-  if(SGGP$supplemented){
-    Cs = matrix(1,dim(SGGP$Xs)[1],SGGP$ss)
-    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-      V = SGGP$CorrMat(SGGP$Xs[,dimlcv], SGGP$xb, SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
-      Cs = Cs*V[,SGGP$designindex[,dimlcv]]
-    }
-    
-    Sigma_t = matrix(1,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1])
-    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-      V = SGGP$CorrMat(SGGP$Xs[,dimlcv], SGGP$Xs[,dimlcv], SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
-      Sigma_t = Sigma_t*V
-    }
-    
-    MSE_s = list(matrix(0,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
-    for (dimlcv in 1:SGGP$d) {
-      for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
-        MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],
-                                                                                 SGGP$xb[1:SGGP$sizest[levellcv]],SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat))
-      }
-    }
-    
-    for (blocklcv in 1:SGGP$uoCOUNT) {
-      ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
-      for (dimlcv in 1:SGGP$d) {
-        levelnow = SGGP$uo[blocklcv,dimlcv]
-        ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
-      }
-      Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
-    }
-    
-    yhats = Cs%*%SGGP$pw
-    
-    Sti_resid = solve(Sigma_t,ys-yhats)
-    SGGP$Sti = solve(Sigma_t)
-    SGGP$sigma2MAP = (SGGP$sigma2MAP*dim(SGGP$design)[1]+colSums((ys-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])
-    
-    pw_adj_y = t(Cs)%*%Sti_resid
-    pw_adj <- SGGP_internal_calcpw(SGGP=SGGP, y=pw_adj_y, theta=SGGP$thetaMAP)
-    
-    SGGP$pw_uppadj = SGGP$pw-pw_adj
-    SGGP$supppw = Sti_resid
-  }
   return(SGGP)
 }
 
@@ -407,7 +485,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
 #' @examples
 #' SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
 #'              xo=c(.11), theta=c(.1,.2,.3),
-#'              CorrMat=SGGP_internal_CorrMatCauchySQ)
+#'              CorrMat=SGGP_internal_CorrMatCauchySQT)
 SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat) {
   S = CorrMat(xo, xo, theta)
   n = length(xo)

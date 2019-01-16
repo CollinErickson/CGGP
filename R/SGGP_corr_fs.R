@@ -25,6 +25,7 @@ SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, return_dCdtheta = FALSE, r
   if(return_numpara){
     return(3)
   }else{ 
+    if (length(theta) != 3) {stop("CorrMatCauchy theta should be length 3")}
     diffmat =abs(outer(x1,x2,'-')); 
     
     expLS = exp(3*(theta[1]))
@@ -61,6 +62,7 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
   if(return_numpara){
     return(3);
   } else{
+    if (length(theta) != 3) {stop("CorrMatCauchySQT theta should be length 3")}
     expTILT = exp((theta[3]))
     expLS = exp(3*(theta[1]))
     x1t = (x1+10^(-2))^expTILT
@@ -105,11 +107,12 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
 #' @export
 #'
 #' @examples
-#' SGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,-.5,.8))
+#' SGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,-.5))
 SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE) {
   if(return_numpara){
     return(2);
   }else{ 
+    if (length(theta) != 2) {stop("CorrMatCauchySQ theta should be length 3")}
     diffmat =abs(outer(x1,x2,'-')); 
     
     expLS = exp(3*theta[1])
