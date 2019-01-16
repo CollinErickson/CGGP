@@ -31,7 +31,7 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
     stop("corr given to SGGPcreate should be one of CauchySQT or CauchySQ")
   }
   SGGP$numpara <- SGGP$CorrMat(return_numpara=TRUE)
-  print("Fix thetaMAP and thetaPostSamples in create")
+  # print("Fix thetaMAP and thetaPostSamples in create")
   SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
   SGGP$numPostSamples <- 100
   SGGP$thetaPostSamples  <- matrix(2*rbeta(d*SGGP$numpara*SGGP$numPostSamples , 0.5, 0.5)-1,ncol=SGGP$numPostSamples )

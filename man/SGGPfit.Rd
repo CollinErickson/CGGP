@@ -7,7 +7,8 @@
 SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = rep(0, SGGP$numpara *
   SGGP$d), laplaceapprox = TRUE, lower = rep(-1, SGGP$numpara *
   SGGP$d), upper = rep(1, SGGP$numpara * SGGP$d),
-  use_PCA = SGGP$use_PCA, Ynew)
+  use_PCA = SGGP$use_PCA, separateoutputparameterdimensions = FALSE,
+  Ynew)
 }
 \arguments{
 \item{SGGP}{Sparse grid objects}
@@ -27,6 +28,9 @@ SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = rep(0, SGGP$numpara *
 \item{upper}{Upper bound for parameter optimization}
 
 \item{use_PCA}{Should PCA be used if output is multivariate?}
+
+\item{separateoutputparameterdimensions}{If multiple output dimensions,
+should separate parameters be fit to each dimension?}
 
 \item{Ynew}{Values of `SGGP$design_unevaluated`}
 }

@@ -25,7 +25,7 @@ MSE_MAP <- outer(1:SG$d, 1:8,
      Vectorize(function(dimlcv, lcv1) {
         SGGP_internal_calcMSE(SG$xb[1:SG$sizest[dimlcv]],
         theta=SG$thetaMAP[(dimlcv-1)*SG$numpara+1:SG$numpara],
-        CorrMat=SGGP_internal_CorrMatCauchySQ)
+        CorrMat=SG$CorrMat)
  }))
 SGGP_internal_calcMSEde(SG$po[1:SG$poCOUNT, ], MSE_MAP)
 }

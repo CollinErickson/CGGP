@@ -12,7 +12,7 @@
 #'
 #' @examples
 #' SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=c(1,2,3),
-#'          CorrMat=SGGP_internal_CorrMatCauchySQ)
+#'          CorrMat=SGGP_internal_CorrMatCauchySQT)
 SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
   S = CorrMat(xl, xl, theta)
   xp = seq(0,1,l=101)
@@ -45,7 +45,7 @@ SGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
 #'      Vectorize(function(dimlcv, lcv1) {
 #'         SGGP_internal_calcMSE(SG$xb[1:SG$sizest[dimlcv]],
 #'         theta=SG$thetaMAP[(dimlcv-1)*SG$numpara+1:SG$numpara],
-#'         CorrMat=SGGP_internal_CorrMatCauchySQ)
+#'         CorrMat=SG$CorrMat)
 #'  }))
 #' SGGP_internal_calcMSEde(SG$po[1:SG$poCOUNT, ], MSE_MAP)
 SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
@@ -120,7 +120,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
   separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
   # nnn is numberofoutputparameterdimensions
   nnn <- if (separateoutputparameterdimensions) {
-    ncol(y)
+    ncol(SGGP$y)
   } else {
     1
   }
@@ -196,8 +196,12 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
     for(samplelcv in 1:SGGP$numPostSamples){
       # IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv])
       # It's an array, need to average over opdlcv. Over 3rd dim since samplelcv removes 3rd dim of array.
-      IMES_PostSamples_beforemean <- apply(MSE_PostSamples[,,samplelcv,], 3, function(x){SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], x)})
-      IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] <- apply(IMES_PostSamples_beforemean, 1, mean)
+      if (nnn == 1) { # Will be a matrix
+        IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
+      } else { # Is a 3d array, need to use an apply and then apply again with mean
+        IMES_PostSamples_beforemean <- apply(MSE_PostSamples[,,samplelcv,], 3, function(x){SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], x)})
+        IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] <- apply(IMES_PostSamples_beforemean, 1, mean)
+      }
     }
     IMES_UCB = matrix(0, SGGP$ML)
     IMES_UCB[1:SGGP$poCOUNT] = apply(IMES_PostSamples[1:SGGP$poCOUNT,],1,quantile, probs=0.9) 
@@ -369,8 +373,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
                 if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
                   levellcv = max_polevels[dimlcv]
                   MSE_MAP[dimlcv, levellcv, opdlcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                               thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
-                                                                               SGGP$CorrMat)))
+                                                                                       thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                                       SGGP$CorrMat)))
                   if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
                     MSE_MAP[dimlcv, levellcv, opdlcv] = min(MSE_MAP[dimlcv, levellcv, opdlcv], MSE_MAP[dimlcv, levellcv - 1, opdlcv])
                   }
@@ -388,11 +392,11 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
                   for(samplelcv in 1:SGGP$numPostSamples){
                     # Calculate some sort of MSE from above, not sure what it's doing
                     MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv] = max(0,
-                                                                      abs(SGGP_internal_calcMSE(
-                                                                        SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                        thetaPostSamples.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,
-                                                                                                  samplelcv],
-                                                                        SGGP$CorrMat)))
+                                                                              abs(SGGP_internal_calcMSE(
+                                                                                SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                                thetaPostSamples.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara,
+                                                                                                          samplelcv],
+                                                                                SGGP$CorrMat)))
                     if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
                       MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv],
                                                                                 MSE_PostSamples[dimlcv, levellcv - 1,samplelcv, opdlcv])
@@ -414,11 +418,16 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
             for(samplelcv in 1:SGGP$numPostSamples){
               # IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
               #                                                                    MSE_PostSamples[,,samplelcv])
-              IMES_PostSamples_beforemeannewpoint = apply(MSE_PostSamples[,,samplelcv,],
-                                                          3, # 3rd dim since samplelcv removes 3rd
-                                                          function(x) {SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)}
-              )
-              IMES_PostSamples[SGGP$poCOUNT,samplelcv] <- mean(IMES_PostSamples_beforemeannewpoint)
+              if (nnn == 1) { # is a matrix
+                IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
+                                                                                   MSE_PostSamples[,,samplelcv,])
+              } else { # is an array, need to apply
+                IMES_PostSamples_beforemeannewpoint = apply(MSE_PostSamples[,,samplelcv,],
+                                                            3, # 3rd dim since samplelcv removes 3rd
+                                                            function(x) {SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)}
+                )
+                IMES_PostSamples[SGGP$poCOUNT,samplelcv] <- mean(IMES_PostSamples_beforemeannewpoint)
+              }
             }
             IMES_UCB[SGGP$poCOUNT] = quantile(IMES_PostSamples[SGGP$poCOUNT,],probs=0.9)
           } else {stop("Not possible #9235058")}

@@ -127,6 +127,8 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 # @param return_optim If TRUE, return output from optim().
 # If FALSE return updated SG.
 #' @param use_PCA Should PCA be used if output is multivariate?
+#' @param separateoutputparameterdimensions If multiple output dimensions,
+#' should separate parameters be fit to each dimension?
 #' 
 #' @importFrom stats optim rnorm runif nlminb
 #'
@@ -143,7 +145,6 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     use_PCA=SGGP$use_PCA,
                     separateoutputparameterdimensions=FALSE,
                     Ynew) {
-  print("Fix theta0 parameter")
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
     if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}
@@ -187,7 +188,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     }else{ # Y is matrix
       SGGP$mu = colMeans(Y)
       if (SGGP$use_PCA) { # Use PCA
-        print("Using PCA")
+        # print("Using PCA")
         SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
         Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
         SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
@@ -203,7 +204,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
         SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
       } else { # No PCA
-        print("Not using PCA")
+        # print("Not using PCA")
         y <- sweep(Y, 2, SGGP$mu)
         # Need to set SGGP$M somewhere so that it doesn't use transformation
       }
@@ -484,7 +485,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
 #' @examples
 #' SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
 #'              xo=c(.11), theta=c(.1,.2,.3),
-#'              CorrMat=SGGP_internal_CorrMatCauchySQ)
+#'              CorrMat=SGGP_internal_CorrMatCauchySQT)
 SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat) {
   S = CorrMat(xo, xo, theta)
   n = length(xo)

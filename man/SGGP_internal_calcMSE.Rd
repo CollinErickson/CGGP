@@ -22,5 +22,5 @@ Can be calculated exactly, but not much reason in 1D.
 }
 \examples{
 SGGP_internal_calcMSE(xl=c(0,.5,.9), theta=c(1,2,3),
-         CorrMat=SGGP_internal_CorrMatCauchySQ)
+         CorrMat=SGGP_internal_CorrMatCauchySQT)
 }

@@ -26,7 +26,7 @@ SGGPpred <- function(xp,SGGP) {
   separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
   # nnn is numberofoutputparameterdimensions
   nnn <- if (separateoutputparameterdimensions) {
-    ncol(y)
+    ncol(SGGP$y)
   } else {
     1
   }
@@ -93,7 +93,7 @@ SGGPpred <- function(xp,SGGP) {
           var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M)))
           
         }else{
-          browser()
+          # browser()
           mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+
                      (Cp%*%pw.thisloop)%*%(SGGP$M))
           var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M)))
@@ -175,9 +175,12 @@ SGGPpred <- function(xp,SGGP) {
   # browser()
   # if (nnn > 1) {meanall <- sweep(sweep(meanall,2,SGGP$mu) %*% SGGP$M,2,SGGP$mu, `+`)}
   if (nnn > 1) {meanall2 <- sweep(meanall2, 2, SGGP$mu, `+`)}
-  print("need to fix varall too!")
-  if (nnn > 1) GP <- list(mean=meanall2, var=varall)
-  else GP <- list(mean=mean, var=var)
+  # print("need to fix varall too!")
+  if (nnn > 1) {
+    GP <- list(mean=meanall2, var=varall)
+  } else {
+    GP <- list(mean=mean, var=var)
+  }
   return(GP)
 }
 
@@ -192,7 +195,7 @@ SGGPpred <- function(xp,SGGP) {
 #' @export
 #'
 #' @examples
-#' SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=c(.1,.2,.3),
+#' SGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=c(.1,.2),
 #'              CorrMat=SGGP_internal_CorrMatCauchySQ)
 SGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
   S = CorrMat(xl, xl, theta)
