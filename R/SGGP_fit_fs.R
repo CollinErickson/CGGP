@@ -339,7 +339,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
     #print( cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP)))
     if(laplaceapprox){
-      PST= log((1+thetaMAP)/(1-thetaMAP)) + cHa%*%matrix(rnorm(100*length(thetaMAP),0,1),nrow=length(thetaMAP))
+      PST= log((1+thetaMAP)/(1-thetaMAP)) + cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),nrow=length(thetaMAP))
       thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
     }else{
       U <- function(re){

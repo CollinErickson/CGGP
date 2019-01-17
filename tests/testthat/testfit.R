@@ -92,6 +92,9 @@ test_that("Not using LaPlace approx works", {
   y2 <- apply(SG$design, 1, f2)
   y <- cbind(y1, y2)
   
+  # speed up test by reducing number of thetaPostSamples
+  SG$numPostSamples <- 10
+  
   SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F)
   SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T)
   expect_equal(dim(SG1$thetaPostSamples), dim(SG2$thetaPostSamples))
@@ -99,5 +102,7 @@ test_that("Not using LaPlace approx works", {
   SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F, separateoutputparameterdimensions = T)
   SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T, separateoutputparameterdimensions = T)
   expect_equal(dim(SG1$thetaPostSamples), dim(SG2$thetaPostSamples))
-  
+  if (F) {
+    boxplot(SG1$thetaPostSamples[1,,1], SG2$thetaPostSamples[1,,1])
+  }
 })

@@ -3,7 +3,7 @@
 # -----------------------------------------------
 
 # Use 3 dim output. 3rd func is LinComb of first two, so PCA should have 2 dim
-f1 <- function(x){x[1]+x[2]^2 + cos(x[3]^2*2*pi*4)}
+f1 <- function(x){x[1]+x[2]^2 + cos(x[3]^2*2*pi*4) - 3.3}
 f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
 f3 <- function(x) {f1(x) + .3*f2(x)}
 
@@ -13,7 +13,7 @@ ysup1 <- apply(xsup, 1, f1)
 ysup2 <- apply(xsup, 1, f2)
 ysup3 <- apply(xsup, 1, f3)
 ysup <- cbind(ysup1, ysup2, ysup3)
-eps.sup <- 1e-3 # Use difference accuracy for supp data preds
+eps.sup <- 1e-2 # Use difference accuracy for supp data preds
 
 test_that("1. MV output, PCA, 1opd", {
   
