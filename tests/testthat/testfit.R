@@ -17,6 +17,14 @@ test_that("SGGPfit works", {
   expect_length(neglogpost2[[1]], 1)
   expect_length(neglogpost2[[2]], 9)
   
+  # # Works with supplementary data
+  # nsup <- 10
+  # xsup <- matrix(runif(nsup*3), nsup, 3)
+  # ysup <- apply(xsup, 1, f)
+  # SG <- SGGPappend(SG, 20)
+  # ynew <- apply(SG$design_unevaluated, 1, f)
+  # expect_error(SG <- SGGPfit(SG, Ynew=ynew, Xs=xsup, Ys=ysup), NA)
+  
 })
 
 test_that("SGGPfit works with Ynew - scalar output", {

@@ -110,7 +110,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
   }
 }
 
-#' Calculate theta MLE given data
+#' Update SGGP model given data
 #'
 #' @param SGGP Sparse grid objects
 #' @param Y Output values calculated at SGGP$design
@@ -143,7 +143,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
                     lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                     use_PCA=SGGP$use_PCA,
-                    separateoutputparameterdimensions=FALSE,
+                    separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
                     Ynew) {
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
@@ -471,7 +471,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
 
 
 
-#' ????????????
+#' Calculate posterior variance
 #'
 #' @param x1 Points at which to calculate MSE
 #' @param x2 Levels along dimension, vector???
@@ -480,7 +480,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
 #' for vector of 1D points.
 #'
-#' @return MSE predictions
+#' @return Variance posterior
 #' @export
 #'
 #' @examples

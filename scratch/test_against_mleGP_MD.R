@@ -32,17 +32,17 @@ Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
 
-SGGP = SGGPcreate(d,100) #create the design.  it has so many entries because i am sloppy
-Y = testf(SGGP$design) #the design is $design, simple enough, right?
+SGGP = SGGPcreate(d,100)
+Y = testf(SGGP$design)
 SGGP = SGGPfit(SGGP,Y)
 SGGPTS=SGGPappend(SGGP,200,selectionmethod="TS")
-YTS = testf(SGGPTS$design) #the design is $design, simple enough, right?
+YTS = testf(SGGPTS$design)
 SGGPTS = SGGPfit(SGGPTS,YTS)
 SGGPTS=SGGPappend(SGGPTS,300,selectionmethod="TS")
-YTS = testf(SGGPTS$design) #the design is $design, simple enough, right?
+YTS = testf(SGGPTS$design)
 SGGPTS = SGGPfit(SGGPTS,YTS)
 PredTS = SGGPpred(Xp,SGGPTS)
-mean(abs(Yp-PredTS$mean)^2)  #prediction should be much better
+mean(abs(Yp-PredTS$mean)^2)
 
 library(mlegp)
 Xmlegp = randomLHS(200, d)
@@ -59,5 +59,19 @@ predmlegp_NOPCA =predict(fitMulti_NOPCA,Xp)
 mean(abs(Yp[,outputindex]-PredTS$mean[,outputindex])^2) 
 mean(abs(Yp[,outputindex]-PredTS2$mean)^2) 
 mean(abs(Yp[,outputindex]-t(predmlegp_PCA)[,outputindex])^2) 
-mean(abs(Yp[,outputindex]-(predmlegp_NOPCA))^2)  #prediction should be much better
+mean(abs(Yp[,outputindex]-(predmlegp_NOPCA))^2)
 
+
+
+# Now we can do PCA or not and can fit each output dim separately
+SGGP = SGGPcreate(d,100)
+Y = testf(SGGP$design)
+SGGP = SGGPfit(SGGP,Y, use_PCA = F, separateoutputparameterdimensions = T)
+SGGPTS=SGGPappend(SGGP,200,selectionmethod="TS")
+YTS = testf(SGGPTS$design)
+SGGPTS = SGGPfit(SGGPTS,YTS)
+SGGPTS=SGGPappend(SGGPTS,300,selectionmethod="TS")
+YTS = testf(SGGPTS$design)
+SGGPTS = SGGPfit(SGGPTS,YTS)
+PredTS = SGGPpred(Xp,SGGPTS)
+mean(abs(Yp-PredTS$mean)^2)  # prediction still isn't good!

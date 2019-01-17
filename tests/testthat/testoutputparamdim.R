@@ -53,9 +53,6 @@ test_that("1. MV output, PCA, 1opd", {
 
 test_that("2. MV output, NO PCA, 1opd", {
   
-  f1 <- function(x){x[1]+x[2]^2}
-  f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
-  f3 <- function(x) {f1(x) + .3*f2(x)}
   
   # First check MV with PCA
   SG <- SGGPcreate(d=3, batchsize=100)
@@ -84,10 +81,6 @@ test_that("2. MV output, NO PCA, 1opd", {
 
 
 test_that("3. MV output, PCA, separate opd", {
-  
-  f1 <- function(x){x[1]+x[2]^2}
-  f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
-  f3 <- function(x) {f1(x) + .3*f2(x)}
   
   # First check MV with PCA
   SG <- SGGPcreate(d=3, batchsize=100)

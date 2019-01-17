@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_fit_fs.R
 \name{SGGP_internal_postvarmatcalc}
 \alias{SGGP_internal_postvarmatcalc}
-\title{????????????}
+\title{Calculate posterior variance}
 \usage{
 SGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat)
 }
@@ -19,10 +19,10 @@ SGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat)
 for vector of 1D points.}
 }
 \value{
-MSE predictions
+Variance posterior
 }
 \description{
-????????????
+Calculate posterior variance
 }
 \examples{
 SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),

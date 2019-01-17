@@ -2,13 +2,13 @@
 % Please edit documentation in R/SGGP_fit_fs.R
 \name{SGGPfit}
 \alias{SGGPfit}
-\title{Calculate theta MLE given data}
+\title{Update SGGP model given data}
 \usage{
 SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = rep(0, SGGP$numpara *
   SGGP$d), laplaceapprox = TRUE, lower = rep(-1, SGGP$numpara *
   SGGP$d), upper = rep(1, SGGP$numpara * SGGP$d),
-  use_PCA = SGGP$use_PCA, separateoutputparameterdimensions = FALSE,
-  Ynew)
+  use_PCA = SGGP$use_PCA,
+  separateoutputparameterdimensions = is.matrix(SGGP$thetaMAP), Ynew)
 }
 \arguments{
 \item{SGGP}{Sparse grid objects}
@@ -38,7 +38,7 @@ should separate parameters be fit to each dimension?}
 Updated SGGP object fit to data given
 }
 \description{
-Calculate theta MLE given data
+Update SGGP model given data
 }
 \examples{
 SG <- SGGPcreate(d=3, batchsize=100)
