@@ -32,8 +32,8 @@ SGGPpred <- function(xp,SGGP) {
   }
   if (nnn > 1) {
     # meanall <- matrix(NaN, nrow(xp), ncol=nnn)
-    meanall2 <- matrix(0, nrow(xp), ncol=nnn)
-    varall <- matrix(NaN, nrow(xp), ncol=nnn)
+    meanall2 <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y)) # ncol isn't nnn, might need to undo PCA
+    varall <- matrix(NaN, nrow(xp), ncol=ncol(SGGP$Y))
   }
   for (opdlcv in 1:nnn) {
     thetaMAP.thisloop <- if (nnn==1) SGGP$thetaMAP else SGGP$thetaMAP[, opdlcv]
@@ -81,7 +81,7 @@ SGGPpred <- function(xp,SGGP) {
         # browser()
         # With sepparout and PCA (or not), do this
         if (nnn > 1) {
-          meanall2 <- meanall2 + outer(c(Cp%*%pw.thisloop), SGGP$M[opdlcv,])
+          meanall2 <- meanall2 + outer(c(Cp%*%pw.thisloop), SGGP$M[opdlcv, ])
           var <- (as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))[,opdlcv]
           print("Need to do something with var and M here. Did something, maybe this is right, maybe not?")
         }
