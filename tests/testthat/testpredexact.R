@@ -71,13 +71,14 @@ test_that("Prediction matches exact on small samples", {
   expect_equal(SGpred$mean, expred)
   
   # Test var predictions
-  if (F) {
-    s2 <- c(t(Y) %*%solve(Sig, Y) / length(Y))
-    exvar <- s2 * (1 - colSums(t(s) * solve(Sig, t(s))))
-    print(1/SGpred$var* exvar)
-    plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
-    expect_equal(SGpred$var, exvar)
-  }
+  # Calculating s2 like this doesn't work since we use MAP
+  # s2 <- c(t(Y) %*%solve(Sig, Y) / length(Y))
+  # Just use the MAP value
+  s2 <- SG$sigma2MAP[1,1]
+  exvar <- s2 * (1 - colSums(t(s) * solve(Sig, t(s))))
+  print(1/SGpred$var* exvar)
+  plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
+  expect_equal(SGpred$var, exvar)
 })
 
 test_that("predMV works", {
