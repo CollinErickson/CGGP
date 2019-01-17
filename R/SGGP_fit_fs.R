@@ -284,7 +284,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   
   if (is.matrix(Y) && !SGGP$use_PCA) {SGGP$M <- diag(ncol(y))} # Use identity transformation instead of PCA
   for (opdlcv in 1:nnn) { # output parameter dimension
-    # browser()
+    
     y.thisloop <- if (nnn==1) {y} else {y[,opdlcv]} # All of y or single column
     if (!is.null(Ys)) {ys.thisloop <- if (nnn==1) {ys} else {ys[,opdlcv]}} # All of y or single column
     theta0.thisloop <- if (nnn==1) {theta0} else {theta0[,opdlcv]}
@@ -364,7 +364,8 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       }
       
       Uo = U(q)
-      Bs = matrix(0,ncol=totnumpara,nrow=SGGP$numPostSamples)
+      Bs = matrix(0,nrow=totnumpara,ncol=SGGP$numPostSamples)
+      
       for(i in 1:(100*SGGP$numPostSamples)){
         p = rnorm(length(q),0,1)*scalev
         qp = q + p

@@ -40,6 +40,14 @@ test_that("1. MV output, PCA, 1opd", {
   expect_equal(ysuppred[,1], ysup1, eps.sup)
   expect_equal(ysuppred[,2], ysup2, eps.sup)
   expect_equal(ysuppred[,3], ysup3, eps.sup)
+  
+  
+  # Add supplemental data, but fewer rows than 2*d so it runs other code in fit
+  expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup[1:2,], Ys=ysup[1:2,]), NA) # No error
+  ysuppred <- SGGPpred(xsup[1:2,], SG)$me
+  expect_equal(ysuppred[,1], ysup1[1:2], eps.sup)
+  expect_equal(ysuppred[,2], ysup2[1:2], eps.sup)
+  expect_equal(ysuppred[,3], ysup3[1:2], eps.sup)
 })
 
 

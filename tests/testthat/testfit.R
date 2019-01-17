@@ -52,6 +52,10 @@ test_that("SGGPfit works with Ynew - vector output", {
   y <- cbind(y1, y2)
   # Can't give in Y and Ynew
   expect_error(SG <- SGGPfit(SG, Y=y, Ynew=y))
+  # Other errors when giving ynew and wrong number of rows
+  expect_error(SGGPfit(SG, Ynew=y[1:5,]))
+  expect_error(SGGPfit(SG, Ynew=y1[1:5]))
+  
   # Works with just Ynew
   SG <- SGGPfit(SG, Ynew=y)
   
@@ -64,7 +68,36 @@ test_that("SGGPfit works with Ynew - vector output", {
   expect_error(SGGPfit(SG, Y=rbind(y, ynew), Ynew=ynew))
   # Get error when Ynew is wrong size
   expect_error(SGGPfit(SG, Ynew=ynew[1:(nrow(ynew)-1),]))
+  # Get error if you give in vector
+  expect_error(SGGPfit(SG, Ynew=ynew1))
   # Works fine
   expect_is(SG <- SGGPfit(SG, Ynew = ynew), "SGGP")
+  
+  
 })
 
+test_that("Not using LaPlace approx works", {
+  f1 <- function(x){x[1]+x[2]^2}
+  f2 <- function(x){x[2]^1.3+sin(2*pi*x[3])}
+  
+  # First 1D output
+  SG <- SGGPcreate(d=3, batchsize=20)
+  y1 <- apply(SG$design, 1, f1)
+  
+  expect_error(SG <- SGGPfit(SG, Ynew=y1, laplaceapprox = F), NA)
+  
+  # Now with multiple output
+  SG <- SGGPcreate(d=3, batchsize=20)
+  y1 <- apply(SG$design, 1, f1)
+  y2 <- apply(SG$design, 1, f2)
+  y <- cbind(y1, y2)
+  
+  SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F)
+  SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T)
+  expect_equal(dim(SG1$thetaPostSamples), dim(SG2$thetaPostSamples))
+
+  SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F, separateoutputparameterdimensions = T)
+  SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T, separateoutputparameterdimensions = T)
+  expect_equal(dim(SG1$thetaPostSamples), dim(SG2$thetaPostSamples))
+  
+})
