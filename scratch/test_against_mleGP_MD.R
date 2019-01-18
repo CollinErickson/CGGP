@@ -43,13 +43,15 @@ YTS = testf(SGGPTS$design)
 SGGPTS = SGGPfit(SGGPTS,YTS)
 PredTS = SGGPpred(Xp,SGGPTS)
 mean(abs(Yp-PredTS$mean)^2)
+# 10058
 
 library(mlegp)
-Xmlegp = randomLHS(200, d)
+Xmlegp = randomLHS(100, d)
 Ymlegp = testf(Xmlegp)
 fitMulti_PCA = mlegp(Xmlegp,t(Ymlegp),PC.num=5)
 predmlegp_PCA = fitMulti_PCA$UD%*%t(cbind(predict(fitMulti_PCA[[1]],Xp),predict(fitMulti_PCA[[2]],Xp),predict(fitMulti_PCA[[3]],Xp),predict(fitMulti_PCA[[4]],Xp),predict(fitMulti_PCA[[5]],Xp)))
-
+mean((Yp - t(predmlegp_PCA))^2)
+# w/ 100 pts, 15746
 
 outputindex =25#also try 1,11, 25,37, 51
 SGGPTS2 = SGGPfit(SGGPTS,YTS[,outputindex])
@@ -75,3 +77,5 @@ YTS = testf(SGGPTS$design)
 SGGPTS = SGGPfit(SGGPTS,YTS)
 PredTS = SGGPpred(Xp,SGGPTS)
 mean(abs(Yp-PredTS$mean)^2)  # prediction still isn't good!
+# 6670 with PCA
+# 4750 without PCA

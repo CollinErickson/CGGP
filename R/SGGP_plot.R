@@ -165,6 +165,9 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #'
 #' @return data frame
 #' @export
+#' @references Gneiting, Tilmann, and Adrian E. Raftery.
+#' "Strictly proper scoring rules, prediction, and estimation."
+#' Journal of the American Statistical Association 102.477 (2007): 359-378.
 #'
 #' @examples
 #' SG <- SGGPcreate(d=3, batchsize=100)
@@ -182,10 +185,16 @@ SGGPvalstats <- function(SGGP, Xval, Yval, d=NULL) {
     Yval <- Yval[,d]
   }
   
+  m <- ypred$mean
+  v <- pmax(ypred$var, 0)
+  s <- sqrt(v)
+  z <- (Yval - m) / s
   RMSE <- sqrt(mean((ypred$mean - Yval)^2))
-  score <- mean((Yval-ypred$mean)^2/ypred$var+log(ypred$var)) 
+  score <- mean((Yval-ypred$mean)^2/ypred$var+log(ypred$var))
+  CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
   coverage <- mean((Yval<= ypred$mean+1.96*sqrt(ypred$var))&(Yval>= ypred$mean-1.96*sqrt(ypred$var)))
-  data.frame(RMSE=RMSE, score=score, coverage=coverage)
+  
+  data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage)
   
   
 }

@@ -30,3 +30,8 @@ Xval <- matrix(runif(3*100), ncol=3)
 Yval <- apply(Xval, 1, f1)
 SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval)
 }
+\references{
+Gneiting, Tilmann, and Adrian E. Raftery.
+"Strictly proper scoring rules, prediction, and estimation."
+Journal of the American Statistical Association 102.477 (2007): 359-378.
+}
