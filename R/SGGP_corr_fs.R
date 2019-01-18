@@ -135,3 +135,45 @@ SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
 }
 
 
+
+#' Calculate correlation matrix for two sets of points in one dimension
+#' 
+#' Note that this is not the correlation between two vectors.
+#'
+#' @inheritParams SGGP_internal_CorrMatCauchy
+#'
+#' @return Matrix
+#' @export
+#'
+#' @examples
+#' SGGP_internal_CorrMatGaussian(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
+SGGP_internal_CorrMatGaussian <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE) {
+  if(return_numpara){
+    return(1);
+  }else{ 
+    if (length(theta) != 1) {stop("CorrMatGaussian theta should be length 1")}
+    diffmat =abs(outer(x1,x2,'-')); 
+    diffmat2 <- diffmat^2
+    
+    expLS = exp(3*theta[1])
+    # expHE = exp(3*theta[2])
+    h = diffmat2/expLS
+    # alpha = 2*exp(0+6)/(1+exp(0+6))
+    # halpha = h^alpha
+    # pow = -expHE/alpha
+    
+    # C = (1-10^(-10))*(1+halpha)^pow+10^(-10)*(diffmat<10^(-4))
+    C = (1-10^(-10))*exp(-h) + 10^(-10)*(diffmat<10^(-4))
+    if(return_dCdtheta){
+      # dCdtheta = (1-10^(-10))*cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
+      dCdtheta <- 3*C*diffmat2 / expLS
+      dCdtheta[is.na(dCdtheta)] = 0
+      out <- list(C=C,dCdtheta=dCdtheta)
+      return(out)
+    }else{
+      return(C)
+    }
+  }
+}
+
+
