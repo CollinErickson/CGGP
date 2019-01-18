@@ -54,6 +54,9 @@ test_that("Correlation CorrMatCauchySQT works", {
   # First check return_numpara is right
   expect_equal(SGGP_internal_CorrMatCauchySQT(return_numpara=TRUE), 3)
   
+  # Get error when you give in theta of wrong size
+  expect_error(SGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta = c(.1,.1)))
+  
   # Now check correlation
   cauchy1 <- SGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th)
   expect_is(cauchy1, "matrix")
@@ -105,6 +108,9 @@ test_that("Correlation CorrMatCauchySQ works", {
   
   # First check return_numpara is right
   expect_equal(SGGP_internal_CorrMatCauchySQ(return_numpara=TRUE), 2)
+  
+  # Get error when you give in theta of wrong size
+  expect_error(SGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta = c(.1,.1,.4)))
   
   # Now check correlation
   cauchy1 <- SGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th)

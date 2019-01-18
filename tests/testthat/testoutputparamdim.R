@@ -122,12 +122,29 @@ test_that("4. MV output, NO PCA, separate opd", {
   y2 <- apply(SG$design, 1, f2)
   y3 <- apply(SG$design, 1, f3)
   y <- cbind(y1, y2, y3)
+  
+  # Fit a model to only each individual output, will compare thetaMAP later
+  seed <- sample(1:10000, 1)
+  set.seed(seed)
+  SG1 <- SGGPfit(SG, Y=y1)
+  SG2 <- SGGPfit(SG, Y=y2)
+  SG3 <- SGGPfit(SG, Y=y3)
+  
+  # Now fit all
+  set.seed(seed)
   expect_error(SG <- SGGPfit(SG, Y=y, use_PCA = F, separateoutputparameterdimensions = T), NA) # No error
   expect_length(SG$thetaMAP, 3*3*3)
   expect_true(is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$thetaMAP) == 3)
   expect_true(ncol(SG$Y) == 3)
   expect_true(ncol(SG$y) == 3)
+  
+  # Check that thetaMAP for each dimension matches when model is only fit to that dimension.
+  expect_equal(SG$thetaMAP[,1], SG1$thetaMAP)
+  expect_equal(SG$thetaMAP[,2], SG2$thetaMAP)
+  expect_equal(SG$thetaMAP[,3], SG3$thetaMAP)
+  
+  # Now check predictions
   yMVpred <- SGGPpred(SG$design, SG=SG)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
