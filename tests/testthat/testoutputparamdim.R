@@ -15,6 +15,16 @@ ysup3 <- apply(xsup, 1, f3)
 ysup <- cbind(ysup1, ysup2, ysup3)
 eps.sup <- 1e-2 # Use difference accuracy for supp data preds
 
+
+ntest <- 20
+xtest <- matrix(runif(ntest*3), ntest, 3)
+ytest1 <- apply(xtest, 1, f1)
+ytest2 <- apply(xtest, 1, f2)
+ytest3 <- apply(xtest, 1, f3)
+ytest <- cbind(ytest1, ytest2, ytest3)
+eps.test <- 1e-2 # Use difference accuracy for testp data preds
+
+
 test_that("1. MV output, PCA, 1opd", {
   
   # First check MV with PCA
@@ -111,9 +121,6 @@ test_that("3. MV output, PCA, separate opd", {
 
 test_that("4. MV output, NO PCA, separate opd", {
   
-  f1 <- function(x){x[1]+x[2]^2}
-  f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
-  f3 <- function(x) {f1(x) + .3*f2(x)}
   
   # First check MV with PCA
   SG <- SGGPcreate(d=3, batchsize=100)
@@ -143,6 +150,10 @@ test_that("4. MV output, NO PCA, separate opd", {
   expect_equal(SG$thetaMAP[,1], SG1$thetaMAP)
   expect_equal(SG$thetaMAP[,2], SG2$thetaMAP)
   expect_equal(SG$thetaMAP[,3], SG3$thetaMAP)
+  # Check that predictions on these match
+  expect_equal(c(SGGPpred(xtest, SG)$me[,1]), c(SGGPpred(xtest, SG1)$me))
+  expect_equal(c(SGGPpred(xtest, SG)$me[,2]), c(SGGPpred(xtest, SG2)$me))
+  expect_equal(c(SGGPpred(xtest, SG)$me[,3]), c(SGGPpred(xtest, SG3)$me))
   
   # Now check predictions
   yMVpred <- SGGPpred(SG$design, SG=SG)$mean

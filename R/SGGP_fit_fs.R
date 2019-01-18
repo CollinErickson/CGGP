@@ -145,6 +145,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     use_PCA=SGGP$use_PCA,
                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
                     Ynew) {
+  print("Change theta0 to use last!!!")
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
     if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}

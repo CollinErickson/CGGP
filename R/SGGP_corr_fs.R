@@ -112,7 +112,7 @@ SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
   if(return_numpara){
     return(2);
   }else{ 
-    if (length(theta) != 2) {stop("CorrMatCauchySQ theta should be length 3")}
+    if (length(theta) != 2) {stop("CorrMatCauchySQ theta should be length 2")}
     diffmat =abs(outer(x1,x2,'-')); 
     
     expLS = exp(3*theta[1])
