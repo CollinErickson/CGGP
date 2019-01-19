@@ -165,6 +165,7 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #'
 #' @return data frame
 #' @export
+#' @importFrom stats pnorm dnorm
 #' @references Gneiting, Tilmann, and Adrian E. Raftery.
 #' "Strictly proper scoring rules, prediction, and estimation."
 #' Journal of the American Statistical Association 102.477 (2007): 359-378.

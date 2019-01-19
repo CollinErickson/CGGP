@@ -1,5 +1,6 @@
-#' Calculate correlation matrix for two sets of points in one dimension
+#' Cauchy correlation function
 #' 
+#' Calculate correlation matrix for two sets of points in one dimension.
 #' Note that this is not the correlation between two vectors.
 #'
 #' @param x1 Vector of coordinates from same dimension
@@ -18,6 +19,7 @@
 #'
 #' @return Matrix of correlation values between x1 and x2
 #' @export
+#' @family correlation functions
 #'
 #' @examples
 #' SGGP_internal_CorrMatCauchy(c(0,.2,.4),c(.1,.3,.5), theta=c(-1,.9,.1))
@@ -37,7 +39,10 @@ SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, return_dCdtheta = FALSE, r
     
     C = (1+halpha)^pow
     if(return_dCdtheta){
-      dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),dCdHE =3*C*pow*log(1+halpha), 3*C*(log(halpha+1)/alpha-halpha*log(h)/(halpha+1))*(expHE/(exp(4*theta[3]+4)+1)))
+      dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),
+                       dCdHE =3*C*pow*log(1+halpha),
+                       # 3*C*(log(halpha+1)/alpha-halpha*log(h)/(halpha+1))*(expHE/(exp(4*theta[3]+4)+1)))
+                       (C*(expHE*log(1+halpha)/alpha^2 - expHE*halpha*log(h)/alpha/(1+halpha))) * 6*exp(3*theta[3]+4)/(1+exp(3*theta[3]+4))^2)
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)
@@ -47,14 +52,16 @@ SGGP_internal_CorrMatCauchy <- function(x1, x2,theta, return_dCdtheta = FALSE, r
   }
 }
 
-#' Calculate correlation matrix for two sets of points in one dimension
+#' CauchySQT correlation function
 #' 
+#' Calculate correlation matrix for two sets of points in one dimension.
 #' Note that this is not the correlation between two vectors.
 #'
 #' @inheritParams SGGP_internal_CorrMatCauchy
 #'
-#' @return Matrix
+#' @return Matrix of correlation values between x1 and x2
 #' @export
+#' @family correlation functions
 #'
 #' @examples
 #' SGGP_internal_CorrMatCauchySQT(c(0,.2,.4),c(.1,.3,.5), theta=c(-.1,.3,-.7))
@@ -97,14 +104,16 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
 
 
 
-#' Calculate correlation matrix for two sets of points in one dimension
+#' CauchySQ correlation function
 #' 
+#' Calculate correlation matrix for two sets of points in one dimension
 #' Note that this is not the correlation between two vectors.
 #'
 #' @inheritParams SGGP_internal_CorrMatCauchy
 #'
-#' @return Matrix
+#' @return Matrix of correlation values between x1 and x2
 #' @export
+#' @family correlation functions
 #'
 #' @examples
 #' SGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,-.5))
@@ -136,14 +145,16 @@ SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
 
 
 
-#' Calculate correlation matrix for two sets of points in one dimension
+#' Gaussian correlation function
 #' 
+#' Calculate correlation matrix for two sets of points in one dimension
 #' Note that this is not the correlation between two vectors.
 #'
 #' @inheritParams SGGP_internal_CorrMatCauchy
 #'
-#' @return Matrix
+#' @return Matrix of correlation values between x1 and x2trix
 #' @export
+#' @family correlation functions
 #'
 #' @examples
 #' SGGP_internal_CorrMatGaussian(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
@@ -179,14 +190,16 @@ SGGP_internal_CorrMatGaussian <- function(x1, x2,theta, return_dCdtheta = FALSE,
 
 
 
-#' Calculate correlation matrix for two sets of points in one dimension
+#' Matern 3/2 correlation function
 #' 
+#' Calculate correlation matrix for two sets of points in one dimension.
 #' Note that this is not the correlation between two vectors.
 #'
 #' @inheritParams SGGP_internal_CorrMatCauchy
 #'
-#' @return Matrix
+#' @return Matrix of correlation values between x1 and x2
 #' @export
+#' @family correlation functions
 #'
 #' @examples
 #' SGGP_internal_CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
@@ -220,14 +233,16 @@ SGGP_internal_CorrMatMatern32 <- function(x1, x2,theta, return_dCdtheta = FALSE,
 
 
 
-#' Calculate correlation matrix for two sets of points in one dimension
+#' Matern 5/2 correlation function
 #' 
+#' Calculate correlation matrix for two sets of points in one dimension.
 #' Note that this is not the correlation between two vectors.
 #'
 #' @inheritParams SGGP_internal_CorrMatCauchy
 #'
-#' @return Matrix
+#' @return Matrix of correlation values between x1 and x2
 #' @export
+#' @family correlation functions
 #'
 #' @examples
 #' SGGP_internal_CorrMatMatern52(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
@@ -253,17 +268,20 @@ SGGP_internal_CorrMatMatern52 <- function(x1, x2,theta, return_dCdtheta = FALSE,
 
 
 
-#' Calculate correlation matrix for two sets of points in one dimension
+#' Power exponential correlation function
 #' 
+#' Calculate correlation matrix for two sets of points in one dimension.
 #' Note that this is not the correlation between two vectors.
 #'
 #' @inheritParams SGGP_internal_CorrMatCauchy
 #'
-#' @return Matrix
+#' @return Matrix of correlation values between x1 and x2
+# @rdname SGGP_internal_CorrMatCauchy
 #' @export
+#' @family correlation functions
 #'
 #' @examples
-#' SGGP_internal_CorrMatPowerExp(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
+#' SGGP_internal_CorrMatPowerExp(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,.2))
 SGGP_internal_CorrMatPowerExp <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE) {
   if(return_numpara){
     return(2);

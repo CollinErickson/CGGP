@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_corr_fs.R
 \name{SGGP_internal_CorrMatPowerExp}
 \alias{SGGP_internal_CorrMatPowerExp}
-\title{Calculate correlation matrix for two sets of points in one dimension}
+\title{Power exponential correlation function}
 \usage{
 SGGP_internal_CorrMatPowerExp(x1, x2, theta, return_dCdtheta = FALSE,
   return_numpara = FALSE)
@@ -24,11 +24,21 @@ SGGP_internal_CorrMatPowerExp(x1, x2, theta, return_dCdtheta = FALSE,
 \item{return_numpara}{Should it just return the number of parameters?}
 }
 \value{
-Matrix
+Matrix of correlation values between x1 and x2
 }
 \description{
+Calculate correlation matrix for two sets of points in one dimension.
 Note that this is not the correlation between two vectors.
 }
 \examples{
-SGGP_internal_CorrMatPowerExp(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
+SGGP_internal_CorrMatPowerExp(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,.2))
 }
+\seealso{
+Other correlation functions: \code{\link{SGGP_internal_CorrMatCauchySQT}},
+  \code{\link{SGGP_internal_CorrMatCauchySQ}},
+  \code{\link{SGGP_internal_CorrMatCauchy}},
+  \code{\link{SGGP_internal_CorrMatGaussian}},
+  \code{\link{SGGP_internal_CorrMatMatern32}},
+  \code{\link{SGGP_internal_CorrMatMatern52}}
+}
+\concept{correlation functions}
