@@ -101,7 +101,24 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
       }
     }
     
-    l0 =  SGGP$po[pstar, ] # Block name e.g. (2,1,1,2)
+    l0 =  SGGP$po[pstar, ] # Selected block e.g. (2,1,1,2)
+    # Need to make sure there is still an open row in uo to set with new values
+    if (SGGP$uoCOUNT > nrow(SGGP$uo)) {
+      numrowstoadd <- 20
+      SGGP$uo <- rbind(SGGP$uo, numrowstoadd)
+      SGGP$ML <- nrow(SGGP$uo)
+      
+      # Need to get everything else upsized too
+      SGGP$po = rbind(SGGP$po, matrix(0, nrow = 4 * numrowstoadd, ncol = ncol(SGGP$po))) #proposed levels tracker
+      SGGP$pila = rbind(SGGP$pila, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pila))) #proposed immediate level ancestors
+      SGGP$pala = rbind(SGGP$pala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pala))) #proposedal all level ancestors
+      SGGP$uala = rbind(SGGP$uala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$uala))) #used all level ancestors
+      SGGP$pilaCOUNT = c(SGGP$pilaCOUNT, rep(0, numrowstoadd)) #count of number of pila
+      SGGP$palaCOUNT = c(SGGP$palaCOUNT, rep(0, numrowstoadd)) #count of number of pala
+      SGGP$ualaCOUNT = c(SGGP$ualaCOUNT, rep(0, numrowstoadd)) #count of number of uala
+      SGGP$pogsize = c(SGGP$pogsize, rep(0, 4 * numrowstoadd))
+      SGGP$w = c(SGGP$w, rep(0, numrowstoadd))
+    }
     SGGP$uo[SGGP$uoCOUNT, ] = l0 # Store new block
     SGGP$ss =  SGGP$ss + SGGP$pogsize[pstar] # Update selected sample size
     

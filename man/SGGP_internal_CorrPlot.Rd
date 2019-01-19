@@ -4,11 +4,13 @@
 \alias{SGGP_internal_CorrPlot}
 \title{Plot correlation samples}
 \usage{
-SGGP_internal_CorrPlot(Corr = SGGP_internal_CorrMatGaussian, theta = 0,
-  numlines = 20, plot_with = "ggplot", zero = TRUE)
+SGGP_internal_CorrPlot(Corr = SGGP_internal_CorrMatGaussian,
+  theta = NULL, numlines = 20, plot_with = "ggplot", zero = TRUE)
 }
 \arguments{
-\item{Corr}{Correlation function}
+\item{Corr}{Correlation function or SGGP object.
+If SGGP object, it will make plots for thetaMAP,
+the max a posteriori theta.}
 
 \item{theta}{Parameters for Corr}
 
@@ -29,4 +31,10 @@ in terms of smoothness.
 \examples{
 SGGP_internal_CorrPlot()
 SGGP_internal_CorrPlot(theta=c(-2,-1,0,1))
+
+SG <- SGGPcreate(d=3, batchsize=100)
+f <- function(x){x[1]^1.2+sin(2*pi*x[2]*3)}
+y <- apply(SG$design, 1, f)
+SG <- SGGPfit(SG, Y=y)
+SGGP_internal_CorrPlot(SG)
 }

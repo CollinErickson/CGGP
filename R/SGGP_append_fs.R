@@ -261,12 +261,11 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FA
     # Need to make sure there is still an open row in uo to set with new values
     if (SGGP$uoCOUNT > nrow(SGGP$uo)) {
       numrowstoadd <- 20
-      SGGP$uo <- rbind(SGGP$uo, 20)
+      SGGP$uo <- rbind(SGGP$uo, numrowstoadd)
       SGGP$ML <- nrow(SGGP$uo)
       
       # Need to get everything else upsized too
       SGGP$po = rbind(SGGP$po, matrix(0, nrow = 4 * numrowstoadd, ncol = ncol(SGGP$po))) #proposed levels tracker
-      
       SGGP$pila = rbind(SGGP$pila, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pila))) #proposed immediate level ancestors
       SGGP$pala = rbind(SGGP$pala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pala))) #proposedal all level ancestors
       SGGP$uala = rbind(SGGP$uala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$uala))) #used all level ancestors

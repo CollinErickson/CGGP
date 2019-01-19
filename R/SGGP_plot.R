@@ -207,7 +207,9 @@ SGGPvalstats <- function(SGGP, Xval, Yval, d=NULL) {
 #' Useful for getting an idea of what the correlation parameters mean
 #' in terms of smoothness.
 #'
-#' @param Corr Correlation function
+#' @param Corr Correlation function or SGGP object.
+#' If SGGP object, it will make plots for thetaMAP,
+#' the max a posteriori theta.
 #' @param theta Parameters for Corr
 #' @param numlines Number of sample paths to draw
 #' @param plot_with Should "base" or "ggplot2" be used to make the plot?
@@ -215,17 +217,31 @@ SGGPvalstats <- function(SGGP, Xval, Yval, d=NULL) {
 #'
 #' @return Plot
 #' @export
+#' @importFrom graphics par
 #'
 #' @examples
 #' SGGP_internal_CorrPlot()
 #' SGGP_internal_CorrPlot(theta=c(-2,-1,0,1))
-SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=0,
+#' 
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' f <- function(x){x[1]^1.2+sin(2*pi*x[2]*3)}
+#' y <- apply(SG$design, 1, f)
+#' SG <- SGGPfit(SG, Y=y)
+#' SGGP_internal_CorrPlot(SG)
+SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
                                    numlines=20, plot_with="ggplot",
                                    zero=TRUE) {
   # Points along x axis
   n <- 100
   xl <- seq(0,1,l=n)
+  
+  if (inherits(Corr, "SGGP")) {
+    if (!is.null(theta)) {theta <- Corr$thetaMAP}
+    Corr <- Corr$CorrMat
+  }
+  
   nparam <- Corr(return_numpara=TRUE)
+  if (is.null(theta)) {theta <- rep(0, nparam)}
   
   ncorr <- length(theta) / nparam
   for (i in 1:ncorr) {

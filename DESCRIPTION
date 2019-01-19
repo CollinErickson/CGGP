@@ -17,6 +17,7 @@ Suggests: testthat,
     covr,
     ggplot2,
     reshape2,
+    MASS,
     splitfngr,
     lhs
 URL: https://github.com/CollinErickson/SGGP
