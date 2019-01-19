@@ -76,7 +76,8 @@ SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
     thetaMAP.thisloop <- if (nnn==1) thetaMAP else thetaMAP[, opdlcv]
     if (!recalculate_pw) { # use already calculated
       pw.thisloop <- if (nnn==1) SGGP$pw else SGGP$pw[,opdlcv]
-      sigma2MAP.thisloop <- if (nnn==1) SGGP$sigma2MAP else SGGP$sigma2MAP[opdlcv]
+      # sigma2MAP.thisloop <- if (nnn==1) SGGP$sigma2MAP else SGGP$sigma2MAP[opdlcv]
+      sigma2MAP.thisloop <- SGGP$sigma2MAP
     } else { # recalculate pw and sigma2MAP
       y.thisloop <- if (nnn==1) SGGP$y else SGGP$y[,opdlcv]
       pw.thisloop <- SGGP_internal_calcpw(SGGP, y.thisloop, theta=thetaMAP.thisloop)
@@ -126,8 +127,10 @@ SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
       
       # Return list with mean and var predictions
       if(is.vector(pw.thisloop)){
-        mean = (mu.thisloop+Cp%*%pw.thisloop)
-        var=sigma2MAP.thisloop*ME_t
+        if (nnn == 1) {
+          mean = (mu.thisloop+Cp%*%pw.thisloop)
+          var=sigma2MAP.thisloop*ME_t
+        }
         # cat('sigma2map.thisloop is ', sigma2MAP.thisloop / SGGP$sigma2MAP[1,1], sigma2MAP.thisloop, '\n')
         
         # With sepparout and PCA (or not), do this
