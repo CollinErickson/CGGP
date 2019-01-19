@@ -194,7 +194,7 @@ SGGP_internal_CorrMatMatern32 <- function(x1, x2,theta, return_dCdtheta = FALSE,
   if(return_numpara){
     return(1);
   }else{ 
-    if (length(theta) != 1) {stop("CorrMatGaussian theta should be length 1")}
+    if (length(theta) != 1) {stop("CorrMatPowerExp theta should be length 1")}
     diffmat =abs(outer(x1,x2,'-'))
     
     expLS = exp(3*theta[1])
@@ -235,21 +235,55 @@ SGGP_internal_CorrMatMatern52 <- function(x1, x2,theta, return_dCdtheta = FALSE,
   if(return_numpara){
     return(1);
   }else{ 
-    if (length(theta) != 1) {stop("CorrMatGaussian theta should be length 1")}
+    if (length(theta) != 1) {stop("CorrMatPowerExp theta should be length 1")}
+    diffmat =abs(outer(x1,x2,'-'))
+    expLS = exp(3*theta[1])
+    h = diffmat/expLS
+    C = (1-10^(-10))*(1+sqrt(5)*h+5/3*h^2)*exp(-sqrt(5)*h) + 10^(-10)*(diffmat<10^(-4))
+    if(return_dCdtheta){
+      dCdtheta <- ((sqrt(5)*diffmat+10/3*diffmat*h)*exp(-sqrt(5)*h) - sqrt(5)*C*diffmat) * (-3/expLS)
+      dCdtheta[is.na(dCdtheta)] = 0
+      out <- list(C=C,dCdtheta=dCdtheta)
+      return(out)
+    }else{
+      return(C)
+    }
+  }
+}
+
+
+
+#' Calculate correlation matrix for two sets of points in one dimension
+#' 
+#' Note that this is not the correlation between two vectors.
+#'
+#' @inheritParams SGGP_internal_CorrMatCauchy
+#'
+#' @return Matrix
+#' @export
+#'
+#' @examples
+#' SGGP_internal_CorrMatPowerExp(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
+SGGP_internal_CorrMatPowerExp <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE) {
+  if(return_numpara){
+    return(2);
+  }else{ 
+    if (length(theta) != 2) {stop("CorrMatPowerExp theta should be length 2")}
     diffmat =abs(outer(x1,x2,'-'))
     
     expLS = exp(3*theta[1])
     # expHE = exp(3*theta[2])
+    alpha <- 1 + (theta[2]+1)/2
     h = diffmat/expLS
     # alpha = 2*exp(0+6)/(1+exp(0+6))
     # halpha = h^alpha
     # pow = -expHE/alpha
     
     # C = (1-10^(-10))*(1+halpha)^pow+10^(-10)*(diffmat<10^(-4))
-    C = (1-10^(-10))*(1+sqrt(5)*h+5/3*h^2)*exp(-sqrt(5)*h) + 10^(-10)*(diffmat<10^(-4))
+    C = (1-10^(-10))*exp(-(h)^alpha) + 10^(-10)*(diffmat<10^(-4))
     if(return_dCdtheta){
       # dCdtheta = (1-10^(-10))*cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
-      dCdtheta <- ((sqrt(5)*diffmat+10/3*diffmat*h)*exp(-sqrt(5)*h) - sqrt(5)*C*diffmat) * (-3/expLS)
+      dCdtheta <- (1-10^(-10))*cbind(3*alpha*C*diffmat^alpha/expLS^alpha, -C*h^alpha*log(h)/2)
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)

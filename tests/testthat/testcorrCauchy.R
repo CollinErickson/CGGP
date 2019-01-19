@@ -278,3 +278,46 @@ test_that("Correlation CorrMatMatern52 works", {
     expect_equal(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
 })
+
+
+test_that("Correlation CorrMatPowerExp works", {
+  x1 <- runif(5)
+  x2 <- runif(4)
+  th <- runif(2,-1,1)
+  
+  # First check return_numpara is right
+  expect_equal(SGGP_internal_CorrMatPowerExp(return_numpara=TRUE), 2)
+  
+  # Get error when you give in theta of wrong size
+  expect_error(SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta = c(.1)))
+  
+  # Now check correlation
+  corr1 <- SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th)
+  expect_is(corr1, "matrix")
+  expect_equal(dim(corr1), c(5,4))
+  
+  # This just copies the function as written, so not really an independent check.
+  #  Should pass by definition. But will help in case we change the correlation
+  #  function later, or convert it to Rcpp.
+  PowerExpfunc <- function(x1,x2,theta) {
+    diffmat =abs(outer(x1,x2,'-'))
+    expLS = exp(3*theta[1])
+    h = diffmat/expLS
+    C = (1-10^(-10))*(1+sqrt(5)*h+5/3*h^2)*exp(-sqrt(5)*h) + 10^(-10)*(diffmat<10^(-4))
+    C
+  }
+  corr2 <- PowerExpfunc(x1, x2, theta=th)
+  expect_equal(corr1, corr2)
+  
+  # Now check that dC is actually grad of C
+  corr_C_dC <- SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  eps <- 1e-6
+  for (i in 1:2) {
+    thd <- c(0)
+    thd[i] <- eps
+    numdC <- (SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th+thd) -
+                SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    # Should be more accurate but was exactly the same
+    expect_equal(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
+  }
+})
