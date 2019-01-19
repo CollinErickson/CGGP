@@ -318,7 +318,9 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     
     # Set new theta
     thetaMAP <- opt.out$par
-    sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=TRUE)$sigma2
+    sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=FALSE)$sigma2
+    # If one value, it gives it as matrix. Convert it to scalar
+    if (length(sigma2MAP) == 1) {sigma2MAP <- sigma2MAP[1,1]}
     pw <- SGGP_internal_calcpw(SGGP=SGGP, y.thisloop, theta=thetaMAP)
     totnumpara = length(thetaMAP)
     
@@ -450,7 +452,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         SGGP$thetaPostSamples <- array(data = NaN, dim=c(dim(thetaPostSamples), nnn))
       }
       SGGP$thetaMAP[,opdlcv] <- thetaMAP
-      SGGP$sigma2MAP[opdlcv] <- sigma2MAP[1,1]
+      SGGP$sigma2MAP[opdlcv] <- sigma2MAP
       SGGP$pw[,opdlcv] <- pw
       SGGP$thetaPostSamples[,,opdlcv] <- thetaPostSamples
       if (SGGP$supplemented) {#browser('need to fix this')

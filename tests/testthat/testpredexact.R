@@ -74,7 +74,7 @@ test_that("Prediction matches exact on small samples", {
   # Calculating s2 like this doesn't work since we use MAP
   # s2 <- c(t(Y) %*%solve(Sig, Y) / length(Y))
   # Just use the MAP value
-  s2 <- SG$sigma2MAP[1,1]
+  s2 <- SG$sigma2MAP
   exvar <- s2 * (1 - colSums(t(s) * solve(Sig, t(s))))
   print(1/SGpred$var* exvar)
   plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
@@ -154,3 +154,30 @@ test_that("supplemental with MV output works", {
   expect_equal(yMVpred[,2], y2, 1e-4)
   
 })
+
+test_that("pred with theta works", {
+  d <- 5
+  sg <- SGGPcreate(d=d, batchsize=1500)
+  f <- function(x){x[1]^1.3+.4*sin(6*x[2])+4*exp(x[3])}
+  y <- apply(sg$design, 1, f)
+  sg <- SGGPfit(sg, y)
+  
+  npred <- 10
+  xpred <- matrix(runif(d*npred), npred)
+  p1 <- SGGPpred(xpred, sg)
+  p2 <- SGGPpred(xpred, sg, theta=sg$thetaMAP)
+  expect_error(SGGPpred(xpred, sg, theta=sg$thetaPostSamples[1:8,1]))
+  p3 <- SGGPpred(xpred, sg, theta=sg$thetaPostSamples[,1])
+  expect_equal(p1$me, p2$me)
+  expect_false(isTRUE(all.equal(p1$me, p3$me)))
+  
+  # Check full Bayesian. Not easy, just check if it's close to MAP prediction
+  pb <- SGGPpred(xpred, sg, fullBayesian = T)
+  expect_is(pb, "list")
+  expect_equal(p1$me, p3$mean, tol=1e-2)
+  # expect_equal(c(p1$me /p3$mean), rep(1,10), tol=1e-2)
+  # Variances can be near zero, so use relative since all.equal won't for small values
+  expect_equal(p1$var /p3$var, rep(1,10), tol=1e-1)
+  
+})
+  

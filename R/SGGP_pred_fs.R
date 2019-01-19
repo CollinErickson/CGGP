@@ -5,6 +5,10 @@
 #'
 #' @param xp x value to predict at
 #' @param SGGP SG object
+#' @param fullBayesian Should prediction be done fully Bayesian? Much slower.
+#' Averages over theta samples instead of using thetaMAP
+#' @param theta Leave as NULL unless you want to use a value other than thetaMAP.
+#' Much slower.
 #'
 #' @return Predicted mean values
 #' @export
@@ -15,12 +19,45 @@
 #' SG <- SGGPfit(SG, Y=y)
 #' SGGPpred(matrix(c(.1,.1,.1),1,3), SGGP=SG)
 #' cbind(SGGPpred(SG$design, SG=SG)$mean, y) # Should be near equal
-SGGPpred <- function(xp,SGGP) {
+SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
   # Require that you run SGGPfit first
   if (is.null(SGGP$supplemented)) {
     stop("You must run SGGPfit on SGGP object before using SGGPpredict")
   }
   # We could check for design_unevaluated, maybe give warning?
+  
+  # Full Bayesian
+  if (fullBayesian) {
+    # browser()
+    if (!is.null(theta)) {stop("Don't give in theta for fullBayesian")}
+    preds <- lapply(1:SGGP$numPostSamples, function(i) {SGGPpred(xp, SGGP, theta=SGGP$thetaPostSamples[,i])})
+    means <- sapply(preds, function(x) {x$mean})
+    mn <- apply(means, 1, mean)
+    vars <- sapply(preds, function(x) {x$var})
+    vr <- apply(vars, 1, mean) + apply(means^2, 1, mean) - apply(means, 1, mean)^2
+    GP <- list(mean=mn, var=vr)
+    # p <- SGGPpred(xp, SGGP)
+    # stripchart(data.frame(t(vars)))
+    # stripchart(data.frame(t(p$var)), add=T, col=2, pch=4)
+    # print(cbind(p$var, vr, vr / p$var))
+    return(GP)
+  }
+  
+  # If theta is given (for full Bayesian prediction), need to recalculate pw
+  if (!is.null(theta) && length(theta)!=length(SGGP$thetaMAP)) {stop("Theta is wrong length")}
+  if (!is.null(theta) && theta==SGGP$thetaMAP) {
+    # If you give in theta=thetaMAP, set it to NULL to avoid recalculating.
+    theta <- NULL
+  }
+  if (is.null(theta)) {
+    thetaMAP <- SGGP$thetaMAP
+    recalculate_pw <- FALSE
+  } else {
+    thetaMAP <- theta
+    rm(theta)
+    # pw <- SGGP_internal_calcpw(SGGP, SGGP$y, theta=thetaMAP)
+    recalculate_pw <- TRUE
+  }
   
   
   separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
@@ -36,8 +73,22 @@ SGGPpred <- function(xp,SGGP) {
     varall <- matrix(NaN, nrow(xp), ncol=ncol(SGGP$Y))
   }
   for (opdlcv in 1:nnn) {
-    thetaMAP.thisloop <- if (nnn==1) SGGP$thetaMAP else SGGP$thetaMAP[, opdlcv]
-    pw.thisloop <- if (nnn==1) SGGP$pw else SGGP$pw[,opdlcv]
+    thetaMAP.thisloop <- if (nnn==1) thetaMAP else thetaMAP[, opdlcv]
+    if (!recalculate_pw) { # use already calculated
+      pw.thisloop <- if (nnn==1) SGGP$pw else SGGP$pw[,opdlcv]
+      sigma2MAP.thisloop <- if (nnn==1) SGGP$sigma2MAP else SGGP$sigma2MAP[opdlcv]
+    } else { # recalculate pw and sigma2MAP
+      y.thisloop <- if (nnn==1) SGGP$y else SGGP$y[,opdlcv]
+      pw.thisloop <- SGGP_internal_calcpw(SGGP, y.thisloop, theta=thetaMAP.thisloop)
+      sigma2MAP.thisloop <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop,
+                                                               theta=thetaMAP.thisloop,
+                                                               return_lS=FALSE)$sigma2
+      if (length(sigma2MAP.thisloop) != 1) {stop("sigma2MAP not scalar #923583")}
+      sigma2MAP.thisloop <- sigma2MAP.thisloop
+      # browser()
+      # cat(c(thetaMAP.thisloop, sigma2MAP.thisloop), '\n')
+      rm(y.thisloop)
+    }
     mu.thisloop <- if (nnn==1) SGGP$mu else SGGP$mu[opdlcv]
     
     # Cp is sigma(x_0) in paper, correlation vector between design points and xp
@@ -76,34 +127,38 @@ SGGPpred <- function(xp,SGGP) {
       # Return list with mean and var predictions
       if(is.vector(pw.thisloop)){
         mean = (mu.thisloop+Cp%*%pw.thisloop)
-        var=SGGP$sigma2MAP[1]*ME_t
+        var=sigma2MAP.thisloop*ME_t
+        # cat('sigma2map.thisloop is ', sigma2MAP.thisloop / SGGP$sigma2MAP[1,1], sigma2MAP.thisloop, '\n')
         
-        # browser()
         # With sepparout and PCA (or not), do this
         if (nnn > 1) {
           meanall2 <- meanall2 + outer(c(Cp%*%pw.thisloop), SGGP$M[opdlcv, ])
-          var <- (as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))[,opdlcv]
+          var <- (as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(sigma2MAP.thisloop)%*%(SGGP$M))))[,opdlcv]
           print("Need to do something with var and M here. Did something, maybe this is right, maybe not?")
         }
       }else{ # y was a matrix, so PCA
-        if(length(SGGP$sigma2MAP)==1){
+        if(length(sigma2MAP.thisloop)==1){
           stop("When is it a matrix but sigma2MAP a scalar???")
           mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+
                      (Cp%*%pw.thisloop)%*%(SGGP$M))
-          var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M)))
+          var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(sigma2MAP.thisloop)%*%(SGGP$M)))
           
         }else{
-          # browser()
           mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+
                      (Cp%*%pw.thisloop)%*%(SGGP$M))
-          var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M)))
+          var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(sigma2MAP.thisloop)%*%(SGGP$M)))
         }
       }
-    } else {
-      # browser("Fix pred for sggp$supp supplemented data THIS IS NOT FIXED")
-      pw_uppad.thisloop <- if (nnn==1) SGGP$pw_uppad else SGGP$pw_uppad[,opdlcv]
-      supppw.thisloop <- if (nnn==1) SGGP$supppw else SGGP$supppw[,opdlcv]
-      Sti.thisloop <- if (nnn==1) SGGP$Sti else SGGP$Sti[,,opdlcv]
+    } else { # SGGP$supplemented is TRUE
+      if (!recalculate_pw) {
+        pw_uppad.thisloop <- if (nnn==1) SGGP$pw_uppad else SGGP$pw_uppad[,opdlcv]
+        supppw.thisloop <- if (nnn==1) SGGP$supppw else SGGP$supppw[,opdlcv]
+        Sti.thisloop <- if (nnn==1) SGGP$Sti else SGGP$Sti[,,opdlcv]
+      } else {
+        stop("Give theta in not implemented in SGGPpred")
+        stop("Need to fix sigma2MAP here too.")
+      }
+      
       
       Cps = matrix(1,dim(xp)[1],dim(SGGP$Xs)[1])
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
@@ -141,10 +196,10 @@ SGGPpred <- function(xp,SGGP) {
       if(is.vector(pw.thisloop)){
         if (nnn == 1) {
           mean = (SGGP$mu+ yhatp)
+          print("You didn't fix var here")
           var=SGGP$sigma2MAP[1]*ME_t
         }
         
-        # browser()
         # With sepparout and PCA (or not), do this
         if (nnn > 1) {
           meanall2 <- meanall2 + outer(c(yhatp), SGGP$M[opdlcv,])
@@ -170,9 +225,7 @@ SGGPpred <- function(xp,SGGP) {
     # if (nnn > 1) {meanall[,opdlcv] <- mean}
     if (nnn > 1) {varall[,opdlcv] <- var}
   }
-  # browser()
   # If PCA values were calculated separately, need to do transformation on both before mu is added, then add mu back
-  # browser()
   # if (nnn > 1) {meanall <- sweep(sweep(meanall,2,SGGP$mu) %*% SGGP$M,2,SGGP$mu, `+`)}
   if (nnn > 1) {meanall2 <- sweep(meanall2, 2, SGGP$mu, `+`)}
   # print("need to fix varall too!")
