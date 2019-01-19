@@ -193,9 +193,67 @@ SGGPvalstats <- function(SGGP, Xval, Yval, d=NULL) {
   RMSE <- sqrt(mean((ypred$mean - Yval)^2))
   score <- mean((Yval-ypred$mean)^2/ypred$var+log(ypred$var))
   CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
-  coverage <- mean((Yval<= ypred$mean+1.96*sqrt(ypred$var))&(Yval>= ypred$mean-1.96*sqrt(ypred$var)))
+  coverage <- mean((Yval<= ypred$mean+1.96*sqrt(ypred$var)) & 
+                     (Yval>= ypred$mean-1.96*sqrt(ypred$var)))
   
   data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage)
   
   
+}
+
+#' Plot correlation samples
+#' 
+#' Plot samples for a given correlation function and parameters.
+#' Useful for getting an idea of what the correlation parameters mean
+#' in terms of smoothness.
+#'
+#' @param Corr Correlation function
+#' @param numlines Number of sample paths to draw
+#' @param plot_with Should "base" or "ggplot2" be used to make the plot?
+#'
+#' @return Plot
+#' @export
+#'
+#' @examples
+#' SGGP_internal_CorrPlot()
+SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=0,
+                                   numlines=20, plot_with="ggplot",
+                                   zero=TRUE) {
+  #  sample from corr functions
+  n <- 100
+  xl <- seq(0,1,l=n)
+  # Sig <- SGGP_internal_CorrMatGaussian(xl, xl, theta=1)
+  
+  px.mean <- rep(0,n)
+  px.cov <- Corr(xl, xl, theta=theta)
+  samplepaths <- try(newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov))
+  if (inherits(samplepaths, "try-error")) {
+    message("Adding nugget to cool1Dplot")
+    nug <- 1e-6
+    Sigma.try2 <- try(
+      newy <- MASS::mvrnorm(n=numlines, mu=px.mean,
+                            Sigma=px.cov + diag(nug, nrow(px.cov)))
+    )
+    if (inherits(Sigma.try2, "try-error")) {
+      stop("Can't do cool1Dplot")
+    }
+  }
+  
+  # Set so all start at 0.
+  if (zero) {
+    samplepathsplot <- sweep(samplepaths, 1, samplepaths[,1])
+  }
+  
+  if (plot_with == "base") {
+    plot(xl, samplepathsplot[1,], type='l',
+         ylim=c(min(samplepathsplot), max(samplepathsplot)))
+    for (i in 2:numlines) {
+      points(xl, samplepathsplot[i,], type='l', col=i)
+    }
+  } else { # Use ggplot2
+    ggplot2::ggplot(cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
+                          x=rep(xl, numlines)), 
+                    ggplot2::aes_string(x="x", y="value", color="variable")) + 
+      ggplot2::geom_line() + ggplot2::theme(legend.position="none")
+  }
 }
