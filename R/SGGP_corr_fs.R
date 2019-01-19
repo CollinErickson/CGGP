@@ -270,19 +270,11 @@ SGGP_internal_CorrMatPowerExp <- function(x1, x2,theta, return_dCdtheta = FALSE,
   }else{ 
     if (length(theta) != 2) {stop("CorrMatPowerExp theta should be length 2")}
     diffmat =abs(outer(x1,x2,'-'))
-    
     expLS = exp(3*theta[1])
-    # expHE = exp(3*theta[2])
     alpha <- 1 + (theta[2]+1)/2
     h = diffmat/expLS
-    # alpha = 2*exp(0+6)/(1+exp(0+6))
-    # halpha = h^alpha
-    # pow = -expHE/alpha
-    
-    # C = (1-10^(-10))*(1+halpha)^pow+10^(-10)*(diffmat<10^(-4))
     C = (1-10^(-10))*exp(-(h)^alpha) + 10^(-10)*(diffmat<10^(-4))
     if(return_dCdtheta){
-      # dCdtheta = (1-10^(-10))*cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
       dCdtheta <- (1-10^(-10))*cbind(3*alpha*C*diffmat^alpha/expLS^alpha, -C*h^alpha*log(h)/2)
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)

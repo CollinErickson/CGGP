@@ -281,15 +281,17 @@ test_that("Correlation CorrMatMatern52 works", {
 
 
 test_that("Correlation CorrMatPowerExp works", {
+  nparam <- 2
   x1 <- runif(5)
   x2 <- runif(4)
-  th <- runif(2,-1,1)
+  th <- runif(nparam,-1,1)
   
   # First check return_numpara is right
-  expect_equal(SGGP_internal_CorrMatPowerExp(return_numpara=TRUE), 2)
+  expect_equal(SGGP_internal_CorrMatPowerExp(return_numpara=TRUE), nparam)
   
   # Get error when you give in theta of wrong size
-  expect_error(SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta = c(.1)))
+  expect_error(SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta = rep(0, nparam-1)))
+  expect_error(SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta = rep(0, nparam+1)))
   
   # Now check correlation
   corr1 <- SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th)
@@ -302,8 +304,9 @@ test_that("Correlation CorrMatPowerExp works", {
   PowerExpfunc <- function(x1,x2,theta) {
     diffmat =abs(outer(x1,x2,'-'))
     expLS = exp(3*theta[1])
+    alpha <- 1 + (theta[2]+1)/2
     h = diffmat/expLS
-    C = (1-10^(-10))*(1+sqrt(5)*h+5/3*h^2)*exp(-sqrt(5)*h) + 10^(-10)*(diffmat<10^(-4))
+    C = (1-10^(-10))*exp(-(h)^alpha) + 10^(-10)*(diffmat<10^(-4))
     C
   }
   corr2 <- PowerExpfunc(x1, x2, theta=th)
@@ -312,8 +315,8 @@ test_that("Correlation CorrMatPowerExp works", {
   # Now check that dC is actually grad of C
   corr_C_dC <- SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
   eps <- 1e-6
-  for (i in 1:2) {
-    thd <- c(0)
+  for (i in 1:nparam) {
+    thd <- rep(0, nparam)
     thd[i] <- eps
     numdC <- (SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th+thd) -
                 SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
