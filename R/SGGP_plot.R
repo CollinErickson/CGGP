@@ -208,52 +208,83 @@ SGGPvalstats <- function(SGGP, Xval, Yval, d=NULL) {
 #' in terms of smoothness.
 #'
 #' @param Corr Correlation function
+#' @param theta Parameters for Corr
 #' @param numlines Number of sample paths to draw
 #' @param plot_with Should "base" or "ggplot2" be used to make the plot?
+#' @param zero Should the sample paths start at y=0?
 #'
 #' @return Plot
 #' @export
 #'
 #' @examples
 #' SGGP_internal_CorrPlot()
+#' SGGP_internal_CorrPlot(theta=c(-2,-1,0,1))
 SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=0,
                                    numlines=20, plot_with="ggplot",
                                    zero=TRUE) {
-  #  sample from corr functions
+  # Points along x axis
   n <- 100
   xl <- seq(0,1,l=n)
-  # Sig <- SGGP_internal_CorrMatGaussian(xl, xl, theta=1)
+  nparam <- Corr(return_numpara=TRUE)
   
-  px.mean <- rep(0,n)
-  px.cov <- Corr(xl, xl, theta=theta)
-  samplepaths <- try(newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov))
-  if (inherits(samplepaths, "try-error")) {
-    message("Adding nugget to cool1Dplot")
-    nug <- 1e-6
-    Sigma.try2 <- try(
-      newy <- MASS::mvrnorm(n=numlines, mu=px.mean,
-                            Sigma=px.cov + diag(nug, nrow(px.cov)))
-    )
-    if (inherits(Sigma.try2, "try-error")) {
-      stop("Can't do cool1Dplot")
+  ncorr <- length(theta) / nparam
+  for (i in 1:ncorr) {
+    # Can change px.mean and px.cov to be conditional on other data
+    px.mean <- rep(0,n)
+    px.cov <- Corr(xl, xl, theta=theta[1:nparam + nparam*(i-1)])
+    # Generate sample paths
+    samplepaths <- try(newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov))
+    if (inherits(samplepaths, "try-error")) {
+      message("Adding nugget to cool1Dplot")
+      nug <- 1e-6
+      Sigma.try2 <- try(
+        newy <- MASS::mvrnorm(n=numlines, mu=px.mean,
+                              Sigma=px.cov + diag(nug, nrow(px.cov)))
+      )
+      if (inherits(Sigma.try2, "try-error")) {
+        stop("Can't do cool1Dplot")
+      }
+    }
+    
+    # Set so all start at 0.
+    if (zero) {
+      samplepathsplot <- sweep(samplepaths, 1, samplepaths[,1])
+    }
+    
+    if (plot_with == "base") {
+      # Put plots in column if more than one
+      if (i==1 && ncorr>1) {
+        orig.mfrow <- par()$mfrow
+        par(mfrow=c(ncorr, 1))
+      }
+      plot(xl, samplepathsplot[1,], type='l',
+           ylim=c(min(samplepathsplot), max(samplepathsplot)),
+           ylab="Sample path", xlab="x")
+      for (i in 2:numlines) {
+        points(xl, samplepathsplot[i,], type='l', col=i)
+      }
+    } else { # Use ggplot2
+      # ggplot2::ggplot(cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
+      #                       x=rep(xl, numlines)), 
+      #                 ggplot2::aes_string(x="x", y="value", color="variable")) + 
+      #   ggplot2::geom_line() + ggplot2::theme(legend.position="none")
+      newdf <- cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
+                    x=rep(xl, numlines), d=i)
+      if (i==1) {ggdf <- newdf}
+      else {ggdf <- rbind(ggdf, newdf)}
     }
   }
-  
-  # Set so all start at 0.
-  if (zero) {
-    samplepathsplot <- sweep(samplepaths, 1, samplepaths[,1])
-  }
-  
   if (plot_with == "base") {
-    plot(xl, samplepathsplot[1,], type='l',
-         ylim=c(min(samplepathsplot), max(samplepathsplot)))
-    for (i in 2:numlines) {
-      points(xl, samplepathsplot[i,], type='l', col=i)
-    }
+    # Reset graphical parameters
+    par(mfrow=orig.mfrow)
   } else { # Use ggplot2
-    ggplot2::ggplot(cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
-                          x=rep(xl, numlines)), 
+    # Return plot
+    p <- ggplot2::ggplot(ggdf, 
                     ggplot2::aes_string(x="x", y="value", color="variable")) + 
       ggplot2::geom_line() + ggplot2::theme(legend.position="none")
+    if (i > 1) {
+      p <- p + ggplot2::facet_grid(d ~ .)
+    }
+    p
   }
 }

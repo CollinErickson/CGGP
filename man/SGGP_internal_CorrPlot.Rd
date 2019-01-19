@@ -5,14 +5,18 @@
 \title{Plot correlation samples}
 \usage{
 SGGP_internal_CorrPlot(Corr = SGGP_internal_CorrMatGaussian, theta = 0,
-  numlines = 20, plot_with = "ggplot")
+  numlines = 20, plot_with = "ggplot", zero = TRUE)
 }
 \arguments{
 \item{Corr}{Correlation function}
 
+\item{theta}{Parameters for Corr}
+
 \item{numlines}{Number of sample paths to draw}
 
 \item{plot_with}{Should "base" or "ggplot2" be used to make the plot?}
+
+\item{zero}{Should the sample paths start at y=0?}
 }
 \value{
 Plot
@@ -24,4 +28,5 @@ in terms of smoothness.
 }
 \examples{
 SGGP_internal_CorrPlot()
+SGGP_internal_CorrPlot(theta=c(-2,-1,0,1))
 }
