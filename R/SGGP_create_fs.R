@@ -6,7 +6,9 @@
 #' @param batchsize Number added to design each batch
 # @param nugget Nugget term added to diagonal of correlation matrix,
 #' for now only on predictions
-#' @param corr Name of correlation function to use. Must be one of "CauchySQT", "CauchySQ".
+#' @param corr Name of correlation function to use. Must be one of "CauchySQT",
+#' "CauchySQ", "Cauchy", "Gaussian", "PowerExp", "Matern32", "Matern52".
+#' @param grid_sizes Size of grid refinements.
 #' @importFrom stats rbeta
 #'
 #' @return SGGP
@@ -15,7 +17,9 @@
 #' @examples
 #' d <- 8
 #' SG = SGGPcreate(d,200)
-SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
+SGGPcreate <- function(d, batchsize, corr="CauchySQT",
+                       grid_sizes=c(1,2,4,4,8,12,32)
+                       ) {
   if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object
   SGGP = list()
@@ -23,12 +27,25 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
   
   SGGP$d <- d
   # SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
-  if (tolower(corr) %in% c("cauchysqt")) {
+  if (is.function(corr)) {
+    SGGP$CorrMat <- corr
+  } else if (tolower(corr) %in% c("cauchysqt")) {
     SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
   } else if (tolower(corr) %in% c("cauchysq")) {
     SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQ
+  } else if (tolower(corr) %in% c("cauchy")) {
+    SGGP$CorrMat <- SGGP_internal_CorrMatCauchy
+  } else if (tolower(corr) %in% c("gaussian", "gauss", "sqexp")) {
+    SGGP$CorrMat <- SGGP_internal_CorrMatGaussian
+  } else if (tolower(corr) %in% c("powerexp", "pe", "powerexponential")) {
+    SGGP$CorrMat <- SGGP_internal_CorrMatPowerExp
+  } else if (tolower(corr) %in% c("matern32", "m32", "m3")) {
+    SGGP$CorrMat <- SGGP_internal_CorrMatMatern32
+  } else if (tolower(corr) %in% c("matern52", "m52", "m5")) {
+    SGGP$CorrMat <- SGGP_internal_CorrMatMatern52
   } else {
-    stop("corr given to SGGPcreate should be one of CauchySQT or CauchySQ")
+    stop(paste0("corr given to SGGPcreate should be one of CauchySQT, CauchySQ,", 
+                " Gaussian, PowerExponential, Matern32, or Matern52"))
   }
   SGGP$numpara <- SGGP$CorrMat(return_numpara=TRUE)
   # print("Fix thetaMAP and thetaPostSamples in create")
@@ -74,7 +91,8 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
   
   
   SGGP$bss = batchsize#1+4*SGGP$d  #must be at least 3*d
-  SGGP$sizes = c(1,2,4,4,8,12,32) # Num of points added to 1D design as you go further in any dimension
+  # SGGP$sizes = c(1,2,4,4,8,12,32) # Num of points added to 1D design as you go further in any dimension
+  SGGP$sizes <- grid_sizes
   SGGP$maxlevel = length(SGGP$sizes)
   # Proposed grid size? More points further along the blocks?
   SGGP$pogsize = rep(0, 4 * SGGP$ML)
@@ -244,7 +262,7 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQT") {
     "each" = 2
   )
   SGGP$xb = 0.5 + c(0, xb * rep(c(-1, 1), length(xb) / 2))
-  SGGP$xindex = 1:length(xb)
+  SGGP$xindex = 1:length(xb) # Why not length(SGGP$xb), which is one longer than xb?
   # After this xb is
   #  [1] 0.50000 0.12500 0.87500 0.25000 0.75000 0.37500 0.62500 0.28125 0.71875 0.31250 0.68750 0.00000 1.00000 0.18750 0.81250
   # [16] 0.06250 0.93750 0.43750 0.56250 0.40625 0.59375 0.09375 0.90625 0.21875 0.78125 0.34375 0.65625 0.46875 0.53125 0.15625

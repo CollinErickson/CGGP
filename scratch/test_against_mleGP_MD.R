@@ -46,12 +46,14 @@ mean(abs(Yp-PredTS$mean)^2)
 # 10058
 
 library(mlegp)
-Xmlegp = randomLHS(100, d)
+Xmlegp = randomLHS(500, d)
 Ymlegp = testf(Xmlegp)
 fitMulti_PCA = mlegp(Xmlegp,t(Ymlegp),PC.num=5)
 predmlegp_PCA = fitMulti_PCA$UD%*%t(cbind(predict(fitMulti_PCA[[1]],Xp),predict(fitMulti_PCA[[2]],Xp),predict(fitMulti_PCA[[3]],Xp),predict(fitMulti_PCA[[4]],Xp),predict(fitMulti_PCA[[5]],Xp)))
 mean((Yp - t(predmlegp_PCA))^2)
 # w/ 100 pts, 15746
+# w/ 300 pts, 7435
+# w/ 500 pts, 3919.106, but took 1-2 hours
 
 outputindex =25#also try 1,11, 25,37, 51
 SGGPTS2 = SGGPfit(SGGPTS,YTS[,outputindex])

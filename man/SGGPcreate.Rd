@@ -4,7 +4,8 @@
 \alias{SGGPcreate}
 \title{Create sparse grid GP}
 \usage{
-SGGPcreate(d, batchsize, corr = "CauchySQT")
+SGGPcreate(d, batchsize, corr = "CauchySQT", grid_sizes = c(1, 2, 4, 4,
+  8, 12, 32))
 }
 \arguments{
 \item{d}{Input dimension}
@@ -12,7 +13,10 @@ SGGPcreate(d, batchsize, corr = "CauchySQT")
 \item{batchsize}{Number added to design each batch
 for now only on predictions}
 
-\item{corr}{Name of correlation function to use. Must be one of "CauchySQT", "CauchySQ".}
+\item{corr}{Name of correlation function to use. Must be one of "CauchySQT",
+"CauchySQ", "Cauchy", "Gaussian", "PowerExp", "Matern32", "Matern52".}
+
+\item{grid_sizes}{Size of grid refinements.}
 }
 \value{
 SGGP
