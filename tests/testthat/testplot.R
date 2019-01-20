@@ -1,6 +1,6 @@
 test_that("Plots work", {
   
-  SG <- SGGPcreate(d=3, batchsize=20)
+  SG <- SGGPcreate(d=3, batchsize=20, corr="m52")
   f <- function(x){x[1]+log(x[1]+.1)+sin(2*pi*4*x[2]^2) + cos(2*pi*5*x[3])}
   y <- apply(SG$design, 1, f)
   # SG <- SGGPfit(SG, Y=y)
@@ -24,4 +24,17 @@ test_that("Plots work", {
   pval <- SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
   expect_is(pval, "gg")
   expect_is(pval, "ggplot")
+  expect_error(SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval, plot_with = 'base'), NA)
+  
+  # Val stats
+  vstats <- SGGPvalstats(SG, Xval, Yval)
+  expect_is(vstats, "data.frame")
+  expect_equal(nrow(vstats), 1)
+  
+  # Corr plot
+  p <- SGGP_internal_CorrPlot(SGGP_internal_CorrMatCauchySQ, theta=c(-.9,.8,.7,-.8))
+  expect_is(p, "ggplot")
+  p <- SGGP_internal_CorrPlot(SG)
+  expect_is(p, "ggplot")
+  expect_error(SGGP_internal_CorrPlot(SG, plot_with = "base"), NA)
 })

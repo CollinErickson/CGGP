@@ -1,5 +1,5 @@
 test_that("SGGPappend works", {
-  SG <- SGGPcreate(d=3, batchsize=100)
+  SG <- SGGPcreate(d=3, batchsize=100, corr='GAUSS')
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
@@ -42,7 +42,7 @@ test_that("SGGPappend works with large number", {
 
 test_that("SGGPappend gives warning if it can't add any data", {
   
-  SG <- SGGPcreate(d=3, batchsize=20)
+  SG <- SGGPcreate(d=3, batchsize=20, corr="cauchySQ")
   f <- function(x){x[1]+log(x[1]+.1)+sin(2*pi*4*x[2]^2) + cos(2*pi*5*x[3])}
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
