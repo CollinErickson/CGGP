@@ -32,7 +32,7 @@ for (i in 1:1) {
   SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
   SG <- SGGPappend(SGGP=SG, batchsize=200)
 }
-SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
+# SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
 SGGPheat(SG)
 }
 \references{

@@ -4,10 +4,9 @@
 \alias{SGGPfit}
 \title{Update SGGP model given data}
 \usage{
-SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = rep(0, SGGP$numpara *
-  SGGP$d), laplaceapprox = TRUE, lower = rep(-1, SGGP$numpara *
-  SGGP$d), upper = rep(1, SGGP$numpara * SGGP$d),
-  use_PCA = SGGP$use_PCA,
+SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
+  laplaceapprox = TRUE, lower = rep(-1, SGGP$numpara * SGGP$d),
+  upper = rep(1, SGGP$numpara * SGGP$d), use_PCA = SGGP$use_PCA,
   separateoutputparameterdimensions = is.matrix(SGGP$thetaMAP), Ynew)
 }
 \arguments{

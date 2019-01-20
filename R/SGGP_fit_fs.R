@@ -140,12 +140,12 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- SGGPfit(SG=SG, Y=y)
 SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
-                    theta0 = rep(0,SGGP$numpara*SGGP$d),laplaceapprox = TRUE,
+                    theta0 = SGGP$thetaMAP, #rep(0,SGGP$numpara*SGGP$d),
+                    laplaceapprox = TRUE,
                     lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                     use_PCA=SGGP$use_PCA,
                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
                     Ynew) {
-  print("Change theta0 to use last!!!")
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
     if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}

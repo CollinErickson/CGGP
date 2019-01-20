@@ -27,7 +27,7 @@ SGGPhist(SG)
 SGGPhist(SG, ylog=FALSE)
 
 # The first dimension is more active and will have greater depth
-SG <- SGGPreate(d=5, batchsize=10)
+SG <- SGGPcreate(d=5, batchsize=10)
 SG <- SGGPappend(SGGP=SG, batchsize=100)
 SGGPhist(SG)
 }

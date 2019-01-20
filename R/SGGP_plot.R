@@ -25,7 +25,7 @@
 #'   SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
 #'   SG <- SGGPappend(SGGP=SG, batchsize=200)
 #' }
-#' SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
+#' # SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
 #' SGGPheat(SG)
 SGGPheat <- function(SGGP) {
   # heatmatrix <- matrix(NaN, SG$d, SG$d)
@@ -75,7 +75,7 @@ SGGPheat <- function(SGGP) {
 #' SGGPhist(SG, ylog=FALSE)
 #' 
 #' # The first dimension is more active and will have greater depth
-#' SG <- SGGPreate(d=5, batchsize=10)
+#' SG <- SGGPcreate(d=5, batchsize=10)
 #' SG <- SGGPappend(SGGP=SG, batchsize=100)
 #' SGGPhist(SG)
 #' }
@@ -236,7 +236,7 @@ SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NUL
   xl <- seq(0,1,l=n)
   
   if (inherits(Corr, "SGGP")) {
-    if (!is.null(theta)) {theta <- Corr$thetaMAP}
+    if (is.null(theta)) {theta <- Corr$thetaMAP}
     Corr <- Corr$CorrMat
   }
   
