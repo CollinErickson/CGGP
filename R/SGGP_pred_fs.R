@@ -32,7 +32,7 @@ SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
     preds <- lapply(1:SGGP$numPostSamples, 
                     function(i) {SGGPpred(xp, SGGP, theta=SGGP$thetaPostSamples[,i])})
     means <- sapply(preds, function(x) {x$mean})
-    mn <- apply(means, 1, mean)
+    mn <- as.matrix(apply(means, 1, mean))
     vars <- sapply(preds, function(x) {x$var})
     vr <- apply(vars, 1, mean) + apply(means^2, 1, mean) - apply(means, 1, mean)^2
     GP <- list(mean=mn, var=vr)

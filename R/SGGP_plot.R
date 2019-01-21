@@ -100,6 +100,52 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
   p
 }
 
+
+#' SGGP block plot
+#' 
+#' Plot the 2D projections of the blocks of an SGGP object.
+#'
+#' @param SGGP SGGP object
+#'
+#' @return ggplot2 plot
+#' @export
+#'
+#' @examples
+#' # The first and fourth dimensions are most active and will have greater depth
+#' ss <- SGGPcreate(d=5, batchsize=50)
+#' f <- function(x) {cos(2*pi*x[1]*3) + exp(4*x[4])}
+#' ss <- SGGPfit(ss, Y=apply(ss$design, 1, f))
+#' ss <- SGGPappend(SGGP=ss, batchsize=200)
+#' SGGPblockplot(ss)
+SGGPblockplot <- function(SGGP) {
+  
+  alldf <- NULL
+  # ds <- c(1,2)
+  for (d1 in setdiff(1:SGGP$d,c())) {
+    for (d2 in setdiff(1:SGGP$d, d1)) {
+      ds <- c(d1, d2)
+      uo <- SGGP$uo[1:SGGP$uoCOUNT,]
+      uods <- uo[,ds]
+      uodsdf <- data.frame(uods)
+      uods.unique <- plyr::ddply(uodsdf, c("X1", "X2"), function(x) data.frame(count=nrow(x)))
+      
+      gdf <- uods.unique
+      gdf$xmin <- gdf$X1-1
+      gdf$xmax <- gdf$X1
+      gdf$ymin <- gdf$X2-1
+      gdf$ymax <- gdf$X2
+      gdf$d1 <- d1
+      gdf$d2 <- d2
+      alldf <- if (is.null(alldf)) gdf else rbind(alldf, gdf)
+    }
+  }
+  ggplot2::ggplot(alldf) + ggplot2::geom_rect(ggplot2::aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill=count))+
+    ggplot2::scale_fill_gradient(low = "yellow", high = "red") +
+    # ggplot2::xlab(paste0("dimension ",ds[1])) +
+    ggplot2::facet_grid(d1 ~ d2)
+}
+
+
 #' Plot validation prediction errors
 #'
 #' @param SGGP SGGP object that has been fitted
@@ -172,7 +218,7 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #'
 #' @examples
 #' valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9))
-valstats <- function(predmean, predvar, Yval, d=NULL, fullBayesian=FALSE) {
+valstats <- function(predmean, predvar, Yval) {
   
   m <- predmean
   v <- pmax(predvar, 0)

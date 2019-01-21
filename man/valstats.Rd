@@ -4,7 +4,7 @@
 \alias{valstats}
 \title{Calculate stats for prediction on validation data}
 \usage{
-valstats(predmean, predvar, Yval, d = NULL, fullBayesian = FALSE)
+valstats(predmean, predvar, Yval)
 }
 \arguments{
 \item{predmean}{Predicted mean}
