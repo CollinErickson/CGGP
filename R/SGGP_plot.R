@@ -117,14 +117,27 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' ss <- SGGPfit(ss, Y=apply(ss$design, 1, f))
 #' ss <- SGGPappend(SGGP=ss, batchsize=200)
 #' SGGPblockplot(ss)
-SGGPblockplot <- function(SGGP) {
+#' 
+#' mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=T)
+#' SGGPblockplot(mat)
+SGGPblockplot <- function(SGGP, singleplot=TRUE) {
+  
+  if (inherits(SGGP, "SGGP")) {
+    d <- SGGP$d
+    uo <- SGGP$uo[1:SGGP$uoCOUNT,]
+  } else if (is.matrix(SGGP)) {
+    d <- ncol(SGGP)
+    uo <- SGGP
+  } else {stop("blockplot only works on SGGP or matrix")}
+  if (d>2) {singleplot <- FALSE} # Can only use singleplot in 2D
   
   alldf <- NULL
   # ds <- c(1,2)
-  for (d1 in setdiff(1:SGGP$d,c())) {
-    for (d2 in setdiff(1:SGGP$d, d1)) {
+  d1set <- if (singleplot) {1} else {1:d}
+  for (d1 in d1set) {
+    d2set <- setdiff(1:d, d1)
+    for (d2 in d2set) {
       ds <- c(d1, d2)
-      uo <- SGGP$uo[1:SGGP$uoCOUNT,]
       uods <- uo[,ds]
       uodsdf <- data.frame(uods)
       uods.unique <- plyr::ddply(uodsdf, c("X1", "X2"), function(x) data.frame(count=nrow(x)))
@@ -139,10 +152,16 @@ SGGPblockplot <- function(SGGP) {
       alldf <- if (is.null(alldf)) gdf else rbind(alldf, gdf)
     }
   }
-  ggplot2::ggplot(alldf) + ggplot2::geom_rect(ggplot2::aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill=count))+
-    ggplot2::scale_fill_gradient(low = "yellow", high = "red") +
-    # ggplot2::xlab(paste0("dimension ",ds[1])) +
-    ggplot2::facet_grid(d1 ~ d2)
+  p <- ggplot2::ggplot(alldf) +
+    ggplot2::geom_rect(ggplot2::aes_string(xmin="xmin", xmax="xmax",
+                                           ymin="ymin", ymax="ymax",
+                                           fill="count"),
+                       color="black")+
+    ggplot2::scale_fill_gradient(low = "yellow", high = "red")
+    
+  if (!singleplot) {p <- p + ggplot2::facet_grid(d1 ~ d2)}
+  else {p <- p+ggplot2::xlab("X1") + ggplot2::ylab("X2")}
+  p
 }
 
 

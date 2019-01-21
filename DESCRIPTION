@@ -17,6 +17,7 @@ Suggests: testthat,
     covr,
     ggplot2,
     reshape2,
+    plyr,
     MASS,
     splitfngr,
     lhs
