@@ -6,7 +6,7 @@
 #' @param xp x value to predict at
 #' @param SGGP SG object
 #' @param fullBayesian Should prediction be done fully Bayesian? Much slower.
-#' Averages over theta samples instead of using thetaMAP
+#' Averages over theta samples instead of using thetaMAP.
 #' @param theta Leave as NULL unless you want to use a value other than thetaMAP.
 #' Much slower.
 #'
@@ -28,9 +28,9 @@ SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
   
   # Full Bayesian
   if (fullBayesian) {
-    # browser()
     if (!is.null(theta)) {stop("Don't give in theta for fullBayesian")}
-    preds <- lapply(1:SGGP$numPostSamples, function(i) {SGGPpred(xp, SGGP, theta=SGGP$thetaPostSamples[,i])})
+    preds <- lapply(1:SGGP$numPostSamples, 
+                    function(i) {SGGPpred(xp, SGGP, theta=SGGP$thetaPostSamples[,i])})
     means <- sapply(preds, function(x) {x$mean})
     mn <- apply(means, 1, mean)
     vars <- sapply(preds, function(x) {x$var})
@@ -84,10 +84,10 @@ SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
       sigma2MAP.thisloop <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop,
                                                                theta=thetaMAP.thisloop,
                                                                return_lS=FALSE)$sigma2
-      if (length(sigma2MAP.thisloop) != 1) {stop("sigma2MAP not scalar #923583")}
-      sigma2MAP.thisloop <- sigma2MAP.thisloop
-      # browser()
-      # cat(c(thetaMAP.thisloop, sigma2MAP.thisloop), '\n')
+      # if (length(sigma2MAP.thisloop) != 1) {stop("sigma2MAP not scalar #923583")}
+      # sigma2MAP.thisloop <- sigma2MAP.thisloop[1,1] # Convert 1x1 matrix to scalar
+      # It can be vector when there is multiple output
+      sigma2MAP.thisloop <- as.vector(sigma2MAP.thisloop)
       rm(y.thisloop)
     }
     mu.thisloop <- if (nnn==1) SGGP$mu else SGGP$mu[opdlcv]
@@ -131,7 +131,6 @@ SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
           mean = (mu.thisloop+Cp%*%pw.thisloop)
           var=sigma2MAP.thisloop*ME_t
         }
-        # cat('sigma2map.thisloop is ', sigma2MAP.thisloop / SGGP$sigma2MAP[1,1], sigma2MAP.thisloop, '\n')
         
         # With sepparout and PCA (or not), do this
         if (nnn > 1) {

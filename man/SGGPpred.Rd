@@ -19,7 +19,7 @@ SGGPpred(xp, SGGP, fullBayesian = FALSE, theta = NULL)
 \item{SGGP}{SG object}
 
 \item{fullBayesian}{Should prediction be done fully Bayesian? Much slower.
-Averages over theta samples instead of using thetaMAP}
+Averages over theta samples instead of using thetaMAP.}
 
 \item{theta}{Leave as NULL unless you want to use a value other than thetaMAP.
 Much slower.}

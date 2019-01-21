@@ -156,12 +156,12 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
   }
 }
 
-#' Calculate stats for SGGP prediction on validation data
+
+#' Calculate stats for prediction on validation data
 #'
-#' @param SGGP SGGP object
-#' @param Xval X validation matrix
+#' @param predmean Predicted mean
+#' @param predvar Predicted variance
 #' @param Yval Y validation data
-#' @param d Dimension if multivariate output
 #'
 #' @return data frame
 #' @export
@@ -171,6 +171,35 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #' Journal of the American Statistical Association 102.477 (2007): 359-378.
 #'
 #' @examples
+#' valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9))
+valstats <- function(predmean, predvar, Yval, d=NULL, fullBayesian=FALSE) {
+  
+  m <- predmean
+  v <- pmax(predvar, 0)
+  s <- sqrt(v)
+  z <- (Yval - m) / s
+  RMSE <- sqrt(mean((predmean - Yval)^2))
+  score <- mean((Yval-predmean)^2/predvar+log(predvar))
+  CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
+  coverage <- mean((Yval<= predmean+1.96*sqrt(predvar)) & 
+                     (Yval>= predmean-1.96*sqrt(predvar)))
+  # Return df with values
+  data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage)
+}
+
+#' Calculate stats for SGGP prediction on validation data
+#'
+#' @param SGGP SGGP object
+#' @param Xval X validation matrix
+#' @param Yval Y validation data
+#' @param bydim If multiple outputs, should it be done separately by dimension?
+#' @param fullBayesian Should prediction be done fully Bayesian? Much slower.
+#' Averages over theta samples instead of using thetaMAP.
+#'
+#' @return data frame
+#' @export
+#'
+#' @examples
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' f1 <- function(x){x[1]+x[2]^2}
 #' y <- apply(SG$design, 1, f1)
@@ -178,27 +207,46 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #' Xval <- matrix(runif(3*100), ncol=3)
 #' Yval <- apply(Xval, 1, f1)
 #' SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval)
-SGGPvalstats <- function(SGGP, Xval, Yval, d=NULL) {
+#' SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval, fullBayesian=TRUE)
+#' 
+#' # Multiple outputs
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' f1 <- function(x){x[1]+x[2]^2}
+#' f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
+#' y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
+#' y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
+#' y <- cbind(y1, y2)
+#' SG <- SGGPfit(SG, Y=y)
+#' SGGPvalstats(SG, Xval, Yval)
+#' SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
+SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
+  # Make predictions
+  ypred <- SGGPpred(xp=Xval, SGGP=SGGP, fullBayesian=fullBayesian)
+  # if (!is.null(d)) {
+  #   ypred <- list(mean=ypred$mean[,d], var=ypred$var[,d])
+  #   Yval <- Yval[,d]
+  # }
   
-  ypred <- SGGPpred(xp=Xval, SGGP=SGGP)
-  if (!is.null(d)) {
-    ypred <- list(mean=ypred$mean[,d], var=ypred$var[,d])
-    Yval <- Yval[,d]
+  # m <- ypred$mean
+  # v <- pmax(ypred$var, 0)
+  # s <- sqrt(v)
+  # z <- (Yval - m) / s
+  # RMSE <- sqrt(mean((ypred$mean - Yval)^2))
+  # score <- mean((Yval-ypred$mean)^2/ypred$var+log(ypred$var))
+  # CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
+  # coverage <- mean((Yval<= ypred$mean+1.96*sqrt(ypred$var)) & 
+  #                    (Yval>= ypred$mean-1.96*sqrt(ypred$var)))
+  # # Return df with values
+  # data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage)
+  if (ncol(ypred$mean) == 1 || !bydim) {
+    valstats(predmean=ypred$mean, predvar=ypred$var, Yval=Yval)
+  } else {
+    do.call("rbind",
+            lapply(1:ncol(ypred$mean),
+                   function(i) {
+                     valstats(predmean=ypred$mean[,i], predvar=ypred$var[,i], Yval=Yval)
+                   }))
   }
-  
-  m <- ypred$mean
-  v <- pmax(ypred$var, 0)
-  s <- sqrt(v)
-  z <- (Yval - m) / s
-  RMSE <- sqrt(mean((ypred$mean - Yval)^2))
-  score <- mean((Yval-ypred$mean)^2/ypred$var+log(ypred$var))
-  CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
-  coverage <- mean((Yval<= ypred$mean+1.96*sqrt(ypred$var)) & 
-                     (Yval>= ypred$mean-1.96*sqrt(ypred$var)))
-  
-  data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage)
-  
-  
 }
 
 #' Plot correlation samples
@@ -286,7 +334,7 @@ SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NUL
       #                 ggplot2::aes_string(x="x", y="value", color="variable")) + 
       #   ggplot2::geom_line() + ggplot2::theme(legend.position="none")
       newdf <- cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
-                    x=rep(xl, numlines), d=i)
+                     x=rep(xl, numlines), d=i)
       if (i==1) {ggdf <- newdf}
       else {ggdf <- rbind(ggdf, newdf)}
     }
@@ -297,7 +345,7 @@ SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NUL
   } else { # Use ggplot2
     # Return plot
     p <- ggplot2::ggplot(ggdf, 
-                    ggplot2::aes_string(x="x", y="value", color="variable")) + 
+                         ggplot2::aes_string(x="x", y="value", color="variable")) + 
       ggplot2::geom_line() + ggplot2::theme(legend.position="none")
     if (i > 1) {
       p <- p + ggplot2::facet_grid(d ~ .)

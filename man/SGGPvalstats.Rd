@@ -4,7 +4,7 @@
 \alias{SGGPvalstats}
 \title{Calculate stats for SGGP prediction on validation data}
 \usage{
-SGGPvalstats(SGGP, Xval, Yval, d = NULL)
+SGGPvalstats(SGGP, Xval, Yval, bydim = TRUE, fullBayesian = FALSE)
 }
 \arguments{
 \item{SGGP}{SGGP object}
@@ -13,7 +13,10 @@ SGGPvalstats(SGGP, Xval, Yval, d = NULL)
 
 \item{Yval}{Y validation data}
 
-\item{d}{Dimension if multivariate output}
+\item{bydim}{If multiple outputs, should it be done separately by dimension?}
+
+\item{fullBayesian}{Should prediction be done fully Bayesian? Much slower.
+Averages over theta samples instead of using thetaMAP.}
 }
 \value{
 data frame
@@ -29,9 +32,16 @@ SG <- SGGPfit(SG, y)
 Xval <- matrix(runif(3*100), ncol=3)
 Yval <- apply(Xval, 1, f1)
 SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval)
-}
-\references{
-Gneiting, Tilmann, and Adrian E. Raftery.
-"Strictly proper scoring rules, prediction, and estimation."
-Journal of the American Statistical Association 102.477 (2007): 359-378.
+SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval, fullBayesian=TRUE)
+
+# Multiple outputs
+SG <- SGGPcreate(d=3, batchsize=100)
+f1 <- function(x){x[1]+x[2]^2}
+f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
+y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
+y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
+y <- cbind(y1, y2)
+SG <- SGGPfit(SG, Y=y)
+SGGPvalstats(SG, Xval, Yval)
+SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
 }

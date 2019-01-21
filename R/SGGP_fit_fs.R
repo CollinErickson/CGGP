@@ -189,7 +189,6 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     }else{ # Y is matrix
       SGGP$mu = colMeans(Y)
       if (SGGP$use_PCA) { # Use PCA
-        # print("Using PCA")
         SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
         Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
         SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
@@ -205,7 +204,6 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         Y_recovered =   matrix(rep(SGGP$mu,each=dim(SGGP$design)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ y%*%(SGGP$M)
         SGGP$leftover_variance = colMeans((Y-Y_recovered)^2)
       } else { # No PCA
-        # print("Not using PCA")
         y <- sweep(Y, 2, SGGP$mu)
         # Need to set SGGP$M somewhere so that it doesn't use transformation
       }

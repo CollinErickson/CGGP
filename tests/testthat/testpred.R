@@ -76,8 +76,10 @@ test_that("Prediction matches exact on small samples", {
   # Just use the MAP value
   s2 <- SG$sigma2MAP
   exvar <- s2 * (1 - colSums(t(s) * solve(Sig, t(s))))
-  print(1/SGpred$var* exvar)
-  plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
+  if (F) {
+    print(1/SGpred$var* exvar)
+    plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
+  }
   expect_equal(SGpred$var, exvar)
 })
 
@@ -92,6 +94,10 @@ test_that("predMV works", {
   yMVpred <- SGGPpred(SG$design, SG=SG)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
+  
+  
+  yMVpredS3 <- predict(SG, SG$design)$mean
+  expect_equal(yMVpred, yMVpredS3)
   
   # Doesn't work since there's no way to update Y without updating parameters too.
   # xpred <- matrix(runif(100*3),100,3)
@@ -152,12 +158,19 @@ test_that("supplemental with MV output works", {
   yMVpred <- SGGPpred(SG$design, SG=SG)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
+  ysuppred <- SGGPpred(xsup, SG=SG)$mean
+  expect_equal(ysuppred[,1], ysup1, 1e-4)
+  expect_equal(ysuppred[,2], ysup2, 1e-4)
+  
+  # Doesn't work when giving in theta
+  expect_error(SGGPpred(xsup, SG, theta=SG$thetaPostSamples[,1]))
   
 })
 
 test_that("pred with theta works", {
   d <- 5
   sg <- SGGPcreate(d=d, batchsize=1500)
+  expect_error(SGGPpred(sg$design, sg))
   f <- function(x){x[1]^1.3+.4*sin(6*x[2])+4*exp(x[3])}
   y <- apply(sg$design, 1, f)
   sg <- SGGPfit(sg, y)
@@ -172,6 +185,7 @@ test_that("pred with theta works", {
   expect_false(isTRUE(all.equal(p1$me, p3$me)))
   
   # Check full Bayesian. Not easy, just check if it's close to MAP prediction
+  expect_error(SGGPpred(xpred, sg, fullBayesian = T, theta = sg$thetaPostSamples[1,]))
   pb <- SGGPpred(xpred, sg, fullBayesian = T)
   expect_is(pb, "list")
   expect_equal(p1$me, p3$mean, tol=1e-2)

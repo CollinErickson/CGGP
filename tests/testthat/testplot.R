@@ -27,6 +27,12 @@ test_that("Plots work", {
   expect_error(SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval, plot_with = 'base'), NA)
   
   # Val stats
+  vstats <- valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9))
+  expect_is(vstats, "data.frame")
+  expect_equal(nrow(vstats), 1)
+  rm(vstats)
+  
+  # SGGP Val stats
   vstats <- SGGPvalstats(SG, Xval, Yval)
   expect_is(vstats, "data.frame")
   expect_equal(nrow(vstats), 1)
