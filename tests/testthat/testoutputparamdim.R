@@ -110,6 +110,14 @@ test_that("3. MV output, PCA, separate opd", {
   expect_equal(yMVpred[,2], y2, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   
+  # Append new data, use RIMSEperpoint
+  SG <- SGGPappend(SG, 100, RIMSEperpoint = TRUE, selectionmethod = "UCB")
+  y1 <- apply(SG$design, 1, f1)
+  y2 <- apply(SG$design, 1, f2)
+  y3 <- apply(SG$design, 1, f3)
+  y <- cbind(y1, y2, y3)
+  expect_error(SG <- SGGPfit(SG, Y=y), NA) # No error
+  
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
   ysuppred <- SGGPpred(xsup, SG)$me

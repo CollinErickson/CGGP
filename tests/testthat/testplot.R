@@ -32,6 +32,8 @@ test_that("Plots work", {
   expect_equal(nrow(vstats), 1)
   
   # Corr plot
+  p <- SGGP_internal_CorrPlot()
+  expect_is(p, "ggplot")
   p <- SGGP_internal_CorrPlot(SGGP_internal_CorrMatCauchySQ, theta=c(-.9,.8,.7,-.8))
   expect_is(p, "ggplot")
   p <- SGGP_internal_CorrPlot(SG)

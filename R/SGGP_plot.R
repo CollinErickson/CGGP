@@ -249,18 +249,19 @@ SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NUL
     px.mean <- rep(0,n)
     px.cov <- Corr(xl, xl, theta=theta[1:nparam + nparam*(i-1)])
     # Generate sample paths
-    samplepaths <- try(newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov))
-    if (inherits(samplepaths, "try-error")) {
-      message("Adding nugget to cool1Dplot")
-      nug <- 1e-6
-      Sigma.try2 <- try(
-        newy <- MASS::mvrnorm(n=numlines, mu=px.mean,
-                              Sigma=px.cov + diag(nug, nrow(px.cov)))
-      )
-      if (inherits(Sigma.try2, "try-error")) {
-        stop("Can't do cool1Dplot")
-      }
-    }
+    samplepaths <- newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov)
+    # samplepaths <- try(newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov))
+    # if (inherits(samplepaths, "try-error")) {
+    #   message("Adding nugget to cool1Dplot")
+    #   nug <- 1e-6
+    #   Sigma.try2 <- try(
+    #     newy <- MASS::mvrnorm(n=numlines, mu=px.mean,
+    #                           Sigma=px.cov + diag(nug, nrow(px.cov)))
+    #   )
+    #   if (inherits(Sigma.try2, "try-error")) {
+    #     stop("Can't do cool1Dplot")
+    #   }
+    # }
     
     # Set so all start at 0.
     if (zero) {

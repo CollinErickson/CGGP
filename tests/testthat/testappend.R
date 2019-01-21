@@ -11,6 +11,7 @@ test_that("SGGPappend works", {
     y <- apply(SG$design, 1, f)
     SG <- SGGPfit(SG, Y=y)
   }
+  # Error, UC is not an option.
   expect_error(SGGPappend(SG, 20, selectionmethod = "UC"))
 })
 
@@ -23,7 +24,7 @@ test_that("SGGPappend works with large number", {
   lastN <- nrow(SG$design)
   
   # Adding 2000 will force it to increase ML and add rows to uo, pila, pala, etc.
-  expect_silent(SG <- SGGPappend(SGGP=SG, batchsize=2000))
+  expect_error(SG <- SGGPappend(SGGP=SG, batchsize=2000), NA)
   expect_is(SG, "SGGP")
   expect_gt(nrow(SG$design), lastN)
   # y <- apply(SG$design, 1, f)
