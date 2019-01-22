@@ -106,6 +106,7 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' Plot the 2D projections of the blocks of an SGGP object.
 #'
 #' @param SGGP SGGP object
+#' @param singleplot If only two dimensions, should a single plot be made?
 #'
 #' @return ggplot2 plot
 #' @export
