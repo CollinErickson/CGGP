@@ -116,7 +116,7 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' ss <- SGGPcreate(d=5, batchsize=50)
 #' f <- function(x) {cos(2*pi*x[1]*3) + exp(4*x[4])}
 #' ss <- SGGPfit(ss, Y=apply(ss$design, 1, f))
-#' ss <- SGGPappend(SGGP=ss, batchsize=200)
+#' ss <- SGGPappend(SGGP=ss, batchsize=100)
 #' SGGPblockplot(ss)
 #' 
 #' mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=TRUE)
@@ -159,7 +159,7 @@ SGGPblockplot <- function(SGGP, singleplot=TRUE) {
                                            fill="count"),
                        color="black")+
     ggplot2::scale_fill_gradient(low = "yellow", high = "red")
-    
+  
   if (!singleplot) {p <- p + ggplot2::facet_grid(d1 ~ d2)}
   else {p <- p+ggplot2::xlab("X1") + ggplot2::ylab("X2")}
   p
@@ -283,34 +283,26 @@ valstats <- function(predmean, predvar, Yval) {
 #' y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
 #' y <- cbind(y1, y2)
 #' SG <- SGGPfit(SG, Y=y)
+#' Xval <- matrix(runif(3*100), ncol=3)
+#' Yval <- cbind(apply(Xval, 1, f1),
+#'               apply(Xval, 1, f2))
 #' SGGPvalstats(SG, Xval, Yval)
 #' SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
 SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
   # Make predictions
   ypred <- SGGPpred(xp=Xval, SGGP=SGGP, fullBayesian=fullBayesian)
-  # if (!is.null(d)) {
-  #   ypred <- list(mean=ypred$mean[,d], var=ypred$var[,d])
-  #   Yval <- Yval[,d]
-  # }
   
-  # m <- ypred$mean
-  # v <- pmax(ypred$var, 0)
-  # s <- sqrt(v)
-  # z <- (Yval - m) / s
-  # RMSE <- sqrt(mean((ypred$mean - Yval)^2))
-  # score <- mean((Yval-ypred$mean)^2/ypred$var+log(ypred$var))
-  # CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
-  # coverage <- mean((Yval<= ypred$mean+1.96*sqrt(ypred$var)) & 
-  #                    (Yval>= ypred$mean-1.96*sqrt(ypred$var)))
-  # # Return df with values
-  # data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage)
+  # Use valstats to get df with values
   if (ncol(ypred$mean) == 1 || !bydim) {
     valstats(predmean=ypred$mean, predvar=ypred$var, Yval=Yval)
   } else {
+    if (any(dim(ypred$mean) != dim(Yval))) {
+      stop("Yval dimensions don't match SGGPpred(Xval, SGGP)")
+    }
     do.call("rbind",
             lapply(1:ncol(ypred$mean),
                    function(i) {
-                     valstats(predmean=ypred$mean[,i], predvar=ypred$var[,i], Yval=Yval)
+                     valstats(predmean=ypred$mean[,i], predvar=ypred$var[,i], Yval=Yval[,i])
                    }))
   }
 }
@@ -343,8 +335,8 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
 #' SG <- SGGPfit(SG, Y=y)
 #' SGGPcorrplot(SG)
 SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
-                                   numlines=20, plot_with="ggplot",
-                                   zero=TRUE) {
+                         numlines=20, plot_with="ggplot",
+                         zero=TRUE) {
   # Points along x axis
   n <- 100
   xl <- seq(0,1,l=n)
@@ -429,6 +421,7 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #'
 #' @param SGGP  SGGP object
 #' @param proj Point to project onto
+#' @param color Color to make error region
 #'
 #' @return ggplot2 object
 #' @export
@@ -438,18 +431,22 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #' f1 <- function(x){x[1]+x[2]^2 + cos(x[3]^2*2*pi*4) - 3.3}
 #' s1 <- SGGPcreate(d, 200)
 #' s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
-#' s1 <- SGGPappend(s1, 200)
-#' s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
+#' #s1 <- SGGPappend(s1, 200)
+#' #s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
 #' SGGPprojectionplot(s1)
 #' SGGPprojectionplot(s1, 0.)
 #' SGGPprojectionplot(s1, s1$design[nrow(s1$design),])
-SGGPprojectionplot <- function(SGGP, proj=.5) {
+SGGPprojectionplot <- function(SGGP, proj=.5, color="pink") {
   if (length(proj) == 1) {proj <- rep(proj, SGGP$d)}
   if (length(proj) != SGGP$d) {stop("proj should be of length SGGP$d or 1")}
   d <- SGGP$d
   
   tdfall <- NULL
   pointdfall <- NULL
+  
+  Y <- as.matrix(SGGP$Y)
+  numoutdims <- ncol(Y)
+  outdims <- 1:numoutdims
   
   for (d5 in 1:d) {
     np <- 500
@@ -459,30 +456,53 @@ SGGPprojectionplot <- function(SGGP, proj=.5) {
     p5 <- SGGPpred(m, SGGP)
     # p5 %>% str
     poly <- cbind(c(rep(xl,each=2))[-c(1,2*np)])
-    tdf <- as.data.frame(p5)
-    tdf$var <- pmax(0, tdf$var) # No negative values
-    tdf$sd <- sqrt(tdf$var)
-    tdf$meanp2sd <- tdf$mean + 2*tdf$sd
-    tdf$meanm2sd <- tdf$mean - 2*tdf$sd
-    tdf$x <- xl
-    tdf$d <- d5
-    tdfall <- rbind(tdfall, tdf)
+    # browser()
+    # If multiple outputs, get all of them
+    for (outdim in outdims) {
+      if (numoutdims > 1) {
+        tdf <- data.frame(mean=p5$mean[,outdim], var=p5$var[,outdim])
+      } else { # Single out dim
+        tdf <- as.data.frame(p5)
+      }
+      tdf$outdim <- outdim
+      tdf$var <- pmax(0, tdf$var) # No negative values
+      tdf$sd <- sqrt(tdf$var)
+      tdf$meanp2sd <- tdf$mean + 2*tdf$sd
+      tdf$meanm2sd <- tdf$mean - 2*tdf$sd
+      tdf$x <- xl
+      tdf$d <- d5
+      tdfall <- rbind(tdfall, tdf)
+    }
     
     w2.5 <- apply(SGGP$design[,-d5], 1, function(x) all(abs(x - proj[-d5]) < 1e-8))
     x2.5 <- SGGP$design[w2.5,, drop=FALSE]
-    y2.5 <- SGGP$Y[w2.5]
+    y2.5 <- Y[w2.5,, drop=FALSE]
     # plot(x2.5[,d5], y2.5)
-    if (length(y2.5) > 0) {pointdf <- data.frame(x=x2.5[,d5], y=y2.5, d=d5)}
-    else {pointdf <- NULL}
+    pointdf <- NULL
+    if (length(y2.5) > 0) {
+      for (outdim in outdims) {
+      pointdf <- rbind(pointdf, data.frame(x=x2.5[,d5], y=y2.5[,outdim], d=d5, outdim=outdim))
+      }
+    }
     pointdfall <- rbind(pointdfall, pointdf)
   }
-  
+  # browser()
+  tdfall$d <- paste0("X", tdfall$d)
+  tdfall$outdim <- paste0("Y", tdfall$outdim)
+  if (!is.null(pointdfall)) {
+    pointdfall$d <- paste0("X", pointdfall$d)
+    pointdfall$outdim <- paste0("Y", pointdfall$outdim)
+  }
   p <- ggplot2::ggplot(tdfall, ggplot2::aes_string(x='x')) + 
-    ggplot2::geom_ribbon(ggplot2::aes_string(ymin='meanm2sd', ymax='meanp2sd'), color="green", fill="green") +
-    ggplot2::geom_line(ggplot2::aes_string(y='mean')) +
-    ggplot2::facet_grid(d ~ .)
+    ggplot2::geom_ribbon(ggplot2::aes_string(ymin='meanm2sd', ymax='meanp2sd'), color=color, fill=color) +
+    ggplot2::geom_line(ggplot2::aes_string(y='mean'))
   if (!is.null(pointdfall)) {
     p <- p + ggplot2::geom_point(ggplot2::aes_string(x='x', y='y'), data=pointdfall)
+  }
+  if (numoutdims == 1) {
+    p <- p + ggplot2::facet_grid(d ~ .)
+  } else {
+    p <- p +ggplot2::facet_grid(outdim ~ d, scales="free_y")
   }
   p
 }

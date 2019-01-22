@@ -42,6 +42,9 @@ y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
 y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
 y <- cbind(y1, y2)
 SG <- SGGPfit(SG, Y=y)
+Xval <- matrix(runif(3*100), ncol=3)
+Yval <- cbind(apply(Xval, 1, f1),
+              apply(Xval, 1, f2))
 SGGPvalstats(SG, Xval, Yval)
 SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
 }

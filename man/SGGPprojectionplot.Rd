@@ -4,12 +4,14 @@
 \alias{SGGPprojectionplot}
 \title{SGGP projection plot}
 \usage{
-SGGPprojectionplot(SGGP, proj = 0.5)
+SGGPprojectionplot(SGGP, proj = 0.5, color = "pink")
 }
 \arguments{
 \item{SGGP}{SGGP object}
 
 \item{proj}{Point to project onto}
+
+\item{color}{Color to make error region}
 }
 \value{
 ggplot2 object
@@ -24,8 +26,8 @@ d <- 5
 f1 <- function(x){x[1]+x[2]^2 + cos(x[3]^2*2*pi*4) - 3.3}
 s1 <- SGGPcreate(d, 200)
 s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
-s1 <- SGGPappend(s1, 200)
-s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
+#s1 <- SGGPappend(s1, 200)
+#s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
 SGGPprojectionplot(s1)
 SGGPprojectionplot(s1, 0.)
 SGGPprojectionplot(s1, s1$design[nrow(s1$design),])
