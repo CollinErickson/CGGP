@@ -83,15 +83,15 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
 
 e2 <- ffexp$new(
   eval_func = sggpexp_func,
-  corr = c("cauchysqt", "gaussian", "powerexp"),
+  corr = c("cauchysqt", "gaussian", "powerexp", "m32", "m52", "cauchysq", "cauchy"),
   sel.method = c("TS", "UCB", "Greedy"),
-  fd=data.frame(f="borehole", d=8, stringsAsFactors = F),
+  fd=data.frame(f="borehole", d=8, row.names = c("borehole"), stringsAsFactors = F),
   batchsize=c(64, 256),
   append.rimseperpoint=c(TRUE, FALSE),
-  use_laplaceapprox=c(TRUE, FALSE),
-  pred.fullBayes=c(TRUE, FALSE),
+  use_laplaceapprox=c(TRUE), #c(TRUE, FALSE),
+  pred.fullBayes=c(FALSE), #c(TRUE, FALSE),
   grid_size=c("fast", "slow"),
-  parallel=!TRUE,
+  parallel=TRUE,
   parallel_cores = 'detect-1',
   folder_path="./scratch/sggpout"
 )

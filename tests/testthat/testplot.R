@@ -38,11 +38,21 @@ test_that("Plots work", {
   expect_equal(nrow(vstats), 1)
   
   # Corr plot
-  p <- SGGP_internal_CorrPlot()
+  p <- SGGPcorrplot()
   expect_is(p, "ggplot")
-  p <- SGGP_internal_CorrPlot(SGGP_internal_CorrMatCauchySQ, theta=c(-.9,.8,.7,-.8))
+  p <- SGGPcorrplot(SGGP_internal_CorrMatCauchySQ, theta=c(-.9,.8,.7,-.8))
   expect_is(p, "ggplot")
-  p <- SGGP_internal_CorrPlot(SG)
+  p <- SGGPcorrplot(SG)
   expect_is(p, "ggplot")
-  expect_error(SGGP_internal_CorrPlot(SG, plot_with = "base"), NA)
+  expect_error(SGGPcorrplot(SG, plot_with = "base"), NA)
+  
+  # Projection plot
+  # These should work fine, return ggplot
+  expect_error(p <- SGGPprojectionplot(SG), NA)
+  expect_is(p, "ggplot")
+  expect_error(p <- SGGPprojectionplot(SG, proj = c(0)), NA)
+  expect_is(p, "ggplot")
+  # Error if proj is not 1 or d dim
+  expect_error(SGGPprojectionplot(SG, proj=c(1,1)))
+  expect_error(SGGPprojectionplot(SG, proj=c(1,1,1,1)))
 })

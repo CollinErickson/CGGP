@@ -334,15 +334,15 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
 #' @importFrom graphics par
 #'
 #' @examples
-#' SGGP_internal_CorrPlot()
-#' SGGP_internal_CorrPlot(theta=c(-2,-1,0,1))
+#' SGGPcorrplot()
+#' SGGPcorrplot(theta=c(-2,-1,0,1))
 #' 
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' f <- function(x){x[1]^1.2+sin(2*pi*x[2]*3)}
 #' y <- apply(SG$design, 1, f)
 #' SG <- SGGPfit(SG, Y=y)
-#' SGGP_internal_CorrPlot(SG)
-SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
+#' SGGPcorrplot(SG)
+SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
                                    numlines=20, plot_with="ggplot",
                                    zero=TRUE) {
   # Points along x axis
@@ -418,4 +418,70 @@ SGGP_internal_CorrPlot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NUL
     }
     p
   }
+}
+
+
+#' SGGP projection plot
+#' 
+#' Show prediction plots when projected down to one dimension.
+#' Most useful when setting all values to 0.5 because it will
+#' have the most points.
+#'
+#' @param SGGP  SGGP object
+#' @param proj Point to project onto
+#'
+#' @return ggplot2 object
+#' @export
+#'
+#' @examples
+#' d <- 5
+#' f1 <- function(x){x[1]+x[2]^2 + cos(x[3]^2*2*pi*4) - 3.3}
+#' s1 <- SGGPcreate(d, 200)
+#' s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
+#' s1 <- SGGPappend(s1, 200)
+#' s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
+#' SGGPprojectionplot(s1)
+#' SGGPprojectionplot(s1, 0.)
+#' SGGPprojectionplot(s1, s1$design[nrow(s1$design),])
+SGGPprojectionplot <- function(SGGP, proj=.5) {
+  if (length(proj) == 1) {proj <- rep(proj, SGGP$d)}
+  if (length(proj) != SGGP$d) {stop("proj should be of length SGGP$d or 1")}
+  d <- SGGP$d
+  
+  tdfall <- NULL
+  pointdfall <- NULL
+  
+  for (d5 in 1:d) {
+    np <- 500
+    xl <- seq(0,1,l=np)
+    m <- matrix(proj,np,d, byrow=T)
+    m[,d5] <- xl
+    p5 <- SGGPpred(m, SGGP)
+    # p5 %>% str
+    poly <- cbind(c(rep(xl,each=2))[-c(1,2*np)])
+    tdf <- as.data.frame(p5)
+    tdf$var <- pmax(0, tdf$var) # No negative values
+    tdf$sd <- sqrt(tdf$var)
+    tdf$meanp2sd <- tdf$mean + 2*tdf$sd
+    tdf$meanm2sd <- tdf$mean - 2*tdf$sd
+    tdf$x <- xl
+    tdf$d <- d5
+    tdfall <- rbind(tdfall, tdf)
+    
+    w2.5 <- apply(SGGP$design[,-d5], 1, function(x) all(abs(x - proj[-d5]) < 1e-8))
+    x2.5 <- SGGP$design[w2.5,, drop=FALSE]
+    y2.5 <- SGGP$Y[w2.5]
+    # plot(x2.5[,d5], y2.5)
+    if (length(y2.5) > 0) {pointdf <- data.frame(x=x2.5[,d5], y=y2.5, d=d5)}
+    else {pointdf <- NULL}
+    pointdfall <- rbind(pointdfall, pointdf)
+  }
+  
+  p <- ggplot(tdfall, aes(x=x)) + geom_ribbon(aes(ymin=meanm2sd, ymax=meanp2sd), color="green", fill="green") +
+    geom_line(aes(y=mean)) +
+    facet_grid(d ~ .)
+  if (!is.null(pointdfall)) {
+    p <- p + geom_point(aes(x=x, y=y), data=pointdfall)
+  }
+  p
 }
