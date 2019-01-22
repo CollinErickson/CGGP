@@ -477,11 +477,12 @@ SGGPprojectionplot <- function(SGGP, proj=.5) {
     pointdfall <- rbind(pointdfall, pointdf)
   }
   
-  p <- ggplot(tdfall, aes(x=x)) + geom_ribbon(aes(ymin=meanm2sd, ymax=meanp2sd), color="green", fill="green") +
-    geom_line(aes(y=mean)) +
-    facet_grid(d ~ .)
+  p <- ggplot2::ggplot(tdfall, ggplot2::aes_string(x='x')) + 
+    ggplot2::geom_ribbon(ggplot2::aes_string(ymin='meanm2sd', ymax='meanp2sd'), color="green", fill="green") +
+    ggplot2::geom_line(ggplot2::aes_string(y='mean')) +
+    ggplot2::facet_grid(d ~ .)
   if (!is.null(pointdfall)) {
-    p <- p + geom_point(aes(x=x, y=y), data=pointdfall)
+    p <- p + ggplot2::geom_point(ggplot2::aes_string(x='x', y='y'), data=pointdfall)
   }
   p
 }
