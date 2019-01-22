@@ -119,7 +119,7 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' ss <- SGGPappend(SGGP=ss, batchsize=200)
 #' SGGPblockplot(ss)
 #' 
-#' mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=T)
+#' mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=TRUE)
 #' SGGPblockplot(mat)
 SGGPblockplot <- function(SGGP, singleplot=TRUE) {
   
