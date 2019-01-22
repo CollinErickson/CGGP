@@ -97,6 +97,8 @@ e2 <- ffexp$new(
   folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun3a" #"./scratch/sggpout"
 )
 e2$rungrid
+e2$recover_parallel_temp_save()
+e2$save_self()
 # if (F) {
 e2$run_all(parallel_temp_save = TRUE)
 # }
