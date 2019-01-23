@@ -356,6 +356,20 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         qp = q + p
         
         Up = U(qp)
+        
+        # Getting an error: 
+        #  Error in if (runif(1) < exp(Uo - Up)) { :
+        #   missing value where TRUE/FALSE needed
+        # Try to see why it happens here
+        # if (length(Uo-Up) != 1) {browser("error here")}
+        if (inherits(if(runif(1) < exp(Uo-Up)){12}, "try-error")) {
+          print(Uo)
+          print(Up)
+          print(Uo-Up)
+          print(exp(Uo-Up))
+          browser("error here")
+        }
+        
         if(runif(1) < exp(Uo-Up)){
           q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))
         }else{

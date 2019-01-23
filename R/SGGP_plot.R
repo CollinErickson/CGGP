@@ -422,6 +422,7 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #' @param SGGP  SGGP object
 #' @param proj Point to project onto
 #' @param color Color to make error region
+#' @param outdims If multiple outputs, which of them should be plotted?
 #'
 #' @return ggplot2 object
 #' @export
@@ -436,7 +437,7 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #' SGGPprojectionplot(s1)
 #' SGGPprojectionplot(s1, 0.)
 #' SGGPprojectionplot(s1, s1$design[nrow(s1$design),])
-SGGPprojectionplot <- function(SGGP, proj=.5, color="pink") {
+SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
   if (length(proj) == 1) {proj <- rep(proj, SGGP$d)}
   if (length(proj) != SGGP$d) {stop("proj should be of length SGGP$d or 1")}
   d <- SGGP$d
@@ -445,8 +446,12 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink") {
   pointdfall <- NULL
   
   Y <- as.matrix(SGGP$Y)
-  numoutdims <- ncol(Y)
-  outdims <- 1:numoutdims
+  if (missing(outdims)) {
+    numoutdims <- ncol(Y)
+    outdims <- 1:numoutdims
+  } else {
+    numoutdims <- length(outdims)
+  }
   
   for (d5 in 1:d) {
     np <- 500

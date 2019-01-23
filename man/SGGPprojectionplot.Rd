@@ -4,7 +4,7 @@
 \alias{SGGPprojectionplot}
 \title{SGGP projection plot}
 \usage{
-SGGPprojectionplot(SGGP, proj = 0.5, color = "pink")
+SGGPprojectionplot(SGGP, proj = 0.5, color = "pink", outdims)
 }
 \arguments{
 \item{SGGP}{SGGP object}
@@ -12,6 +12,8 @@ SGGPprojectionplot(SGGP, proj = 0.5, color = "pink")
 \item{proj}{Point to project onto}
 
 \item{color}{Color to make error region}
+
+\item{outdims}{If multiple outputs, which of them should be plotted?}
 }
 \value{
 ggplot2 object
