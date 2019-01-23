@@ -15,8 +15,13 @@ lo.log <- log(lo, 10)
 SGGPvalplot(sg8log, lx, lo.log, d=3)
 
 ylhs8039 <- read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_all_output.csv")
-set.seed(1226)
-xlhs8039 <- lhs::maximinLHS(n=8039, k=9)
+if (F) {
+  set.seed(1226)
+  xlhs8039 <- lhs::maximinLHS(n=8039, k=9)
+  write.csv(xlhs8039, "../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")
+} else {
+  xlhs8039 <- read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")
+}
 ylhs8039_100 <- ylhs8039[1:100,]
 xlhs8039_100 <- xlhs8039[1:100,]
 

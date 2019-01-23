@@ -362,7 +362,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         #   missing value where TRUE/FALSE needed
         # Try to see why it happens here
         # if (length(Uo-Up) != 1) {browser("error here")}
-        if (inherits(if(runif(1) < exp(Uo-Up)){12}, "try-error")) {
+        if (inherits(try(if(runif(1) < exp(Uo-Up)){12}), "try-error")) {
           print(Uo)
           print(Up)
           print(Uo-Up)
