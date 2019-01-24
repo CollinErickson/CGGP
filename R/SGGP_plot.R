@@ -114,7 +114,7 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' @examples
 #' # The first and fourth dimensions are most active and will have greater depth
 #' ss <- SGGPcreate(d=5, batchsize=50)
-#' f <- function(x) {cos(2*pi*x[1]*3) + exp(4*x[4])}
+#' f <- function(x) {cos(2*pi*x[1]*3) + x[3]*exp(4*x[4])}
 #' ss <- SGGPfit(ss, Y=apply(ss$design, 1, f))
 #' ss <- SGGPappend(SGGP=ss, batchsize=100)
 #' SGGPblockplot(ss)
@@ -461,7 +461,6 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
     p5 <- SGGPpred(m, SGGP)
     # p5 %>% str
     poly <- cbind(c(rep(xl,each=2))[-c(1,2*np)])
-    # browser()
     # If multiple outputs, get all of them
     for (outdim in outdims) {
       if (numoutdims > 1) {
@@ -491,7 +490,7 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
     }
     pointdfall <- rbind(pointdfall, pointdf)
   }
-  # browser()
+  
   tdfall$d <- paste0("X", tdfall$d)
   tdfall$outdim <- paste0("Y", tdfall$outdim)
   if (!is.null(pointdfall)) {

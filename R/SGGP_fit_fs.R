@@ -357,20 +357,18 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         
         Up = U(qp)
         
-        # Getting an error: 
+        # Sometimes Uo and Up equal Inf, so exp(Uo-Up)=NaN,
+        #  and it gives an error: 
         #  Error in if (runif(1) < exp(Uo - Up)) { :
         #   missing value where TRUE/FALSE needed
-        # Try to see why it happens here
-        # if (length(Uo-Up) != 1) {browser("error here")}
-        if (inherits(try(if(runif(1) < exp(Uo-Up)){12}), "try-error")) {
-          print(Uo)
-          print(Up)
-          print(Uo-Up)
-          print(exp(Uo-Up))
-          browser("error here")
+        # Will just set Uo-Up to 0 when this happens
+        exp_Uo_minus_Up <- exp(Uo-Up)
+        if (is.nan(exp_Uo_minus_Up)) {
+          exp_Uo_minus_Up <- exp(0)
         }
         
-        if(runif(1) < exp(Uo-Up)){
+        # if(runif(1) < exp(Uo-Up)){
+        if(runif(1) < exp_Uo_minus_Up){
           q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))
         }else{
           scalev=exp(log(scalev)-0.1/sqrt(i+4));scalev = max(scalev,1/sqrt(length(q)))
