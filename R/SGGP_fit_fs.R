@@ -339,18 +339,21 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     A = eigen(Hmat)
     cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
     #print( cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP)))
+    
+    # Get posterior samples
     if(laplaceapprox){
       PST= log((1+thetaMAP)/(1-thetaMAP)) + cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),nrow=length(thetaMAP))
       thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
-    }else{
+    }else{ # MCMC Metropolis-Hastings
       U <- function(re){
         PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%as.vector(re)
         thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
         return(SGGP_internal_neglogpost(thetav,SGGP,y.thisloop))
       }
-      q = rep(0,totnumpara)
+      q = rep(0,totnumpara) # Initial point is 0
       Uo = U(q)
       scalev = 0.5
+      # This is just burn in period, find good scalev
       for(i in 1:(100*SGGP$numPostSamples)){
         p = rnorm(length(q),0,1)*scalev
         qp = q + p
@@ -368,10 +371,11 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         }
         
         # if(runif(1) < exp(Uo-Up)){
-        if(runif(1) < exp_Uo_minus_Up){
+        if(runif(1) < exp_Uo_minus_Up){ # accept the sample
           q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))
-        }else{
-          scalev=exp(log(scalev)-0.1/sqrt(i+4));scalev = max(scalev,1/sqrt(length(q)))
+        }else{ # Reject sample, update scalev
+          scalev=exp(log(scalev)-0.1/sqrt(i+4))
+          scalev = max(scalev,1/sqrt(length(q)))
         }
         
       }
@@ -381,10 +385,17 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       
       for(i in 1:(100*SGGP$numPostSamples)){
         p = rnorm(length(q),0,1)*scalev
-        qp = q + p
+        qp = q + p # Next candidate is random normal step from q
         
         Up = U(qp)
-        if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;}
+        # Again need to avoid NaN problem
+        exp_Uo_minus_Up <- exp(Uo-Up)
+        if (is.nan(exp_Uo_minus_Up)) {
+          exp_Uo_minus_Up <- exp(0)
+        }
+        # if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;}
+        if(runif(1) < exp_Uo_minus_Up){q=qp;Uo=Up;}
+        # Only save every 100 samples for good mixing
         if((i%%100)==0){Bs[,i/100]=q;}
       }
       PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%Bs
