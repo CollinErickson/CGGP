@@ -207,7 +207,7 @@ SGGP_internal_CorrMatMatern32 <- function(x1, x2,theta, return_dCdtheta = FALSE,
   if(return_numpara){
     return(1);
   }else{ 
-    if (length(theta) != 1) {stop("CorrMatPowerExp theta should be length 1")}
+    if (length(theta) != 1) {stop("CorrMatMatern32 theta should be length 1")}
     diffmat =abs(outer(x1,x2,'-'))
     
     expLS = exp(3*theta[1])
@@ -250,7 +250,7 @@ SGGP_internal_CorrMatMatern52 <- function(x1, x2,theta, return_dCdtheta = FALSE,
   if(return_numpara){
     return(1);
   }else{ 
-    if (length(theta) != 1) {stop("CorrMatPowerExp theta should be length 1")}
+    if (length(theta) != 1) {stop("CorrMatMatern52 theta should be length 1")}
     diffmat =abs(outer(x1,x2,'-'))
     expLS = exp(3*theta[1])
     h = diffmat/expLS
@@ -289,11 +289,13 @@ SGGP_internal_CorrMatPowerExp <- function(x1, x2,theta, return_dCdtheta = FALSE,
     if (length(theta) != 2) {stop("CorrMatPowerExp theta should be length 2")}
     diffmat =abs(outer(x1,x2,'-'))
     expLS = exp(3*theta[1])
-    alpha <- 1 + (theta[2]+1)/2
+    minpower <- 1
+    maxpower <- 1.95
+    alpha <- minpower + (theta[2]+1)/2 * (maxpower - minpower)
     h = diffmat/expLS
     C = (1-10^(-10))*exp(-(h)^alpha) + 10^(-10)*(diffmat<10^(-4))
     if(return_dCdtheta){
-      dCdtheta <- (1-10^(-10))*cbind(3*alpha*C*diffmat^alpha/expLS^alpha, -C*h^alpha*log(h)/2)
+      dCdtheta <- (1-10^(-10))*cbind(3*alpha*C*diffmat^alpha/expLS^alpha, -C*h^alpha*log(h)/2 * (maxpower - minpower))
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)

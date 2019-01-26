@@ -350,7 +350,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
         return(SGGP_internal_neglogpost(thetav,SGGP,y.thisloop))
       }
-      q = rep(0,totnumpara) # Initial point is 0
+      q = rep(0,totnumpara) # Initial point is 0, this is thetaMAP after transform
       Uo = U(q)
       scalev = 0.5
       # This is just burn in period, find good scalev

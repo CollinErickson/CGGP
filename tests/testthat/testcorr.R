@@ -304,7 +304,9 @@ test_that("Correlation CorrMatPowerExp works", {
   PowerExpfunc <- function(x1,x2,theta) {
     diffmat =abs(outer(x1,x2,'-'))
     expLS = exp(3*theta[1])
-    alpha <- 1 + (theta[2]+1)/2
+    minpower <- 1
+    maxpower <- 1.95
+    alpha <- minpower + (theta[2]+1)/2 * (maxpower - minpower)
     h = diffmat/expLS
     C = (1-10^(-10))*exp(-(h)^alpha) + 10^(-10)*(diffmat<10^(-4))
     C
