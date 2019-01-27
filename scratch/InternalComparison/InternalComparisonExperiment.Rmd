@@ -1,0 +1,110 @@
+---
+title: "Internal comparison experiment"
+author: "Collin Erickson"
+date: "January 20, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(magrittr)
+library(ggplot2)
+```
+
+We are going to run an experiment using our `SGGP` code to see how the
+various options affect the prediction ability of the model.
+
+Internal options
+
+* Selection method in append: UCB, TS, Greedy
+
+* Correlation function: Cauchy, CauchySQ, CauchySQT, Gaussian, Power exponential, Matern 3/2, Matern 5/2
+
+* Sampling method in fit: Laplace approx, MCMC
+
+* Grid size: fast (1 2 4 4 4 6 8 32), slow (1 2 2 2 4 4 4 4 4 6 32)
+
+* Batch size
+
+* Prediction: use MAP, full Bayesian using samples
+
+* Append blocks using RIMSE or RIMSE/point
+
+* Point location
+
+## Internal options for our experiment
+
+* (3) Selection method: UCB, TS, Greedy
+
+* (3) Corr func: CauchySQT, Gaussian, Power exp
+
+* (2) Sampling method: Laplace, MCMC
+
+* (2) Grid size: fast (1 2 4 4 4 6 8 32), slow (1 2 2 2 4 4 4 4 4 6 32)
+
+* (2) Batch size: 64 or 256 up to 1024, then 512 for both
+
+* (2) Prediction: MAP, full Bayesian
+
+* (2) Append using RIMSE, RIMSE/point
+
+This is $2^5 3^2 = 288$ options. We can do a fractional factorial experiment to save time.
+
+## First experiment (Comparer2)
+
+I saw that MCMC and full Bayesian prediction were far slower than
+their alternatives.
+I ran a smaller experiment on my computer with the following
+
+
+
+* (3) Selection method: UCB, TS, Greedy
+
+* (7) Corr func: CauchySQT, CauchySQ, Cauchy, Gaussian,
+Power exp, Matern 3/2, and Matern 5/2
+
+* (1) Sampling method: Laplace, ~~MCMC~~
+
+* (2) Grid size: fast (1 2 4 4 4 6 8 32), slow (1 2 2 2 4 4 4 4 4 6 32)
+
+* (2) Batch size: 64 or 256 up to 1024, then 512 for both
+
+* (1) Prediction: MAP, ~~full Bayesian~~
+
+* (2) Append using RIMSE, RIMSE/point
+
+This took over a day on my laptop using 3 cores.
+
+```{r}
+e2 <- readRDS("ComparerRun2_completed.rds")
+```
+```{r}
+e2$completed_runs %>% table
+```
+
+I look at the results and saw something weird going on.
+It turns out that some of the runs became awful after large
+number of points.
+
+```{r}
+stripchart(RMSE ~ nallotted, e2$outcleandf)
+stripchart(RMSE ~ nallotted + corr, e2$outcleandf, las=1)
+
+```
+
+```{r}
+ggplot(data=e2$outcleandf, mapping=aes(x=nallotted,y=RMSE, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(corr ~ .) + ggplot2::scale_y_log10()
+
+```
+```{r}
+ggplot(data=e2$outcleandf, mapping=aes(x=nallotted,y=score, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(corr ~ .)
+```
+```{r}
+ggplot(data=e2$outcleandf[e2$outcleandf$nallotted!=16384,], mapping=aes(x=nallotted,y=score, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(corr ~ .)
+
+```
+
+
