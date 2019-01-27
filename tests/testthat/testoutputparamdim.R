@@ -28,7 +28,8 @@ eps.test <- 1e-2 # Use difference accuracy for testp data preds
 test_that("1. MV output, PCA, 1opd", {
   
   # First check MV with PCA
-  SG <- SGGPcreate(d=3, batchsize=100)
+  # Keep sample size small to pred on Xsup will be closer to exact
+  SG <- SGGPcreate(d=3, batchsize=30)
   expect_is(SG, "SGGP")
   y1 <- apply(SG$design, 1, f1)
   y2 <- apply(SG$design, 1, f2)
@@ -58,6 +59,10 @@ test_that("1. MV output, PCA, 1opd", {
   expect_equal(ysuppred[,1], ysup1[1:2], eps.sup)
   expect_equal(ysuppred[,2], ysup2[1:2], eps.sup)
   expect_equal(ysuppred[,3], ysup3[1:2], eps.sup)
+  
+  # print(c((mean(abs(ysuppred[,1] - ysup1[1:2]))),
+  # (mean(abs(ysuppred[,2] - ysup2[1:2]))),
+  # (mean(abs(ysuppred[,3] - ysup3[1:2])))))
 })
 
 
@@ -65,7 +70,7 @@ test_that("2. MV output, NO PCA, 1opd", {
   
   
   # First check MV with PCA
-  SG <- SGGPcreate(d=3, batchsize=100)
+  SG <- SGGPcreate(d=3, batchsize=30)
   expect_is(SG, "SGGP")
   y1 <- apply(SG$design, 1, f1)
   y2 <- apply(SG$design, 1, f2)

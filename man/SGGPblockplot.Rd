@@ -20,7 +20,7 @@ Plot the 2D projections of the blocks of an SGGP object.
 \examples{
 # The first and fourth dimensions are most active and will have greater depth
 ss <- SGGPcreate(d=5, batchsize=50)
-f <- function(x) {cos(2*pi*x[1]*3) + exp(4*x[4])}
+f <- function(x) {cos(2*pi*x[1]*3) + x[3]*exp(4*x[4])}
 ss <- SGGPfit(ss, Y=apply(ss$design, 1, f))
 ss <- SGGPappend(SGGP=ss, batchsize=100)
 SGGPblockplot(ss)

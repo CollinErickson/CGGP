@@ -98,7 +98,7 @@ e2 <- ffexp$new(
 )
 e2$rungrid
 # try because it gave delete error before, but shouldn't need it now
-try(e2$recover_parallel_temp_save())
+try(e2$recover_parallel_temp_save(delete_after = FALSE))
 e2$save_self()
 # if (F) {
 e2$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE)

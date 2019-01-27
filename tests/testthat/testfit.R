@@ -1,11 +1,18 @@
 # SGGPfit is used in many other tests, so not as many here
 
-test_that("SGGPfit works", {
+test_that("SGGPfit works with Laplace approx", {
   
-  SG <- SGGPcreate(d=3, batchsize=20)
+  SG <- SGGPcreate(d=3, batchsize=200)
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
+  
+  # Check that samples from Laplace are near max
+  if (F) {
+    stripchart(as.data.frame(t(SG$thetaPostSamples)))
+    stripchart(as.data.frame(t(SG$thetaMAP)), add=T, col=2, pch=19)
+  }
+  expect_true(all(abs(rowMeans(SG$thetaPostSamples)- SG$thetaMAP) < apply(SG$thetaPostSamples, 1, sd)))
   
   neglogpost <- SGGP_internal_gneglogpost(rep(.5,9), SG, y)
   expect_is(neglogpost, "matrix")
@@ -84,7 +91,7 @@ test_that("SGGPfit works with Ynew - vector output", {
   
 })
 
-test_that("Not using LaPlace approx works", {
+test_that("Using MCMC approx works", {
   f1 <- function(x){x[1]+x[2]^2}
   f2 <- function(x){x[2]^1.3+sin(2*pi*x[3])}
   
@@ -93,6 +100,9 @@ test_that("Not using LaPlace approx works", {
   y1 <- apply(SG$design, 1, f1)
   
   expect_error(SG <- SGGPfit(SG, Ynew=y1, laplaceapprox = F), NA)
+  
+  # All loglikelihoods should be finite for samples
+  expect_true(all(is.finite(apply(SG$thetaPostSamples, 2, SGGP_internal_neglogpost, SG=SG, y=SG$y))))
   
   # Now with multiple output
   SG <- SGGPcreate(d=3, batchsize=20)

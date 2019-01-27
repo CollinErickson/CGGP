@@ -9,9 +9,10 @@
 #' @useDynLib SGGP
 #'
 #' @examples
-#' SG <- SGGPcreate(d=3, batchsize=100)
-#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
-#' SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=y)
+#' SG <- SGGPcreate(d=3, batchsize=20)
+#' Y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+#' SG <- SGGPfit(SG, Y)
+#' SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=SG$y)
 SGGP_internal_neglogpost <- function(theta,SGGP,y) {
   # Return Inf if theta is too large
   if (max(theta) >= 0.9999 || min(theta) <= -0.9999) {
@@ -59,9 +60,10 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y) {
 #' @export
 #'
 #' @examples
-#' SG <- SGGPcreate(d=3, batchsize=100)
-#' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
-#' SGGP_internal_gneglogpost(SG$thetaMAP, SG=SG, y=y)
+#' SG <- SGGPcreate(d=3, batchsize=20)
+#' Y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+#' SG <- SGGPfit(SG, Y)
+#' SGGP_internal_gneglogpost(SG$thetaMAP, SG=SG, y=SG$y)
 SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
   
   sigma2anddsigma2 <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
@@ -352,6 +354,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       }
       q = rep(0,totnumpara) # Initial point is 0, this is thetaMAP after transform
       Uo = U(q)
+      if (is.infinite(Uo)) {warning("starting Uo is Inf, this is bad")}
       scalev = 0.5
       # This is just burn in period, find good scalev
       for(i in 1:(100*SGGP$numPostSamples)){
@@ -373,6 +376,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         # if(runif(1) < exp(Uo-Up)){
         if(runif(1) < exp_Uo_minus_Up){ # accept the sample
           q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))
+          if (is.infinite(Up)) {warning("Up is Inf, this shouldn't happen")}
         }else{ # Reject sample, update scalev
           scalev=exp(log(scalev)-0.1/sqrt(i+4))
           scalev = max(scalev,1/sqrt(length(q)))

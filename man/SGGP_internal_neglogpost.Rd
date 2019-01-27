@@ -20,7 +20,8 @@ Likelihood
 Calculate negative log posterior
 }
 \examples{
-SG <- SGGPcreate(d=3, batchsize=100)
-y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
-SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=y)
+SG <- SGGPcreate(d=3, batchsize=20)
+Y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+SG <- SGGPfit(SG, Y)
+SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=SG$y)
 }
