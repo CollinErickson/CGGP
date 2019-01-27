@@ -98,7 +98,7 @@ test_that("2. MV output, NO PCA, 1opd", {
 test_that("3. MV output, PCA, separate opd", {
   
   # First check MV with PCA
-  SG <- SGGPcreate(d=3, batchsize=100)
+  SG <- SGGPcreate(d=3, batchsize=30)
   expect_is(SG, "SGGP")
   y1 <- apply(SG$design, 1, f1)
   y2 <- apply(SG$design, 1, f2)
@@ -136,7 +136,7 @@ test_that("4. MV output, NO PCA, separate opd", {
   
   
   # First check MV with PCA
-  SG <- SGGPcreate(d=3, batchsize=100)
+  SG <- SGGPcreate(d=3, batchsize=30)
   expect_is(SG, "SGGP")
   y1 <- apply(SG$design, 1, f1)
   y2 <- apply(SG$design, 1, f2)
