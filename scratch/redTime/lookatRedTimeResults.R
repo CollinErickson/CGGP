@@ -15,7 +15,8 @@ sg8log <- SGGPfit(sg8, Y=Ylog)
 lo.log <- log(lo, 10)
 SGGPvalplot(sg8log, lx, lo.log, d=3)
 
-ylhs8039 <- as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1])
+ylhs8039 <- as.matrix(
+  read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1])
 if (F) {
   set.seed(1226)
   xlhs8039 <- lhs::maximinLHS(n=8039, k=9)
@@ -28,14 +29,29 @@ xlhs8039_100 <- xlhs8039[1:100,]
 
 ylhs1000_100 <- lo[1:100,]
 xlhs1000_100 <- lx[1:100,]
-mod.mlegp <- mlegp::mlegp(X=xlhs1000_100, Z=ylhs1000_100)
-mod.mlegp.pca <- mlegp::mlegp(X=xlhs1000_100, Z=ylhs1000_100, PC.percent = 99.999)
+if (F) {
+  mod.mlegp <- mlegp::mlegp(X=xlhs1000_100, Z=ylhs1000_100)
+  saveRDS(mod.mlegp, "../../../Desktop/redTimeData/modmlegp100.rds")
+  mod.mlegp.pca <- mlegp::mlegp(X=xlhs1000_100, Z=ylhs1000_100, PC.percent = 99.999)
+  saveRDS(mod.mlegp.pca, "../../../Desktop/redTimeData/modmlegppca100.rds")
+} else {
+  mod.mlegp <- readRDS("../../../Desktop/redTimeData/modmlegp100.rds")
+  mod.mlegp.pca <- readRDS("../../../Desktop/redTimeData/modmlegppca100.rds")
+}
 # mod.mlegp1 <- mlegp::mlegp(X=xlhs1000_100, Z=ylhs1000_100[,1])
 # Try 300 pts
 ylhs1000_300 <- lo[1:300,]
 xlhs1000_300 <- lx[1:300,]
-mod.mlegp.300 <- mlegp::mlegp(X=xlhs1000_300, Z=ylhs1000_300)
-mod.mlegp.pca.300 <- mlegp::mlegp(X=xlhs1000_300, Z=ylhs1000_300, PC.percent = 99.999)
+if (F) {
+  mod.mlegp.300 <- mlegp::mlegp(X=xlhs1000_300, Z=ylhs1000_300)
+  saveRDS(mod.mlegp.300, "../../../Desktop/redTimeData/modmlegp300.rds")
+  mod.mlegp.pca.300 <- mlegp::mlegp(X=xlhs1000_300, Z=t(ylhs1000_300),
+                                    PC.percent = 99.999)
+  saveRDS(mod.mlegp.pca.300, "../../../Desktop/redTimeData/modmlegppca300.rds")
+} else {
+  mod.mlegp.300 <- readRDS("../../../Desktop/redTimeData/modmlegp300.rds")
+  mod.mlegp.pca.300 <- readRDS("../../../Desktop/redTimeData/modmlegppca300.rds")
+}
 
 # pca.p1 <- mlegp::predict.gp(mod.mlegp.pca[[1]], lx)
 # plot(lo[,1], pca.p1)
@@ -61,7 +77,8 @@ comp1D <- function(d) {
   rmse.sggp1 <- sqrt(mean((pred.sggp1$me[,1] - ytest[,1])^2))
   rmse.sggp3 <- sqrt(mean((pred.sggp3$me[,1] - ytest[,1])^2))
   rmse.sggp8 <- sqrt(mean((pred.sggp8$me[,1] - ytest[,1])^2))
-  c('mlegp'=rmse.mlegp, 'sggp1_d1'=rmse.sggp1_1d, 'sggp1'=rmse.sggp1, 'sggp3'=rmse.sggp3, 'sggp8'=rmse.sggp8)
+  c('mlegp'=rmse.mlegp, 'sggp1_d1'=rmse.sggp1_1d,
+    'sggp1'=rmse.sggp1, 'sggp3'=rmse.sggp3, 'sggp8'=rmse.sggp8)
 }
 comp1D()
 
@@ -69,11 +86,14 @@ sapply(1:100, function(i) {forecast::BoxCox.lambda(lo[,i])})
 
 compmods <- function() {
   # pred.mlegp.pca <- mlegp::predict.gp(mod.mlegp.pca, xtest)
-  pred.mlegp.pca.pretrans <- sapply(1:mod.mlegp.pca$numGPs, function(i)predict(mod.mlegp.pca[[i]], xtest))
+  pred.mlegp.pca.pretrans <- sapply(1:mod.mlegp.pca$numGPs,
+                                    function(i)predict(mod.mlegp.pca[[i]], xtest))
   pred.mlegp.pca <- t(mod.mlegp.pca$UD %*% t(pred.mlegp.pca.pretrans))
   # browser()
-  pred.mlegp <- sapply(1:mod.mlegp$numGPs, function(i)predict(mod.mlegp[[i]], xtest))
-  pred.mlegp.300 <- sapply(1:mod.mlegp$numGPs, function(i)predict(mod.mlegp.300[[i]], xtest))
+  pred.mlegp <- sapply(1:mod.mlegp$numGPs,
+                       function(i)predict(mod.mlegp[[i]], xtest))
+  pred.mlegp.300 <- sapply(1:mod.mlegp$numGPs,
+                           function(i)predict(mod.mlegp.300[[i]], xtest))
   # pred.sggp1 <- predict(sg1, xtest)
   pred.sggp1 <- predict(sg1, xtest)
   pred.sggp3 <- predict(sg3, xtest)
@@ -93,9 +113,8 @@ compmods <- function() {
 }
 compmods()
 
-# mlegp with 100 pts
-# mlegp.pca     mlegp     sggp1     sggp3     sggp8 
-# 4999.9849  641.2593 2108.9625  126.4526  106.1754 
-
+# # Compare mlegp and SGGP
 # mlegp.pca     mlegp mlegp.300     sggp1     sggp3     sggp8 
 # 4999.9849  641.2593  144.7101 2108.9625  126.4526  106.1754 
+
+# ^ PCA was done wrong, didn't use t(), was 100x100 so it didn't give error

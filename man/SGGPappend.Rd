@@ -5,7 +5,7 @@
 \title{Add points to SGGP}
 \usage{
 SGGPappend(SGGP, batchsize, selectionmethod = "UCB",
-  RIMSEperpoint = FALSE)
+  RIMSEperpoint = TRUE)
 }
 \arguments{
 \item{SGGP}{Sparse grid object}

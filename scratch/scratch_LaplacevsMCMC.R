@@ -1,7 +1,7 @@
 # Trying to check LaPlace approx vs MCMC
 
-SG <- SGGPcreate(d=3, batchsize=1000)
-y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
+SG <- SGGPcreate(d=4, batchsize=1000)
+y <- apply(SG$design, 1, function(x){x[1]*x[2]^2 + cos(2*pi*2*x[3]^2)})
 SG1 <- SGGPfit(SG=SG, Y=y, laplaceapprox = T)
 SG2 <- SGGPfit(SG=SG, Y=y, laplaceapprox = F)
 
@@ -20,3 +20,19 @@ stripchart(data.frame(t(SG10k1$thetaPostSamples)), main="SG1 5k LaPlace")
 stripchart(data.frame(t(SG10k2$thetaPostSamples)), main="SG1 5k MCMC")
 
 SG10k1$thetaMAP
+
+
+nlpPS1 <- apply(SG1$thetaPostSamples, 2, SGGP_internal_neglogpost, SG1, SG1$y)
+nlpM1 <- SGGP_internal_neglogpost(SG1$thetaMAP, SG1, SG1$y)
+nlpPS2 <- apply(SG2$thetaPostSamples, 2, SGGP_internal_neglogpost, SG2, SG2$y)
+nlpM2 <- SGGP_internal_neglogpost(SG2$thetaMAP, SG2, SG2$y)
+hist(nlpPS1, xlim=c(min(nlpPS1,nlpM1), max(nlpPS1[is.finite(nlpPS1)],nlpM1))); abline(v=nlpM1, col=2)
+nlpPS1 / min(nlpPS1, nlpM1)
+hist(nlpPS2, xlim=c(min(nlpPS2,nlpM2), max(nlpPS2,nlpM2))); abline(v=nlpM2, col=2)
+nlpPS2 / min(nlpPS2, nlpM2)
+
+table(SGGP_internal_neglogpost(SG1$thetaMAP, SG1, SG1$y) < apply(SG1$thetaPostSamples, 2, SGGP_internal_neglogpost, SG1, SG1$y))
+table(SGGP_internal_neglogpost(SG2$thetaMAP, SG2, SG2$y) < apply(SG2$thetaPostSamples, 2, SGGP_internal_neglogpost, SG2, SG2$y))
+
+stripchart(as.data.frame(t(SG1$thetaPostSamples)))
+stripchart(as.data.frame(t(SG1$thetaMAP)), add=T, col=2, pch=19)

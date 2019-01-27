@@ -108,7 +108,7 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' SG <- SGGPfit(SG, Y=y)
 #' SG <- SGGPappend(SGGP=SG, batchsize=20)
 #' # UCB,TS,Greedy
-SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=FALSE){
+SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TRUE){
   if (!(selectionmethod %in% c("UCB", "TS", "Greedy"))) {
     stop("selectionmethod in SGGPappend must be one of UCB, TS, or Greedy")
   }
