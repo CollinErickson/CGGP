@@ -8,7 +8,8 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  # fig.path = "README-"
+  fig.path = "tools/README-"
 )
 ```
 
@@ -36,22 +37,75 @@ To create a SGGP object:
 ```{r example}
 ## basic example code
 library(SGGP)
-d <- 8
-SG <- SGGPcreate(d=d,201)
+d <- 4
+SG <- SGGPcreate(d=d,200)
 print(SG)
 ```
 
 A new `SGGP` object has design points that should be evaluated next, either from `SG$design` or `SG$design_unevaluated`.
 
-```{r}
-f <- function(x) {x[1]^2 + (0.5-x[2])^3 + sin(x[3])}
+```{r evaluatedesign}
+f <- function(x) {x[1]^2 + 4*(0.5-x[2])^3 + x[1]*sin(2*2*pi*x[3]^2)}
 Y <- apply(SG$design, 1, f)
 ```
 
 Once you have evaluated the design points, you can fit the object with `SGGPfit`.
 
-```{r}
+```{r fit}
 SG <- SGGPfit(SG, Y)
 SG
+```
+
+If you want to use the model to make predictions at new input points,
+you can use `SGGPpred`.
+
+```{r pred}
+xp <- matrix(runif(10*SG$d), ncol=SG$d)
+SGGPpred(xp, SG)
+```
+
+To add new design points to the already existing design,
+use `SGGPappend`.
+It will use the data already collected to find the most
+useful set of points to evaluate next.
+
+```{r append}
+# To add 100 points
+SG <- SGGPappend(SG, 100)
+```
+
+Now you will need to evaluate the points added to `SG$design`,
+and refit the model.
+
+```{r refit}
+ynew <- apply(SG$design_unevaluated, 1, f)
+SG <- SGGPfit(SG, Ynew=ynew)
+```
+
+There are a few functions that will help visualize the design.
+
+`SGGPblockplot` shows the block structure when projected down
+to all pairs of two dimensions.
+
+```{r blockplot}
+SGGPblockplot(SG)
+```
+
+`SGGPhist` shows histograms of how far the blocks extend in each direction.
+
+```{r hist}
+SGGPhist(SG)
+```
+
+```{r corrplot}
+SGGPcorrplot(SG)
+```
+
+```{r projectionplot}
+SGGPprojectionplot(SG)
+```
+
+```{r heat}
+SGGPheat(SG)
 ```
 
