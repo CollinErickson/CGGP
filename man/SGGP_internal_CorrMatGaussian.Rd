@@ -30,6 +30,10 @@ Matrix of correlation values between x1 and x2trix
 Calculate correlation matrix for two sets of points in one dimension
 Note that this is not the correlation between two vectors.
 }
+\details{
+WE HIGHLY ADVISE NOT USING THIS CORRELATION FUNCTION.
+Try CauchySQT, Cauchy, or Matern 3/2 instead.
+}
 \examples{
 SGGP_internal_CorrMatGaussian(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
 }

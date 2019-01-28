@@ -149,6 +149,9 @@ SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
 #' 
 #' Calculate correlation matrix for two sets of points in one dimension
 #' Note that this is not the correlation between two vectors.
+#' 
+#' WE HIGHLY ADVISE NOT USING THIS CORRELATION FUNCTION.
+#' Try CauchySQT, Cauchy, or Matern 3/2 instead.
 #'
 #' @inheritParams SGGP_internal_CorrMatCauchy
 #'

@@ -25,7 +25,7 @@ print.SGGP <- function(x, ...) {
       #"  theta = ", if (all(x$thetaMAP==0)) "(not yet calculated)" else x$thetaMAP, '\n',
       "   Available functions:\n",
       "     - SGGPfit(SGGP, Y) to update parameters with new data\n",
-      "     - sGGPpred(SGGP, xp) to predict at new points\n",
+      "     - SGGPpred(SGGP, xp) to predict at new points\n",
       "     - SGGPappend(SGGP, batchsize) to add new design points\n"
     )
   )

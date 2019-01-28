@@ -15,7 +15,7 @@
 #' SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=SG$y)
 SGGP_internal_neglogpost <- function(theta,SGGP,y) {
   # Return Inf if theta is too large
-  if (max(theta) >= 0.9999 || min(theta) <= -0.9999) {
+  if (max(theta) >= 1 || min(theta) <= -1) {
     return(Inf)
   } else{
     calc_sigma2 <- SGGP_internal_calcsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
@@ -357,11 +357,16 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       if (is.infinite(Uo)) {warning("starting Uo is Inf, this is bad")}
       scalev = 0.5
       # This is just burn in period, find good scalev
+      # MCMCtracker is for debugging
       for(i in 1:(100*SGGP$numPostSamples)){
         p = rnorm(length(q),0,1)*scalev
         qp = q + p
         
         Up = U(qp)
+        # print(Up)
+        # MCMCtracker[i,13] <<- Up
+        # MCMCtracker[i,1:12] <<- qp
+        # MCMCtracker[i,14] <<- Uo
         
         # Sometimes Uo and Up equal Inf, so exp(Uo-Up)=NaN,
         #  and it gives an error: 
@@ -370,14 +375,17 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         # Will just set Uo-Up to 0 when this happens
         exp_Uo_minus_Up <- exp(Uo-Up)
         if (is.nan(exp_Uo_minus_Up)) {
+          warning("Uo and Up are both Inf, this shouldn't happen #82039")
           exp_Uo_minus_Up <- exp(0)
         }
         
         # if(runif(1) < exp(Uo-Up)){
         if(runif(1) < exp_Uo_minus_Up){ # accept the sample
+          # MCMCtracker[i,15] <<- 1
           q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))
           if (is.infinite(Up)) {warning("Up is Inf, this shouldn't happen")}
         }else{ # Reject sample, update scalev
+          # MCMCtracker[i,15] <<- 0
           scalev=exp(log(scalev)-0.1/sqrt(i+4))
           scalev = max(scalev,1/sqrt(length(q)))
         }
@@ -395,6 +403,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         # Again need to avoid NaN problem
         exp_Uo_minus_Up <- exp(Uo-Up)
         if (is.nan(exp_Uo_minus_Up)) {
+          warning("Uo and Up are both Inf, this shouldn't happen #42920")
           exp_Uo_minus_Up <- exp(0)
         }
         # if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;}

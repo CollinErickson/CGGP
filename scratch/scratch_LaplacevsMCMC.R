@@ -1,5 +1,7 @@
 # Trying to check LaPlace approx vs MCMC
-f <- function(x){x[1]*x[2]^2 + cos(2*pi*2*x[3]^2)}
+# f <- function(x){x[1]*x[2]^2 + cos(2*pi*2*x[3]^2)}
+# f <- function(x){x[1]*x[2]^2}# + cos(2*pi*2*x[3]^2)}
+f <- function(x){x[1]*x[2]^2 + cos(2*pi*2*x[3]^2) + log(x[4]+.5)}
 d <- 4
 nval <- 1e3
 Xval <- matrix(runif(d*nval), ncol=d)
@@ -10,20 +12,21 @@ SG1 <- SGGPfit(SG=SG, Y=y, laplaceapprox = T)
 SG2 <- SGGPfit(SG=SG, Y=y, laplaceapprox = F)
 
 
-stripchart(data.frame(t(SG1$thetaPostSamples)), main="SG1 1k LaPlace")
-stripchart(data.frame(t(SG2$thetaPostSamples)), main="SG1 1k MCMC")
+stripchart(data.frame(t(SG1$thetaPostSamples)), main="SG1 1k LaPlace (black), MCMC (green)", xlim=c(-1,1))
+stripchart(data.frame(t(SG2$thetaPostSamples)), main="SG1 1k MCMC", add=T, col=3)
+stripchart(data.frame(t(SG2$thetaMAP)), main="SG1 1k MCMC", add=T, col=2)
 
 
-SG10k <- SGGPcreate(d=4, batchsize=5000)
-y <- apply(SG10k$design, 1, function(x){x[1]^1.1+x[2]^2 + .3*sin(2*pi*x[3]*4) + .6*cos(2*pi*x[4]^2*5)})
-SG10k1 <- SGGPfit(SG=SG10k, Y=y, laplaceapprox = T)
-SG10k2 <- SGGPfit(SG=SG10k, Y=y, laplaceapprox = F)
-
-
-stripchart(data.frame(t(SG10k1$thetaPostSamples)), main="SG1 5k LaPlace")
-stripchart(data.frame(t(SG10k2$thetaPostSamples)), main="SG1 5k MCMC")
-
-SG10k1$thetaMAP
+# SG10k <- SGGPcreate(d=4, batchsize=5000)
+# y <- apply(SG10k$design, 1, function(x){x[1]^1.1+x[2]^2 + .3*sin(2*pi*x[3]*4) + .6*cos(2*pi*x[4]^2*5)})
+# SG10k1 <- SGGPfit(SG=SG10k, Y=y, laplaceapprox = T)
+# SG10k2 <- SGGPfit(SG=SG10k, Y=y, laplaceapprox = F)
+# 
+# 
+# stripchart(data.frame(t(SG10k1$thetaPostSamples)), main="SG1 5k LaPlace")
+# stripchart(data.frame(t(SG10k2$thetaPostSamples)), main="SG1 5k MCMC")
+# 
+# SG10k1$thetaMAP
 
 
 nlpPS1 <- apply(SG1$thetaPostSamples, 2, SGGP_internal_neglogpost, SG1, SG1$y)
@@ -32,12 +35,18 @@ nlpPS2 <- apply(SG2$thetaPostSamples, 2, SGGP_internal_neglogpost, SG2, SG2$y)
 nlpM2 <- SGGP_internal_neglogpost(SG2$thetaMAP, SG2, SG2$y)
 hist(nlpPS1, xlim=c(min(nlpPS1,nlpM1), max(nlpPS1[is.finite(nlpPS1)],nlpM1)),
      main="Hist of neglogpost from Laplace samples"); abline(v=nlpM1, col=2)
-nlpPS1 / nlpM1
-nlpPS1 / min(nlpPS1, nlpM1)
+nlpPS1 - nlpM1
+nlpPS1 - min(nlpPS1, nlpM1)
+sort(nlpPS1)
+
 hist(nlpPS2, xlim=c(min(nlpPS2,nlpM2), max(nlpPS2,nlpM2)),
      main="Hist of neglogpost from MCMC samples"); abline(v=nlpM2, col=2)
-nlpPS2 / nlpM2
-nlpPS2 / min(nlpPS2, nlpM2)
+nlpPS2 - nlpM2
+nlpPS2 - min(nlpPS2, nlpM2)
+sort(nlpPS2)
+sort(nlpPS2 - min(nlpPS2))
+sort(exp(-(nlpPS2 - min(nlpPS2, nlpM2)))) %>% round(3)
+exp(-(nlpPS2 - min(nlpPS2, nlpM2))) %>% plot
 
 table(SGGP_internal_neglogpost(SG1$thetaMAP, SG1, SG1$y) < apply(SG1$thetaPostSamples, 2, SGGP_internal_neglogpost, SG1, SG1$y))
 table(SGGP_internal_neglogpost(SG2$thetaMAP, SG2, SG2$y) < apply(SG2$thetaPostSamples, 2, SGGP_internal_neglogpost, SG2, SG2$y))
@@ -49,4 +58,16 @@ which.min(nlpPS2)
 SG3 <- SGGPfit(SG2, Y=SG2$Y, theta0 = SG2$thetaPostSamples[,74])
 SGGPvalstats(SG1, Xval, Yval)
 SGGPvalstats(SG2, Xval, Yval)
+SG3 <- SGGPfit(SG, y, theta0 = SG2$thetaPostSamples[,which.min(nlpPS2)])
 SGGPvalstats(SG3, Xval, Yval)
+
+
+plot(MCMCtracker[,13] - MCMCtracker[,14], col=MCMCtracker[,15] + 1)
+plot(exp(MCMCtracker[,14] - MCMCtracker[,13]), col=MCMCtracker[,15] + 1)
+plot(pmin(1,exp(MCMCtracker[,14] - MCMCtracker[,13])), col=MCMCtracker[,15] + 1)
+MCMCaccepted <- MCMCtracker[MCMCtracker[,15]==1,]
+plot(MCMCaccepted[,13] - MCMCaccepted[,14], col=MCMCaccepted[,15] + 1)
+plot(exp(MCMCaccepted[,14] - MCMCaccepted[,13]), col=MCMCaccepted[,15] + 1)
+sort(exp(MCMCaccepted[,14] - MCMCaccepted[,13]))
+hist(exp(MCMCaccepted[,14] - MCMCaccepted[,13]), breaks = 50)
+hist(pmin(1,exp(MCMCaccepted[,14] - MCMCaccepted[,13])))
