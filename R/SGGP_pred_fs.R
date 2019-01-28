@@ -17,9 +17,12 @@
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 #' SG <- SGGPfit(SG, Y=y)
-#' SGGPpred(matrix(c(.1,.1,.1),1,3), SGGP=SG)
-#' cbind(SGGPpred(SG$design, SG=SG)$mean, y) # Should be near equal
-SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
+#' SGGPpred(SG, matrix(c(.1,.1,.1),1,3))
+#' cbind(SGGPpred(SG, SG$design)$mean, y) # Should be near equal
+SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL) {
+  if (!inherits(SGGP, "SGGP")) {
+    stop("First argument to SGGP must be an SGGP object")
+  }
   # Require that you run SGGPfit first
   if (is.null(SGGP$supplemented)) {
     stop("You must run SGGPfit on SGGP object before using SGGPpredict")
@@ -30,7 +33,7 @@ SGGPpred <- function(xp,SGGP, fullBayesian=FALSE, theta=NULL) {
   if (fullBayesian) {
     if (!is.null(theta)) {stop("Don't give in theta for fullBayesian")}
     preds <- lapply(1:SGGP$numPostSamples, 
-                    function(i) {SGGPpred(xp, SGGP, theta=SGGP$thetaPostSamples[,i])})
+                    function(i) {SGGPpred(SGGP, xp, theta=SGGP$thetaPostSamples[,i])})
     means <- sapply(preds, function(x) {x$mean})
     mn <- as.matrix(apply(means, 1, mean))
     vars <- sapply(preds, function(x) {x$var})

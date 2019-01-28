@@ -27,7 +27,7 @@ run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=
   timelastlogthetaMLEend <- Sys.time()
   
   timepredstart <- Sys.time()
-  GP = SGGPpred(Xp,SG) #build a full emulator
+  GP = SGGPpred(xp=Xp,SGGP=SG) #build a full emulator
   timepredend <- Sys.time()
   
   RMSE <- sqrt(mean(((Yp-GP$mean)^2)))  #prediction should be much better
@@ -48,7 +48,7 @@ run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=
     if (plotwith=="base") {
       
       di <- sample(1:nrow(SG$design), 100)
-      Y0pred <- SGGPpred(SG$design[di,],SG) #,Y,logtheta=logthetaest)
+      Y0pred <- SGGPpred(xp=SG$design[di,],SGGP=SG) #,Y,logtheta=logthetaest)
       plot(Yp, GP$mean, ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m))); points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
       # Now plot with bars
       #plot(Yp, GP$mean , ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m)),pch=19)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)

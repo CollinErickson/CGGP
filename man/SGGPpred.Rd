@@ -7,7 +7,7 @@
 \usage{
 \method{predict}{SGGP}(object, xp, ...)
 
-SGGPpred(xp, SGGP, fullBayesian = FALSE, theta = NULL)
+SGGPpred(SGGP, xp, fullBayesian = FALSE, theta = NULL)
 }
 \arguments{
 \item{object}{SGGP object}
@@ -37,6 +37,6 @@ Shouldn't y values already be stored in SG?
 SG <- SGGPcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})
 SG <- SGGPfit(SG, Y=y)
-SGGPpred(matrix(c(.1,.1,.1),1,3), SGGP=SG)
-cbind(SGGPpred(SG$design, SG=SG)$mean, y) # Should be near equal
+SGGPpred(SG, matrix(c(.1,.1,.1),1,3))
+cbind(SGGPpred(SG, SG$design)$mean, y) # Should be near equal
 }

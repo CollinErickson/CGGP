@@ -58,7 +58,9 @@ test_that("Prediction matches exact on small samples", {
   
   n <- 50
   xp <- matrix(runif(d*n),n,d)
-  SGpred <- SGGPpred(xp=xp, SG=SG)
+  SGpred <- SGGPpred(xp=xp, SGGP=SG)
+  # Get error if wrong order of args
+  expect_error(SGGPpred(xp, SG))
   
   my <- mean(Y)
   dy <- Y - my
@@ -91,7 +93,7 @@ test_that("predMV works", {
   y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
   y <- cbind(y1, y2)
   SG <- SGGPfit(SG, Y=y)
-  yMVpred <- SGGPpred(SG$design, SG=SG)$mean
+  yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   
@@ -132,7 +134,7 @@ test_that("Supplemented works", {
   SG <- SGGPfit(SG, Y=y1, Xs=xsup, Ys=ysup)
   
   # Predictions should match values at supplemented points
-  expect_equal(c(SGGPpred(xp=xsup, SG=SG)$me), ysup, tol=1e-4)
+  expect_equal(c(SGGPpred(xp=xsup, SGGP=SG)$me), ysup, tol=1e-4)
   
   # # Predict at points
   # n <- 50
@@ -155,15 +157,15 @@ test_that("supplemental with MV output works", {
   ysup <- cbind(ysup1, ysup2)
   
   SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup)
-  yMVpred <- SGGPpred(SG$design, SG=SG)$mean
+  yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
-  ysuppred <- SGGPpred(xsup, SG=SG)$mean
+  ysuppred <- SGGPpred(xsup, SGGP=SG)$mean
   expect_equal(ysuppred[,1], ysup1, 1e-4)
   expect_equal(ysuppred[,2], ysup2, 1e-4)
   
   # Doesn't work when giving in theta
-  expect_error(SGGPpred(xsup, SG, theta=SG$thetaPostSamples[,1]))
+  expect_error(SGGPpred(SG, xsup, theta=SG$thetaPostSamples[,1]))
   
 })
 
@@ -177,16 +179,16 @@ test_that("pred with theta works", {
   
   npred <- 10
   xpred <- matrix(runif(d*npred), npred)
-  p1 <- SGGPpred(xpred, sg)
-  p2 <- SGGPpred(xpred, sg, theta=sg$thetaMAP)
-  expect_error(SGGPpred(xpred, sg, theta=sg$thetaPostSamples[1:8,1]))
-  p3 <- SGGPpred(xpred, sg, theta=sg$thetaPostSamples[,1])
+  p1 <- SGGPpred(xpred, SGGP=sg)
+  p2 <- SGGPpred(xpred, SGGP=sg, theta=sg$thetaMAP)
+  expect_error(SGGPpred(xpred, SGGP=sg, theta=sg$thetaPostSamples[1:8,1]))
+  p3 <- SGGPpred(xpred, SGGP=sg, theta=sg$thetaPostSamples[,1])
   expect_equal(p1$me, p2$me)
   expect_false(isTRUE(all.equal(p1$me, p3$me)))
   
   # Check full Bayesian. Not easy, just check if it's close to MAP prediction
-  expect_error(SGGPpred(xpred, sg, fullBayesian = T, theta = sg$thetaPostSamples[1,]))
-  pb <- SGGPpred(xpred, sg, fullBayesian = T)
+  expect_error(SGGPpred(xp=xpred, sg, fullBayesian = T, theta = sg$thetaPostSamples[1,]))
+  pb <- SGGPpred(xp=xpred, sg, fullBayesian = T)
   expect_is(pb, "list")
   expect_equal(p1$me, p3$mean, tol=1e-2)
   # expect_equal(c(p1$me /p3$mean), rep(1,10), tol=1e-2)

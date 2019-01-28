@@ -37,7 +37,7 @@ test_that("SGGPappend works with large number", {
   # Check that prediction is still exact after adding rows to uo, pila, w, etc.
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
-  ypred <- SGGPpred(SG$design, SG)
+  ypred <- SGGPpred(SG, SG$design)
   expect_equal(y, c(ypred$mean), tol=1e-2)
 })
 

@@ -40,14 +40,14 @@ test_that("1. MV output, PCA, 1opd", {
   expect_true(!is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$Y) == 3)
   expect_true(ncol(SG$y) == 2)
-  yMVpred <- SGGPpred(SG$design, SG=SG)$mean
+  yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
-  ysuppred <- SGGPpred(xsup, SG)$me
+  ysuppred <- SGGPpred(SG, xsup)$me
   expect_equal(ysuppred[,1], ysup1, eps.sup)
   expect_equal(ysuppred[,2], ysup2, eps.sup)
   expect_equal(ysuppred[,3], ysup3, eps.sup)
@@ -55,7 +55,7 @@ test_that("1. MV output, PCA, 1opd", {
   
   # Add supplemental data, but fewer rows than 2*d so it runs other code in fit
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup[1:2,], Ys=ysup[1:2,]), NA) # No error
-  ysuppred <- SGGPpred(xsup[1:2,], SG)$me
+  ysuppred <- SGGPpred(SG, xsup[1:2,])$me
   expect_equal(ysuppred[,1], ysup1[1:2], eps.sup)
   expect_equal(ysuppred[,2], ysup2[1:2], eps.sup)
   expect_equal(ysuppred[,3], ysup3[1:2], eps.sup)
@@ -81,14 +81,14 @@ test_that("2. MV output, NO PCA, 1opd", {
   expect_true(!is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$Y) == 3)
   expect_true(ncol(SG$y) == 3)
-  yMVpred <- SGGPpred(SG$design, SG=SG)$mean
+  yMVpred <- SGGPpred(SG, SG$design)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
-  ysuppred <- SGGPpred(xsup, SG)$me
+  ysuppred <- SGGPpred(SG, xsup)$me
   expect_equal(ysuppred[,1], ysup1, eps.sup)
   expect_equal(ysuppred[,2], ysup2, eps.sup)
   expect_equal(ysuppred[,3], ysup3, eps.sup)
@@ -110,7 +110,7 @@ test_that("3. MV output, PCA, separate opd", {
   expect_true(ncol(SG$thetaMAP) == 2)
   expect_true(ncol(SG$Y) == 3)
   expect_true(ncol(SG$y) == 2)
-  yMVpred <- SGGPpred(SG$design, SG=SG)$mean
+  yMVpred <- SGGPpred(SG, SG$design)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
@@ -125,7 +125,7 @@ test_that("3. MV output, PCA, separate opd", {
   
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
-  ysuppred <- SGGPpred(xsup, SG)$me
+  ysuppred <- SGGPpred(SG, xsup)$me
   expect_equal(ysuppred[,1], ysup1, eps.sup)
   expect_equal(ysuppred[,2], ysup2, eps.sup)
   expect_equal(ysuppred[,3], ysup3, eps.sup)
@@ -164,19 +164,19 @@ test_that("4. MV output, NO PCA, separate opd", {
   expect_equal(SG$thetaMAP[,2], SG2$thetaMAP)
   expect_equal(SG$thetaMAP[,3], SG3$thetaMAP)
   # Check that predictions on these match
-  expect_equal(c(SGGPpred(xtest, SG)$me[,1]), c(SGGPpred(xtest, SG1)$me))
-  expect_equal(c(SGGPpred(xtest, SG)$me[,2]), c(SGGPpred(xtest, SG2)$me))
-  expect_equal(c(SGGPpred(xtest, SG)$me[,3]), c(SGGPpred(xtest, SG3)$me))
+  expect_equal(c(SGGPpred(SG, xtest)$me[,1]), c(SGGPpred(SG1, xtest)$me))
+  expect_equal(c(SGGPpred(SG, xtest)$me[,2]), c(SGGPpred(SG2, xtest)$me))
+  expect_equal(c(SGGPpred(SG, xtest)$me[,3]), c(SGGPpred(SG3, xtest)$me))
   
   # Now check predictions
-  yMVpred <- SGGPpred(SG$design, SG=SG)$mean
+  yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
-  ysuppred <- SGGPpred(xsup, SG)$me
+  ysuppred <- SGGPpred(SG, xsup)$me
   expect_equal(ysuppred[,1], ysup1, eps.sup)
   expect_equal(ysuppred[,2], ysup2, eps.sup)
   expect_equal(ysuppred[,3], ysup3, eps.sup)

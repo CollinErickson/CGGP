@@ -187,7 +187,7 @@ SGGPblockplot <- function(SGGP, singleplot=TRUE) {
 #' Yval <- apply(Xval, 1, f1)
 #' SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
 SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
-  ypred <- SGGPpred(xp=Xval, SGGP=SGGP)
+  ypred <- SGGPpred(SGGP=SGGP, xp=Xval)
   if (!is.null(d)) {
     ypred <- list(mean=ypred$mean[,d], var=ypred$var[,d])
     Yval <- Yval[,d]
@@ -290,14 +290,14 @@ valstats <- function(predmean, predvar, Yval) {
 #' SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
 SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
   # Make predictions
-  ypred <- SGGPpred(xp=Xval, SGGP=SGGP, fullBayesian=fullBayesian)
+  ypred <- SGGPpred(SGGP=SGGP, xp=Xval, fullBayesian=fullBayesian)
   
   # Use valstats to get df with values
   if (ncol(ypred$mean) == 1 || !bydim) {
     valstats(predmean=ypred$mean, predvar=ypred$var, Yval=Yval)
   } else {
     if (any(dim(ypred$mean) != dim(Yval))) {
-      stop("Yval dimensions don't match SGGPpred(Xval, SGGP)")
+      stop("Yval dimensions don't match SGGPpred(SGGP, Xval)")
     }
     do.call("rbind",
             lapply(1:ncol(ypred$mean),
@@ -458,7 +458,7 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
     xl <- seq(0,1,l=np)
     m <- matrix(proj,np,d, byrow=T)
     m[,d5] <- xl
-    p5 <- SGGPpred(m, SGGP)
+    p5 <- SGGPpred(SGGP, m)
     # p5 %>% str
     poly <- cbind(c(rep(xl,each=2))[-c(1,2*np)])
     # If multiple outputs, get all of them
