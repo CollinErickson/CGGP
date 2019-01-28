@@ -25,7 +25,7 @@ print.SGGP <- function(x, ...) {
       #"  theta = ", if (all(x$thetaMAP==0)) "(not yet calculated)" else x$thetaMAP, '\n',
       "   Available functions:\n",
       "     - SGGPfit(SGGP, Y) to update parameters with new data\n",
-      "     - sGGPpred(Xp, SGGP) to predict at new points\n",
+      "     - sGGPpred(SGGP, xp) to predict at new points\n",
       "     - SGGPappend(SGGP, batchsize) to add new design points\n"
     )
   )
@@ -43,4 +43,25 @@ print.SGGP <- function(x, ...) {
 #' @export
 predict.SGGP <- function(object, xp, ...) {
   SGGPpred(SGGP=object, xp=xp)
+}
+
+#' S3 plot method for SGGP
+#' 
+#' There are a few different plot functions for SGGP objects:
+#' `SGGPblockplot`, `SGGPcorrplot`, `SGGPprojectionplot`,
+#' `SGGPvalplot`, `SGGPheat`, and `SGGPhist`.
+#' Currently `SGGPblockplot` is the default plot object.
+#'
+#' @param x SGGP object
+#' @param y Don't use
+#' @param ... Passed to SGGPblockplot
+#'
+#' @return Either makes plot or returns plot object
+#' @export
+#'
+#' @examples
+#' SG = SGGPcreate(3,100)
+#' plot(SG)
+plot.SGGP <- function(x, y, ...) {
+  SGGPblockplot(x, ...)
 }

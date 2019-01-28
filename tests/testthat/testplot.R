@@ -21,6 +21,13 @@ test_that("Plots work", {
   # Blockplot
   expect_error(bp <- SGGPblockplot(SG), NA)
   expect_is(bp, "ggplot")
+  # Blockplot from matrix
+  mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=TRUE)
+  expect_error(bp <- SGGPblockplot(mat), NA)
+  expect_is(bp, "ggplot")
+  # Error if not SGGP object or matrix
+  expect_error(bp <- SGGPblockplot(c(0,1,2)))
+  # Single plot with 2D matrix
   
   # Validation plot
   Xval <- matrix(runif(3*100), ncol=3)
@@ -41,6 +48,7 @@ test_that("Plots work", {
   expect_is(vstats, "data.frame")
   expect_equal(nrow(vstats), 1)
   
+  rm(Xval, Yval)
   # Multiple outputs
   SG2 <- SGGPcreate(d=3, batchsize=100)
   f1 <- function(x){x[1]+x[2]^2/(x[1]+1) +sin(x[1]*x[3])}
@@ -49,15 +57,21 @@ test_that("Plots work", {
   y2 <- apply(SG2$design, 1, f2)#+rnorm(1,0,.01)
   y <- cbind(y1, y2)
   SG2 <- SGGPfit(SG2, Y=y)
-  Xval <- matrix(runif(3*100), ncol=3)
-  Yval <- cbind(apply(Xval, 1, f1),
-                apply(Xval, 1, f2))
-  sv <- SGGPvalstats(SG2, Xval, Yval)
+  Xval2 <- matrix(runif(3*100), ncol=3)
+  Yval2 <- cbind(apply(Xval2, 1, f1),
+                apply(Xval2, 1, f2))
+  # Error with Yval is bad
+  expect_error(SGGPvalstats(SG2, Xval2, cbind(Yval2, Yval2)))
+  sv <- SGGPvalstats(SG2, Xval2, Yval2)
   expect_is(sv, "data.frame")
   expect_equal(nrow(sv), 2)
   # expect_true(all(sv$RMSE<.1))
-  expect_equal(nrow(SGGPvalstats(SG2, Xval, Yval, bydim=FALSE)), 1)
-  expect_error(SGGPvalstats(SG2, Xval, Yval[,1]))
+  expect_equal(nrow(SGGPvalstats(SG2, Xval2, Yval2, bydim=FALSE)), 1)
+  expect_error(SGGPvalstats(SG2, Xval2, Yval2[,1]))
+  # Val plot
+  pval <- SGGPvalplot(SGGP=SG2, Xval=Xval2, Yval=Yval2, d=2)
+  expect_is(pval, "gg")
+  expect_is(pval, "ggplot")
   
   # Corr plot
   expect_error(p <- SGGPcorrplot(), NA)
@@ -76,6 +90,8 @@ test_that("Plots work", {
   expect_error(pp1 <- SGGPprojectionplot(SG), NA)
   expect_is(pp1, "ggplot")
   expect_error(pp1 <- SGGPprojectionplot(SG2), NA)
+  expect_is(pp1, "ggplot")
+  expect_error(pp1 <- SGGPprojectionplot(SG2, outdims = 2))
   expect_is(pp1, "ggplot")
   expect_error(pp2 <- SGGPprojectionplot(SG, proj = c(0)), NA)
   expect_is(pp2, "ggplot")
