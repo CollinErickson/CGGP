@@ -13,6 +13,7 @@
 #' @references https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
 #'
 #' @examples
+#' \dontrun{
 #' # All dimensions should look similar
 #' d <- 8
 #' SG = SGGPcreate(d,201)
@@ -27,6 +28,7 @@
 #' }
 #' # SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
 #' SGGPheat(SG)
+#' }
 SGGPheat <- function(SGGP) {
   # heatmatrix <- matrix(NaN, SG$d, SG$d)
   skinny <- NULL
@@ -112,6 +114,7 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' # The first and fourth dimensions are most active and will have greater depth
 #' ss <- SGGPcreate(d=5, batchsize=50)
 #' f <- function(x) {cos(2*pi*x[1]*3) + x[3]*exp(4*x[4])}
@@ -121,6 +124,7 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' 
 #' mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=TRUE)
 #' SGGPblockplot(mat)
+#' }
 SGGPblockplot <- function(SGGP, singleplot=TRUE) {
   
   if (inherits(SGGP, "SGGP")) {
@@ -266,6 +270,7 @@ valstats <- function(predmean, predvar, Yval) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' f1 <- function(x){x[1]+x[2]^2}
 #' y <- apply(SG$design, 1, f1)
@@ -288,6 +293,7 @@ valstats <- function(predmean, predvar, Yval) {
 #'               apply(Xval, 1, f2))
 #' SGGPvalstats(SG, Xval, Yval)
 #' SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
+#' }
 SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
   # Make predictions
   ypred <- SGGPpred(SGGP=SGGP, xp=Xval, fullBayesian=fullBayesian)
@@ -326,6 +332,7 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
 #' @importFrom graphics par
 #'
 #' @examples
+#' \dontrun{
 #' SGGPcorrplot()
 #' SGGPcorrplot(theta=c(-2,-1,0,1))
 #' 
@@ -334,6 +341,7 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
 #' y <- apply(SG$design, 1, f)
 #' SG <- SGGPfit(SG, Y=y)
 #' SGGPcorrplot(SG)
+#' }
 SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
                          numlines=20, plot_with="ggplot",
                          zero=TRUE) {
@@ -428,6 +436,7 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' d <- 5
 #' f1 <- function(x){x[1]+x[2]^2 + cos(x[3]^2*2*pi*4) - 3.3}
 #' s1 <- SGGPcreate(d, 200)
@@ -437,6 +446,7 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #' SGGPprojectionplot(s1)
 #' SGGPprojectionplot(s1, 0.)
 #' SGGPprojectionplot(s1, s1$design[nrow(s1$design),])
+#' }
 SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
   if (length(proj) == 1) {proj <- rep(proj, SGGP$d)}
   if (length(proj) != SGGP$d) {stop("proj should be of length SGGP$d or 1")}

@@ -50,3 +50,45 @@ test_that("SGGPappend gives warning if it can't add any data", {
   
   expect_warning(SGGPappend(SGGP=SG, batchsize=1))
 })
+
+
+test_that("Append with different weights on different outputs works", {
+  # Second function is much bigger, will focus more in that dimension
+  #  if told to use weightings. If given equal weight, dimensions will
+  #  not be treated differently.
+  f1 <- function(x){sin(2*pi*x[1]^2)}
+  f2 <- function(x){10000*sin(2*pi*x[2]^2)}
+  
+  # Now with multiple output
+  # Should get to 3,1 and 1,3 with 2,2
+  set.seed(3)
+  SG <- SGGPcreate(d=2, batchsize=17, grid_sizes = c(1,2,4,2,2,2,2,2,2,12,32))
+  # Should be equal so far
+  if (F) {
+    summary(SG$uo[1:SG$uoCOUNT,])
+    SGGPblockplot(SG)
+  }
+  expect_equal(table(SG$uo[,1]), table(SG$uo[,2]))
+  y1 <- apply(SG$design, 1, f1)
+  y2 <- apply(SG$design, 1, f2)
+  y <- cbind(y1, y2)
+  
+  set.seed(2)
+  SG <- SGGPfit(SG, Ynew=y, use_PCA = FALSE, separateoutputparameterdimensions = TRUE)
+  
+  # Now if I append with equal weights (default), it should have equal in both dimensions
+  SG2 <- SGGPappend(SG, 26)
+  if (F) {
+    SG2$uo[1:SG2$uoCOUNT,] %>% summary
+    SGGPblockplot(SG2)
+  }
+  expect_equal(mean(SG2$uo[1:SG2$uoCOUNT,2]) , mean(SG2$uo[1:SG2$uoCOUNT,1]))
+  
+  # If using sd of each output for weights, will put much more in second dimensions
+  SG3 <- SGGPappend(SG, 26, multioutputdim_weights = "sd")
+  if (F) {
+    SG3$uo[1:SG3$uoCOUNT,] %>% summary
+    SGGPblockplot(SG3)
+  }
+  expect_gt(mean(SG3$uo[1:SG3$uoCOUNT,2]) - 2 , mean(SG3$uo[1:SG3$uoCOUNT,1]))
+})

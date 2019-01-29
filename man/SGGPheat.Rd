@@ -20,6 +20,7 @@ A greater depth means that more points have been measured along that
 dimension or two-dimensional subspace.
 }
 \examples{
+\dontrun{
 # All dimensions should look similar
 d <- 8
 SG = SGGPcreate(d,201)
@@ -34,6 +35,7 @@ for (i in 1:1) {
 }
 # SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
 SGGPheat(SG)
+}
 }
 \references{
 https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2

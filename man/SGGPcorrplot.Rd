@@ -29,6 +29,7 @@ Useful for getting an idea of what the correlation parameters mean
 in terms of smoothness.
 }
 \examples{
+\dontrun{
 SGGPcorrplot()
 SGGPcorrplot(theta=c(-2,-1,0,1))
 
@@ -37,4 +38,5 @@ f <- function(x){x[1]^1.2+sin(2*pi*x[2]*3)}
 y <- apply(SG$design, 1, f)
 SG <- SGGPfit(SG, Y=y)
 SGGPcorrplot(SG)
+}
 }

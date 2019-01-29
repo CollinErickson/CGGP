@@ -18,6 +18,7 @@ ggplot2 plot
 Plot the 2D projections of the blocks of an SGGP object.
 }
 \examples{
+\dontrun{
 # The first and fourth dimensions are most active and will have greater depth
 ss <- SGGPcreate(d=5, batchsize=50)
 f <- function(x) {cos(2*pi*x[1]*3) + x[3]*exp(4*x[4])}
@@ -27,4 +28,5 @@ SGGPblockplot(ss)
 
 mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=TRUE)
 SGGPblockplot(mat)
+}
 }

@@ -97,7 +97,8 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' @param batchsize Number of points to add
 #' @param selectionmethod How points will be selected: one of `UCB`, `TS`, or `Greedy`
 #' @param RIMSEperpoint Should RIMSE per point be used?
-#' @importFrom stats quantile
+#' @param multioutputdim_weights Weights for each output dimension.
+#' @importFrom stats quantile sd var
 #'
 #' @return SG with new points added.
 #' @export
@@ -108,9 +109,21 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' SG <- SGGPfit(SG, Y=y)
 #' SG <- SGGPappend(SGGP=SG, batchsize=20)
 #' # UCB,TS,Greedy
-SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TRUE){
+SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TRUE,
+                       multioutputdim_weights=1){
   if (!(selectionmethod %in% c("UCB", "TS", "Greedy"))) {
     stop("selectionmethod in SGGPappend must be one of UCB, TS, or Greedy")
+  }
+  if (is.numeric(multioutputdim_weights)) {
+    if (length(multioutputdim_weights) != 1 && length(multioutputdim_weights) != ncol(SGGP$y)) {
+      stop("multioutputdim_weights if numeric must have length 1 or number of outputs")
+    }
+  } else if (multioutputdim_weights == "sd") {
+    multioutputdim_weights <- apply(SGGP$Y, 2, sd)
+  } else if (multioutputdim_weights == "var") {
+    multioutputdim_weights <- apply(SGGP$Y, 2, var)
+  } else {
+    stop("multioutputdim_weights not acceptable")
   }
   
   n_before <- nrow(SGGP$design)
@@ -200,7 +213,10 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
         IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
       } else { # Is a 3d array, need to use an apply and then apply again with mean
         IMES_PostSamples_beforemean <- apply(MSE_PostSamples[,,samplelcv,], 3, function(x){SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], x)})
-        IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] <- apply(IMES_PostSamples_beforemean, 1, mean)
+        IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] <- apply(IMES_PostSamples_beforemean, 1,
+                                                            function(x) {
+                                                              mean(multioutputdim_weights*x)
+                                                            })
       }
     }
     IMES_UCB = matrix(0, SGGP$ML)
@@ -425,7 +441,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
                                                             3, # 3rd dim since samplelcv removes 3rd
                                                             function(x) {SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)}
                 )
-                IMES_PostSamples[SGGP$poCOUNT,samplelcv] <- mean(IMES_PostSamples_beforemeannewpoint)
+                IMES_PostSamples[SGGP$poCOUNT,samplelcv] <- mean(multioutputdim_weights * IMES_PostSamples_beforemeannewpoint)
               }
             }
             IMES_UCB[SGGP$poCOUNT] = quantile(IMES_PostSamples[SGGP$poCOUNT,],probs=0.9)

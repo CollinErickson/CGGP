@@ -5,7 +5,7 @@
 \title{Add points to SGGP}
 \usage{
 SGGPappend(SGGP, batchsize, selectionmethod = "UCB",
-  RIMSEperpoint = TRUE)
+  RIMSEperpoint = TRUE, multioutputdim_weights = 1)
 }
 \arguments{
 \item{SGGP}{Sparse grid object}
@@ -15,6 +15,8 @@ SGGPappend(SGGP, batchsize, selectionmethod = "UCB",
 \item{selectionmethod}{How points will be selected: one of `UCB`, `TS`, or `Greedy`}
 
 \item{RIMSEperpoint}{Should RIMSE per point be used?}
+
+\item{multioutputdim_weights}{Weights for each output dimension.}
 }
 \value{
 SG with new points added.

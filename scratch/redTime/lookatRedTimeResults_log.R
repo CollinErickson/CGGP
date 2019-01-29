@@ -69,7 +69,7 @@ if (F) {
   xlhs8039 <- lhs::maximinLHS(n=8039, k=9)
   write.csv(xlhs8039, "../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")
 } else {
-  xlhs8039 <- read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")
+  xlhs8039 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
 }
 ylhs8039_100 <- ylhs8039[1:100,]
 xlhs8039_100 <- xlhs8039[1:100,]
@@ -131,16 +131,16 @@ ytest <- ylhs8039
 
 # sapply(1:100, function(i) {forecast::BoxCox.lambda(lo[,i])})
 
-compmods <- function() {
+compmods <- function() {browser()
   # pred.mlegp.pca <- mlegp::predict.gp(mod.mlegp.pca, xtest)
-  pred.mlegp.pca.pretrans <- sapply(1:mod.mlegp.pca$numGPs,
-                                    function(i)predict(mod.mlegp.pca[[i]], xtest))
+  pred.mlegp.pca.pretrans <- lapply(1:mod.mlegp.pca$numGPs,
+                                    function(i)predict(mod.mlegp.pca[[i]], xtest, se.fit=T))
   pred.mlegp.pca <- t(mod.mlegp.pca$UD %*% t(pred.mlegp.pca.pretrans))
   # browser()
   pred.mlegp <- sapply(1:mod.mlegp$numGPs,
-                       function(i)predict(mod.mlegp[[i]], xtest))
+                       function(i)predict(mod.mlegp[[i]], xtest, se.fit=T))
   pred.mlegp.300 <- sapply(1:mod.mlegp$numGPs,
-                           function(i)predict(mod.mlegp.300[[i]], xtest))
+                           function(i)predict(mod.mlegp.300[[i]], xtest, se.fit=T))
   # pred.sggp1 <- predict(sg1, xtest)
   # pred.sggp1 <- predict(sg1, xtest)
   # pred.sggp3 <- predict(sg3, xtest)

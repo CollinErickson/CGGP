@@ -25,6 +25,7 @@ data frame
 Calculate stats for SGGP prediction on validation data
 }
 \examples{
+\dontrun{
 SG <- SGGPcreate(d=3, batchsize=100)
 f1 <- function(x){x[1]+x[2]^2}
 y <- apply(SG$design, 1, f1)
@@ -47,4 +48,5 @@ Yval <- cbind(apply(Xval, 1, f1),
               apply(Xval, 1, f2))
 SGGPvalstats(SG, Xval, Yval)
 SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
+}
 }

@@ -324,9 +324,13 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     pw <- SGGP_internal_calcpw(SGGP=SGGP, y.thisloop, theta=thetaMAP)
     totnumpara = length(thetaMAP)
     
+    # H is the Hessian at thetaMAP with reverse transformation
     H = matrix(0,nrow=totnumpara,ncol=totnumpara)
+    # Transform so instead of -1 to 1 it is -Inf to Inf. Mostly in -5 to 5 though.
     PSTn=  log((1+thetaMAP)/(1-thetaMAP))
+    # Reverse transformation
     thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
+    # Grad of reverse transformation function
     grad0 = SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)
     for(c in 1:totnumpara){
       rsad = rep(0,totnumpara)
