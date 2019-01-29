@@ -12,9 +12,9 @@ SG1 <- SGGPfit(SG=SG, Y=y, laplaceapprox = T)
 SG2 <- SGGPfit(SG=SG, Y=y, laplaceapprox = F)
 
 
-stripchart(data.frame(t(SG1$thetaPostSamples)), main="SG1 1k LaPlace (black), MCMC (green)", xlim=c(-1,1))
+stripchart(data.frame(t(SG1$thetaPostSamples)), main="1k pts, LaPlace (black), MCMC (green), MAP (red)", xlim=c(-1,1))
 stripchart(data.frame(t(SG2$thetaPostSamples)), main="SG1 1k MCMC", add=T, col=3)
-stripchart(data.frame(t(SG2$thetaMAP)), main="SG1 1k MCMC", add=T, col=2)
+stripchart(data.frame(t(SG2$thetaMAP)), main="SG1 1k MCMC", add=T, col=2, pch=4, cex=3)
 
 
 # SG10k <- SGGPcreate(d=4, batchsize=5000)
@@ -71,3 +71,25 @@ plot(exp(MCMCaccepted[,14] - MCMCaccepted[,13]), col=MCMCaccepted[,15] + 1)
 sort(exp(MCMCaccepted[,14] - MCMCaccepted[,13]))
 hist(exp(MCMCaccepted[,14] - MCMCaccepted[,13]), breaks = 50)
 hist(pmin(1,exp(MCMCaccepted[,14] - MCMCaccepted[,13])))
+
+
+hist(2*(nlpPS2 - min(nlpPS2, nlpM2)), freq = F, breaks = 40)
+curve(add=T, dchisq(x, df=12))
+curve(add=T, dchisq(x, df=8), col=3)
+
+SGmoresamples <- SG
+SGmoresamples$numPostSamples <- 20*100
+SG2.moreMCMCsamples <- SGGPfit(SG=SGmoresamples, Y=y, laplaceapprox = F)
+
+
+MCMCsamplehist <- function(SGGP) {
+  
+  neglogpost.samples <- apply(SGGP$thetaPostSamples, 2, SGGP_internal_neglogpost, SGGP, SGGP$y)
+  neglogpost.MAP <- SGGP_internal_neglogpost(SGGP$thetaMAP, SGGP, SGGP$y)
+  hist(2*(neglogpost.samples - min(neglogpost.samples, neglogpost.MAP)), freq = F, breaks = 30)
+  curve(add=T, dchisq(x, df=12))
+  
+}
+
+MCMCsamplehist(SG2.moreMCMCsamples)
+curve(add=T, dchisq(x, df=9), col=3)

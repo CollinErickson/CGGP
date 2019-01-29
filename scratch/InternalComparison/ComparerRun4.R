@@ -77,8 +77,8 @@ e2 <- ffexp$new(
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
   batchsize=c(64, 256),
   append.rimseperpoint=c(TRUE, FALSE),
-  use_laplaceapprox=c(TRUE), # No MCMC
-  pred.fullBayes=c(TRUE, FALSE),
+  use_laplaceapprox=c(TRUE), # No MCMC, too slow
+  pred.fullBayes=c(FALSE), # No full Bayes prediction, too slow
   grid_size=c("fast", "slow"),
   parallel=TRUE,
   parallel_cores = 37,
