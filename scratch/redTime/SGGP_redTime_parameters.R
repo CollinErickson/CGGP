@@ -24,9 +24,11 @@ Nfinal <- 8000
 # Grid size to use. This option wasn't included in Test1
 grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
 
+# Should log of redTime output be used? Test1 didn't, Test2 will
+use_log_redTime <- TRUE
+
 # When should the object be saved
 save_after <- c(200, 400, 1000, 2000, 4000, 8000)
-SGGP_save_after_fit_RDS_path    <- paste0(outpathbase, "_SGGP")
 
 sourcefilepath <- "/home/collin/scratch/SGGP/scratch/redTime/"
 
@@ -44,4 +46,5 @@ shpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/s
 outpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/output_files/out_", groupID)
 
 SGGP_after_fit_RDS_path    <- paste0(outpathbase, "_SGGP_after_fit.rds")
+SGGP_save_after_fit_RDS_path    <- paste0(outpathbase, "_SGGP") # For saving intermediate objects
 SGGP_after_append_RDS_path <- paste0(outpathbase, "_SGGP_after_append.rds")

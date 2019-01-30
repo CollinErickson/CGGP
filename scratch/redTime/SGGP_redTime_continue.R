@@ -61,6 +61,9 @@ for (i in 1:nrow(SG$design_unevaluated)) {
   else {Ynew <- rbind(Ynew, newrow)}
 }
 rownames(Ynew) <- NULL
+if (use_log_redTime) {
+  Ynew <- log(Ynew)
+}
 cat("Extracted all values\n", Ynew, "\n")
 cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew), "\n")
 
