@@ -56,7 +56,7 @@ cat("Read back in RDS successfully\n")
 source(paste0(sourcefilepath, "extract_redTime.R"))
 Ynew <- NULL
 for (i in 1:nrow(SG$design_unevaluated)) {
-  newrow <- extract_redTime_output(outpath = paste0(outpathbase, "_", SG$ss, "_", i, ".out"))
+  newrow <- extract_redTime_output(outpath = paste0(outpathbase, groupID_short, "_", SG$ss, "_", i, ".out"))
   if (is.null(Ynew)) {Ynew <- newrow}
   else {Ynew <- rbind(Ynew, newrow)}
 }

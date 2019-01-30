@@ -2,7 +2,7 @@
 % Please edit documentation in R/SGGP_plot.R
 \name{SGGPvalplot}
 \alias{SGGPvalplot}
-\title{Plot validation prediction errors}
+\title{Plot validation prediction errors for SGGP object}
 \usage{
 SGGPvalplot(SGGP, Xval, Yval, plot_with = "ggplot2", d = NULL)
 }
@@ -21,7 +21,7 @@ SGGPvalplot(SGGP, Xval, Yval, plot_with = "ggplot2", d = NULL)
 None, makes a plot
 }
 \description{
-Plot validation prediction errors
+Plot validation prediction errors for SGGP object
 }
 \examples{
 SG <- SGGPcreate(d=3, batchsize=100)

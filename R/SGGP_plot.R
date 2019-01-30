@@ -170,10 +170,11 @@ SGGPblockplot <- function(SGGP, singleplot=TRUE) {
 }
 
 
+
 #' Plot validation prediction errors
 #'
-#' @param SGGP SGGP object that has been fitted
-#' @param Xval X validation data
+#' @param predmean Predicted mean
+#' @param predvar Predicted variance
 #' @param Yval Y validation data
 #' @param plot_with Should the plot be made with "base" or "ggplot2"?
 #' @param d If output is multivariate, which column to use
@@ -183,28 +184,32 @@ SGGPblockplot <- function(SGGP, singleplot=TRUE) {
 #' @importFrom graphics plot points polygon
 #'
 #' @examples
-#' SG <- SGGPcreate(d=3, batchsize=100)
+#' x <- matrix(runif(100*3), ncol=3)
 #' f1 <- function(x){x[1]+x[2]^2}
-#' y <- apply(SG$design, 1, f1)
-#' SG <- SGGPfit(SG, y)
+#' y <- apply(x, 1, f1)
+#' # Create a linear model on the data
+#' mod <- lm(y ~ ., data.frame(x))
+#' # Predict at validation data
 #' Xval <- matrix(runif(3*100), ncol=3)
+#' mod.pred <- predict.lm(mod, data.frame(Xval), se.fit=TRUE)
+#' # Compare to true results
 #' Yval <- apply(Xval, 1, f1)
-#' SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
-SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
-  ypred <- SGGPpred(SGGP=SGGP, xp=Xval)
+#' valplot(mod.pred$fit, mod.pred$se.fit^2, Yval=Yval)
+valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
+  
   if (!is.null(d)) {
-    ypred <- list(mean=ypred$mean[,d], var=ypred$var[,d])
+    ypred <- list(mean=predmean[,d], var=predvar[,d])
     Yval <- Yval[,d]
   }
-  errmax <- max(sqrt(ypred$var), abs(ypred$mean - Yval))
+  errmax <- max(sqrt(predvar), abs(predmean - Yval))
   if (plot_with == "base") {
-    plot(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
+    plot(predmean-Yval, sqrt(predvar), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
     polygon(1.1*errmax*c(0,-2,2),1.1*errmax*c(0,1,1), col=3, density=10, angle=135)
     polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
-    points(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
+    points(predmean-Yval, sqrt(predvar), xlim=errmax*c(-1,1), ylim=c(0,errmax))
   } else {
-    errs <- unname(ypred$mean-Yval)
-    psds <- unname(sqrt(ypred$var))
+    errs <- unname(predmean-Yval)
+    psds <- unname(sqrt(predvar))
     if (!is.matrix(errs) || ncol(errs)==1) { # vector, single output
       tdf <- data.frame(err=errs, psd=psds)
     } else { # multiple outputs, need to melt
@@ -237,22 +242,73 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 }
 
 
+
+#' Plot validation prediction errors for SGGP object
+#'
+#' @param SGGP SGGP object that has been fitted
+#' @param Xval X validation data
+#' @param Yval Y validation data
+#' @param plot_with Should the plot be made with "base" or "ggplot2"?
+#' @param d If output is multivariate, which column to use
+#'
+#' @return None, makes a plot
+#' @export
+#' @importFrom graphics plot points polygon
+#'
+#' @examples
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' f1 <- function(x){x[1]+x[2]^2}
+#' y <- apply(SG$design, 1, f1)
+#' SG <- SGGPfit(SG, y)
+#' Xval <- matrix(runif(3*100), ncol=3)
+#' Yval <- apply(Xval, 1, f1)
+#' SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
+SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
+  ypred <- SGGPpred(SGGP=SGGP, xp=Xval)
+  valplot(ypred$mean, ypred$var, Yval, plot_with=plot_with)
+}
+
+
 #' Calculate stats for prediction on validation data
 #'
 #' @param predmean Predicted mean
 #' @param predvar Predicted variance
 #' @param Yval Y validation data
+#' @param bydim If multiple outputs, should it be done separately by dimension?
 #'
 #' @return data frame
 #' @export
-#' @importFrom stats pnorm dnorm
+#' @importFrom stats pnorm dnorm cor
 #' @references Gneiting, Tilmann, and Adrian E. Raftery.
 #' "Strictly proper scoring rules, prediction, and estimation."
 #' Journal of the American Statistical Association 102.477 (2007): 359-378.
 #'
 #' @examples
 #' valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9))
-valstats <- function(predmean, predvar, Yval) {
+#' valstats(cbind(c(0,1,2), c(1,2,3)),
+#'          cbind(c(.01,.01,.01),c(.1,.1,.1)),
+#'          cbind(c(0,1.1,1.9),c(1,2,3)))
+#' valstats(cbind(c(0,1,2), c(8,12,34)),
+#'          cbind(c(.01,.01,.01),c(1.1,.81,1.1)),
+#'          cbind(c(0,1.1,1.9),c(10,20,30)), bydim=FALSE)
+#' valstats(cbind(c(.8,1.2,3.4), c(8,12,34)),
+#'          cbind(c(.01,.01,.01),c(1.1,.81,1.1)),
+#'          cbind(c(1,2,3),c(10,20,30)), bydim=FALSE)
+valstats <- function(predmean, predvar, Yval, bydim=TRUE) {
+  if ((is.matrix(predmean) && 
+       (any(dim(predmean)!=dim(predvar)) || any(dim(predmean)!=dim(Yval)))
+       ) ||
+      (length(predmean)!=length(predvar) || length(predmean)!=length(Yval))
+      ) {
+    stop("Shape of predmean, predvar, and Yval must match in valstats")
+  }
+  if (bydim && is.matrix(predmean) && ncol(predmean) > 1) {
+    return(do.call("rbind",
+            lapply(1:ncol(predmean),
+                   function(i) {
+                     valstats(predmean=predmean[,i], predvar=predvar[,i], Yval=Yval[,i])
+                   })))
+  }
   
   m <- predmean
   v <- pmax(predvar, 0)
@@ -263,8 +319,18 @@ valstats <- function(predmean, predvar, Yval) {
   CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
   coverage <- mean((Yval<= predmean+1.96*sqrt(predvar)) & 
                      (Yval>= predmean-1.96*sqrt(predvar)))
+  R2 <- cor(c(predmean), c(Yval))
   # Return df with values
-  data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage)
+  out <- data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage,
+             R2=R2)
+  
+  # Add normalized RMSE, dividing MSE in each dimension by variance
+  if (is.matrix(predmean) && ncol(predmean) > 1) {
+    # out$RMSEnorm <- sqrt(mean(sweep((predmean - Yval)^2, 2, apply(Yval, 2, var), "/")))
+    out$RMSEnorm <- sqrt(mean(colMeans((predmean - Yval)^2) / apply(Yval, 2, var)))
+  }
+  
+  out
 }
 
 #' Calculate stats for SGGP prediction on validation data
@@ -307,20 +373,20 @@ valstats <- function(predmean, predvar, Yval) {
 SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
   # Make predictions
   ypred <- SGGPpred(SGGP=SGGP, xp=Xval, fullBayesian=fullBayesian)
-  
-  # Use valstats to get df with values
-  if (ncol(ypred$mean) == 1 || !bydim) {
-    valstats(predmean=ypred$mean, predvar=ypred$var, Yval=Yval)
-  } else {
-    if (any(dim(ypred$mean) != dim(Yval))) {
-      stop("Yval dimensions don't match SGGPpred(SGGP, Xval)")
-    }
-    do.call("rbind",
-            lapply(1:ncol(ypred$mean),
-                   function(i) {
-                     valstats(predmean=ypred$mean[,i], predvar=ypred$var[,i], Yval=Yval[,i])
-                   }))
-  }
+  valstats(ypred$mean, ypred$var, Yval=Yval, bydim=bydim)
+  # # Use valstats to get df with values
+  # if (ncol(ypred$mean) == 1 || !bydim) {
+  #   valstats(predmean=ypred$mean, predvar=ypred$var, Yval=Yval)
+  # } else {
+  #   if (any(dim(ypred$mean) != dim(Yval))) {
+  #     stop("Yval dimensions don't match SGGPpred(SGGP, Xval)")
+  #   }
+  #   do.call("rbind",
+  #           lapply(1:ncol(ypred$mean),
+  #                  function(i) {
+  #                    valstats(predmean=ypred$mean[,i], predvar=ypred$var[,i], Yval=Yval[,i])
+  #                  }))
+  # }
 }
 
 #' Plot correlation samples

@@ -10,7 +10,7 @@ number_cores <- 38
 d <- 9
 
 # Initial sample size
-N0 <- 80
+N0 <- 76
 
 # Correlation function
 corr <- "CauchySQT"

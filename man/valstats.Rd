@@ -4,7 +4,7 @@
 \alias{valstats}
 \title{Calculate stats for prediction on validation data}
 \usage{
-valstats(predmean, predvar, Yval)
+valstats(predmean, predvar, Yval, bydim = TRUE)
 }
 \arguments{
 \item{predmean}{Predicted mean}
@@ -12,6 +12,8 @@ valstats(predmean, predvar, Yval)
 \item{predvar}{Predicted variance}
 
 \item{Yval}{Y validation data}
+
+\item{bydim}{If multiple outputs, should it be done separately by dimension?}
 }
 \value{
 data frame
@@ -21,6 +23,15 @@ Calculate stats for prediction on validation data
 }
 \examples{
 valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9))
+valstats(cbind(c(0,1,2), c(1,2,3)),
+         cbind(c(.01,.01,.01),c(.1,.1,.1)),
+         cbind(c(0,1.1,1.9),c(1,2,3)))
+valstats(cbind(c(0,1,2), c(8,12,34)),
+         cbind(c(.01,.01,.01),c(1.1,.81,1.1)),
+         cbind(c(0,1.1,1.9),c(10,20,30)), bydim=FALSE)
+valstats(cbind(c(.8,1.2,3.4), c(8,12,34)),
+         cbind(c(.01,.01,.01),c(1.1,.81,1.1)),
+         cbind(c(1,2,3),c(10,20,30)), bydim=FALSE)
 }
 \references{
 Gneiting, Tilmann, and Adrian E. Raftery.
