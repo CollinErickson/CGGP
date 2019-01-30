@@ -203,10 +203,9 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
     polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
     points(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
   } else {
-    browser()
     errs <- unname(ypred$mean-Yval)
     psds <- unname(sqrt(ypred$var))
-    if (ncol(errs) == 1) {
+    if (!is.matrix(errs) || ncol(errs)==1) { # vector, single output
       tdf <- data.frame(err=errs, psd=psds)
     } else { # multiple outputs, need to melt
       tdf <- cbind(reshape2::melt(errs), reshape2::melt(psds))[,c(3,6,2)]
@@ -230,7 +229,7 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
       ggplot2::geom_point() +
       ggplot2::xlab("Predicted - Actual") + ggplot2::ylab("Predicted error") + 
       ggplot2::coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,max(psds))) #errmax))
-    if (ncol(errs) >= 1) {
+    if (is.matrix(errs) && ncol(errs) > 1) {
       p <- p + ggplot2::facet_wrap("outputdim")
     }
     p

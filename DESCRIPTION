@@ -19,7 +19,7 @@ Suggests: testthat,
     reshape2,
     plyr,
     MASS,
-    splitfngr,
+    progress,
     lhs
 URL: https://github.com/CollinErickson/SGGP
 BugReports: https://github.com/CollinErickson/SGGP/issues
