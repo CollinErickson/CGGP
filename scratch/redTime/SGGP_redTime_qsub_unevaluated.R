@@ -14,7 +14,7 @@ for (i in 1:nrow(SG$design_unevaluated)) {
                     fileID=paste0("_", SG$ss, "_", i))
   
   # Write sh files
-  write_sh_file(fileID=paste0("_", SG$ss, "_", i),
+  write_sh_file(fileID=paste0(groupID_short, "_", SG$ss, "_", i),
                 shpathbase=shpathbase,
                 parampathbase=parampathbase,
                 outpathbase=outpathbase#,

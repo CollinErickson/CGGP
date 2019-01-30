@@ -132,76 +132,76 @@ ytest <- ylhs8039[1:1000,]
 
 # sapply(1:100, function(i) {forecast::BoxCox.lambda(lo[,i])})
 
-compmods <- function() {#browser()
-  # pred.mlegp.pca <- mlegp::predict.gp(mod.mlegp.pca, xtest)
-  pred.mlegp.pca.pretrans <- lapply(1:mod.mlegp.pca$numGPs,
-                                    function(i)predict(mod.mlegp.pca[[i]], xtest, se.fit=T))
-  pred.mlegp.pca.pretrans.means <- do.call(cbind, lapply(pred.mlegp.pca.pretrans, function(x) x$fit))
-  pred.mlegp.pca.pretrans.ses <- do.call(cbind, lapply(pred.mlegp.pca.pretrans, function(x) x$se))
-  pred.mlegp.pca <- list(
-    mean = t(mod.mlegp.pca$UD %*% t(pred.mlegp.pca.pretrans.means)),
-    var = (t(mod.mlegp.pca$UD %*% t(pred.mlegp.pca.pretrans.ses)))^2)
-  # browser()
-  pred.mlegp.raw <- lapply(1:mod.mlegp$numGPs,
-                       function(i)predict(mod.mlegp[[i]], xtest, se.fit=T))
-  pred.mlegp <- list(
-    mean = do.call(cbind, lapply(pred.mlegp.raw, function(x) x$fit)),
-    var = do.call(cbind, lapply(pred.mlegp.raw, function(x) x$se^2))
-  )
-  
-  pred.mlegp.pca.300.pretrans <- lapply(1:mod.mlegp.pca.300$numGPs,
-                                    function(i)predict(mod.mlegp.pca.300[[i]], xtest, se.fit=T))
-  pred.mlegp.pca.300.pretrans.means <- do.call(cbind, lapply(pred.mlegp.pca.300.pretrans, function(x) x$fit))
-  pred.mlegp.pca.300.pretrans.ses <- do.call(cbind, lapply(pred.mlegp.pca.300.pretrans, function(x) x$se))
-  pred.mlegp.pca.300 <- list(
-    mean = t(mod.mlegp.pca.300$UD %*% t(pred.mlegp.pca.300.pretrans.means)),
-    var = (t(mod.mlegp.pca.300$UD %*% t(pred.mlegp.pca.300.pretrans.ses)))^2)
-  
-  pred.mlegp.300.raw <- lapply(1:mod.mlegp$numGPs,
-                           function(i)predict(mod.mlegp.300[[i]], xtest, se.fit=T))
-  pred.mlegp.300 <- list(
-    mean = do.call(cbind, lapply(pred.mlegp.300.raw, function(x) x$fit)),
-    var = do.call(cbind, lapply(pred.mlegp.300.raw, function(x) x$se^2))
-  )
-  
-  mlegp.pca.100.stats <- valstats(pred.mlegp.pca$mean, pred.mlegp.pca$var, ytest)
-  mlegp.100.stats <- valstats(pred.mlegp$mean, pred.mlegp$var, ytest)
-  mlegp.pca.300.stats <- valstats(pred.mlegp.pca.300$mean, pred.mlegp.pca.300$var, ytest)
-  mlegp.300.stats <- valstats(pred.mlegp.300$mean, pred.mlegp.300$var, ytest)
-  sg1ps.stats <- SGGPvalstats(sg1ps, xtest, ytest, bydim=F)
-  sg1po.stats <- SGGPvalstats(sg1po, xtest, ytest, bydim=F)
-  sg1ns.stats <- SGGPvalstats(sg1ns, xtest, ytest, bydim=F)
-  sg1no.stats <- SGGPvalstats(sg1no, xtest, ytest, bydim=F)
-  sg3ps.stats <- SGGPvalstats(sg3ps, xtest, ytest, bydim=F)
-  sg3po.stats <- SGGPvalstats(sg3po, xtest, ytest, bydim=F)
-  sg3ns.stats <- SGGPvalstats(sg3ns, xtest, ytest, bydim=F)
-  sg3no.stats <- SGGPvalstats(sg3no, xtest, ytest, bydim=F)
-  sg8ps.stats <- SGGPvalstats(sg8ps, xtest, ytest, bydim=F)
-  sg8po.stats <- SGGPvalstats(sg8po, xtest, ytest, bydim=F)
-  sg8ns.stats <- SGGPvalstats(sg8ns, xtest, ytest, bydim=F)
-  sg8no.stats <- SGGPvalstats(sg8no, xtest, ytest, bydim=F)
-  
-  
-  rbind(
-    mlegp.pca.100=mlegp.pca.100.stats,
-    mlegp.100=mlegp.100.stats,
-    mlegp.pca.300=mlegp.pca.300.stats,
-    mlegp.300=mlegp.300.stats,
-    sg1ps=sg1ps.stats,
-    sg1po=sg1po.stats,
-    sg1ns=sg1ns.stats,
-    sg1no=sg1no.stats,
-    sg3ps=sg3ps.stats,
-    sg3po=sg3po.stats,
-    sg3ns=sg3ns.stats,
-    sg3no=sg3no.stats,
-    sg8ps=sg8ps.stats,
-    sg8po=sg8po.stats,
-    sg8ns=sg8ns.stats,
-    sg8no=sg8no.stats
-  )
-}
-compmodout <- compmods()
+# compmods <- function() {#browser()
+# pred.mlegp.pca <- mlegp::predict.gp(mod.mlegp.pca, xtest)
+pred.mlegp.pca.pretrans <- lapply(1:mod.mlegp.pca$numGPs,
+                                  function(i)predict(mod.mlegp.pca[[i]], xtest, se.fit=T))
+pred.mlegp.pca.pretrans.means <- do.call(cbind, lapply(pred.mlegp.pca.pretrans, function(x) x$fit))
+pred.mlegp.pca.pretrans.ses <- do.call(cbind, lapply(pred.mlegp.pca.pretrans, function(x) x$se))
+pred.mlegp.pca <- list(
+  mean = t(mod.mlegp.pca$UD %*% t(pred.mlegp.pca.pretrans.means)),
+  var = (t(mod.mlegp.pca$UD %*% t(pred.mlegp.pca.pretrans.ses)))^2)
+# browser()
+pred.mlegp.raw <- lapply(1:mod.mlegp$numGPs,
+                         function(i)predict(mod.mlegp[[i]], xtest, se.fit=T))
+pred.mlegp <- list(
+  mean = do.call(cbind, lapply(pred.mlegp.raw, function(x) x$fit)),
+  var = do.call(cbind, lapply(pred.mlegp.raw, function(x) x$se^2))
+)
+
+pred.mlegp.pca.300.pretrans <- lapply(1:mod.mlegp.pca.300$numGPs,
+                                      function(i)predict(mod.mlegp.pca.300[[i]], xtest, se.fit=T))
+pred.mlegp.pca.300.pretrans.means <- do.call(cbind, lapply(pred.mlegp.pca.300.pretrans, function(x) x$fit))
+pred.mlegp.pca.300.pretrans.ses <- do.call(cbind, lapply(pred.mlegp.pca.300.pretrans, function(x) x$se))
+pred.mlegp.pca.300 <- list(
+  mean = t(mod.mlegp.pca.300$UD %*% t(pred.mlegp.pca.300.pretrans.means)),
+  var = (t(mod.mlegp.pca.300$UD %*% t(pred.mlegp.pca.300.pretrans.ses)))^2)
+
+pred.mlegp.300.raw <- lapply(1:mod.mlegp$numGPs,
+                             function(i)predict(mod.mlegp.300[[i]], xtest, se.fit=T))
+pred.mlegp.300 <- list(
+  mean = do.call(cbind, lapply(pred.mlegp.300.raw, function(x) x$fit)),
+  var = do.call(cbind, lapply(pred.mlegp.300.raw, function(x) x$se^2))
+)
+
+mlegp.pca.100.stats <- valstats(pred.mlegp.pca$mean, pred.mlegp.pca$var, ytest)
+mlegp.100.stats <- valstats(pred.mlegp$mean, pmax(1e-8, pred.mlegp$var), ytest)
+mlegp.pca.300.stats <- valstats(pred.mlegp.pca.300$mean, pmax(1e-8, pred.mlegp.pca.300$var), ytest)
+mlegp.300.stats <- valstats(pred.mlegp.300$mean, pmax(1e-8, pred.mlegp.300$var), ytest)
+sg1ps.stats <- SGGPvalstats(sg1ps, xtest, ytest, bydim=F)
+sg1po.stats <- SGGPvalstats(sg1po, xtest, ytest, bydim=F)
+sg1ns.stats <- SGGPvalstats(sg1ns, xtest, ytest, bydim=F)
+sg1no.stats <- SGGPvalstats(sg1no, xtest, ytest, bydim=F)
+sg3ps.stats <- SGGPvalstats(sg3ps, xtest, ytest, bydim=F)
+sg3po.stats <- SGGPvalstats(sg3po, xtest, ytest, bydim=F)
+sg3ns.stats <- SGGPvalstats(sg3ns, xtest, ytest, bydim=F)
+sg3no.stats <- SGGPvalstats(sg3no, xtest, ytest, bydim=F)
+sg8ps.stats <- SGGPvalstats(sg8ps, xtest, ytest, bydim=F)
+sg8po.stats <- SGGPvalstats(sg8po, xtest, ytest, bydim=F)
+sg8ns.stats <- SGGPvalstats(sg8ns, xtest, ytest, bydim=F)
+sg8no.stats <- SGGPvalstats(sg8no, xtest, ytest, bydim=F)
+
+
+rbind(
+  mlegp.pca.100=mlegp.pca.100.stats,
+  mlegp.100=mlegp.100.stats,
+  mlegp.pca.300=mlegp.pca.300.stats,
+  mlegp.300=mlegp.300.stats,
+  sg1ps=sg1ps.stats,
+  sg1po=sg1po.stats,
+  sg1ns=sg1ns.stats,
+  sg1no=sg1no.stats,
+  sg3ps=sg3ps.stats,
+  sg3po=sg3po.stats,
+  sg3ns=sg3ns.stats,
+  sg3no=sg3no.stats,
+  sg8ps=sg8ps.stats,
+  sg8po=sg8po.stats,
+  sg8ns=sg8ns.stats,
+  sg8no=sg8no.stats
+)
+# }
+# compmodout <- compmods()
 
 # Compmods on 101 test points
 #                   RMSE        score    CRPscore  coverage
@@ -221,3 +221,23 @@ compmodout <- compmods()
 # sg8po         0.0033162834  -8.231127 0.004110924 1.0000000
 # sg8ns         0.0029106681 -10.864965 0.001490032 0.9880198
 # sg8no         0.0031820504 -10.700086 0.001578966 0.9898020
+
+# Compmods on 1000 test points
+
+# RMSE      score    CRPscore coverage
+# mlegp.pca.100 0.006266007  -8.395314 0.003103312  0.75365
+# mlegp.100     0.004634059        NaN         NaN  0.71058
+# mlegp.pca.300 0.003455452        NaN         NaN  0.39905
+# mlegp.300     0.001589360        NaN         NaN  0.56924
+# sg1ps         0.014889951  -2.827439 0.059072836  1.00000
+# sg1po         0.276976502  -1.639099 0.153035155  0.99591
+# sg1ns         0.014714046  -1.609238 0.152545708  1.00000
+# sg1no         0.015580332  -5.166784 0.019306609  1.00000
+# sg3ps         0.010514521  -2.984185 0.053966859  1.00000
+# sg3po         0.009217553  -6.815351 0.008686614  0.99999
+# sg3ns         0.010226738  -2.377687 0.091978759  0.99920
+# sg3no         0.006792111  -8.111536 0.004778535  0.99880
+# sg8ps         0.003774826 -10.667542 0.001689869  0.96988
+# sg8po         0.004603387  -8.071398 0.004567326  0.99896
+# sg8ns         0.004269050 -10.467252 0.001873210  0.96632
+# sg8no         0.004635364 -10.252414 0.001998025  0.96958
