@@ -52,7 +52,7 @@ SG <- readRDS(SGGP_after_append_RDS_path)
 cat("Read back in RDS successfully\n")
 
 # Read in all new output values
-print(getwd())
+# print(getwd())
 source(paste0(sourcefilepath, "extract_redTime.R"))
 Ynew <- NULL
 for (i in 1:nrow(SG$design_unevaluated)) {
@@ -72,6 +72,12 @@ cat("SGGPfit successful\n")
 # Save SGGP object
 saveRDS(object = SG, file = paste0(SGGP_after_fit_RDS_path))
 cat("Saved SG successfully\n")
+
+# Save if reached save_after number of points 
+if (any(SG$ss >= save_after & SG$ss < save_after+batchsize)) {
+  saveRDS(object = SG, file = paste0(SGGP_save_after_fit_RDS_path, "-", SG$ss, ".rds"))
+  cat("Also saving because of save_after, ", SG$ss, "\n")
+}
 
 # Check if done
 if (SG$ss >= Nfinal) {

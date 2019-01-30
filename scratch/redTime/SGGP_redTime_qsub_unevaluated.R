@@ -1,7 +1,8 @@
-
+# This will submit all the sh files to run the
+# points that the SGGP object chooses to run.
 
 # Now need to evaluate SG$design_unevaluated
-cat(getwd(), '\n')
+# cat(getwd(), '\n')
 
 # Write param files and sh files, then qsub them with hold to avoid overload
 source(paste0(sourcefilepath, 'write_param_files.R'))

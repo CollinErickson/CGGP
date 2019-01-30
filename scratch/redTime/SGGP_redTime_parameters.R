@@ -1,7 +1,7 @@
 # Parameters for the SGGP/redTime run
 
-groupID <- "redTimeTest1"
-groupID_short <- "T1"
+groupID <- "redTimeTest2"
+groupID_short <- "T2"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
 number_cores <- 40
@@ -10,16 +10,23 @@ number_cores <- 40
 d <- 9
 
 # Initial sample size
-N0 <- 40
+N0 <- 80
 
 # Correlation function
 corr <- "CauchySQT"
 
 # Number of points to add in each batch
-batchsize <- 40
+batchsize <- 80
 
 # Number of points after which to stop (will go up to batchsize-1 over)
 Nfinal <- 8000
+
+# Grid size to use. This option wasn't included in Test1
+grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
+
+# When should the object be saved
+save_after <- c(200, 400, 1000, 2000, 4000, 8000)
+SGGP_save_after_fit_RDS_path    <- paste0(outpathbase, "_SGGP")
 
 sourcefilepath <- "/home/collin/scratch/SGGP/scratch/redTime/"
 

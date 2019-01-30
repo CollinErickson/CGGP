@@ -1,3 +1,6 @@
+# This file is run first to create the SGGP object
+# that will be used for the rest of the simulation.
+
 # Begin SGGP redTime experiment
 cat("Starting SGGP_redTime_begin.R\n")
 
@@ -14,7 +17,7 @@ cat("SGGP installed correctly\n")
 library('SGGP')
 cat("SGGP loaded successfully\n")
 
-SG <- SGGPcreate(d=d, batchsize=N0, corr=corr)
+SG <- SGGPcreate(d=d, batchsize=N0, corr=corr, grid_size=grid_size)
 print(SG)
 cat("SGGPcreate successful\n")
 
