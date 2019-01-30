@@ -41,7 +41,7 @@ dir.create(paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/outp
 
 
 parampathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/param_files/params_", groupID)
-shpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/sh_files/sh_", groupID)
+shpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/sh_files/sh_") #, groupID)
 
 outpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/output_files/out_", groupID)
 
