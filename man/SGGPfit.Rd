@@ -7,7 +7,8 @@
 SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
   laplaceapprox = TRUE, lower = rep(-1, SGGP$numpara * SGGP$d),
   upper = rep(1, SGGP$numpara * SGGP$d), use_PCA = SGGP$use_PCA,
-  separateoutputparameterdimensions = is.matrix(SGGP$thetaMAP), Ynew)
+  separateoutputparameterdimensions = is.matrix(SGGP$thetaMAP),
+  use_progress_bar = TRUE, Ynew)
 }
 \arguments{
 \item{SGGP}{Sparse grid objects}
@@ -30,6 +31,9 @@ SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
 
 \item{separateoutputparameterdimensions}{If multiple output dimensions,
 should separate parameters be fit to each dimension?}
+
+\item{use_progress_bar}{If using MCMC sampling, should a progress bar be
+displayed?}
 
 \item{Ynew}{Values of `SGGP$design_unevaluated`}
 }

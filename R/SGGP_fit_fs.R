@@ -131,6 +131,8 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #' @param use_PCA Should PCA be used if output is multivariate?
 #' @param separateoutputparameterdimensions If multiple output dimensions,
 #' should separate parameters be fit to each dimension?
+#' @param use_progress_bar If using MCMC sampling, should a progress bar be
+#' displayed?
 #' 
 #' @importFrom stats optim rnorm runif nlminb
 #'
@@ -147,6 +149,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                     use_PCA=SGGP$use_PCA,
                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
+                    use_progress_bar=TRUE,
                     Ynew) {
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
@@ -298,10 +301,9 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       upper = upper,
       y = y.thisloop,
       SGGP = SGGP,
-      #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-      #hessian = TRUE,
-      control = list(rel.tol = 1e-8,iter.max = 500)#reltol=1e-4)#abstol = tol)
+      control = list(rel.tol = 1e-8,iter.max = 500)
     )
+    
     # for(i in 1:5){
     #   opt.out = nlminb(
     #     runif(SGGP$numpara*SGGP$d, -0.75,0.75),
@@ -362,6 +364,12 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       scalev = 0.5
       # This is just burn in period, find good scalev
       # MCMCtracker is for debugging
+      if (use_progress_bar) {
+        progress_bar <- progress::progress_bar$new(
+          total=100*SGGP$numPostSamples*2,
+          format = " MCMC [:bar] :percent eta: :eta"
+          )
+      }
       for(i in 1:(100*SGGP$numPostSamples)){
         p = rnorm(length(q),0,1)*scalev
         qp = q + p
@@ -393,7 +401,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
           scalev=exp(log(scalev)-0.1/sqrt(i+4))
           scalev = max(scalev,1/sqrt(length(q)))
         }
-        
+        if (use_progress_bar) {progress_bar$tick()}
       }
       
       Uo = U(q)
@@ -414,7 +422,9 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         if(runif(1) < exp_Uo_minus_Up){q=qp;Uo=Up;}
         # Only save every 100 samples for good mixing
         if((i%%100)==0){Bs[,i/100]=q;}
+        if (use_progress_bar) {progress_bar$tick()}
       }
+      if (use_progress_bar) {rm(progress_bar)}
       PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%Bs
       thetaPostSamples = (exp(PSTn)-1)/(exp(PSTn)+1)
     }

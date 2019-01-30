@@ -203,8 +203,16 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
     polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
     points(ypred$mean-Yval, sqrt(ypred$var), xlim=errmax*c(-1,1), ylim=c(0,errmax))
   } else {
-    
-    tdf <- data.frame(err=ypred$mean-Yval, psd=sqrt(ypred$var))
+    browser()
+    errs <- unname(ypred$mean-Yval)
+    psds <- unname(sqrt(ypred$var))
+    if (ncol(errs) == 1) {
+      tdf <- data.frame(err=errs, psd=psds)
+    } else { # multiple outputs, need to melt
+      tdf <- cbind(reshape2::melt(errs), reshape2::melt(psds))[,c(3,6,2)]
+      tdf <- data.frame(tdf)
+      names(tdf) <- c("err", "psd", "outputdim")
+    }
     # ggplot(tdf, aes(x=err, y=psd)) + geom_point()
     values <- data.frame(id=factor(c(1, 2)), value=factor(c('095%','68%')))
     positions <- data.frame(id=rep(values$id, each=3),
@@ -217,12 +225,15 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
     # geom_polygon(aes(fill = value, group = id))
     # ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), datapoly, alpha=.2) + geom_point() +
     # xlab("Predicted - Actual") + ylab("Predicted error") + coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
-    ggplot2::ggplot(tdf, ggplot2::aes_string(x='err', y='psd')) + 
+    p <- ggplot2::ggplot(tdf, ggplot2::aes_string(x='err', y='psd')) + 
       ggplot2::geom_polygon(ggplot2::aes_string(fill = 'value', group = 'id', x='x', y='y'), datapoly, alpha=.2) + 
       ggplot2::geom_point() +
       ggplot2::xlab("Predicted - Actual") + ggplot2::ylab("Predicted error") + 
-      ggplot2::coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
-    
+      ggplot2::coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,max(psds))) #errmax))
+    if (ncol(errs) >= 1) {
+      p <- p + ggplot2::facet_wrap("outputdim")
+    }
+    p
   }
 }
 
