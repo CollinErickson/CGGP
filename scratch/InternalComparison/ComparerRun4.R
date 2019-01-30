@@ -69,9 +69,27 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
 
 require("comparer")
 
+# This was main one using five correlation functions
+# e2 <- ffexp$new(
+#   eval_func = sggpexp_func,
+#   corr = c("cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
+#   sel.method = c("TS", "UCB", "Greedy"),
+#   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"), d=c(3,6,7,8,10),
+#                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
+#   batchsize=c(64, 256),
+#   append.rimseperpoint=c(TRUE, FALSE),
+#   use_laplaceapprox=c(TRUE), # No MCMC, too slow
+#   pred.fullBayes=c(FALSE), # No full Bayes prediction, too slow
+#   grid_size=c("fast", "slow"),
+#   parallel=TRUE,
+#   parallel_cores = 37,
+#   folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun4a" #"./scratch/sggpout"
+# )
+
+# Going to run again with other correlation functions
 e2 <- ffexp$new(
   eval_func = sggpexp_func,
-  corr = c("cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
+  corr = c("m32", "m52"), #"cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
   sel.method = c("TS", "UCB", "Greedy"),
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"), d=c(3,6,7,8,10),
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
@@ -82,8 +100,9 @@ e2 <- ffexp$new(
   grid_size=c("fast", "slow"),
   parallel=TRUE,
   parallel_cores = 37,
-  folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun4a" #"./scratch/sggpout"
+  folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun4b" #"./scratch/sggpout"
 )
+
 e2$rungrid
 # try because it gave delete error before, but shouldn't need it now
 try(e2$recover_parallel_temp_save(delete_after = FALSE))

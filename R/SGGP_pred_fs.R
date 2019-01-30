@@ -72,8 +72,9 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL) {
   }
   if (nnn > 1) {
     # meanall <- matrix(NaN, nrow(xp), ncol=nnn)
-    meanall2 <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y)) # ncol isn't nnn, might need to undo PCA
-    varall <- matrix(NaN, nrow(xp), ncol=ncol(SGGP$Y))
+    meanall2 <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y))
+    # varall <- matrix(NaN, nrow(xp), ncol=ncol(SGGP$Y))
+    tempvarall <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y))
   }
   for (opdlcv in 1:nnn) {
     thetaMAP.thisloop <- if (nnn==1) thetaMAP else thetaMAP[, opdlcv]
@@ -93,7 +94,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL) {
       sigma2MAP.thisloop <- as.vector(sigma2MAP.thisloop)
       rm(y.thisloop)
     }
-    mu.thisloop <- if (nnn==1) SGGP$mu else SGGP$mu[opdlcv]
+    mu.thisloop <- if (nnn==1) SGGP$mu else SGGP$mu[opdlcv] # Not used for PCA, added back at end
     
     # Cp is sigma(x_0) in paper, correlation vector between design points and xp
     Cp = matrix(1,dim(xp)[1],SGGP$ss)
@@ -138,8 +139,19 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL) {
         # With sepparout and PCA (or not), do this
         if (nnn > 1) {
           meanall2 <- meanall2 + outer(c(Cp%*%pw.thisloop), SGGP$M[opdlcv, ])
-          var <- (as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(sigma2MAP.thisloop)%*%(SGGP$M))))[,opdlcv]
-          print("Need to do something with var and M here. Did something, maybe this is right, maybe not?")
+          
+          # This variance calculation was wrong when using PCA with separate theta for each output dim.
+          # var <- (as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(sigma2MAP.thisloop)%*%(SGGP$M))))[,opdlcv]
+          # print("DEFINITELY WRONG! Need to do something with var and M here. Did something, maybe this is right, maybe not?")
+          
+          # This should be correct variance. Needs to be tested better.
+          # Pick out the current dimension, set other values to zero
+          tempM <- SGGP$M
+          tempM[-opdlcv,] <- 0
+          tempsigma2.thisloop <- sigma2MAP.thisloop
+          tempsigma2.thisloop[-opdlcv] <- 0
+          tempvar <- (as.vector(ME_t)%*%t(diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM))))
+          # print((as.vector(ME_t)%*%t(diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM)))) %>% c %>% summary)
         }
       }else{ # y was a matrix, so PCA
         if(length(sigma2MAP.thisloop)==1){
@@ -209,8 +221,14 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL) {
         if (nnn > 1) {
           meanall2 <- meanall2 + outer(c(yhatp), SGGP$M[opdlcv,])
           leftvar <- if (is.null(SGGP$leftover_variance)) {0} else {SGGP$leftover_variance}
-          var <- (as.vector(ME_t)%*%t(leftvar+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))[,opdlcv]
-          print("Need to do something with var and M here. Did something, maybe this is right, maybe not?")
+          # var <- (as.vector(ME_t)%*%t(leftvar+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))[,opdlcv]
+          # print("Need to do something with var and M here. Did something, maybe this is right, maybe not?")
+          # Same fix as above
+          tempM <- SGGP$M
+          tempM[-opdlcv,] <- 0
+          tempsigma2.thisloop <- sigma2MAP.thisloop
+          tempsigma2.thisloop[-opdlcv] <- 0
+          tempvar <- (as.vector(ME_t)%*%t(leftvar+diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM))))
         }
         
       }else{
@@ -228,14 +246,15 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL) {
     }
     rm(Cp,ME_t, MSE_v, V) # Just to make sure nothing is carrying through
     # if (nnn > 1) {meanall[,opdlcv] <- mean}
-    if (nnn > 1) {varall[,opdlcv] <- var}
+    # if (nnn > 1) {varall[,opdlcv] <- var}
+    if (nnn > 1) {tempvarall <- tempvarall + tempvar}
   }
   # If PCA values were calculated separately, need to do transformation on both before mu is added, then add mu back
   # if (nnn > 1) {meanall <- sweep(sweep(meanall,2,SGGP$mu) %*% SGGP$M,2,SGGP$mu, `+`)}
   if (nnn > 1) {meanall2 <- sweep(meanall2, 2, SGGP$mu, `+`)}
   # print("need to fix varall too!")
   if (nnn > 1) {
-    GP <- list(mean=meanall2, var=varall)
+    GP <- list(mean=meanall2, var=tempvarall)
   } else {
     GP <- list(mean=mean, var=var)
   }
