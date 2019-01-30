@@ -11,7 +11,7 @@ for (i in 1:nrow(SG$design_unevaluated)) {
   # Write param files
   write_params_file(x01=SG$design_unevaluated[i,],
                     parampathbase=parampathbase,
-                    fileID=paste0("_", SG$ss, "_", i))
+                    fileID=paste0(groupID_short, "_", SG$ss, "_", i))
   
   # Write sh files
   write_sh_file(fileID=paste0(groupID_short, "_", SG$ss, "_", i),
