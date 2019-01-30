@@ -16,31 +16,31 @@ sg3in <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_3
 # Refit on log scale, all four MV options:
 #  with/out PCA, shared/unshared params
 if (F) {
-  sg1ps <- SGGPfit(sg1in, Y=sg1in$Y, use_PCA=T, separateoutputparameterdimensions=T)
+  sg1ps <- SGGPfit(sg1in, Y=log(sg1in$Y), use_PCA=T, separateoutputparameterdimensions=T)
   saveRDS(sg1ps, paste0(redtimefolder, "sg1ps.rds"))
-  sg1po <- SGGPfit(sg1in, Y=sg1in$Y, use_PCA=T, separateoutputparameterdimensions=F)
+  sg1po <- SGGPfit(sg1in, Y=log(sg1in$Y), use_PCA=T, separateoutputparameterdimensions=F)
   saveRDS(sg1po, paste0(redtimefolder, "sg1po.rds"))
-  sg1ns <- SGGPfit(sg1in, Y=sg1in$Y, use_PCA=F, separateoutputparameterdimensions=T)
+  sg1ns <- SGGPfit(sg1in, Y=log(sg1in$Y), use_PCA=F, separateoutputparameterdimensions=T)
   saveRDS(sg1ns, paste0(redtimefolder, "sg1ns.rds"))
-  sg1no <- SGGPfit(sg1in, Y=sg1in$Y, use_PCA=F, separateoutputparameterdimensions=F)
+  sg1no <- SGGPfit(sg1in, Y=log(sg1in$Y), use_PCA=F, separateoutputparameterdimensions=F)
   saveRDS(sg1no, paste0(redtimefolder, "sg1no.rds"))
   
-  sg3ps <- SGGPfit(sg3in, Y=sg3in$Y, use_PCA=T, separateoutputparameterdimensions=T)
+  sg3ps <- SGGPfit(sg3in, Y=log(sg3in$Y), use_PCA=T, separateoutputparameterdimensions=T)
   saveRDS(sg3ps, paste0(redtimefolder, "sg3ps.rds"))
-  sg3po <- SGGPfit(sg3in, Y=sg3in$Y, use_PCA=T, separateoutputparameterdimensions=F)
+  sg3po <- SGGPfit(sg3in, Y=log(sg3in$Y), use_PCA=T, separateoutputparameterdimensions=F)
   saveRDS(sg3po, paste0(redtimefolder, "sg3po.rds"))
-  sg3ns <- SGGPfit(sg3in, Y=sg3in$Y, use_PCA=F, separateoutputparameterdimensions=T)
+  sg3ns <- SGGPfit(sg3in, Y=log(sg3in$Y), use_PCA=F, separateoutputparameterdimensions=T)
   saveRDS(sg3ns, paste0(redtimefolder, "sg3ns.rds"))
-  sg3no <- SGGPfit(sg3in, Y=sg3in$Y, use_PCA=F, separateoutputparameterdimensions=F)
+  sg3no <- SGGPfit(sg3in, Y=log(sg3in$Y), use_PCA=F, separateoutputparameterdimensions=F)
   saveRDS(sg3no, paste0(redtimefolder, "sg3no.rds"))
   
-  sg8ps <- SGGPfit(sg8in, Y=sg8in$Y, use_PCA=T, separateoutputparameterdimensions=T)
+  sg8ps <- SGGPfit(sg8in, Y=log(sg8in$Y), use_PCA=T, separateoutputparameterdimensions=T)
   saveRDS(sg8ps, paste0(redtimefolder, "sg8ps.rds"))
-  sg8po <- SGGPfit(sg8in, Y=sg8in$Y, use_PCA=T, separateoutputparameterdimensions=F)
+  sg8po <- SGGPfit(sg8in, Y=log(sg8in$Y), use_PCA=T, separateoutputparameterdimensions=F)
   saveRDS(sg8po, paste0(redtimefolder, "sg8po.rds"))
-  sg8ns <- SGGPfit(sg8in, Y=sg8in$Y, use_PCA=F, separateoutputparameterdimensions=T)
+  sg8ns <- SGGPfit(sg8in, Y=log(sg8in$Y), use_PCA=F, separateoutputparameterdimensions=T)
   saveRDS(sg8ns, paste0(redtimefolder, "sg8ns.rds"))
-  sg8no <- SGGPfit(sg8in, Y=sg8in$Y, use_PCA=F, separateoutputparameterdimensions=F)
+  sg8no <- SGGPfit(sg8in, Y=log(sg8in$Y), use_PCA=F, separateoutputparameterdimensions=F)
   saveRDS(sg8no, paste0(redtimefolder, "sg8no.rds"))
 } else { # Just read in if already fit and saved
   sg1ps <- readRDS(paste0(redtimefolder, "sg1ps.rds"))
@@ -76,6 +76,7 @@ xlhs8039_100 <- xlhs8039[1:100,]
 
 ylhs1000_100 <- lo[1:100,]
 xlhs1000_100 <- lx[1:100,]
+library(mlegp)
 if (F) {
   mod.mlegp <- mlegp::mlegp(X=xlhs1000_100, Z=ylhs1000_100)
   saveRDS(mod.mlegp, "../../../Desktop/redTimeData/modmlegp100_log.rds")
@@ -102,15 +103,15 @@ if (F) {
 
 # pca.p1 <- mlegp::predict.gp(mod.mlegp.pca[[1]], lx)
 # plot(lo[,1], pca.p1)
-lapply(mod.mlegp.pca, function(mod) {predict(mod, lx)})
-pmatpre <- sapply(1:mod.mlegp.pca$numGPs, function(i)predict(mod.mlegp.pca[[i]], lx))
-pmat <- mod.mlegp.pca$UD %*% t(pmatpre)
-mlegperrors <- as.matrix(lo) - t(pmat)
+# lapply(mod.mlegp.pca, function(mod) {predict(mod, lx)})
+# pmatpre <- sapply(1:mod.mlegp.pca$numGPs, function(i)predict(mod.mlegp.pca[[i]], lx))
+# pmat <- mod.mlegp.pca$UD %*% t(pmatpre)
+# mlegperrors <- as.matrix(lo) - t(pmat)
 
 # ytest <- lo[101:1000,]
 # xtest <- lx[101:1000,]
-xtest <- xlhs8039
-ytest <- ylhs8039
+xtest <- xlhs8039[1:1000,]
+ytest <- ylhs8039[1:1000,]
 # # sg1_d1 <- SGGPfit(SGGP = sg1, Y = sg1$Y[,1])
 # comp1D <- function(d) {
 #   pred.mlegp.pca <- mlegp::predict.gp(mod.mlegp.pca, xtest)
@@ -131,7 +132,7 @@ ytest <- ylhs8039
 
 # sapply(1:100, function(i) {forecast::BoxCox.lambda(lo[,i])})
 
-compmods <- function() {browser()
+compmods <- function() {#browser()
   # pred.mlegp.pca <- mlegp::predict.gp(mod.mlegp.pca, xtest)
   pred.mlegp.pca.pretrans <- lapply(1:mod.mlegp.pca$numGPs,
                                     function(i)predict(mod.mlegp.pca[[i]], xtest, se.fit=T))
@@ -147,26 +148,25 @@ compmods <- function() {browser()
     mean = do.call(cbind, lapply(pred.mlegp.raw, function(x) x$fit)),
     var = do.call(cbind, lapply(pred.mlegp.raw, function(x) x$se^2))
   )
+  
+  pred.mlegp.pca.300.pretrans <- lapply(1:mod.mlegp.pca.300$numGPs,
+                                    function(i)predict(mod.mlegp.pca.300[[i]], xtest, se.fit=T))
+  pred.mlegp.pca.300.pretrans.means <- do.call(cbind, lapply(pred.mlegp.pca.300.pretrans, function(x) x$fit))
+  pred.mlegp.pca.300.pretrans.ses <- do.call(cbind, lapply(pred.mlegp.pca.300.pretrans, function(x) x$se))
+  pred.mlegp.pca.300 <- list(
+    mean = t(mod.mlegp.pca.300$UD %*% t(pred.mlegp.pca.300.pretrans.means)),
+    var = (t(mod.mlegp.pca.300$UD %*% t(pred.mlegp.pca.300.pretrans.ses)))^2)
+  
   pred.mlegp.300.raw <- lapply(1:mod.mlegp$numGPs,
                            function(i)predict(mod.mlegp.300[[i]], xtest, se.fit=T))
   pred.mlegp.300 <- list(
     mean = do.call(cbind, lapply(pred.mlegp.300.raw, function(x) x$fit)),
     var = do.call(cbind, lapply(pred.mlegp.300.raw, function(x) x$se^2))
   )
-  # pred.sggp1 <- predict(sg1, xtest)
-  # pred.sggp1 <- predict(sg1, xtest)
-  # pred.sggp3 <- predict(sg3, xtest)
-  # pred.sggp8 <- predict(sg8, xtest)
-  # rmse.mlegp.pca <- sqrt(mean((pred.mlegp.pca - ytest)^2))
-  # rmse.mlegp <- sqrt(mean((pred.mlegp - ytest)^2))
-  # rmse.mlegp.300 <- sqrt(mean((pred.mlegp.300 - ytest)^2))
-  # rmse.sggp1 <- sqrt(mean((pred.sggp1$me - ytest)^2))
-  # rmse.sggp1 <- sqrt(mean((pred.sggp1$me - ytest)^2))
-  # rmse.sggp3 <- sqrt(mean((pred.sggp3$me - ytest)^2))
-  # rmse.sggp8 <- sqrt(mean((pred.sggp8$me - ytest)^2))
-  browser()
+  
   mlegp.pca.100.stats <- valstats(pred.mlegp.pca$mean, pred.mlegp.pca$var, ytest)
   mlegp.100.stats <- valstats(pred.mlegp$mean, pred.mlegp$var, ytest)
+  mlegp.pca.300.stats <- valstats(pred.mlegp.pca.300$mean, pred.mlegp.pca.300$var, ytest)
   mlegp.300.stats <- valstats(pred.mlegp.300$mean, pred.mlegp.300$var, ytest)
   sg1ps.stats <- SGGPvalstats(sg1ps, xtest, ytest, bydim=F)
   sg1po.stats <- SGGPvalstats(sg1po, xtest, ytest, bydim=F)
@@ -180,23 +180,44 @@ compmods <- function() {browser()
   sg8po.stats <- SGGPvalstats(sg8po, xtest, ytest, bydim=F)
   sg8ns.stats <- SGGPvalstats(sg8ns, xtest, ytest, bydim=F)
   sg8no.stats <- SGGPvalstats(sg8no, xtest, ytest, bydim=F)
-  # c('mlegp.pca'=rmse.mlegp.pca, 'mlegp'=rmse.mlegp,
-  #   'mlegp.300'=rmse.mlegp.300,
-    # 'sggp1_d1'=rmse.sggp1_1d, 
-    # 'sggp1'=rmse.sggp1, 
-    # 'sggp3'=rmse.sggp3, 'sggp8'=rmse.sggp8)
-  browser()
+  
+  
   rbind(
-    mlegp.pca.100.stats, mlegp.100.stats, mlegp.300.stats,
-    sg1ps.stats, sg1po.stats, sg1ns.stats, sg1no.stats,
-    sg3ps.stats, sg3po.stats, sg3ns.stats, sg3no.stats,
-    sg8ps.stats, sg8po.stats, sg8ns.stats, sg8no.stats
+    mlegp.pca.100=mlegp.pca.100.stats,
+    mlegp.100=mlegp.100.stats,
+    mlegp.pca.300=mlegp.pca.300.stats,
+    mlegp.300=mlegp.300.stats,
+    sg1ps=sg1ps.stats,
+    sg1po=sg1po.stats,
+    sg1ns=sg1ns.stats,
+    sg1no=sg1no.stats,
+    sg3ps=sg3ps.stats,
+    sg3po=sg3po.stats,
+    sg3ns=sg3ns.stats,
+    sg3no=sg3no.stats,
+    sg8ps=sg8ps.stats,
+    sg8po=sg8po.stats,
+    sg8ns=sg8ns.stats,
+    sg8no=sg8no.stats
   )
 }
-compmods()
+compmodout <- compmods()
 
-# # Compare mlegp and SGGP
-# mlegp.pca     mlegp mlegp.300     sggp1     sggp3     sggp8 
-# 4999.9849  641.2593  144.7101 2108.9625  126.4526  106.1754 
-
-# ^ PCA was done wrong, didn't use t(), was 100x100 so it didn't give error
+# Compmods on 101 test points
+#                   RMSE        score    CRPscore  coverage
+# mlegp.pca.100 0.0034514503  -8.383659 0.001930322 0.7356436
+# mlegp.100     0.0023564587        NaN         NaN 0.6925743
+# mlegp.pca.300 0.0026704462        NaN         NaN 0.3819802
+# mlegp.300     0.0007643889        NaN         NaN 0.5571287
+# sg1ps         0.0115567585        NaN         NaN        NA
+# sg1po         0.2333113866  -1.755597 0.135213044 0.9997030
+# sg1ns         0.0111944670  -1.678100 0.146692876 1.0000000
+# sg1no         0.0113708078  -5.194722 0.018646834 1.0000000
+# sg3ps         0.0091577089        NaN         NaN        NA
+# sg3po         0.0064022953  -6.951926 0.007851538 1.0000000
+# sg3ns         0.0089211176  -2.405820 0.091034747 0.9997030
+# sg3no         0.0050380924  -8.267539 0.004245088 1.0000000
+# sg8ps         0.0024128541        NaN         NaN        NA
+# sg8po         0.0033162834  -8.231127 0.004110924 1.0000000
+# sg8ns         0.0029106681 -10.864965 0.001490032 0.9880198
+# sg8no         0.0031820504 -10.700086 0.001578966 0.9898020
