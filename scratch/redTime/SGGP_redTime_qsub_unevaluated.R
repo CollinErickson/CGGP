@@ -24,8 +24,8 @@ for (i in 1:nrow(SG$design_unevaluated)) {
                 )
   
   # qsub .sh files
-  qsub_sh_file(fileID=paste0(groupID_short, "_", SG$ss, "_", i), 
-               holdID=paste0(groupID_short, "_", SG$ss, "_", i - number_cores),
+  qsub_sh_file(fileID=paste0("_", SG$ss, "_", i), 
+               holdID=paste0("_", SG$ss, "_", i - number_cores),
                shpathbase=shpathbase)
 }
 
