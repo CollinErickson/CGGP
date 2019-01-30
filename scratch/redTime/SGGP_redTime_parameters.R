@@ -40,10 +40,10 @@ dir.create(paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/outp
 
 
 
-parampathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/param_files/params_", groupID)
+parampathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/param_files/params_") #, groupID)
 shpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/sh_files/sh_") #, groupID)
 
-outpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/output_files/out_", groupID)
+outpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/output_files/out_")# , groupID)
 
 SGGP_after_fit_RDS_path    <- paste0(outpathbase, "_SGGP_after_fit.rds")
 SGGP_save_after_fit_RDS_path    <- paste0(outpathbase, "_SGGP") # For saving intermediate objects
