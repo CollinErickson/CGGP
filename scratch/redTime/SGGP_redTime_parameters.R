@@ -4,7 +4,7 @@ groupID <- "redTimeTest2"
 groupID_short <- "T2"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
-number_cores <- 40
+number_cores <- 38
 
 # Input dimensions
 d <- 9
@@ -16,7 +16,7 @@ N0 <- 80
 corr <- "CauchySQT"
 
 # Number of points to add in each batch
-batchsize <- 80
+batchsize <- 76
 
 # Number of points after which to stop (will go up to batchsize-1 over)
 Nfinal <- 8000
