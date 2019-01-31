@@ -1,7 +1,7 @@
 # Parameters for the SGGP/redTime run
 
-groupID <- "redTimeTest2"
-groupID_short <- "T2"
+groupID <- "redTimeTest3"
+groupID_short <- "T3"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
 number_cores <- 38
@@ -24,7 +24,13 @@ Nfinal <- 8000
 # Grid size to use. This option wasn't included in Test1
 grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
 
-# Should log of redTime output be used? Test1 didn't, Test2 will
+# use_PCA, 100 outputs, PCA can reduce to 37 I think.
+use_PCA <- TRUE
+
+# Much slower to fit parameters separately
+separateoutputparameterdimensions <- TRUE
+
+# Should log of redTime output be used? Test1 didn't, Test2 and on will
 use_log_redTime <- TRUE
 
 # When should the object be saved
@@ -45,6 +51,6 @@ shpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/s
 
 outpathbase <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/", groupID, "/output_files/out_")# , groupID)
 
-SGGP_after_fit_RDS_path    <- paste0(outpathbase, "_SGGP_after_fit.rds")
-SGGP_save_after_fit_RDS_path    <- paste0(outpathbase, "_SGGP") # For saving intermediate objects
-SGGP_after_append_RDS_path <- paste0(outpathbase, "_SGGP_after_append.rds")
+SGGP_after_fit_RDS_path    <- paste0(outpathbase, groupID_short, "_SGGP_after_fit.rds")
+SGGP_save_after_fit_RDS_path    <- paste0(outpathbase, groupID_short, "_SGGP") # For saving intermediate objects
+SGGP_after_append_RDS_path <- paste0(outpathbase, groupID_short, "_SGGP_after_append.rds")

@@ -57,6 +57,12 @@ if (F) {
   sg8no <- readRDS(paste0(redtimefolder, "sg8no.rds"))
 }
 
+# SGGP from Test2, was run on log scale. Used PCA and single theta
+sgT2_227 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-227.rds"))
+sgT2_455 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-455.rds"))
+sgT2_1063 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-1063.rds"))
+
+
 # Ylog <- log(sg8$Y, 10)
 # sg8log <- SGGPfit(sg8, Y=Ylog)
 # lo.log <- log(lo, 10)
@@ -180,6 +186,9 @@ sg8ps.stats <- SGGPvalstats(sg8ps, xtest, ytest, bydim=F)
 sg8po.stats <- SGGPvalstats(sg8po, xtest, ytest, bydim=F)
 sg8ns.stats <- SGGPvalstats(sg8ns, xtest, ytest, bydim=F)
 sg8no.stats <- SGGPvalstats(sg8no, xtest, ytest, bydim=F)
+sgT2_227.stats <- SGGPvalstats(sgT2_227, xtest, ytest, bydim=F)
+sgT2_455.stats <- SGGPvalstats(sgT2_455, xtest, ytest, bydim=F)
+sgT2_1063.stats <- SGGPvalstats(sgT2_1063, xtest, ytest, bydim=F)
 
 
 rbind(
@@ -241,3 +250,6 @@ rbind(
 # sg8po         0.004603387  -8.071398 0.004567326  0.99896
 # sg8ns         0.004269050 -10.467252 0.001873210  0.96632
 # sg8no         0.004635364 -10.252414 0.001998025  0.96958
+# sgT2_227      0.043509    -4.712862  0.02779118        1
+# SGT2_455      0.01959066  -5.633467  0.01592225        1
+# SGT2_1063     0.01213821  -6.330312  0.01097829        1
