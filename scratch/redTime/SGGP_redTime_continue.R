@@ -64,7 +64,7 @@ rownames(Ynew) <- NULL
 if (use_log_redTime) {
   Ynew <- log(Ynew)
 }
-cat("Extracted all values\n", Ynew, "\n")
+cat("Extracted all values\n") #, Ynew, "\n")
 cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew), "\n")
 
 # Update params with new data

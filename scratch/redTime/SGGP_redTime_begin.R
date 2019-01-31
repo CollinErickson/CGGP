@@ -1,6 +1,11 @@
 # This file is run first to create the SGGP object
 # that will be used for the rest of the simulation.
 
+# Run this file on Crunch command line. It begins there,
+# not with a submission. Run:
+# Rscript SGGP_redTime_begin.R
+# It will begin it and submit the necessary jobs after.
+
 # Begin SGGP redTime experiment
 cat("Starting SGGP_redTime_begin.R\n")
 

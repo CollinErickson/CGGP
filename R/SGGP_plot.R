@@ -596,3 +596,45 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
   }
   p
 }
+
+
+#' Plot something similar to a semivariogram
+#' 
+#' It's not actually a variogram or semivariogram.
+#' It shows how the correlation function falls off as distance increases.
+#'
+#' @param SGGP SGGP object
+#' @param facet How should the plots be faceted? If 1, in a row,
+#' if 2, in a column, if 3, wrapped around.
+#'
+#' @return ggplot2 object
+#' @export
+#'
+#' @examples 
+#' SG <- SGGPcreate(d=3, batchsize=100)
+#' f <- function(x){x[1]^1.2+x[3]^.4*sin(2*pi*x[2]^2*3) + .1*exp(3*x[3])}
+#' y <- apply(SG$design, 1, f)
+#' SG <- SGGPfit(SG, Y=y)
+#' SGGPvariogram(SG)
+SGGPvariogram <- function(SGGP, facet=1) {
+  vdf <- NULL
+  xl <- seq(0,1,l=101)
+  for (di in 1:SGGP$d) {
+    tmp <- c(SGGP$CorrMat(c(0), xl, SGGP$thetaMAP[1:SGGP$numpara + (di-1)*SGGP$numpara]))
+    tmpdf <- data.frame(x=xl, y=tmp, d=di)
+    vdf <- if (is.null(vdf)) tmpdf else rbind(vdf, tmpdf)
+  }
+  p <- ggplot2::ggplot(vdf, ggplot2::aes_string(x='x', y='y')) + ggplot2::geom_line() + ggplot2::ylim(c(0,1))
+  # p <- p + facet_grid(d ~ .)
+  if (facet==1) {
+    p <- p + ggplot2::facet_grid(. ~ d)
+    p <- p + ggplot2::scale_x_continuous(breaks=c(0,1))
+  } else if (facet==2) {
+    p <- p + ggplot2::facet_grid(d ~ .)
+  } else if (facet==3) {
+    p <- p + ggplot2::facet_grid(d ~ .)
+  } else {
+    stop("facet is not 1, 2, or 3")
+  }
+  p
+}

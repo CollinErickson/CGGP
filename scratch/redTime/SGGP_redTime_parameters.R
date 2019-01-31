@@ -25,7 +25,7 @@ Nfinal <- 8000
 grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
 
 # use_PCA, 100 outputs, PCA can reduce to 37 I think.
-use_PCA <- TRUE
+use_PCA <- FALSE
 
 # Much slower to fit parameters separately
 separateoutputparameterdimensions <- TRUE
