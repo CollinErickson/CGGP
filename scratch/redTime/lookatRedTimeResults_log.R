@@ -61,6 +61,10 @@ if (F) {
 sgT2_227 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-227.rds"))
 sgT2_455 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-455.rds"))
 sgT2_1063 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-1063.rds"))
+sgT3_227 <- readRDS(paste0(redtimefolder, "out_T3_SGGP-227.rds"))
+sgT3_455 <- readRDS(paste0(redtimefolder, "out_T3_SGGP-455.rds"))
+sgT3_1061 <- readRDS(paste0(redtimefolder, "out_T3_SGGP-1061.rds"))
+sgT3_1669 <- readRDS(paste0(redtimefolder, "out_T3_SGGP-1669.rds"))
 
 
 # Ylog <- log(sg8$Y, 10)
@@ -189,6 +193,10 @@ sg8no.stats <- SGGPvalstats(sg8no, xtest, ytest, bydim=F)
 sgT2_227.stats <- SGGPvalstats(sgT2_227, xtest, ytest, bydim=F)
 sgT2_455.stats <- SGGPvalstats(sgT2_455, xtest, ytest, bydim=F)
 sgT2_1063.stats <- SGGPvalstats(sgT2_1063, xtest, ytest, bydim=F)
+sgT3_227.stats <- SGGPvalstats(sgT3_227, xtest, ytest, bydim=F)
+sgT3_455.stats <- SGGPvalstats(sgT3_455, xtest, ytest, bydim=F)
+sgT3_1061.stats <- SGGPvalstats(sgT3_1061, xtest, ytest, bydim=F)
+sgT3_1669.stats <- SGGPvalstats(sgT3_1669, xtest, ytest, bydim=F)
 
 
 rbind(
@@ -233,7 +241,7 @@ rbind(
 
 # Compmods on 1000 test points
 
-# RMSE      score    CRPscore coverage
+#               RMSE         score     CRPscore     coverage
 # mlegp.pca.100 0.006266007  -8.395314 0.003103312  0.75365
 # mlegp.100     0.004634059        NaN         NaN  0.71058
 # mlegp.pca.300 0.003455452        NaN         NaN  0.39905
@@ -253,3 +261,7 @@ rbind(
 # sgT2_227      0.043509    -4.712862  0.02779118        1
 # SGT2_455      0.01959066  -5.633467  0.01592225        1
 # SGT2_1063     0.01213821  -6.330312  0.01097829        1
+# SGT3_227      0.009422946 -8.570286  0.004714287  0.97654 0.9999836 0.01404303
+# SGT3_455      0.004432364 -9.997243  0.002174571  0.99006 0.9999963 0.006551142
+# SGT3_1061     0.002942663 -10.90342  0.001363505  0.98783 0.9999984 0.004319948
+# SGT3_1669     0.001346887 -11.25519 0.0009854101  0.99982 0.9999997 0.002063127
