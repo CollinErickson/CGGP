@@ -56,14 +56,14 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
       MSE_de[levellcv2] = 0
       for (levellcv in 1:dim(valsinds)[2]) {
         if (valsinds[levellcv2, levellcv] > 1.5) {
-          MSE_de[levellcv2] = MSE_de[levellcv2] + log(-MSE_MAP[levellcv, valsinds[levellcv2, levellcv]] + 
-                                                        MSE_MAP[levellcv, valsinds[levellcv2, levellcv] - 1])
+          MSE_de[levellcv2] = MSE_de[levellcv2] + max(log(-MSE_MAP[levellcv, valsinds[levellcv2, levellcv]] + 
+                                                        MSE_MAP[levellcv, valsinds[levellcv2, levellcv] - 1]),-10)
           
         } else {
           # This is when no ancestor block, 1 comes from when there is no data. 
           # 1 is correlation times integrated value over range.
           # This depends on correlation function.
-          MSE_de[levellcv2] = MSE_de[levellcv2] + log(-MSE_MAP[levellcv, valsinds[levellcv2, levellcv]] + 1)
+          MSE_de[levellcv2] = MSE_de[levellcv2] + max(log(-MSE_MAP[levellcv, valsinds[levellcv2, levellcv]] + 1),-10)
           
         }
       }
@@ -73,10 +73,10 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
     
     for (levellcv in 1:length(valsinds)) {
       if (valsinds[levellcv] > 1.5) {
-        MSE_de = MSE_de + log(-MSE_MAP[levellcv, valsinds[levellcv]] + MSE_MAP[levellcv, valsinds[levellcv] -1])
+        MSE_de = MSE_de + max(log(-MSE_MAP[levellcv, valsinds[levellcv]] + MSE_MAP[levellcv, valsinds[levellcv] -1]),-10)
         
       } else {
-        MSE_de = MSE_de + log(-MSE_MAP[levellcv, valsinds[levellcv]] + 1)
+        MSE_de = MSE_de + max(log(-MSE_MAP[levellcv, valsinds[levellcv]] + 1),-10)
         
       }
     }
@@ -84,7 +84,7 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
   
   MSE_de = exp(MSE_de)
   
-  MSE_de
+  return(MSE_de)
 }
 
 
