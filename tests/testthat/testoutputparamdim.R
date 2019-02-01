@@ -125,10 +125,12 @@ test_that("3. MV output, PCA, separate opd", {
   
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
-  ysuppred <- SGGPpred(SG, xsup)$me
-  expect_equal(ysuppred[,1], ysup1, eps.sup)
-  expect_equal(ysuppred[,2], ysup2, eps.sup)
-  expect_equal(ysuppred[,3], ysup3, eps.sup)
+  ysuppred <- SGGPpred(SG, xsup)
+  expect_equal(ysuppred$mean[,1], ysup1, eps.sup)
+  expect_equal(ysuppred$mean[,2], ysup2, eps.sup)
+  expect_equal(ysuppred$mean[,3], ysup3, eps.sup)
+  expect_true(all(!is.na(ysuppred$var)))
+  # expect_true(all((ysuppred$var>0)))
 })
 
 

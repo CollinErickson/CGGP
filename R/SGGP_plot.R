@@ -177,7 +177,8 @@ SGGPblockplot <- function(SGGP, singleplot=TRUE) {
 #' @param predvar Predicted variance
 #' @param Yval Y validation data
 #' @param plot_with Should the plot be made with "base" or "ggplot2"?
-#' @param d If output is multivariate, which column to use
+#' @param d If output is multivariate, which column to use. Will do all if
+#' left as NULL.
 #'
 #' @return None, makes a plot
 #' @export
@@ -198,7 +199,8 @@ SGGPblockplot <- function(SGGP, singleplot=TRUE) {
 valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
   
   if (!is.null(d)) {
-    ypred <- list(mean=predmean[,d], var=predvar[,d])
+    predmean <- predmean[,d]
+    predvar  <- predvar[,d]
     Yval <- Yval[,d]
   }
   errmax <- max(sqrt(predvar), abs(predmean - Yval))
@@ -249,7 +251,8 @@ valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
 #' @param Xval X validation data
 #' @param Yval Y validation data
 #' @param plot_with Should the plot be made with "base" or "ggplot2"?
-#' @param d If output is multivariate, which column to use
+#' @param d If output is multivariate, which column to use. Will do all if
+#' left as NULL.
 #'
 #' @return None, makes a plot
 #' @export
@@ -265,7 +268,7 @@ valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
 #' SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
 SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
   ypred <- SGGPpred(SGGP=SGGP, xp=Xval)
-  valplot(ypred$mean, ypred$var, Yval, plot_with=plot_with)
+  valplot(ypred$mean, ypred$var, Yval, plot_with=plot_with, d=d)
 }
 
 

@@ -69,9 +69,12 @@ test_that("Plots work", {
   expect_equal(nrow(SGGPvalstats(SG2, Xval2, Yval2, bydim=FALSE)), 1)
   expect_error(SGGPvalstats(SG2, Xval2, Yval2[,1]))
   # Val plot
-  pval <- SGGPvalplot(SGGP=SG2, Xval=Xval2, Yval=Yval2, d=2)
+  pval <- SGGPvalplot(SGGP=SG2, Xval=Xval2, Yval=Yval2)
   expect_is(pval, "gg")
   expect_is(pval, "ggplot")
+  pval2 <- SGGPvalplot(SGGP=SG2, Xval=Xval2, Yval=Yval2, d=2)
+  expect_is(pval2, "gg")
+  expect_is(pval2, "ggplot")
   
   # Corr plot
   expect_error(p <- SGGPcorrplot(), NA)
@@ -98,4 +101,17 @@ test_that("Plots work", {
   # Error if proj is not 1 or d dim
   expect_error(SGGPprojectionplot(SG, proj=c(1,1)))
   expect_error(SGGPprojectionplot(SG, proj=c(1,1,1,1)))
+  rm(pp1, pp2)
+  
+  
+  expect_error(vario <- SGGPvariogram(SG2, facet = 1), NA)
+  expect_is(vario, "ggplot")
+  rm(vario)
+  expect_error(vario <- SGGPvariogram(SG2, facet = 2), NA)
+  expect_is(vario, "ggplot")
+  rm(vario)
+  expect_error(vario <- SGGPvariogram(SG2, facet = 3), NA)
+  expect_is(vario, "ggplot")
+  rm(vario)
+  expect_error(SGGPvariogram(SG2, facet = "not valid facet"))
 })

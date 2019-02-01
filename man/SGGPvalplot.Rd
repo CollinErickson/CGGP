@@ -15,7 +15,8 @@ SGGPvalplot(SGGP, Xval, Yval, plot_with = "ggplot2", d = NULL)
 
 \item{plot_with}{Should the plot be made with "base" or "ggplot2"?}
 
-\item{d}{If output is multivariate, which column to use}
+\item{d}{If output is multivariate, which column to use. Will do all if
+left as NULL.}
 }
 \value{
 None, makes a plot
