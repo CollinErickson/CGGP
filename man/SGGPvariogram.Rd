@@ -4,13 +4,15 @@
 \alias{SGGPvariogram}
 \title{Plot something similar to a semivariogram}
 \usage{
-SGGPvariogram(SGGP, facet = 1)
+SGGPvariogram(SGGP, facet = 1, outdims = NULL)
 }
 \arguments{
 \item{SGGP}{SGGP object}
 
 \item{facet}{How should the plots be faceted? If 1, in a row,
 if 2, in a column, if 3, wrapped around.}
+
+\item{outdims}{Which output dimensions should be shown.}
 }
 \value{
 ggplot2 object

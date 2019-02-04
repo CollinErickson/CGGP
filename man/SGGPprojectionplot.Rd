@@ -4,12 +4,15 @@
 \alias{SGGPprojectionplot}
 \title{SGGP projection plot}
 \usage{
-SGGPprojectionplot(SGGP, proj = 0.5, color = "pink", outdims)
+SGGPprojectionplot(SGGP, proj = 0.5, np = 300, color = "pink",
+  outdims)
 }
 \arguments{
 \item{SGGP}{SGGP object}
 
 \item{proj}{Point to project onto}
+
+\item{np}{Number of points to use along each dimension}
 
 \item{color}{Color to make error region}
 

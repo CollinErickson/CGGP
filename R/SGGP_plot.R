@@ -517,6 +517,7 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #'
 #' @param SGGP  SGGP object
 #' @param proj Point to project onto
+#' @param np Number of points to use along each dimension
 #' @param color Color to make error region
 #' @param outdims If multiple outputs, which of them should be plotted?
 #'
@@ -535,7 +536,7 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #' SGGPprojectionplot(s1, 0.)
 #' SGGPprojectionplot(s1, s1$design[nrow(s1$design),])
 #' }
-SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
+SGGPprojectionplot <- function(SGGP, proj=.5, np=300, color="pink", outdims) {
   if (!is.null(SGGP$design_unevaluated)) {stop("SGGP must be updated with all data")}
   if (length(proj) == 1) {proj <- rep(proj, SGGP$d)}
   if (length(proj) != SGGP$d) {stop("proj should be of length SGGP$d or 1")}
@@ -553,11 +554,15 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
   }
   
   for (d5 in 1:d) {
-    np <- 500
     xl <- seq(0,1,l=np)
     m <- matrix(proj,np,d, byrow=T)
     m[,d5] <- xl
-    p5 <- SGGPpred(SGGP, m)
+    # Won't work if it used PCA or shared parameters
+    
+    p5 <- try(SGGPpred(SGGP, m, outdims=outdims), silent = TRUE)
+    if (inherits(p5, "try-error")) {
+      p5 <- SGGPpred(SGGP, m)
+    }
     # p5 %>% str
     poly <- cbind(c(rep(xl,each=2))[-c(1,2*np)])
     # If multiple outputs, get all of them
@@ -619,6 +624,7 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
 #' @param SGGP SGGP object
 #' @param facet How should the plots be faceted? If 1, in a row,
 #' if 2, in a column, if 3, wrapped around.
+#' @param outdims Which output dimensions should be shown.
 #'
 #' @return ggplot2 object
 #' @export
@@ -629,23 +635,32 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
 #' y <- apply(SG$design, 1, f)
 #' SG <- SGGPfit(SG, Y=y)
 #' SGGPvariogram(SG)
-SGGPvariogram <- function(SGGP, facet=1) {
+SGGPvariogram <- function(SGGP, facet=1, outdims=NULL) {
   vdf <- NULL
   xl <- seq(0,1,l=101)
+  if (is.null(outdims)) {
+    outdims <- if (is.matrix(SGGP$Y)) {1:ncol(SGGP$Y)} else {1}
+  }
   for (di in 1:SGGP$d) {
-    tmp <- c(SGGP$CorrMat(c(0), xl, SGGP$thetaMAP[1:SGGP$numpara + (di-1)*SGGP$numpara]))
-    tmpdf <- data.frame(x=xl, y=tmp, d=di)
-    vdf <- if (is.null(vdf)) tmpdf else rbind(vdf, tmpdf)
+    for (outdim in outdims) {
+      theta.thisiter <- if (is.matrix(SGGP$thetaMAP)) {SGGP$thetaMAP[1:SGGP$numpara + (di-1)*SGGP$numpara, outdim]
+      } else {
+        SGGP$thetaMAP[1:SGGP$numpara + (di-1)*SGGP$numpara]
+      }
+      tmp <- c(SGGP$CorrMat(c(0), xl, theta.thisiter))
+      tmpdf <- data.frame(x=xl, y=tmp, d=paste0("X",di), outdim=paste0("Y", outdim))
+      vdf <- if (is.null(vdf)) tmpdf else rbind(vdf, tmpdf)
+    }
   }
   p <- ggplot2::ggplot(vdf, ggplot2::aes_string(x='x', y='y')) + ggplot2::geom_line() + ggplot2::ylim(c(0,1))
   # p <- p + facet_grid(d ~ .)
   if (facet==1) {
-    p <- p + ggplot2::facet_grid(. ~ d)
+    p <- p + ggplot2::facet_grid(outdim ~ d)
     p <- p + ggplot2::scale_x_continuous(breaks=c(0,1))
   } else if (facet==2) {
-    p <- p + ggplot2::facet_grid(d ~ .)
+    p <- p + ggplot2::facet_grid(d ~ outdim)
   } else if (facet==3) {
-    p <- p + ggplot2::facet_grid(d ~ .)
+    p <- p + ggplot2::facet_wrap(d ~ outdim)
   } else {
     stop("facet is not 1, 2, or 3")
   }

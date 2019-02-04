@@ -130,7 +130,7 @@ test_that("3. MV output, PCA, separate opd", {
   expect_equal(ysuppred$mean[,2], ysup2, eps.sup)
   expect_equal(ysuppred$mean[,3], ysup3, eps.sup)
   expect_true(all(!is.na(ysuppred$var)))
-  # expect_true(all((ysuppred$var>0)))
+  expect_true(all((ysuppred$var>0)))
 })
 
 

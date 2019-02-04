@@ -266,6 +266,8 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
   } else {
     GP <- list(mean=mean, var=var)
   }
+  # Check for negative variances, set them all to be a tiny number
+  GP$var <- pmax(GP$var, .Machine$double.eps)
   return(GP)
 }
 
