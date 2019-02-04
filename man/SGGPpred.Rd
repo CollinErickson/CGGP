@@ -7,7 +7,8 @@
 \usage{
 \method{predict}{SGGP}(object, xp, ...)
 
-SGGPpred(SGGP, xp, fullBayesian = FALSE, theta = NULL)
+SGGPpred(SGGP, xp, fullBayesian = FALSE, theta = NULL,
+  outdims = NULL)
 }
 \arguments{
 \item{object}{SGGP object}
@@ -23,6 +24,10 @@ Averages over theta samples instead of using thetaMAP.}
 
 \item{theta}{Leave as NULL unless you want to use a value other than thetaMAP.
 Much slower.}
+
+\item{outdims}{If multiple outputs fit without PCA and with separate
+parameters, you can predict just for certain dimensions to speed it up.
+Will leave other columns in the output, but they will be wrong.}
 }
 \value{
 Predicted mean values

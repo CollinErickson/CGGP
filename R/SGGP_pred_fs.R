@@ -9,6 +9,9 @@
 #' Averages over theta samples instead of using thetaMAP.
 #' @param theta Leave as NULL unless you want to use a value other than thetaMAP.
 #' Much slower.
+#' @param outdims If multiple outputs fit without PCA and with separate
+#' parameters, you can predict just for certain dimensions to speed it up.
+#' Will leave other columns in the output, but they will be wrong.
 #'
 #' @return Predicted mean values
 #' @export
@@ -19,7 +22,7 @@
 #' SG <- SGGPfit(SG, Y=y)
 #' SGGPpred(SG, matrix(c(.1,.1,.1),1,3))
 #' cbind(SGGPpred(SG, SG$design)$mean, y) # Should be near equal
-SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL) {
+SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
   if (!inherits(SGGP, "SGGP")) {
     stop("First argument to SGGP must be an SGGP object")
   }
@@ -76,7 +79,12 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL) {
     # varall <- matrix(NaN, nrow(xp), ncol=ncol(SGGP$Y))
     tempvarall <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y))
   }
-  for (opdlcv in 1:nnn) {
+  
+  if (!is.null(outdims) && (nnn==1 || any(abs(SGGP$M-diag(1,nrow(SGGP$M),ncol(SGGP$M))) > 1e-10))) {
+    stop("outdims can only be given when multiple outputs, no PCA, and separate correlation parameters")
+  }
+  opd_values <- if (is.null(outdims)) {1:nnn} else {outdims}
+  for (opdlcv in opd_values) {# 1:nnn) {
     thetaMAP.thisloop <- if (nnn==1) thetaMAP else thetaMAP[, opdlcv]
     if (!recalculate_pw) { # use already calculated
       pw.thisloop <- if (nnn==1) SGGP$pw else SGGP$pw[,opdlcv]
