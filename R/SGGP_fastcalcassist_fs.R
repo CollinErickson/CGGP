@@ -213,6 +213,7 @@ SGGP_internal_calcsigma2 <- function(SGGP, y, theta, return_lS=FALSE) {
       B = (SGGP$w[blocklcv]/length(y))*B0
       rcpp_kronDBS(unlist(cholS[gg+SGGP$uo[blocklcv,]]),B, SGGP$gridsizest[blocklcv,])
       sigma2 = sigma2 + t(B0)%*%B
+      if (any(is.na(sigma2))) {warning("sigma2 is NA in SGGP_internal_calcsigma2")}
       }
     }
     out <- list(sigma2=sigma2)

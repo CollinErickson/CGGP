@@ -300,17 +300,17 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 valstats <- function(predmean, predvar, Yval, bydim=TRUE) {
   if ((is.matrix(predmean) && 
        (any(dim(predmean)!=dim(predvar)) || any(dim(predmean)!=dim(Yval)))
-       ) ||
-      (length(predmean)!=length(predvar) || length(predmean)!=length(Yval))
-      ) {
+  ) ||
+  (length(predmean)!=length(predvar) || length(predmean)!=length(Yval))
+  ) {
     stop("Shape of predmean, predvar, and Yval must match in valstats")
   }
   if (bydim && is.matrix(predmean) && ncol(predmean) > 1) {
     return(do.call("rbind",
-            lapply(1:ncol(predmean),
-                   function(i) {
-                     valstats(predmean=predmean[,i], predvar=predvar[,i], Yval=Yval[,i])
-                   })))
+                   lapply(1:ncol(predmean),
+                          function(i) {
+                            valstats(predmean=predmean[,i], predvar=predvar[,i], Yval=Yval[,i])
+                          })))
   }
   
   m <- predmean
@@ -325,7 +325,7 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE) {
   R2 <- cor(c(predmean), c(Yval))
   # Return df with values
   out <- data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage,
-             R2=R2)
+                    R2=R2)
   
   # Add normalized RMSE, dividing MSE in each dimension by variance
   if (is.matrix(predmean) && ncol(predmean) > 1) {
@@ -405,6 +405,7 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
 #' @param numlines Number of sample paths to draw
 #' @param plot_with Should "base" or "ggplot2" be used to make the plot?
 #' @param zero Should the sample paths start at y=0?
+#' @param outdims Which output dimensions should be used?
 #'
 #' @return Plot
 #' @export
@@ -423,6 +424,7 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
 #' }
 SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
                          numlines=20, plot_with="ggplot",
+                         outdims=NULL,
                          zero=TRUE) {
   # Points along x axis
   n <- 100
@@ -436,52 +438,57 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
   nparam <- Corr(return_numpara=TRUE)
   if (is.null(theta)) {theta <- rep(0, nparam)}
   
-  ncorr <- length(theta) / nparam
-  for (i in 1:ncorr) {
-    # Can change px.mean and px.cov to be conditional on other data
-    px.mean <- rep(0,n)
-    px.cov <- Corr(xl, xl, theta=theta[1:nparam + nparam*(i-1)])
-    # Generate sample paths
-    samplepaths <- newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov)
-    # samplepaths <- try(newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov))
-    # if (inherits(samplepaths, "try-error")) {
-    #   message("Adding nugget to cool1Dplot")
-    #   nug <- 1e-6
-    #   Sigma.try2 <- try(
-    #     newy <- MASS::mvrnorm(n=numlines, mu=px.mean,
-    #                           Sigma=px.cov + diag(nug, nrow(px.cov)))
-    #   )
-    #   if (inherits(Sigma.try2, "try-error")) {
-    #     stop("Can't do cool1Dplot")
-    #   }
-    # }
-    
-    # Set so all start at 0.
-    if (zero) {
-      samplepathsplot <- sweep(samplepaths, 1, samplepaths[,1])
-    }
-    
-    if (plot_with == "base") {
-      # Put plots in column if more than one
-      if (i==1 && ncorr>1) {
-        orig.mfrow <- par()$mfrow
-        par(mfrow=c(ncorr, 1))
+  thetadims <- if (is.matrix(theta)) {ncol(theta)} else {1}
+  if (is.null(outdims)) {
+    outdims <- 1:thetadims
+  } else {
+    theta <- theta[,outdims, drop=FALSE]
+  }
+  numoutdims <- length(outdims)
+  
+  thetadims <- if (is.matrix(theta)) {ncol(theta)} else {1}
+  
+  # ncorr <- length(theta) / nparam
+  numindims <- length(theta) / nparam / numoutdims
+  indims <- 1:numindims
+  ggdf <- NULL
+  for (indim in indims) {
+    for (outdim in outdims) {
+      theta.thisloop <- if (thetadims>1) {theta[1:nparam + nparam*(indim-1), outdim]} 
+      else {theta[1:nparam + nparam*(indim-1)]}
+      # Can change px.mean and px.cov to be conditional on other data
+      px.mean <- rep(0,n)
+      px.cov <- Corr(xl, xl, theta=theta.thisloop)
+      # Generate sample paths
+      samplepaths <- newy <- MASS::mvrnorm(n=numlines, mu=px.mean, Sigma=px.cov)
+      
+      # Set so all start at 0.
+      if (zero) {
+        samplepathsplot <- sweep(samplepaths, 1, samplepaths[,1])
       }
-      plot(xl, samplepathsplot[1,], type='l',
-           ylim=c(min(samplepathsplot), max(samplepathsplot)),
-           ylab="Sample path", xlab="x")
-      for (i in 2:numlines) {
-        points(xl, samplepathsplot[i,], type='l', col=i)
+      
+      if (plot_with == "base") {
+        # Put plots in column if more than one
+        if (indim==1 && outdim==1 && numindims+numoutdims>2) {
+          orig.mfrow <- par()$mfrow
+          par(mfrow=c(numindims, numoutdims))
+        }
+        plot(xl, samplepathsplot[1,], type='l',
+             ylim=c(min(samplepathsplot), max(samplepathsplot)),
+             ylab="Sample path", xlab="x")
+        for (numline in 2:numlines) {
+          points(xl, samplepathsplot[numline,], type='l', col=numline)
+        }
+      } else { # Use ggplot2
+        # ggplot2::ggplot(cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
+        #                       x=rep(xl, numlines)), 
+        #                 ggplot2::aes_string(x="x", y="value", color="variable")) + 
+        #   ggplot2::geom_line() + ggplot2::theme(legend.position="none")
+        newdf <- cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
+                       x=rep(xl, numlines), d=paste0("X",indim), outdim=paste0("Y",outdim))
+        if (is.null(ggdf)) {ggdf <- newdf}
+        else {ggdf <- rbind(ggdf, newdf)}
       }
-    } else { # Use ggplot2
-      # ggplot2::ggplot(cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
-      #                       x=rep(xl, numlines)), 
-      #                 ggplot2::aes_string(x="x", y="value", color="variable")) + 
-      #   ggplot2::geom_line() + ggplot2::theme(legend.position="none")
-      newdf <- cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
-                     x=rep(xl, numlines), d=i)
-      if (i==1) {ggdf <- newdf}
-      else {ggdf <- rbind(ggdf, newdf)}
     }
   }
   if (plot_with == "base") {
@@ -492,8 +499,10 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
     p <- ggplot2::ggplot(ggdf, 
                          ggplot2::aes_string(x="x", y="value", color="variable")) + 
       ggplot2::geom_line() + ggplot2::theme(legend.position="none")
-    if (i > 1) {
+    if (numindims > 1 && numoutdims==1) {
       p <- p + ggplot2::facet_grid(d ~ .)
+    } else if (numindims > 1 && numoutdims > 1) {
+      p <- p + ggplot2::facet_grid(d ~ outdim)
     }
     p
   }
@@ -574,7 +583,7 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
     pointdf <- NULL
     if (length(y2.5) > 0) {
       for (outdim in outdims) {
-      pointdf <- rbind(pointdf, data.frame(x=x2.5[,d5], y=y2.5[,outdim], d=d5, outdim=outdim))
+        pointdf <- rbind(pointdf, data.frame(x=x2.5[,d5], y=y2.5[,outdim], d=d5, outdim=outdim))
       }
     }
     pointdfall <- rbind(pointdfall, pointdf)
