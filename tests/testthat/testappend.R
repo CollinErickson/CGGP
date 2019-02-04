@@ -76,19 +76,27 @@ test_that("Append with different weights on different outputs works", {
   set.seed(2)
   SG <- SGGPfit(SG, Ynew=y, use_PCA = FALSE, separateoutputparameterdimensions = TRUE)
   
-  # Now if I append with equal weights (default), it should have equal in both dimensions
-  SG2 <- SGGPappend(SG, 26)
+  # Now if I append with equal weights by using "/var" (default), it should have equal in both dimensions
+  SG2 <- SGGPappend(SG, 26, selectionmethod = "Greedy", multioutputdim_weights = "/sigma2MAP")
   if (F) {
     SG2$uo[1:SG2$uoCOUNT,] %>% summary
     SGGPblockplot(SG2)
   }
   expect_equal(mean(SG2$uo[1:SG2$uoCOUNT,2]) , mean(SG2$uo[1:SG2$uoCOUNT,1]))
   
-  # If using sd of each output for weights, will put much more in second dimensions
-  SG3 <- SGGPappend(SG, 26, multioutputdim_weights = "sd")
+  # If using full variance (default), will put much more in second dimensions
+  SG3 <- SGGPappend(SG, 26)
   if (F) {
     SG3$uo[1:SG3$uoCOUNT,] %>% summary
     SGGPblockplot(SG3)
+  }
+  expect_gt(mean(SG3$uo[1:SG3$uoCOUNT,2]) - 2 , mean(SG3$uo[1:SG3$uoCOUNT,1]))
+  
+  # Last option is to standardize with "/range^2"
+  SG4 <- SGGPappend(SG, 26, multioutputdim_weights="/range^2")
+  if (F) {
+    SG4$uo[1:SG4$uoCOUNT,] %>% summary
+    SGGPblockplot(SG4)
   }
   expect_gt(mean(SG3$uo[1:SG3$uoCOUNT,2]) - 2 , mean(SG3$uo[1:SG3$uoCOUNT,1]))
 })

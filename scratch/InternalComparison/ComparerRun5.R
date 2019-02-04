@@ -1,4 +1,6 @@
-### ComparerRun4
+### ComparerRun5
+
+# What is this for???
 
 # This will include some slow options
 
@@ -94,4 +96,4 @@ e2$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE)
 # }
 e2$save_self()
 
-print("Completed all runs in ComparerRun4.R")
+print("Completed all runs in ComparerRun5.R")

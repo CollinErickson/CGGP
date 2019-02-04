@@ -536,6 +536,7 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #' SGGPprojectionplot(s1, s1$design[nrow(s1$design),])
 #' }
 SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
+  if (!is.null(SGGP$design_unevaluated)) {stop("SGGP must be updated with all data")}
   if (length(proj) == 1) {proj <- rep(proj, SGGP$d)}
   if (length(proj) != SGGP$d) {stop("proj should be of length SGGP$d or 1")}
   d <- SGGP$d
@@ -576,7 +577,7 @@ SGGPprojectionplot <- function(SGGP, proj=.5, color="pink", outdims) {
       tdfall <- rbind(tdfall, tdf)
     }
     
-    w2.5 <- apply(SGGP$design[,-d5], 1, function(x) all(abs(x - proj[-d5]) < 1e-8))
+    w2.5 <- apply(SGGP$design[,-d5, drop=FALSE], 1, function(x) all(abs(x - proj[-d5]) < 1e-8))
     x2.5 <- SGGP$design[w2.5,, drop=FALSE]
     y2.5 <- Y[w2.5,, drop=FALSE]
     # plot(x2.5[,d5], y2.5)

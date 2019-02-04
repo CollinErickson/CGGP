@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(magrittr)
 library(ggplot2)
+library(dplyr)
 ```
 
 We are going to run an experiment using our `SGGP` code to see how the
@@ -108,3 +109,195 @@ ggplot(data=e2$outcleandf[e2$outcleandf$nallotted!=16384,], mapping=aes(x=nallot
 ```
 
 
+```{r}
+sapply(unique(e2$outcleandf$nallotted), function(nn) lm(score ~ corr + sel.method + factor(batchsize) + append.rimseperpoint + grid_size, e2$outcleandf %>% filter(nallotted==nn, corr!="gaussian", corr!="m52"))$coeff) %>% rbind(nallotted=unique(e2$outcleandf$nallotted)) %>% round(4)
+```
+
+```{r}
+sapply(unique(e2$outcleandf$nallotted), function(nn) lm(log(RMSE) ~ corr + sel.method + factor(batchsize) + append.rimseperpoint + grid_size, e2$outcleandf %>% filter(nallotted==nn, corr!="gaussian", corr!="m52"))$coeff) %>% rbind(nallotted=unique(e2$outcleandf$nallotted)) %>% round(4)
+```
+
+```{r}
+sapply(unique(e2$outcleandf$nallotted), function(nn) lm(log(elapsedtime,2) ~ corr + sel.method + factor(batchsize) + append.rimseperpoint + grid_size, e2$outcleandf %>% filter(nallotted==nn, corr!="gaussian", corr!="m52"))$coeff) %>% rbind(nallotted=unique(e2$outcleandf$nallotted)) %>% round(4)
+
+```
+
+
+
+
+## Comparison 3
+
+This is an experiment that only goes up to sample size 1024,
+taking stats at 512 and 1024.
+It does do fully Bayesian prediction (vs using the MAP)
+and MCMC (vs Laplace approx).
+
+```{r}
+e3 <- readRDS("Comparison3_completed.rds")
+```
+
+```{r}
+e3$completed_runs %>% table
+```
+
+```{r}
+e3$calculate_effects()
+```
+
+
+
+```{r}
+ggplot(data=e3$outcleandf, mapping=aes(x=nallotted,y=RMSE, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(corr ~ .) + ggplot2::scale_y_log10()
+
+```
+```{r}
+ggplot(data=e3$outcleandf, mapping=aes(x=nallotted,y=score, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(corr ~ .)
+```
+```{r}
+ggplot(data=e3$outcleandf[e3$outcleandf$nallotted!=16384,], mapping=aes(x=nallotted,y=score, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(corr ~ .)
+
+```
+
+
+```{r}
+sapply(unique(e3$outcleandf$nallotted), function(nn) lm(score ~ sel.method + factor(batchsize) + append.rimseperpoint + grid_size + pred.fullBayes + use_laplaceapprox, e3$outcleandf %>% filter(nallotted==nn, corr!="gaussian", corr!="powerexp"))$coeff) %>% rbind(nallotted=unique(e3$outcleandf$nallotted)) %>% round(4)
+
+```
+
+```{r}
+sapply(unique(e3$outcleandf$nallotted), function(nn) lm(log(RMSE) ~ sel.method + factor(batchsize) + append.rimseperpoint + grid_size + pred.fullBayes + use_laplaceapprox, e3$outcleandf %>% filter(nallotted==nn, corr!="gaussian", corr!="powerexp"))$coeff) %>% rbind(nallotted=unique(e3$outcleandf$nallotted)) %>% round(4)
+```
+
+```{r}
+sapply(unique(e3$outcleandf$nallotted), function(nn) lm(log(elapsedtime,2) ~ sel.method + factor(batchsize) + append.rimseperpoint + grid_size + pred.fullBayes + use_laplaceapprox, e3$outcleandf %>% filter(nallotted==nn, corr!="gaussian", corr!="powerexp"))$coeff) %>% rbind(nallotted=unique(e3$outcleandf$nallotted)) %>% round(4)
+```
+
+
+
+
+## Comparison 4
+
+I ran experiments of five different functions,
+only using the fast prediction and fit options.
+I also changed the fast grid to make it faster, this is also
+what we currently have the default set to in our package.
+Two of the correlation functions were removed.
+
+
+
+
+* (3) Selection method: UCB, TS, Greedy
+
+* (5+2) Corr func: CauchySQT, CauchySQ, Cauchy, ~~Gaussian~~,
+Power exp, ~~Matern 3/2~~, and Matern 5/2 (I ran Gaussian and Matern 3/2 after, so all were done)
+
+* (1) Sampling method: Laplace, ~~MCMC~~
+
+* (2) Grid size: fast ~~(1 2 4 4 4 6 8 32)~~ (1,2,4,4,8,12,32), slow (1 2 2 2 4 4 4 4 4 6 32)
+
+* (2) Batch size: 64 or 256 up to 1024, then 512 for both
+
+* (1) Prediction: MAP, ~~full Bayesian~~
+
+* (2) Append using RIMSE, RIMSE/point
+
+* (5) Functions: beam, OTL, piston, borehole, wing weight
+
+```{r}
+e4a <- readRDS("ComparerRun4_completed_SQTfixed.rds")
+e4a$completed_runs %>% table
+```
+
+
+```{r}
+e4b <- readRDS("ComparerRun4b_completed.rds")
+e4b$completed_runs %>% table
+```
+
+```{r}
+e4dfwg <- rbind(e4a$outcleandf, e4b$outcleandf)
+summary(e4dfwg)
+```
+
+
+Each function having different scale is troublesome.
+Need to normalize RMSEs. Scores should be fine, maybe?
+
+### Gaussian is bad
+
+Score should be function invariant? Not really.
+
+```{r}
+ggplot(data=e4dfwg, mapping=aes(x=nallotted,y=score, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scales="free_y")
+```
+
+I had to rerun CauchySQT on wing weight since it had NA scores.
+
+```{r}
+plyr::ddply(e4dfwg, c("corr", "f"), function(x) sum(is.na(x$score))) %>% filter(V1>0)
+```
+
+
+RMSE on linear scale
+```{r}
+ggplot(data=e4dfwg, mapping=aes(x=nallotted,y=RMSE, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scales="free_y")
+```
+
+With log scale
+```{r}
+ggplot(data=e4dfwg, mapping=aes(x=nallotted,y=RMSE, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scales="free_y") + scale_y_log10()
+```
+
+### Remove Gaussian, Matern 5/2, Beam bending
+
+```{r}
+e4df <- e4dfwg %>% filter(corr != "gaussian", corr != "m52", f!= "beambending")
+```
+
+
+
+```{r}
+e4df$score %>% summary
+```
+
+
+
+
+```{r}
+ggplot(data=e4df, mapping=aes(x=nallotted,y=RMSE, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scale="free_y") + ggplot2::scale_y_log10()
+
+```
+
+```{r}
+ggplot(data=e4df, mapping=aes(x=nallotted,y=score, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scale="free_y")
+```
+
+```{r}
+ggplot(data=e4df, mapping=aes(x=nallotted,y=CRPscore, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scale="free_y") + scale_y_log10()
+```
+
+
+
+### Regression coefficients
+
+```{r}
+sapply(unique(e4df$nallotted), function(nn) lm(score ~ corr + sel.method + factor(batchsize) + append.rimseperpoint + grid_size, e4df %>% filter(nallotted==nn))$coeff) %>% rbind(nallotted=unique(e4df$nallotted)) %>% round(4)
+```
+
+```{r}
+sapply(unique(e4df$nallotted), function(nn) lm(log(RMSE) ~ corr + sel.method + factor(batchsize) + append.rimseperpoint + grid_size, e4df %>% filter(nallotted==nn))$coeff) %>% rbind(nallotted=unique(e4df$nallotted)) %>% round(4)
+```
+
+```{r}
+sapply(unique(e4df$nallotted), function(nn) lm(log(elapsedtime,2) ~ corr + sel.method + factor(batchsize) + append.rimseperpoint + grid_size, e4df %>% filter(nallotted==nn, corr!="gaussian", corr!="m52"))$coeff) %>% rbind(nallotted=unique(e4df$nallotted)) %>% round(4)
+
+```
