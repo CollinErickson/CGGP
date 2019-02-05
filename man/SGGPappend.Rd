@@ -12,7 +12,8 @@ SGGPappend(SGGP, batchsize, selectionmethod = "UCB",
 
 \item{batchsize}{Number of points to add}
 
-\item{selectionmethod}{How points will be selected: one of `UCB`, `TS`, or `Greedy`}
+\item{selectionmethod}{How points will be selected: one of `UCB`, `TS`,
+`Greedy`, `Oldest`, `Random`, or `Lowest`}
 
 \item{RIMSEperpoint}{Should RIMSE per point be used?}
 

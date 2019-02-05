@@ -3,7 +3,7 @@ test_that("SGGPappend works", {
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
-  for (i in c("UCB", "Greedy", "TS")) {
+  for (i in c("UCB", "Greedy", "TS", "Oldest", "Random", "Lowest")) {
     lastN <- nrow(SG$design)
     SG <- SGGPappend(SGGP=SG, batchsize=20, selectionmethod = i)
     expect_is(SG, "SGGP")

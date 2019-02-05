@@ -57,6 +57,7 @@ test_that("Plots work", {
   y2 <- apply(SG2$design, 1, f2)#+rnorm(1,0,.01)
   y <- cbind(y1, y2)
   SG2 <- SGGPfit(SG2, Y=y)
+  SG2sep <- SGGPfit(SG2, Y=y, use_PCA = F, separateoutputparameterdimensions = T)
   Xval2 <- matrix(runif(3*100), ncol=3)
   Yval2 <- cbind(apply(Xval2, 1, f1),
                 apply(Xval2, 1, f2))
@@ -85,6 +86,10 @@ test_that("Plots work", {
   expect_is(p, "ggplot")
   expect_error(p <- SGGPcorrplot(SG2), NA)
   expect_is(p, "ggplot")
+  expect_error(p <- SGGPcorrplot(SG2sep), NA)
+  expect_is(p, "ggplot")
+  expect_error(p <- SGGPcorrplot(SG2sep, outdims = 2), NA)
+  expect_is(p, "ggplot")
   expect_error(SGGPcorrplot(SG, plot_with = "base"), NA)
   rm(p)
   
@@ -101,9 +106,11 @@ test_that("Plots work", {
   # Error if proj is not 1 or d dim
   expect_error(SGGPprojectionplot(SG, proj=c(1,1)))
   expect_error(SGGPprojectionplot(SG, proj=c(1,1,1,1)))
+  # Error if not all evaluated
+  expect_error(SGGPprojectionplot(SGGPappend(SG, 16)))
   rm(pp1, pp2)
   
-  
+  # Variogram plot
   expect_error(vario <- SGGPvariogram(SG2, facet = 1), NA)
   expect_is(vario, "ggplot")
   rm(vario)
@@ -113,5 +120,33 @@ test_that("Plots work", {
   expect_error(vario <- SGGPvariogram(SG2, facet = 3), NA)
   expect_is(vario, "ggplot")
   rm(vario)
+  expect_error(vario <- SGGPvariogram(SG2sep, facet = 1), NA)
+  expect_is(vario, "ggplot")
+  rm(vario)
+  expect_error(vario <- SGGPvariogram(SG2sep, facet = 1, outdims = 2), NA)
+  expect_is(vario, "ggplot")
+  rm(vario)
   expect_error(SGGPvariogram(SG2, facet = "not valid facet"))
+  
+  # Theta plot
+  expect_error(tp <- SGGPplottheta(SG), NA)
+  expect_is(tp, "ggplot")
+  rm(tp)
+  expect_error(tp <- SGGPplottheta(SG2), NA)
+  expect_is(tp, "ggplot")
+  rm(tp)
+  expect_error(tp <- SGGPplottheta(SG2sep), NA)
+  expect_is(tp, "ggplot")
+  rm(tp)
+  
+  # neglogpost samples plot
+  expect_error(tsamp <- SGGPplotsamplesneglogpost(SG), NA)
+  expect_is(tsamp, "ggplot")
+  rm(tsamp)
+  expect_error(tsamp <- SGGPplotsamplesneglogpost(SG2), NA)
+  expect_is(tsamp, "ggplot")
+  rm(tsamp)
+  expect_error(tsamp <- SGGPplotsamplesneglogpost(SG2sep), NA)
+  expect_is(tsamp, "ggplot")
+  rm(tsamp)
 })

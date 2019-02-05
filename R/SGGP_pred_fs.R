@@ -164,9 +164,9 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       }else{ # y was a matrix, so PCA
         if(length(sigma2MAP.thisloop)==1){
           stop("When is it a matrix but sigma2MAP a scalar???")
-          mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+
-                     (Cp%*%pw.thisloop)%*%(SGGP$M))
-          var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(sigma2MAP.thisloop)%*%(SGGP$M)))
+          # mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+
+          #            (Cp%*%pw.thisloop)%*%(SGGP$M))
+          # var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(sigma2MAP.thisloop)%*%(SGGP$M)))
           
         }else{
           mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+
@@ -180,8 +180,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
         supppw.thisloop <- if (nnn==1) SGGP$supppw else SGGP$supppw[,opdlcv]
         Sti.thisloop <- if (nnn==1) SGGP$Sti else SGGP$Sti[,,opdlcv]
       } else {
-        stop("Give theta in not implemented in SGGPpred")
-        stop("Need to fix sigma2MAP here too.")
+        stop("Give theta in not implemented in SGGPpred. Need to fix sigma2MAP here too!")
       }
       
       
@@ -240,10 +239,10 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
         }
         
       }else{
-        if(length(SGGP$sigma2MAP)==1){stop("Does this ever happen? #952570")
-          mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
-          var=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M)))
-          
+        if(length(SGGP$sigma2MAP)==1){
+          stop("Does this ever happen? #952570")
+          # mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
+          # var=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M)))
         }else{
           mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
           var=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M)))

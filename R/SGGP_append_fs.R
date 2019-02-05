@@ -96,7 +96,8 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #'
 #' @param SGGP Sparse grid object
 #' @param batchsize Number of points to add
-#' @param selectionmethod How points will be selected: one of `UCB`, `TS`, or `Greedy`
+#' @param selectionmethod How points will be selected: one of `UCB`, `TS`,
+#' `Greedy`, `Oldest`, `Random`, or `Lowest`
 #' @param RIMSEperpoint Should RIMSE per point be used?
 #' @param multioutputdim_weights Weights for each output dimension.
 #' @importFrom stats quantile sd var
@@ -112,8 +113,8 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' # UCB,TS,Greedy
 SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TRUE,
                        multioutputdim_weights=1){
-  if (!(selectionmethod %in% c("UCB", "TS", "Greedy"))) {
-    stop("selectionmethod in SGGPappend must be one of UCB, TS, or Greedy")
+  if (!(selectionmethod %in% c("UCB", "TS", "Greedy", "Oldest", "Random", "Lowest"))) {
+    stop("selectionmethod in SGGPappend must be one of UCB, TS, Greedy, Oldest, Random, or Lowest")
   }
   if (is.numeric(multioutputdim_weights)) {
     if (length(multioutputdim_weights) != 1 && length(multioutputdim_weights) != ncol(SGGP$y)) {
@@ -178,7 +179,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     
     # Clean up to avoid silly errors
     rm(opdlcv, thetaMAP.thisloop)
-  } else { # selectionmethod is UCB or TS
+  } else if (selectionmethod %in% c("UCB", "TS")) { # selectionmethod is UCB or TS
     # MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples))
     # Array needs another dimension for nnn
     MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples, nnn))
@@ -269,6 +270,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     }; rm(samplelcv)
     IMES_UCB = matrix(0, SGGP$ML)
     IMES_UCB[1:SGGP$poCOUNT] = apply(IMES_PostSamples[1:SGGP$poCOUNT,],1,quantile, probs=0.9)
+  } else {
+    # Can be Oldest or Random or Lowest
   }
   
   
@@ -284,6 +287,20 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
       IMES = IMES_UCB
     } else if(selectionmethod=="TS"){
       IMES = IMES_PostSamples[,sample(1:SGGP$numPostSamples,1)]
+    } else if(selectionmethod=="Oldest"){
+      IMES = seq.int(from=SGGP$poCOUNT, to=1, by=-1)
+      # Multiply by size so it gets undone below
+      IMES <- IMES * SGGP$pogsize[1:SGGP$poCOUNT]
+    } else if(selectionmethod=="Random"){
+      IMES = rep(1,SGGP$poCOUNT)
+      # Multiply by size so it gets undone below
+      IMES <- IMES * SGGP$pogsize[1:SGGP$poCOUNT]
+    } else if(selectionmethod=="Lowest"){
+      IMES = rowSums(SGGP$po[1:SGGP$poCOUNT,])
+      # Make the lowest the highest value
+      IMES <- max(IMES) + 1 - IMES
+      # Multiply by size so it gets undone below
+      IMES <- IMES * SGGP$pogsize[1:SGGP$poCOUNT]
     } else {
       stop("Selection method not acceptable")
     }
@@ -443,7 +460,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
             }
             # Clean up
             rm(thetaMAP.thisloop, opdlcv)
-          }else{ # selection method is UCB or TS
+          } else if (selectionmethod %in% c("UCB", "TS")){ # selection method is UCB or TS
             for (opdlcv in 1:nnn) {
               thetaPostSamples.thisloop <- if (nnn==1) SGGP$thetaPostSamples else SGGP$thetaPostSamples[, , opdlcv]
               for (dimlcv_2 in 1:SGGP$d) { # dimlcv is already used for which descendent to add
@@ -467,6 +484,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
             }
             # Clean up
             rm(thetaPostSamples.thisloop, opdlcv)
+          } else {
+            # Can be Oldest or Random or Lowest
           }
           
           if(selectionmethod=="Greedy"){
@@ -497,6 +516,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
               }
             }; rm(samplelcv)
             IMES_UCB[SGGP$poCOUNT] = quantile(IMES_PostSamples[SGGP$poCOUNT,],probs=0.9)
+          } else if (selectionmethod %in% c("Oldest", "Random", "Lowest")) {
+            # nothing needed
           } else {stop("Not possible #9235058")}
           # Removing below and adding it as part of UCB above
           # if(selectionmethod=="TS"){

@@ -54,11 +54,17 @@ test_that("Prediction matches exact on small samples", {
   
   SG = SGGPcreate(d=d,31) # Need size to be small to avoid computationally singular in solve
   Y = testf(SG$design) #the design is $design, simple enough, right?
-  SG <- SGGPfit(SG=SG, Y=Y)
   
   n <- 50
   xp <- matrix(runif(d*n),n,d)
-  SGpred <- SGGPpred(xp=xp, SGGP=SG)
+  
+  # Get error if not fit yet
+  expect_error(SGGPpred(SG, xp))
+  
+  # Then fit
+  SG <- SGGPfit(SG=SG, Y=Y)
+  # Now it should work
+  expect_error(SGpred <- SGGPpred(xp=xp, SGGP=SG), NA)
   # Get error if wrong order of args
   expect_error(SGGPpred(xp, SG))
   
@@ -97,9 +103,19 @@ test_that("predMV works", {
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   
-  
+  # Make sure predict generic works
   yMVpredS3 <- predict(SG, SG$design)$mean
   expect_equal(yMVpred, yMVpredS3)
+  rm(yMVpred, yMVpredS3)
+  
+  # Check outdims
+  # Get error if not suitable
+  expect_error(SGGPpred(SG$design, SGGP=SG, outdims = 2))
+  SGsep <- SGGPfit(SG, SG$Y, use_PCA = F, separateoutputparameterdimensions = T)
+  yMVpred_o2 <- SGGPpred(SG$design, SGGP=SGsep, outdims = 2)$mean
+  # Second dim should match, first should not.
+  expect_equal(yMVpred_o2[,2], y2, 1e-4)
+  expect_true(all(abs(yMVpred_o2[,1] - y1)> 1e-4))
   
   # Doesn't work since there's no way to update Y without updating parameters too.
   # xpred <- matrix(runif(100*3),100,3)
