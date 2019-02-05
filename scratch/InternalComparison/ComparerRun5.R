@@ -6,6 +6,7 @@
 # All should be fairly fast
 
 sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
+                         replicate, # Not used, just to allow it to do multiples
                          append.rimseperpoint, use_laplaceapprox, grid_size) {
   require("SGGP")
   f <- eval(parse(text=paste0("TestFunctions::", f)))
@@ -86,7 +87,7 @@ e2 <- ffexp$new(
   grid_size=c("medium"), #"fast", "slow"),
   parallel=TRUE,
   parallel_cores = 37,
-  replicates=10,
+  replicate=1:10,
   folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun5" #"./scratch/sggpout"
 )
 
