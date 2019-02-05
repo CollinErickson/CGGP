@@ -1,8 +1,9 @@
 ### ComparerRun5
 
-# What is this for???
+# Run experiment with more replicates, only two corr functions.
+# Mostly will help separate selection methods.
 
-# This will include some slow options
+# All should be fairly fast
 
 sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
                          append.rimseperpoint, use_laplaceapprox, grid_size) {
@@ -18,6 +19,7 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
   # grid_size <- if (grid_size=="fast") {c(1, 2, 4, 4, 4, 6, 8, 32)}
   grid_size <- if (grid_size=="fast") {c(1,2,4,4,8,12,32)}
   else if (grid_size=="slow") {c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)}
+  else if (grid_size=="medium") {c(1, 2, 4, 4, 4, 6, 8, 32)}
   else {stop("bad grid size")}
   
   
@@ -83,7 +85,8 @@ e2 <- ffexp$new(
   pred.fullBayes=c(FALSE), # No full Bayes prediction, too slow
   grid_size=c("medium"), #"fast", "slow"),
   parallel=TRUE,
-  parallel_cores = 37,
+  parallel_cores = 40,
+  replicates=10,
   folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun5" #"./scratch/sggpout"
 )
 
