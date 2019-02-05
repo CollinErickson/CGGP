@@ -666,3 +666,65 @@ SGGPvariogram <- function(SGGP, facet=1, outdims=NULL) {
   }
   p
 }
+
+
+#' Plot theta samples
+#'
+#' @param SGGP SGGP object
+#'
+#' @return ggplot2 object
+#' @export
+#'
+#' @examples
+#' gs <- SGGPcreate(d=3, batchsize=100)
+#' f <- function(x){x[1]^1.2+x[3]^.4*sin(2*pi*x[2]^2*3) + .1*exp(3*x[3])}
+#' y <- apply(gs$design, 1, f)
+#' gs <- SGGPfit(gs, Y=y)
+#' SGGPplottheta(gs)
+SGGPplottheta <- function(SGGP) {
+  # stripchart(data.frame(t(SGGP$thetaPostSamples)), xlim=c(-1,1))
+  # stripchart(data.frame(t(SGGP$thetaMAP)), add=T, col=2, pch=17)
+  if (is.matrix(SGGP$thetaMAP)) {
+    tsamp <- NULL
+    tmap <- NULL
+    for (i in 1:dim(SGGP$thetaPostSamples)[3]) {
+      tsamp <- rbind(tsamp,
+                  reshape2::melt(SGGP$thetaPostSamples[,,i]), pdim=i)
+      tmap <- rbind(tmap,
+                  data.frame(value=SGGP$thetaMAP[,i], Var1=1:nrow(SGGP$thetaMAP), pdim=i))
+    }
+  } else { # single output
+    tsamp <- reshape2::melt(SGGP$thetaPostSamples)
+    tmap <- data.frame(value=SGGP$thetaMAP, Var1=1:length(SGGP$thetaMAP))
+  }
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_point(data=tmap, mapping=ggplot2::aes_string("value", "Var1"), color="green", size=5) + 
+    ggplot2::geom_point(data=tsamp, mapping=ggplot2::aes_string("value", "Var1"))
+  if (is.matrix(SGGP$thetaMAP)) {
+    p <- p + ggplot2::facet_grid(. ~ pdim)
+  }
+  p
+}
+
+
+#' Plot negative log posterior likelihood of samples
+#'
+#' @param SGGP SGGP object
+#'
+#' @return ggplot2 object
+#' @export
+#'
+#' @examples
+#' gs <- SGGPcreate(d=3, batchsize=100)
+#' f <- function(x){x[1]^1.2+x[3]^.4*sin(2*pi*x[2]^2*3) + .1*exp(3*x[3])}
+#' y <- apply(gs$design, 1, f)
+#' gs <- SGGPfit(gs, Y=y)
+#' SGGPplotsamplesneglogpost(gs)
+SGGPplotsamplesneglogpost <- function(SGGP) {
+  neglogpost_thetaMAP <- SGGP_internal_neglogpost(SGGP$thetaMAP, SGGP, SGGP$y)
+  neglogpost_samples <- apply(SGGP$thetaPostSamples, 2, SGGP_internal_neglogpost, SGGP=SGGP, y=SGGP$y)
+  ggplot2::ggplot() + 
+    ggplot2::geom_histogram(ggplot2::aes_string(x='x'), data.frame(x=neglogpost_samples), bins=30) + 
+    ggplot2::geom_vline(xintercept = neglogpost_thetaMAP, color="blue", size=2) +
+    ggplot2::xlab("neglogpost") + ggplot2::ggtitle("neglogpost of theta samples (blue is MAP)")
+}
