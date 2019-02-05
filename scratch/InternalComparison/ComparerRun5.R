@@ -85,7 +85,7 @@ e2 <- ffexp$new(
   pred.fullBayes=c(FALSE), # No full Bayes prediction, too slow
   grid_size=c("medium"), #"fast", "slow"),
   parallel=TRUE,
-  parallel_cores = 40,
+  parallel_cores = 37,
   replicates=10,
   folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun5" #"./scratch/sggpout"
 )
