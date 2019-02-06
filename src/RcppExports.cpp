@@ -6,49 +6,6 @@
 
 using namespace Rcpp;
 
-// rcpparma_hello_world
-arma::mat rcpparma_hello_world();
-RcppExport SEXP _SGGP_rcpparma_hello_world() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpparma_hello_world());
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_outerproduct
-arma::mat rcpparma_outerproduct(const arma::colvec& x);
-RcppExport SEXP _SGGP_rcpparma_outerproduct(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_outerproduct(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_innerproduct
-double rcpparma_innerproduct(const arma::colvec& x);
-RcppExport SEXP _SGGP_rcpparma_innerproduct(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_innerproduct(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_bothproducts
-Rcpp::List rcpparma_bothproducts(const arma::colvec& x);
-RcppExport SEXP _SGGP_rcpparma_bothproducts(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_bothproducts(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_kronDBS
 void rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p);
 RcppExport SEXP _SGGP_rcpp_kronDBS(SEXP ASEXP, SEXP BSEXP, SEXP pSEXP) {
@@ -77,10 +34,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_SGGP_rcpparma_hello_world", (DL_FUNC) &_SGGP_rcpparma_hello_world, 0},
-    {"_SGGP_rcpparma_outerproduct", (DL_FUNC) &_SGGP_rcpparma_outerproduct, 1},
-    {"_SGGP_rcpparma_innerproduct", (DL_FUNC) &_SGGP_rcpparma_innerproduct, 1},
-    {"_SGGP_rcpparma_bothproducts", (DL_FUNC) &_SGGP_rcpparma_bothproducts, 1},
     {"_SGGP_rcpp_kronDBS", (DL_FUNC) &_SGGP_rcpp_kronDBS, 3},
     {"_SGGP_rcpp_gkronDBS", (DL_FUNC) &_SGGP_rcpp_gkronDBS, 4},
     {NULL, NULL, 0}
