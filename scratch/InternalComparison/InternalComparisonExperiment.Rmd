@@ -301,3 +301,103 @@ sapply(unique(e4df$nallotted), function(nn) lm(log(RMSE) ~ corr + sel.method + f
 sapply(unique(e4df$nallotted), function(nn) lm(log(elapsedtime,2) ~ corr + sel.method + factor(batchsize) + append.rimseperpoint + grid_size, e4df %>% filter(nallotted==nn, corr!="gaussian", corr!="m52"))$coeff) %>% rbind(nallotted=unique(e4df$nallotted)) %>% round(4)
 
 ```
+
+
+
+## Comparison 5
+
+* (2) correlation: Cauchy SQ, PowerExp
+
+* (3) selection method: TS, UCB, Greedy
+
+* Rimseperpoint TRUE, grid size set to medium
+
+* (5) functions: beam, OTL, piston, borehole, wing
+
+* 10 replicates
+
+
+
+```{r}
+e5 <- readRDS("ComparerRun5_completed.rds")
+e5df <- e5$outcleandf
+```
+
+
+
+```{r}
+e5$completed_runs %>% summary
+```
+
+
+
+
+```{r}
+ggplot(data=e5df, mapping=aes(x=nallotted,y=RMSE, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scale="free_y") + ggplot2::scale_y_log10()
+```
+
+
+```{r}
+ggplot(data=e5df, mapping=aes(x=nallotted,y=RMSE, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr + sel.method, scale="free_y") + ggplot2::scale_y_log10()
+```
+
+```{r}
+ggplot(data=e5df, mapping=aes(x=nallotted,y=score, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scale="free_y")
+```
+
+```{r}
+ggplot(data=e5df, mapping=aes(x=nallotted,y=CRPscore, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr, scale="free_y") + scale_y_log10()
+```
+
+```{r}
+ggplot(data=e5df, mapping=aes(x=nallotted,y=CRPscore, shape=factor(batchsize), color=sel.method)) + geom_point() +
+  facet_grid(f ~ corr+sel.method, scale="free_y") + scale_y_log10()
+```
+
+
+### Regression coefficients
+
+```{r}
+sapply(unique(e5df$nallotted), function(nn) lm(score ~ corr + sel.method, e5df %>% filter(nallotted==nn))$coeff) %>% rbind(nallotted=unique(e5df$nallotted)) %>% round(4)
+```
+
+```{r}
+sapply(unique(e5df$nallotted), function(nn) lm(log(RMSE) ~ corr + sel.method, e5df %>% filter(nallotted==nn))$coeff) %>% rbind(nallotted=unique(e5df$nallotted)) %>% round(4)
+```
+
+```{r}
+sapply(unique(e5df$nallotted), function(nn) lm(log(elapsedtime,2) ~ corr + sel.method, e5df %>% filter(nallotted==nn))$coeff) %>% rbind(nallotted=unique(e5df$nallotted)) %>% round(4)
+```
+
+
+
+### Regression coefficients by function
+
+```{r}
+c1 <- plyr::ddply(e5df, c("f", "nallotted"), 
+            function(x) {
+              lm(score ~ corr + sel.method, x)$coeff %>% round(4)
+})
+ggplot(data=reshape2::melt(c1, c("f", "nallotted")) %>% filter(variable!="(Intercept)"), mapping=aes(nallotted, value)) + geom_point() +facet_grid(f ~ variable)
+```
+
+```{r}
+c2 <- plyr::ddply(e5df, c("f", "nallotted"), 
+            function(x) {
+              lm(log(RMSE) ~ corr + sel.method, x)$coeff %>% round(4)
+})
+ggplot(data=reshape2::melt(c2, c("f", "nallotted")) %>% filter(variable!="(Intercept)"), mapping=aes(nallotted, value)) + geom_point() +facet_grid(f ~ variable)
+```
+
+```{r}
+c3 <- plyr::ddply(e5df, c("f", "nallotted"), 
+            function(x) {
+              lm(log(elapsedtime,2) ~ corr + sel.method, x)$coeff %>% round(4)
+})
+ggplot(data=reshape2::melt(c3, c("f", "nallotted")) %>% filter(variable!="(Intercept)"), mapping=aes(nallotted, value)) + geom_point() +facet_grid(f ~ variable)
+
+```

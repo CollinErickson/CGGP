@@ -108,7 +108,7 @@ qsub_sh_file <- function(fileID, holdID=NULL, shpathbase="/home/collin/scratch/r
   system(paste("chmod +x ", shpath))
   print(paste("About to qsub", shpath))
   qsub_string <- paste("qsub -N ", fileID) # Give it a name
-  qsub_string <- paste(qsub_string, "-l h=compute-0-1")
+  # qsub_string <- paste(qsub_string, "-l h=compute-0-1") # Force it to a specified node
   if (!is.null(holdID)) {
     qsub_string <- paste(qsub_string, "-hold_jid", holdID)
   }

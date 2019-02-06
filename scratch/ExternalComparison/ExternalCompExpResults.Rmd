@@ -1,0 +1,64 @@
+---
+title: "ExternalComparisonExperiment"
+author: "Collin Erickson"
+date: "February 6, 2019"
+output: html_document
+---
+
+```{r set-options, echo=FALSE, cache=FALSE}
+# options(width = 500)
+# options(fig_width="120pt")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=12)
+knitr::opts_chunk$set(fig.height=9)
+library(magrittr)
+library(ggplot2)
+library(dplyr)
+```
+
+We want to compare our `SGGP` to other methods.
+
+## Experiment one
+
+* SGGP
+
+* laGP: Using all points, just a GP
+
+* GPflow: Python, based on GPy, can scale to many points
+
+* MRFA
+
+* (5) functions as usual
+
+* (4) n = 100, 250, 500, 750, 1000
+
+
+```{r}
+e1 <- readRDS("./ExComp1_completed.rds")
+e1df <- e1$outcleandf
+e1$completed_runs %>% table
+```
+
+```{r}
+plyr::dlply(e1df %>% select(-start_time, -end_time, -run_number), "d")
+```
+
+```{r}
+ggplot(data=e1df, mapping=aes(n, RMSE)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+```
+
+```{r}
+ggplot(data=e1df, mapping=aes(n, score)) + geom_point() + facet_grid(f ~ package, scales="free_y")
+```
+
+```{r}
+ggplot(data=e1df, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+```
+
+```{r}
+ggplot(data=e1df, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+```
+

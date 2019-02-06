@@ -134,7 +134,7 @@ excomp$rungrid
 # excomp$save_self()
 excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE)
 
-cat("Completed all runs in ComparerRun5.R\n")
+cat("Completed all runs in ExternalComparer1.R\n")
 
 excomp$save_self()
 
@@ -147,4 +147,5 @@ if (F) {
   ggplot(data=excomp$outcleandf, mapping=aes(n, score)) + geom_point() + facet_grid(f ~ package, scales="free_y")
   ggplot(data=excomp$outcleandf, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
   ggplot(data=excomp$outcleandf, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+  # saveRDS(excomp, "./scratch/ExternalComparison/ExComp1_completed.rds")
 }
