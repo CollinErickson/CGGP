@@ -111,6 +111,9 @@ test_that("Plots work", {
   rm(pp1, pp2)
   
   # Variogram plot
+  expect_error(vario <- SGGPvariogram(SG), NA)
+  expect_is(vario, "ggplot")
+  rm(vario)
   expect_error(vario <- SGGPvariogram(SG2, facet = 1), NA)
   expect_is(vario, "ggplot")
   rm(vario)

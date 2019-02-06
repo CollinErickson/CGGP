@@ -24,7 +24,8 @@ test_that("SGGPappend works with large number", {
   lastN <- nrow(SG$design)
   
   # Adding 2000 will force it to increase ML and add rows to uo, pila, pala, etc.
-  expect_error(SG <- SGGPappend(SGGP=SG, batchsize=2000), NA)
+  # But it doesn't show as working on codecov? Try 4000
+  expect_error(SG <- SGGPappend(SGGP=SG, batchsize=2*2000), NA)
   expect_is(SG, "SGGP")
   expect_gt(nrow(SG$design), lastN)
   # y <- apply(SG$design, 1, f)
@@ -77,7 +78,7 @@ test_that("Append with different weights on different outputs works", {
   SG <- SGGPfit(SG, Ynew=y, use_PCA = FALSE, separateoutputparameterdimensions = TRUE)
   
   # Now if I append with equal weights by using "/var" (default), it should have equal in both dimensions
-  SG2 <- SGGPappend(SG, 26, selectionmethod = "Greedy", multioutputdim_weights = "/sigma2MAP")
+  expect_error(SG2 <- SGGPappend(SG, 26, selectionmethod = "Greedy", multioutputdim_weights = "/sigma2MAP"), NA)
   if (F) {
     SG2$uo[1:SG2$uoCOUNT,] %>% summary
     SGGPblockplot(SG2)
@@ -93,10 +94,19 @@ test_that("Append with different weights on different outputs works", {
   expect_gt(mean(SG3$uo[1:SG3$uoCOUNT,2]) - 2 , mean(SG3$uo[1:SG3$uoCOUNT,1]))
   
   # Last option is to standardize with "/range^2"
-  SG4 <- SGGPappend(SG, 26, multioutputdim_weights="/range^2")
+  expect_error(SG4 <- SGGPappend(SG, 26, multioutputdim_weights="/range^2"), NA)
   if (F) {
     SG4$uo[1:SG4$uoCOUNT,] %>% summary
     SGGPblockplot(SG4)
   }
   expect_gt(mean(SG3$uo[1:SG3$uoCOUNT,2]) - 2 , mean(SG3$uo[1:SG3$uoCOUNT,1]))
+  
+  # Bad options
+  expect_error(SGGPappend(SG, 26, multioutputdim_weights="/range"))
+  expect_error(SGGPappend(SG, 26, multioutputdim_weights=c(1,2,3)))
+  # Can't actually fit when range is zero, so making a fake one.
+  # SG0 <- SGGPfit(SG, SG$Y*0)
+  SG$Y <- SG$Y*0
+  expect_error(SGGPappend(SG, 26, multioutputdim_weights="/range^2"))
+  
 })

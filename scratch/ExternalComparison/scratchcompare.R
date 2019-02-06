@@ -97,3 +97,4 @@ gpflow_stats <- valstats(gpflowout$mean, gpflowout$var, ytest)
 
 data.frame(lagp_rmse, mrfa_rmse, sggp_rmse, gpflow_rmse)
 rbind(laGP=lagp_stats, MRFA=mrfa_stats, SGGP=sggp_stats, GPflow=gpflow_stats)
+
