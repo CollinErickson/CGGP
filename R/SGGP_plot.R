@@ -322,10 +322,11 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE) {
   CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
   coverage <- mean((Yval<= predmean+1.96*sqrt(predvar)) & 
                      (Yval>= predmean-1.96*sqrt(predvar)))
-  R2 <- cor(c(predmean), c(Yval))
+  corr <- cor(c(predmean), c(Yval))
+  R2 <- 1 - (sum((Yval - predmean)^2) / sum((Yval - mean(Yval))^2))
   # Return df with values
   out <- data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage,
-                    R2=R2)
+                    corr=corr, R2=R2)
   
   # Add normalized RMSE, dividing MSE in each dimension by variance
   if (is.matrix(predmean) && ncol(predmean) > 1) {
@@ -376,20 +377,8 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE) {
 SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
   # Make predictions
   ypred <- SGGPpred(SGGP=SGGP, xp=Xval, fullBayesian=fullBayesian)
+  # Use valstats to get df with values
   valstats(ypred$mean, ypred$var, Yval=Yval, bydim=bydim)
-  # # Use valstats to get df with values
-  # if (ncol(ypred$mean) == 1 || !bydim) {
-  #   valstats(predmean=ypred$mean, predvar=ypred$var, Yval=Yval)
-  # } else {
-  #   if (any(dim(ypred$mean) != dim(Yval))) {
-  #     stop("Yval dimensions don't match SGGPpred(SGGP, Xval)")
-  #   }
-  #   do.call("rbind",
-  #           lapply(1:ncol(ypred$mean),
-  #                  function(i) {
-  #                    valstats(predmean=ypred$mean[,i], predvar=ypred$var[,i], Yval=Yval[,i])
-  #                  }))
-  # }
 }
 
 #' Plot correlation samples
