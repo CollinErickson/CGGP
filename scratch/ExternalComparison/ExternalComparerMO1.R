@@ -59,7 +59,7 @@ run_GPflow <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, model.ty
   Sys.sleep(1) # Try sleep to avoid it not finding x, maybe it just needs more time?
   py_run_string("import gpflow")
   py_run_string("import numpy as np")
-  py_run_string("import matplotlib")
+  # py_run_string("import matplotlib")
   
   py_run_string(paste0("k = gpflow.kernels.Matern52( ", d,", lengthscales=0.3)"))
   # py_run_string("m = gpflow.models.GPR(x, y, kern=k)")
@@ -77,6 +77,53 @@ run_GPflow <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, model.ty
   py_run_string("r.gpflowmean, r.gpflowvar = m.predict_y(xtest)")
   # mod <- MRFA::MRFA_fit(X=x, Y=y)
   # pred <- predict(mod, xtest, lambda = min(mod$lambda))
+  list(mean=gpflowmean, var=gpflowvar)
+}
+
+"https://gpflow.readthedocs.io/en/latest/notebooks/svi_test.html"
+run_GPflow.SVGP <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, model.type="GPR") {
+  # Model type can be GPR, VGP, or SVGP
+  if (!missing(seed)) {set.seed(seed)}
+  # browser()
+  if (missing(x) && missing(y)) {
+    x <- matrix(runif(Ntotal*d), Ntotal, d)
+    y <- f(x) #apply(x, 1, f)
+  }
+  require("reticulate")
+  env1 <- use_condaenv("myenv")
+  py$x <- x
+  py$y <- as.matrix(y)
+  py$xtest <- xtest
+  Sys.sleep(1) # Try sleep to avoid it not finding x, maybe it just needs more time?
+  py_run_string("import gpflow")
+  py_run_string("import numpy as np")
+  # py_run_string("import matplotlib")
+  # browser()
+  py_run_string(paste0("k = gpflow.kernels.Matern52( ", d,", lengthscales=0.3)"))
+  # py_run_string("m = gpflow.models.GPR(x, y, kern=k)")
+  cat("model type is ", model.type, '\n')
+  # if (model.type == "GPR") {
+  #   py_run_string(paste0("m = gpflow.models.", model.type, "(x, y, kern=k)"))
+  # } else if (model.type == "VGP") {
+  #   py_run_string(paste0("m = gpflow.models.", model.type, "(x, y, kern=k, likelihood=gpflow.likelihoods.Gaussian())"))
+  # } else if (model.type == "SVGP") {#browser()
+  py$z = x[sample(1:nrow(x), min(nrow(x), 500), replace=FALSE),]
+  py_run_string(paste0("m = gpflow.models.SVGP(x, y, Z=z, kern=k, likelihood=gpflow.likelihoods.Gaussian(), minibatch_size=len(x))"))
+  py_run_string(paste0("m.X.set_batch_size(100)"))
+  py_run_string(paste0("m.Y.set_batch_size(100)"))
+  py_run_string(paste0("
+# m.feature.trainable = False
+# opt = gpflow.train.AdamOptimizer()
+# m.optimize(method=tf.train.AdamOptimizer(), maxiter=np.inf) #, callback=logger)
+"))
+  # }
+  py_run_string("m.likelihood.variance = 0.0001")
+  py_run_string("gpflow.train.ScipyOptimizer().minimize(m)")
+  
+  # for (iii in 1:20) {py_run_string("gpflow.train.ScipyOptimizer().minimize(m)");py_run_string("r.gpflowmean, r.gpflowvar = m.predict_y(xtest)");print(colMeans(gpflowmean))}
+  for (iii in 1:20) {py_run_string("gpflow.train.AdamOptimizer().minimize(m)");py_run_string("r.gpflowmean, r.gpflowvar = m.predict_y(xtest)");print(colMeans(gpflowmean))}
+  
+  py_run_string("r.gpflowmean, r.gpflowvar = m.predict_y(xtest)")
   list(mean=gpflowmean, var=gpflowvar)
 }
 
@@ -107,7 +154,11 @@ run_SGGP <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser(
 # Need a generic function that passes to specific ones
 run_one <- function(package, f, d, n) {
   # if (n!= 500) {stop('bad n')}
-  f <- eval(parse(text=paste0("TestFunctions::", f)))
+  if (f=="boreholeMV2") {
+    f <- function(x) TestFunctions::boreholeMV(x, 4)
+  } else {
+    f <- eval(parse(text=paste0("TestFunctions::", f)))
+  }
   
   xtest <- matrix(runif(1e4*d), ncol=d)
   ytest <- f(xtest) # apply(xtest, 1, f)
@@ -141,7 +192,7 @@ require("comparer")
 
 excomp <- ffexp$new(
   eval_func = run_one,
-  fd=data.frame(f=c("boreholeMV"), d=c(8),
+  fd=data.frame(f=c("boreholeMV2"), d=c(8),
                 row.names = c("boreholeMV"), stringsAsFactors = F),
   package=c("GPflow.VGP", "GPflow.SVGP", "SGGP", "GPflow"),
   # n_increments=list(n_increments=list(c(100,200,300,400,500))),
