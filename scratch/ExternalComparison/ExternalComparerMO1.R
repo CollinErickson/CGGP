@@ -92,7 +92,8 @@ run_GPflow.SVGP <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, mod
   require("reticulate")
   env1 <- use_condaenv("myenv")
   py$x <- x
-  py$y <- as.matrix(y)
+  colMeansY <- colMeans(as.matrix(y))
+  py$y <- as.matrix(y) - colMeansY
   py$xtest <- xtest
   Sys.sleep(1) # Try sleep to avoid it not finding x, maybe it just needs more time?
   py_run_string("import gpflow")
@@ -118,13 +119,13 @@ run_GPflow.SVGP <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, mod
 "))
   # }
   py_run_string("m.likelihood.variance = 0.0001")
-  py_run_string("gpflow.train.ScipyOptimizer().minimize(m)")
+  # py_run_string("gpflow.train.ScipyOptimizer().minimize(m)")
   
   # for (iii in 1:20) {py_run_string("gpflow.train.ScipyOptimizer().minimize(m)");py_run_string("r.gpflowmean, r.gpflowvar = m.predict_y(xtest)");print(colMeans(gpflowmean))}
-  for (iii in 1:20) {py_run_string("gpflow.train.AdamOptimizer().minimize(m)");py_run_string("r.gpflowmean, r.gpflowvar = m.predict_y(xtest)");print(colMeans(gpflowmean))}
+  for (iii in 1:10) {py_run_string("gpflow.train.AdamOptimizer().minimize(m)");py_run_string("r.gpflowmean, r.gpflowvar = m.predict_y(xtest)");print(colMeans(gpflowmean))}
   
   py_run_string("r.gpflowmean, r.gpflowvar = m.predict_y(xtest)")
-  list(mean=gpflowmean, var=gpflowvar)
+  list(mean=gpflowmean + colMeansY, var=gpflowvar)
 }
 
 
@@ -173,7 +174,7 @@ run_one <- function(package, f, d, n) {
   } else if (package == "GPflow.VGP") {
     out <- run_GPflow(Ntotal=n, f=f, d=d, xtest=xtest, model.type="VGP")
   } else if (package == "GPflow.SVGP") {
-    out <- run_GPflow(Ntotal=n, f=f, d=d, xtest=xtest, model.type="SVGP")
+    out <- run_GPflow.SVGP(Ntotal=n, f=f, d=d, xtest=xtest, model.type="SVGP")
   } else if (package == "MRFA") {
     out <- run_MRFA(Ntotal=n, f=f, d=d, xtest=xtest)
   } else {
@@ -196,7 +197,7 @@ excomp <- ffexp$new(
                 row.names = c("boreholeMV"), stringsAsFactors = F),
   package=c("GPflow.VGP", "GPflow.SVGP", "SGGP", "GPflow"),
   # n_increments=list(n_increments=list(c(100,200,300,400,500))),
-  n = c(250, 500, 1000), #, 250, 500, 750, 1000),
+  n = c(1000), #, 250, 500, 750, 1000),
   parallel=FALSE,
   parallel_cores = 37,
   # replicate=1:10,
