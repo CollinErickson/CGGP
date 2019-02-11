@@ -27,7 +27,8 @@ batchsize <- 76
 Nfinal <- 8000
 
 # Grid size to use. This option wasn't included in Test1
-grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
+# grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
+grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 8, 12)
 
 # use_PCA, 100 outputs, PCA can reduce to 37 I think.
 use_PCA <- FALSE
@@ -40,8 +41,8 @@ if (F) {
   Xsup <- NULL
   Ysup <- NULL
 } else {
-  Xall <- unname(as.matrix(read.csv("/home/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_Xmatrix.csv")[,-1]))
-  Yall <- unname(as.matrix(read.csv("/home/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_all_output.csv")[,-1]))
+  Xall <- unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_Xmatrix.csv")[,-1]))
+  Yall <- unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_all_output.csv")[,-1]))
   set.seed(100) # Set seed for reproducibility
   SupRows <- sample(1:nrow(Xall), 100, replace=FALSE)
   set.seed(Sys.time()) # Clear seed in case running a repeat

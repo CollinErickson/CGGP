@@ -220,7 +220,7 @@ valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
       names(tdf) <- c("err", "psd", "outputdim")
     }
     # ggplot(tdf, aes(x=err, y=psd)) + geom_point()
-    values <- data.frame(id=factor(c(1, 2)), value=factor(c('095%','68%')))
+    values <- data.frame(id=factor(c(2,1)), Error=factor(c('68%','95%')))
     positions <- data.frame(id=rep(values$id, each=3),
                             x=1.1*c(0,errmax*2,-errmax*2, 0,errmax,-errmax),
                             y=1.1*c(0,errmax,errmax,0,errmax,errmax))
@@ -229,10 +229,15 @@ valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
     
     # ggplot(datapoly, aes(x = x, y = y)) +
     # geom_polygon(aes(fill = value, group = id))
-    # ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), datapoly, alpha=.2) + geom_point() +
-    # xlab("Predicted - Actual") + ylab("Predicted error") + coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
+    # ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), 
+    #              datapoly, alpha=.2) + geom_point() +
+    # xlab("Predicted - Actual") + ylab("Predicted error") + 
+    #   coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
     p <- ggplot2::ggplot(tdf, ggplot2::aes_string(x='err', y='psd')) + 
-      ggplot2::geom_polygon(ggplot2::aes_string(fill = 'value', group = 'id', x='x', y='y'), datapoly, alpha=.2) + 
+      ggplot2::geom_polygon(ggplot2::aes_string(fill = 'Error', group = 'id', x='x', y='y'),
+                            datapoly[datapoly$id==2,], alpha=.2) + # Separate these so it does the right order
+      ggplot2::geom_polygon(ggplot2::aes_string(fill = 'Error', group = 'id', x='x', y='y'),
+                            datapoly[datapoly$id==1,], alpha=.2) + 
       ggplot2::geom_point() +
       ggplot2::xlab("Predicted - Actual") + ggplot2::ylab("Predicted error") + 
       ggplot2::coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,max(psds))) #errmax))
