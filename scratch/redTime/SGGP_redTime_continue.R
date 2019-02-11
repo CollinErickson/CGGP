@@ -70,6 +70,7 @@ cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew), "\n")
 # Update params with new data
 library("SGGP")
 SG <- SGGPfit(SG, Ynew=Ynew, use_PCA=use_PCA,
+              Xs=Xs, Ys=Ys,
               separateoutputparameterdimensions=separateoutputparameterdimensions)
 cat("SGGPfit successful\n")
 

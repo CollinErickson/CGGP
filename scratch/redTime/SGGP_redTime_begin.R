@@ -22,6 +22,7 @@ cat("SGGP installed correctly\n")
 library('SGGP')
 cat("SGGP loaded successfully\n")
 
+# Create SGGP object
 SG <- SGGPcreate(d=d, batchsize=N0, corr=corr, grid_size=grid_size)
 print(SG)
 cat("SGGPcreate successful\n")
@@ -29,6 +30,12 @@ cat("SGGPcreate successful\n")
 # Save SG, nothing evaluated yet
 saveRDS(object = SG, file = paste0(SGGP_after_append_RDS_path))
 cat("saveRDS successful\n")
+
+# Not able to fit until SG data is added, should be fixed
+# # If Xsup is already given, fit to it.
+# SG <- SGGPfit(SG, Ynew=Ynew, use_PCA=use_PCA,
+#               Xs=Xs, Ys=Ys,
+#               separateoutputparameterdimensions=separateoutputparameterdimensions)
 
 # write params, write .sh, qsub, and prepare next R script
 source("SGGP_redTime_qsub_unevaluated.R")
