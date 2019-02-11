@@ -15,6 +15,7 @@
 #'
 #' @return Predicted mean values
 #' @export
+#' @family SGGP core functions
 #'
 #' @examples
 #' SG <- SGGPcreate(d=3, batchsize=100)

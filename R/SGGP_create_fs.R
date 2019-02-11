@@ -13,6 +13,7 @@
 #'
 #' @return SGGP
 #' @export
+#' @family SGGP core functions
 #'
 #' @examples
 #' d <- 8

@@ -48,3 +48,8 @@ SG <- SGGPcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 SG <- SGGPfit(SG=SG, Y=y)
 }
+\seealso{
+Other SGGP core functions: \code{\link{SGGPappend}},
+  \code{\link{SGGPcreate}}, \code{\link{predict.SGGP}}
+}
+\concept{SGGP core functions}

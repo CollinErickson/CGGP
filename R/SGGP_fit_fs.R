@@ -138,6 +138,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y, return_lik=FALSE) {
 #'
 #' @return Updated SGGP object fit to data given
 #' @export
+#' @family SGGP core functions
 #'
 #' @examples
 #' SG <- SGGPcreate(d=3, batchsize=100)

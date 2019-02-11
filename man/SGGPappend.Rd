@@ -32,3 +32,8 @@ SG <- SGGPfit(SG, Y=y)
 SG <- SGGPappend(SGGP=SG, batchsize=20)
 # UCB,TS,Greedy
 }
+\seealso{
+Other SGGP core functions: \code{\link{SGGPcreate}},
+  \code{\link{SGGPfit}}, \code{\link{predict.SGGP}}
+}
+\concept{SGGP core functions}

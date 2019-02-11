@@ -45,3 +45,8 @@ SG <- SGGPfit(SG, Y=y)
 SGGPpred(SG, matrix(c(.1,.1,.1),1,3))
 cbind(SGGPpred(SG, SG$design)$mean, y) # Should be near equal
 }
+\seealso{
+Other SGGP core functions: \code{\link{SGGPappend}},
+  \code{\link{SGGPcreate}}, \code{\link{SGGPfit}}
+}
+\concept{SGGP core functions}

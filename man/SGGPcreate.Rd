@@ -28,3 +28,8 @@ Create sparse grid GP
 d <- 8
 SG = SGGPcreate(d,200)
 }
+\seealso{
+Other SGGP core functions: \code{\link{SGGPappend}},
+  \code{\link{SGGPfit}}, \code{\link{predict.SGGP}}
+}
+\concept{SGGP core functions}

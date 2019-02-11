@@ -104,6 +104,7 @@ SGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #'
 #' @return SG with new points added.
 #' @export
+#' @family SGGP core functions
 #'
 #' @examples
 #' SG <- SGGPcreate(d=3, batchsize=100)
