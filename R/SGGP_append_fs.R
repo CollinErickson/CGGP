@@ -175,6 +175,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     IMES_MAP_beforemean = apply(MSE_MAP, 3, function(x) SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], x))
     # IMES_MAP_apply has a column for each opdlcv, so take rowMeans
     # IMES_MAP[1:SGGP$poCOUNT] = rowMeans(IMES_MAP_beforemean)
+    # Need to include sigma2MAP here because weird things can happen if just using correlation.
     IMES_MAP[1:SGGP$poCOUNT] = rowMeans(sweep(IMES_MAP_beforemean, 2, SGGP$sigma2MAP * multioutputdim_weights, "*"))
     
     # Clean up to avoid silly errors
@@ -241,7 +242,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
                   Vectorize(function(samplenum, outputdim) {
                     SGGP_internal_calcsigma2(SGGP,
                                              if (nnn==1) {SGGP$y} else {SGGP$y[,outputdim]},
-                                             if (nnn==1) {SGGP$thetaPostSamples[,samplenum]} else {SGGP$thetaPostSamples[,samplenum,outputdim]}
+                                             if (nnn==1) {SGGP$thetaPostSamples[,samplenum]
+                                             } else {SGGP$thetaPostSamples[,samplenum,outputdim]}
                     )$sigma2
                   })
     )}
@@ -250,21 +252,23 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
       # IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv])
       # It's an array, need to average over opdlcv. Over 3rd dim since samplelcv removes 3rd dim of array.
       if (nnn == 1) { # Will be a matrix
-        # Multiply by sigma2 because each thetasample has different sigma2
-        # Not using sigma2 here because there's either one output dimension, so it won't matter,
-        #  or there's multiple outputs with shared parameters, in which case it wouldn't matter
-        #  and it's not clear how the values should be combined.
-        # IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = sigma2.allsamples.alloutputs[samplelcv,1] *
-        #   SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
-        IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
+        # Multiply by sigma2. If multiple output dimensions with shared parameters, take mean,
+        #  Needed because each thetasample will have a different sigma2.
+        sigma2.thistime <- mean(sigma2.allsamples.alloutputs[samplelcv,])
+        IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = sigma2.thistime *
+          SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
+        rm(sigma2.thistime)
+        # IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
       } else { # Is a 3d array, need to use an apply and then apply again with mean
-        IMES_PostSamples_beforemean <- apply(MSE_PostSamples[,,samplelcv,], 3, function(x){SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], x)})
+        IMES_PostSamples_beforemean <- apply(MSE_PostSamples[,,samplelcv,], 3,
+                                             function(x){SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], x)})
         # Need sigma2 for this theta sample, already calculated in sigma2.allsamples.alloutputs
         IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] <- apply(IMES_PostSamples_beforemean, 1,
                                                             function(x) {
                                                               # mean(multioutputdim_weights*x)
                                                               # Now weight by sigma2 samples
-                                                              mean(sigma2.allsamples.alloutputs[samplelcv,] * multioutputdim_weights*x)
+                                                              mean(sigma2.allsamples.alloutputs[samplelcv,] *
+                                                                     multioutputdim_weights*x)
                                                             })
       }
     }; rm(samplelcv)
@@ -449,9 +453,10 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
               for (dimlcv in 1:SGGP$d) {
                 if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
                   levellcv = max_polevels[dimlcv]
-                  MSE_MAP[dimlcv, levellcv, opdlcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                                       thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
-                                                                                       SGGP$CorrMat)))
+                  MSE_MAP[dimlcv, levellcv,
+                          opdlcv] = max(0, abs(SGGP_internal_calcMSE(SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                     thetaMAP.thisloop[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                     SGGP$CorrMat)))
                   if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
                     MSE_MAP[dimlcv, levellcv, opdlcv] = min(MSE_MAP[dimlcv, levellcv, opdlcv], MSE_MAP[dimlcv, levellcv - 1, opdlcv])
                   }
@@ -468,15 +473,17 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
                   levellcv = max_polevels[dimlcv_2]
                   for(samplelcv in 1:SGGP$numPostSamples){
                     # Calculate some sort of MSE from above, not sure what it's doing
-                    MSE_PostSamples[dimlcv_2, levellcv,samplelcv, opdlcv] = max(0,
-                                                                                abs(SGGP_internal_calcMSE(
-                                                                                  SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                                  thetaPostSamples.thisloop[(dimlcv_2-1)*SGGP$numpara+1:SGGP$numpara,
-                                                                                                            samplelcv],
-                                                                                  SGGP$CorrMat)))
+                    MSE_PostSamples[dimlcv_2, levellcv,
+                                    samplelcv, opdlcv] = max(0,
+                                                             abs(SGGP_internal_calcMSE(
+                                                               SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                               thetaPostSamples.thisloop[(dimlcv_2-1)*SGGP$numpara+1:SGGP$numpara,
+                                                                                         samplelcv],
+                                                               SGGP$CorrMat)))
                     if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-                      MSE_PostSamples[dimlcv_2, levellcv,samplelcv, opdlcv] = min(MSE_PostSamples[dimlcv_2, levellcv,samplelcv, opdlcv],
-                                                                                  MSE_PostSamples[dimlcv_2, levellcv - 1,samplelcv, opdlcv])
+                      MSE_PostSamples[dimlcv_2, levellcv,
+                                      samplelcv, opdlcv] = min(MSE_PostSamples[dimlcv_2, levellcv,samplelcv, opdlcv],
+                                                               MSE_PostSamples[dimlcv_2, levellcv - 1,samplelcv, opdlcv])
                     }
                   }; rm(samplelcv)
                 }
@@ -491,7 +498,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
           if(selectionmethod=="Greedy"){
             # IMES_MAP[SGGP$poCOUNT] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), MSE_MAP)
             # Need to apply first
-            IMES_MAP_beforemeannewpoint <- apply(MSE_MAP, 3, function(x) {SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)})
+            IMES_MAP_beforemeannewpoint <- apply(MSE_MAP, 3,
+                                                 function(x) {SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)})
             # Take weighted mean over dimensions
             IMES_MAP[SGGP$poCOUNT] <- mean(SGGP$sigma2MAP * IMES_MAP_beforemeannewpoint * multioutputdim_weights)
           } else if (selectionmethod=="UCB" || selectionmethod=="TS"){
@@ -499,17 +507,21 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
               # IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
               #                                                                    MSE_PostSamples[,,samplelcv])
               if (nnn == 1) { # is a matrix
-                # Don't use sigma2 since it won't matter and it confusing when there are
-                # multiple output dimensions with shared parameters.
-                # IMES_PostSamples[SGGP$poCOUNT,samplelcv] = sigma2.allsamples.alloutputs[samplelcv,] *
-                #   SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
-                #                           MSE_PostSamples[,,samplelcv,])
-                IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
+                # Each sample has different sigma2, so use. If multiple output
+                #  parameter dimensions, take mean over sigma2.
+                sigma2.thistime <- mean(sigma2.allsamples.alloutputs[samplelcv,])
+                IMES_PostSamples[SGGP$poCOUNT,samplelcv] = sigma2.thistime *
+                  SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
                                           MSE_PostSamples[,,samplelcv,])
+                rm(sigma2.thistime)
+                # IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
+                #                                                                    MSE_PostSamples[,,samplelcv,])
               } else { # is an array, need to apply
                 IMES_PostSamples_beforemeannewpoint = apply(MSE_PostSamples[,,samplelcv,],
                                                             3, # 3rd dim since samplelcv removes 3rd
-                                                            function(x) {SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)}
+                                                            function(x) {
+                                                              SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]), x)
+                                                            }
                 )
                 IMES_PostSamples[SGGP$poCOUNT,samplelcv] <- mean(sigma2.allsamples.alloutputs[samplelcv,] * 
                                                                    multioutputdim_weights * IMES_PostSamples_beforemeannewpoint)
