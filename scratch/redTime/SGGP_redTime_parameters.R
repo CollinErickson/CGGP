@@ -42,7 +42,7 @@ if (F) {
   Ysup <- NULL
 } else {
   Xall <- unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_Xmatrix.csv")[,-1]))
-  Yall <- unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_all_output.csv")[,-1]))
+  Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_all_output.csv")[,-1])))
   set.seed(100) # Set seed for reproducibility
   SupRows <- sample(1:nrow(Xall), 100, replace=FALSE)
   set.seed(Sys.time()) # Clear seed in case running a repeat

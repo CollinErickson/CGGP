@@ -69,6 +69,8 @@ sgT4_227 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-227.rds"))
 sgT4_455 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-455.rds"))
 sgT4_1061 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-1061.rds"))
 sgT4_1517 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-1517.rds"))
+sgS1_225 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-225.rds"))
+sgS1_453 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-453.rds"))
 
 
 # Ylog <- log(sg8$Y, 10)
@@ -205,6 +207,8 @@ sgT4_227.stats <- SGGPvalstats(sgT4_227, xtest, ytest, bydim=F)
 sgT4_455.stats <- SGGPvalstats(sgT4_455, xtest, ytest, bydim=F)
 sgT4_1061.stats <- SGGPvalstats(sgT4_1061, xtest, ytest, bydim=F)
 sgT4_1517.stats <- SGGPvalstats(sgT4_1517, xtest, ytest, bydim=F)
+sgS1_225.stats <- SGGPvalstats(sgS1_225, xtest, ytest, bydim=F)
+sgS1_453.stats <- SGGPvalstats(sgS1_453, xtest, ytest, bydim=F)
 
 
 rbind(
