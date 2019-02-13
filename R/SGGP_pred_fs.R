@@ -41,6 +41,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
     means <- sapply(preds, function(x) {x$mean})
     mn <- as.matrix(apply(means, 1, mean))
     vars <- sapply(preds, function(x) {x$var})
+    # This is for normal mixture, need t mixture?
     vr <- apply(vars, 1, mean) + apply(means^2, 1, mean) - apply(means, 1, mean)^2
     GP <- list(mean=mn, var=vr)
     # p <- SGGPpred(xp, SGGP)

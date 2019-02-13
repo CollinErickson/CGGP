@@ -69,7 +69,7 @@ sgT4_227 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-227.rds"))
 sgT4_455 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-455.rds"))
 sgT4_1061 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-1061.rds"))
 sgT4_1517 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-1517.rds"))
-sgS1_225 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-225.rds"))
+sgS1_227 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-227.rds"))
 sgS1_453 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-453.rds"))
 
 
@@ -207,7 +207,7 @@ sgT4_227.stats <- SGGPvalstats(sgT4_227, xtest, ytest, bydim=F)
 sgT4_455.stats <- SGGPvalstats(sgT4_455, xtest, ytest, bydim=F)
 sgT4_1061.stats <- SGGPvalstats(sgT4_1061, xtest, ytest, bydim=F)
 sgT4_1517.stats <- SGGPvalstats(sgT4_1517, xtest, ytest, bydim=F)
-sgS1_225.stats <- SGGPvalstats(sgS1_225, xtest, ytest, bydim=F)
+sgS1_227.stats <- SGGPvalstats(sgS1_227, xtest, ytest, bydim=F)
 sgS1_453.stats <- SGGPvalstats(sgS1_453, xtest, ytest, bydim=F)
 
 
@@ -281,3 +281,5 @@ rbind(
 # SGT4_455      0.00443485  -10.02579  0.002146854  0.98864 0.9999964 0.9999924  0.006340489
 # SGT4_1061     0.002773989 -10.90239  0.001325069   0.9913 0.9999985 0.999997   0.00404263
 # SGT4_1517     0.001605968 -11.07487  0.001113512  0.99981 0.9999995 0.999999   0.002448991
+# SGS1_255+100  0.005890464 -9.658773  0.003019816  0.92948 0.9999933 0.9999866  0.008979054
+# SGS1_453+100  0.004320681 -10.34532  0.002162065  0.91754 0.9999965 0.9999928  0.006389303
