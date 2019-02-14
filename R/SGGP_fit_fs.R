@@ -152,6 +152,14 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
                     use_progress_bar=TRUE,
                     Ynew) {
+  # If Y or Ynew is matrix with 1 column, convert it to vector to avoid issues
+  if (!missing(Y) && is.matrix(Y) && ncol(Y)==1) {
+    Y <- c(Y)
+  }
+  if (!missing(Ynew) && is.matrix(Ynew) && ncol(Ynew)==1) {
+    Ynew <- c(Ynew)
+  }
+  
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
     if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}
