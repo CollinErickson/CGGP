@@ -272,7 +272,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   }
   
   # nnn is numberofoutputparameterdimensions
-  nnn <- if (separateoutputparameterdimensions) {
+  nnn <- if (separateoutputparameterdimensions && is.matrix(y)) {
     ncol(y)
   } else {
     1
@@ -282,7 +282,6 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   if (nnn > 1) {
     if (is.vector(theta0)) {
       theta0 <- matrix(theta0, nrow=length(theta0), ncol=nnn, byrow=F)
-      # browser()
     }
   }
   
@@ -461,7 +460,6 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         }
         Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
       }
-      # browser()
       yhats = Cs%*%pw
       
       Sti_resid = solve(Sigma_t,ys.thisloop-yhats)
@@ -488,7 +486,6 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         SGGP$sigma2MAP <- sigma2MAP
       }
     } else { # More than 1 opd, so need to set as columns of matrix
-      # browser('this is important, not initialized yet')
       if (opdlcv==1) { # First time, initialize matrix/array for all
         
         SGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nnn)
@@ -504,7 +501,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       SGGP$sigma2MAP[opdlcv] <- sigma2MAP
       SGGP$pw[,opdlcv] <- pw
       SGGP$thetaPostSamples[,,opdlcv] <- thetaPostSamples
-      if (SGGP$supplemented) {#browser('need to fix this')
+      if (SGGP$supplemented) {
         if (opdlcv==1) { # First time initialize all
           
           SGGP$pw_uppadj <- matrix(NaN, nrow(pw_uppadj), nnn)
