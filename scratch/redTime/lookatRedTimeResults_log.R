@@ -71,6 +71,8 @@ sgT4_1061 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-1061.rds"))
 sgT4_1517 <- readRDS(paste0(redtimefolder, "out_T4_SGGP-1517.rds"))
 sgS1_227 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-227.rds"))
 sgS1_453 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-453.rds"))
+sgO90_227 <- readRDS(paste0(redtimefolder, "out_O90_SGGP-227.rds"))
+sgO90_455 <- readRDS(paste0(redtimefolder, "out_O90_SGGP-455.rds"))
 
 
 # Ylog <- log(sg8$Y, 10)
@@ -209,6 +211,8 @@ sgT4_1061.stats <- SGGPvalstats(sgT4_1061, xtest, ytest, bydim=F)
 sgT4_1517.stats <- SGGPvalstats(sgT4_1517, xtest, ytest, bydim=F)
 sgS1_227.stats <- SGGPvalstats(sgS1_227, xtest, ytest, bydim=F)
 sgS1_453.stats <- SGGPvalstats(sgS1_453, xtest, ytest, bydim=F)
+sgO90_227.stats <- SGGPvalstats(sgO90_227, xtest, ytest[,90])
+sgO90_455.stats <- SGGPvalstats(sgO90_455, xtest, ytest[,90])
 
 
 rbind(
@@ -283,3 +287,18 @@ rbind(
 # SGT4_1517     0.001605968 -11.07487  0.001113512  0.99981 0.9999995 0.999999   0.002448991
 # SGS1_255+100  0.005890464 -9.658773  0.003019816  0.92948 0.9999933 0.9999866  0.008979054
 # SGS1_453+100  0.004320681 -10.34532  0.002162065  0.91754 0.9999965 0.9999928  0.006389303
+
+
+# Single output
+require(mlegp)
+mlegp.O90.100 <- mlegp(xlhs1000_100, ylhs1000_100[,90])
+pred.mlegp.O90.100 <- predict(mlegp.O90.100, xtest, se=T)
+pred.sgO90_227 <- predict(sgO90_227, xtest)
+pred.sgO90_455 <- predict(sgO90_455, xtest)
+valstats(c(pred.mlegp.O90.100$f), c(pred.mlegp.O90.100$s), ytest[,90])
+plot(ytest[,90], pred.sgO90_227$mean - ytest[,90])
+points(ytest[,90], pred.sgO90_455$mean - ytest[,90], col=2)
+points(ytest[,90], pred.mlegp.O90.100$fi-ytest[,90], col=3, pch=4)
+# mlegp.O90.100  0.004768259   NaN      NaN    0.731 0.9999808 0.999961
+# sgO90_227      0.008338798 -8.663197 0.004349465    0.993 0.9999416 0.9998807
+# sgO90_455      0.01031961 -8.749555 0.004792865    0.961 0.9999106 0.9998173
