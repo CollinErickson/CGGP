@@ -302,7 +302,7 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #' valstats(cbind(c(.8,1.2,3.4), c(8,12,34)),
 #'          cbind(c(.01,.01,.01),c(1.1,.81,1.1)),
 #'          cbind(c(1,2,3),c(10,20,30)), bydim=FALSE)
-valstats <- function(predmean, predvar, Yval, bydim=TRUE) {
+valstats <- function(predmean, predvar, Yval, bydim=TRUE, metrics) {
   if ((is.matrix(predmean) && 
        (any(dim(predmean)!=dim(predvar)) || any(dim(predmean)!=dim(Yval)))
   ) ||
@@ -337,6 +337,21 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE) {
   if (is.matrix(predmean) && ncol(predmean) > 1) {
     # out$RMSEnorm <- sqrt(mean(sweep((predmean - Yval)^2, 2, apply(Yval, 2, var), "/")))
     out$RMSEnorm <- sqrt(mean(colMeans((predmean - Yval)^2) / apply(Yval, 2, var)))
+  }
+  
+  # Check if user wants more metrics
+  if (!missing(metrics)) {
+    if (is.function(metrics)) {
+      out$metric <- metrics(predmean, predvar, Yval)
+    } else if (is.list(metrics)) {
+      metrics.names <- names(metrics)
+      if (is.null(metrics.names)) {
+        metrics.names <- paste0("metrics", 1:length(metrics))
+      }
+      for (iii in 1:length(metrics)) {
+        out[[metrics.names[iii]]] <- metrics[[iii]](predmean, predvar, Yval)
+      }
+    }
   }
   
   out

@@ -18,7 +18,7 @@
 #' @examples
 #' d <- 8
 #' SG = SGGPcreate(d,200)
-SGGPcreate <- function(d, batchsize, corr="CauchySQT",
+SGGPcreate <- function(d, batchsize, corr="CauchySQ",
                        grid_sizes=c(1,2,4,4,8,12,32)
                        ) {
   if (d <= 1) {stop("d must be at least 2")}
