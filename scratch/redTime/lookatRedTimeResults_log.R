@@ -73,6 +73,10 @@ sgS1_227 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-227.rds"))
 sgS1_453 <- readRDS(paste0(redtimefolder, "out_Sup1_SGGP-453.rds"))
 sgO90_227 <- readRDS(paste0(redtimefolder, "out_O90_SGGP-227.rds"))
 sgO90_455 <- readRDS(paste0(redtimefolder, "out_O90_SGGP-455.rds"))
+sgO50_227 <- readRDS(paste0(redtimefolder, "out_O50_SGGP-227.rds"))
+sgO50_455 <- readRDS(paste0(redtimefolder, "out_O50_SGGP-455.rds"))
+sgO50_1061 <- readRDS(paste0(redtimefolder, "out_O50_SGGP-1061.rds"))
+sgO50_2051 <- readRDS(paste0(redtimefolder, "out_O50_SGGP-2051.rds"))
 
 
 # Ylog <- log(sg8$Y, 10)
@@ -213,6 +217,10 @@ sgS1_227.stats <- SGGPvalstats(sgS1_227, xtest, ytest, bydim=F)
 sgS1_453.stats <- SGGPvalstats(sgS1_453, xtest, ytest, bydim=F)
 sgO90_227.stats <- SGGPvalstats(sgO90_227, xtest, ytest[,90])
 sgO90_455.stats <- SGGPvalstats(sgO90_455, xtest, ytest[,90])
+sgO50_227.stats <- SGGPvalstats(sgO50_227, xtest, ytest[,50])
+sgO50_455.stats <- SGGPvalstats(sgO50_455, xtest, ytest[,50])
+sgO50_1061.stats <- SGGPvalstats(sgO50_1061, xtest, ytest[,50])
+sgO50_2051.stats <- SGGPvalstats(sgO50_2051, xtest, ytest[,50])
 
 
 rbind(
@@ -302,3 +310,25 @@ points(ytest[,90], pred.mlegp.O90.100$fi-ytest[,90], col=3, pch=4)
 # mlegp.O90.100  0.004768259   NaN      NaN    0.731 0.9999808 0.999961
 # sgO90_227      0.008338798 -8.663197 0.004349465    0.993 0.9999416 0.9998807
 # sgO90_455      0.01031961 -8.749555 0.004792865    0.961 0.9999106 0.9998173
+
+
+mlegp.O50.100 <- mlegp(xlhs1000_100, ylhs1000_100[,50])
+pred.mlegp.O50.100 <- predict(mlegp.O50.100, xtest, se=T)
+valstats(c(pred.mlegp.O50.100$f), c(pred.mlegp.O50.100$s), ytest[,50])
+mlegp.O50.300 <- mlegp(xlhs1000_300, ylhs1000_300[,50])
+pred.mlegp.O50.300 <- predict(mlegp.O50.300, xtest, se=T)
+valstats(c(pred.mlegp.O50.300$f), c(pred.mlegp.O50.300$s), ytest[,50])
+pred.sgO50_227 <- predict(sgO50_227, xtest)
+pred.sgO50_455 <- predict(sgO50_455, xtest)
+plot(ytest[,50], pred.sgO50_227$mean - ytest[,50])
+points(ytest[,50], pred.sgO50_455$mean - ytest[,50], col=2)
+points(ytest[,50], pred.mlegp.O50.100$fi-ytest[,50], col=3, pch=4)
+# For output 50
+# mlegp.O50.100  0.00293514   NaN      NaN    0.783 0.9999872 0.999974
+# mlegp.O50.300  0.001315041   NaN      NaN    0.342 0.9999974 0.9999948
+# sgO50_227      0.007884243 -8.801122 0.004248075    0.966 0.9999095 0.9998126
+# sgO50_455      0.003161804 -10.30824 0.001793238    0.993 0.999985 0.9999699
+# sgO50_1061     0.002270208 -11.16324 0.001183156    0.989 0.9999924 0.9999845
+# sgO50_2051     0.001029277 -11.77373 0.0007522737    0.998 0.9999984 0.9999968
+
+

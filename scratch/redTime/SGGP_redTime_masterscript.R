@@ -7,7 +7,7 @@
 cat("Starting SGGP_redTime_masterscript.R\n")
 
 source("/home/collin/scratch/SGGP/scratch/redTime/SGGP_redTime_parameters.R")
-cat("Reloaded parameters successfully\n")
+cat("Reloaded parameters successfully in masterscript, beginning loop\n")
 
 
 while (TRUE) {

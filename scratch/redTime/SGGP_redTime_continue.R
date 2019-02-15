@@ -5,8 +5,9 @@ cat("Starting SGGP_redTime_continue.R\n")
 
 # This file will reload number_cores, d, SGGP_RDS_path, ???
 # WILL NEED TO LET THIS FILE NAME CHANGE LATER
-source("/home/collin/scratch/SGGP/scratch/redTime/SGGP_redTime_parameters.R")
-cat("Reloaded parameters successfully\n")
+# source("/home/collin/scratch/SGGP/scratch/redTime/SGGP_redTime_parameters.R")
+# cat("Reloaded parameters successfully\n")
+cat("Parameters should already be loaded, re-sourcing parameters is bad in case changes are made.\n")
 
 # # Function to check if all runs are completed
 # # This is terrible method now, since unrelated jobs of mine could still be running
