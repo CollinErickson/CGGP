@@ -5,8 +5,8 @@
 # T3 was separate opd and no PCA.
 # T4 was same as T3 but with adding sigma2hat in append, so it should focus more on bad spots
 # Sup1 is with supplementary data
-groupID <- "redTimeTestO50_1k"
-groupID_short <- "O50_1k"
+groupID <- "redTimeTestO50_500"
+groupID_short <- "O50_500"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
 number_cores <- 50
@@ -15,15 +15,15 @@ number_cores <- 50
 d <- 9
 
 # Initial sample size
-N0 <- 200
+N0 <- 100
 # Number of points to add in each batch
-batchsize <- 200
+batchsize <- 100
 
 # Correlation function
 corr <- "CauchySQ"
 
 # Number of points after which to stop (will go up to batchsize-1 over)
-Nfinal <- 1100
+Nfinal <- 550
 
 # Grid size to use. This option wasn't included in Test1
 # grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
@@ -60,7 +60,8 @@ use_log_redTime <- TRUE
 
 # When should the object be saved
 # save_after <- c(200, 400, 1000, 2000, 4000, 8000)
-save_after <- c(100, 300, 500, 700, 900, 1100)
+# save_after <- c(100, 300, 500, 700, 900, 1100)
+save_after <- c(50,150,250,350,450,550)
 
 sourcefilepath <- "/home/collin/scratch/SGGP/scratch/redTime/"
 
