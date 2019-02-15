@@ -4,7 +4,7 @@
 \alias{SGGPcreate}
 \title{Create sparse grid GP}
 \usage{
-SGGPcreate(d, batchsize, corr = "CauchySQT", grid_sizes = c(1, 2, 4, 4,
+SGGPcreate(d, batchsize, corr = "CauchySQ", grid_sizes = c(1, 2, 4, 4,
   8, 12, 32))
 }
 \arguments{

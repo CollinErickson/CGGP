@@ -4,7 +4,7 @@
 \alias{valstats}
 \title{Calculate stats for prediction on validation data}
 \usage{
-valstats(predmean, predvar, Yval, bydim = TRUE)
+valstats(predmean, predvar, Yval, bydim = TRUE, metrics)
 }
 \arguments{
 \item{predmean}{Predicted mean}
@@ -14,6 +14,9 @@ valstats(predmean, predvar, Yval, bydim = TRUE)
 \item{Yval}{Y validation data}
 
 \item{bydim}{If multiple outputs, should it be done separately by dimension?}
+
+\item{metrics}{Optional additional metrics to be calculated. Should have
+same first three parameters as this function.}
 }
 \value{
 data frame

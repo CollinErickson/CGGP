@@ -1,8 +1,8 @@
 # SGGPfit is used in many other tests, so not as many here
 
 test_that("SGGPfit works with Laplace approx", {
-  
-  SG <- SGGPcreate(d=3, batchsize=200)
+  d <- 3
+  SG <- SGGPcreate(d=d, batchsize=200)
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
@@ -14,15 +14,15 @@ test_that("SGGPfit works with Laplace approx", {
   }
   expect_true(all(abs(rowMeans(SG$thetaPostSamples)- SG$thetaMAP) < apply(SG$thetaPostSamples, 1, sd)))
   
-  neglogpost <- SGGP_internal_gneglogpost(rep(.5,9), SG, y)
+  neglogpost <- SGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y)
   expect_is(neglogpost, "matrix")
-  expect_length(neglogpost, 9)
+  expect_length(neglogpost, length(SG$thetaMAP))
   
   
-  neglogpost2 <- SGGP_internal_gneglogpost(rep(.5,9), SG, y, return_lik = T)
+  neglogpost2 <- SGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y, return_lik = T)
   expect_is(neglogpost2, "list")
   expect_length(neglogpost2[[1]], 1)
-  expect_length(neglogpost2[[2]], 9)
+  expect_length(neglogpost2[[2]], length(SG$thetaMAP))
   
   # # Works with supplementary data
   # nsup <- 10

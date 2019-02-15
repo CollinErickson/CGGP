@@ -283,6 +283,8 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #' @param predvar Predicted variance
 #' @param Yval Y validation data
 #' @param bydim If multiple outputs, should it be done separately by dimension?
+#' @param metrics Optional additional metrics to be calculated. Should have
+#'  same first three parameters as this function.
 #'
 #' @return data frame
 #' @export

@@ -36,7 +36,7 @@ test_that("1. MV output, PCA, 1opd", {
   y3 <- apply(SG$design, 1, f3)
   y <- cbind(y1, y2, y3)
   expect_error(SG <- SGGPfit(SG, Y=y), NA) # No error
-  expect_length(SG$thetaMAP, 3*3)
+  expect_length(SG$thetaMAP, 3*SG$numpara)
   expect_true(!is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$Y) == 3)
   expect_true(ncol(SG$y) == 2)
@@ -77,7 +77,7 @@ test_that("2. MV output, NO PCA, 1opd", {
   y3 <- apply(SG$design, 1, f3)
   y <- cbind(y1, y2, y3)
   expect_error(SG <- SGGPfit(SG, Y=y, use_PCA = F), NA) # No error
-  expect_length(SG$thetaMAP, 3*3)
+  expect_length(SG$thetaMAP, 3*SG$numpara)
   expect_true(!is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$Y) == 3)
   expect_true(ncol(SG$y) == 3)
@@ -105,7 +105,7 @@ test_that("3. MV output, PCA, separate opd", {
   y3 <- apply(SG$design, 1, f3)
   y <- cbind(y1, y2, y3)
   expect_error(SG <- SGGPfit(SG, Y=y, use_PCA = T, separateoutputparameterdimensions = T), NA) # No error
-  expect_length(SG$thetaMAP, 3*3*2)
+  expect_length(SG$thetaMAP, 3*SG$numpara*2)
   expect_true(is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$thetaMAP) == 2)
   expect_true(ncol(SG$Y) == 3)
@@ -155,7 +155,7 @@ test_that("4. MV output, NO PCA, separate opd", {
   # Now fit all
   set.seed(seed)
   expect_error(SG <- SGGPfit(SG, Y=y, use_PCA = F, separateoutputparameterdimensions = T), NA) # No error
-  expect_length(SG$thetaMAP, 3*3*3)
+  expect_length(SG$thetaMAP, 3*SG$numpara*3)
   expect_true(is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$thetaMAP) == 3)
   expect_true(ncol(SG$Y) == 3)

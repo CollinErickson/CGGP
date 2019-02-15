@@ -52,7 +52,7 @@ test_that("Prediction matches exact on small samples", {
     outer(1:nrow(X), 1:nrow(U), Vectorize(function(i,j) {CorrMatCauchySQTVecs(X[i,],U[j,],theta)}))
   }
   
-  SG = SGGPcreate(d=d,31) # Need size to be small to avoid computationally singular in solve
+  SG = SGGPcreate(d=d,31, corr="CauchySQT") # Need size to be small to avoid computationally singular in solve
   Y = testf(SG$design) #the design is $design, simple enough, right?
   
   n <- 50
