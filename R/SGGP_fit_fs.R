@@ -13,7 +13,7 @@
 #' Y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- SGGPfit(SG, Y)
 #' SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=SG$y)
-SGGP_internal_neglogpost <- function(theta,SGGP,y) {
+SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL) {
   # Return Inf if theta is too large
   if (max(theta) >= 1 || min(theta) <= -1) {
     return(Inf)
