@@ -29,15 +29,17 @@ library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
+Xs = randomLHS(100, d)
+Ys = testf(Xs)
+
 SGGP = SGGPcreate(d,200) #create the design.  it has so many entries because i am sloppy
 Y = testf(SGGP$design) #the design is $design, simple enough, right?
 SGGP = SGGPfit(SGGP,Y)
-SGGPGreedy=SGGPappend(SGGP,200,selectionmethod="Greedy")
-YGreedy = testf(SGGPGreedy$design) #the design is $design, simple enough, right?
-SGGPGreedy = SGGPfit(SGGPGreedy,YGreedy)
-SGGPGreedy=SGGPappend(SGGP,200,selectionmethod="Greedy")
-YGreedy = testf(SGGPGreedy$design) #the design is $design, simple enough, right?
-SGGPGreedy = SGGPfit(SGGPGreedy,YGreedy)
-PredGreedy = SGGPpred(Xp,SGGPGreedy)
+PredGreedy = SGGPpred(SGGP,Xp)
+mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
+mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+
+SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
+PredGreedy = SGGPpred(SGGP,Xp)
 mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
 mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
