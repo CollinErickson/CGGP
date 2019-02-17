@@ -383,8 +383,8 @@ SGGP_internal_calcusedforsupp <- function(SGGP, revc, y, theta, return_lS=FALSE)
     for (blocklcv in 1:SGGP$uoCOUNT) {
       if(abs(SGGP$w[blocklcv])>0.5){
         IS = SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]];
-        B0 = y[IS]
-        B2 = revc[IS]
+        B0 = revc[IS]
+        B2 = y[IS]
         B = (SGGP$w[blocklcv])*B0#/length(y)
         dB = rcpp_gkronDBS(unlist(cholS[gg+SGGP$uo[blocklcv,]]),unlist(dMatdtheta[gg+SGGP$uo[blocklcv,]]), B, SGGP$gridsizest[blocklcv,])
         
