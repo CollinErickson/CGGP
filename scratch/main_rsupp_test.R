@@ -17,7 +17,7 @@ borehole <- function(x) {
   
   Yn = m1 / m2 / m3
   return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.25)))
- # return(Yn)
+#  return(Yn)
 }
 
 
