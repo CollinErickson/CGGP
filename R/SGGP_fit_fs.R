@@ -75,9 +75,9 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL) {
       Sigma_chol = chol((1-10^(-14))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-14))
       
       Sti_resid = backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,transpose = TRUE))
-      sigma2_hat = (sigma2_hat*dim(SGGP$design)[1]+colSums((ys-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])
-
-      lDet = lDet + 2*sum(log(diag(Sigma_chol)))
+     # sigma2_hat = (sigma2_hat*dim(SGGP$design)[1]+colSums((ys-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])
+      sigma2_hat = 1#colSums((ys-yhats)*(ys-yhats))/dim(SGGP$design)[1]
+    #  lDet = lDet + 2*sum(log(diag(Sigma_chol)))
     }
     
     
@@ -136,11 +136,12 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
   
   if(!is.null(Xs)){
       Cs = matrix(1,dim(Xs)[1],SGGP$ss)
-      dCs = array(1,dim=c(dim(Xs)[1],SGGP$ss,dim(Xs)[2]))
+      dCs = array(1,dim=c(dim(Xs)[1],SGGP$numpara*SGGP$ss,dim(Xs)[2]))
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
         Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb, theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta=TRUE)
         Cs = Cs*(Vall$C[,SGGP$designindex[,dimlcv]])
-        dCs[,,dimlcv] = Vall$dC[,SGGP$designindex[,dimlcv]]
+        A = round(outer(SGGP$designindex[,dimlcv],length(SGGP$xb)*(0:(SGGP$numpara-1)),FUN=function(x,y) x+y))
+        dCs[,,dimlcv] = Vall$dC[,A]
       }
       
       Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1]) 
@@ -168,7 +169,8 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
       Sigma_chol = chol((1-10^(-14))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-14))
       
       yhats = Cs%*%pw
-      dpw <- SGGP_internal_calcpwanddpw(SGGP, y, theta)$dpw
+      tempvec1= backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,transpose = TRUE))
+      tempvec1= ys-yhats
       for (dimlcv in 1:SGGP$d) {
       for (blocklcv in 1:SGGP$uoCOUNT) {
           ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
@@ -184,30 +186,21 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
             dSigma_to[[dimlcv]] = dSigma_to[[dimlcv]]-(1-10^(-14))*SGGP$w[blocklcv]*(dME_s)
       }
         for(paralcv in 1:SGGP$numpara){
-          print(dim(dSigma_to[[dimlcv]]))
           dSigma_now = as.matrix((dSigma_to[[dimlcv]])[,((paralcv-1)*dim(Sigma_chol)[2]+1):(paralcv*dim(Sigma_chol)[2])])
-          tempvec1= backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,transpose = TRUE))
-          print(dim(dSigma_now))
-          print(dim(tempvec1))
           tempvec2= dSigma_now%*%tempvec1
-          dsigma2_hat_part1[,(dimlcv-1)*SGGP$numpara+paralcv] = colSums((ys-yhats)*backsolve(Sigma_chol,backsolve(Sigma_chol,tempvec2,transpose = TRUE)))/(dim(SGGP$design)[1]+dim(Xs)[1])
-          dsigma2_hat_part1[,(dimlcv-1)*SGGP$numpara+paralcv] = colSums((ys-yhats)*backsolve(Sigma_chol,backsolve(Sigma_chol,tempvec2,transpose = TRUE)))/(dim(SGGP$design)[1]+dim(Xs)[1])
+          dsigma2_hat_part1[,(dimlcv-1)*SGGP$numpara+paralcv] =-0*colSums((ys-yhats)*backsolve(Sigma_chol,backsolve(Sigma_chol,tempvec2,transpose = TRUE)))
+          dCpn = as.matrix(dCs[,((paralcv-1)*dim(Cs)[2]+1):(paralcv*dim(Cs)[2]),dimlcv])
+          dsigma2_hat_part2[,(dimlcv-1)*SGGP$numpara+paralcv] = 2*t(tempvec1)%*%(dCpn%*%pw)
         }
       }
+      tempvec1 = t(tempvec1)%*%Cs
+      dsigma2_hat_part3 =  (2*SGGP_internal_calcusedforsupp(SGGP,as.vector(tempvec1),y, theta)$dsigma2)
       
       
-      
-      dsigma2_hat_part1[,(dimlcv-1)*SGGP$numpara+paralcv] = Cp%*%dpw+ dCp%*%dpw
-      
-      #NEEDS
-      #dCS
-      #dSigma_t
-      #dpw
+      dsigma2_hat = 0*(dsigma2_hat_part2+dsigma2_hat_part3)/(dim(SGGP$design)[1])
       
       
-      
-      
-      lDet = lDet + 2*sum(log(diag(Sigma_chol)))
+    #  lDet = lDet + 2*sum(log(diag(Sigma_chol)))
   }
   
   
@@ -704,8 +697,8 @@ SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,...,returndP
    # print(dim(dS))
     dSigma_mat = matrix(0,dim(Sigma_mat)[1],dim(Sigma_mat)[2]*length(theta))
     for(k in 1:length(theta)){
-    CoinvC1oE = (dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
-    dCoinvC1o = backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
+    CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
+    dCoinvC1o = -backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
     dCoinvC1o = dCoinvC1o + backsolve(cholS,backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]), transpose = TRUE))
     dSigma_mat[,((k-1)*dim(Sigma_mat)[2]+1):(k*dim(Sigma_mat)[2])] =-t(dCoinvC1o)%*%t(C2o)-t(CoinvC1o)%*%t(dC2o[,(n*(k-1)+1):(k*n)])
     }
