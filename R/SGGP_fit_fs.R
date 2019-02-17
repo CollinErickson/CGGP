@@ -13,7 +13,7 @@
 #' Y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- SGGPfit(SG, Y)
 #' SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=SG$y)
-SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL) {
+SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSuppData = "Correct") {
   # Return Inf if theta is too large
   if (max(theta) >= 1 || min(theta) <= -1) {
     return(Inf)
@@ -37,56 +37,116 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL) {
       }
     }
     
-    if(!is.null(Xs)){
+    if(!is.null(Xs) || HandlingSuppData == "Ignore"){
       Cs = matrix(1,dim(Xs)[1],SGGP$ss)
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
         V = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
         Cs = Cs*V[,SGGP$designindex[,dimlcv]]
       }
-     # print(Cs[1:10,1:10])
-      
-      Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1])
-      for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-        V = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
-        Sigma_t = Sigma_t*V
-      }
-      
-      MSE_s = list(matrix(0,dim(Xs)[1],dim(Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
-      for (dimlcv in 1:SGGP$d) {
-        for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
-          MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(Xs[,dimlcv],SGGP$Xs[,dimlcv],
-                                                                                   SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                                   theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
-                                                                                   CorrMat=SGGP$CorrMat))
-        }
-      }
-      
-      for (blocklcv in 1:SGGP$uoCOUNT) {
-        ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
-        for (dimlcv in 1:SGGP$d) {
-          levelnow = SGGP$uo[blocklcv,dimlcv]
-          ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
-        }
-        Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
-      }
+      # print(Cs[1:10,1:10])
       
       pw <- SGGP_internal_calcpw(SGGP, y, theta)
       yhats = Cs%*%pw
+      sigma2_hat_old = sigma2_hat
       
-      Sigma_chol = chol((1-10^(-14))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-14))
+      if(HandlingSuppData =="Correct" || HandlingSuppData =="ValidationFull"){
+        Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1])
+        for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+          V = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+          Sigma_t = Sigma_t*V
+        }
+        
+        MSE_s = list(matrix(0,dim(Xs)[1],dim(Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+        for (dimlcv in 1:SGGP$d) {
+          for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+            MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(Xs[,dimlcv],SGGP$Xs[,dimlcv],
+                                                                                     SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                                     theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                                     CorrMat=SGGP$CorrMat))
+          }
+        }
+        
+        
+        for (blocklcv in 1:SGGP$uoCOUNT) {
+          ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
+          for (dimlcv in 1:SGGP$d) {
+            levelnow = SGGP$uo[blocklcv,dimlcv]
+            ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+          }
+          Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
+        }
+        Sigma_t = (1-10^(-12))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-12)
+        
+        Sigma_chol = chol(Sigma_t)
+        
+        Sti_resid = backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,transpose = TRUE))
+        sigma2_hat_new = colSums((ys-yhats)*Sti_resid)/dim(Xs)[1]
+        lDet_new = 2*sum(log(diag(Sigma_chol)))
+      }else{
+        
+        Sigma_t = matrix(1,dim(Xs)[1],1)
+        
+        MSE_s = list(matrix(0,dim(Xs)[1],1),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+        for (dimlcv in 1:SGGP$d) {
+          for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+            MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(Xs[,dimlcv],SGGP$Xs[,dimlcv],
+                                                                                     SGGP$xb[1:SGGP$sizest[levellcv]],
+                                                                                     theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                                                                     CorrMat=SGGP$CorrMat,returndiagonly=TRUE))
+          }
+        }
+        
+        for (blocklcv in 1:SGGP$uoCOUNT) {
+          ME_s = matrix(1,nrow=dim(Xs)[1],1)
+          for (dimlcv in 1:SGGP$d) {
+            levelnow = SGGP$uo[blocklcv,dimlcv]
+            ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+          }
+          Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
+        }
+        Sigma_t = (1-10^(-12))*Sigma_t+10^(-12)
+        lDet_new = -sum(log(Sigma_t))
+        if(is.matrix(ys)){
+        Sigma_t = t(matrix( rep( Sigma_t , dim(ys)[2] ) , ncol = ncol(t(Sigma_t)) , byrow = TRUE ))
+        }
+        sigma2_hat_new = colSums((ys-yhats)^2/Sigma_t)/dim(Xs)[1]
+      }
       
-      Sti_resid = backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,transpose = TRUE))
-     # sigma2_hat = (sigma2_hat*dim(SGGP$design)[1]+colSums((ys-yhats)*Sti_resid))/(dim(SGGP$design)[1]+dim(Xs)[1])
-      sigma2_hat = colSums((ys-yhats)*(ys-yhats))
-    #  lDet = lDet + 2*sum(log(diag(Sigma_chol)))
-    }
-    
-    
-    
-    if(!is.matrix(y)){
-      neglogpost = sigma2_hat#1/2*(length(y)*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+      
+      
+      if(HandlingSuppData =="Correct"){
+        sigma2_hat = sigma2_hat_old*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+sigma2_hat_new*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
+        
+        lDet = lDet+lDet_new
+        if(!is.matrix(y)){
+          neglogpost = 1/2*((length(y)+length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+        }else{
+          neglogpost = 1/2*((dim(y)[1]+dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+        }
+        
+      }else if (HandlingSuppData =="ValidationFull"){
+        sigma2_hat = sigma2_hat_new
+        lDet = lDet_new
+        if(!is.matrix(y)){
+          neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+        }else{
+          neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+        }
+      }else if (HandlingSuppData =="ValidationMarginal"){
+        sigma2_hat = sigma2_hat_new
+        lDet = lDet_new
+        if(!is.matrix(y)){
+          neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+        }else{
+          neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+        }
+      }
     }else{
-      neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+      if(!is.matrix(y)){
+        neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+      }else{
+        neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+      }
     }
     
     return(neglogpost)
@@ -109,7 +169,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL) {
 #' Y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- SGGPfit(SG, Y)
 #' SGGP_internal_gneglogpost(SG$thetaMAP, SG=SG, y=SG$y)
-SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NULL,Xs=NULL) {
+SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NULL,Xs=NULL,HandlingSuppData = "Correct") {
   sigma2anddsigma2 <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
   
   lS <- sigma2anddsigma2$lS
@@ -135,36 +195,55 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
     }
   }
   
-  if(!is.null(Xs)){
-      Cs = matrix(1,dim(Xs)[1],SGGP$ss)
-      dCs = array(1,dim=c(dim(Xs)[1],SGGP$numpara*SGGP$ss,dim(Xs)[2]))
-      
-      for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-        Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
-        Cs = Cs*Vall[,SGGP$designindex[,dimlcv]]
-      }
-      
-      Cmat1 = matrix( rep( (Cs),SGGP$numpara) , nrow = nrow(Cs) , byrow = FALSE )
-      Cmat2 = Cmat1
-      for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-        Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta=TRUE)
-        A = round(as.vector(outer(SGGP$designindex[,dimlcv],length(SGGP$xb)*(0:(SGGP$numpara-1)),FUN=function(x,y) x+y)))
-        G = Vall$C[,SGGP$designindex[,dimlcv]]
-        Cmat2 = matrix( rep( (G),SGGP$numpara) , nrow = nrow(G) , byrow = FALSE )
-        dCs[,,dimlcv] = (Cmat1/Cmat2)*(Vall$dC[,A])
-      }
-      #print(Cs[1:10,1:10])
+  if(!is.null(Xs) || HandlingSuppData == "Ignore"){
+    Cs = matrix(1,dim(Xs)[1],SGGP$ss)
+    dCs = array(1,dim=c(dim(Xs)[1],SGGP$numpara*SGGP$ss,dim(Xs)[2]))
+    dsigma2_hat_old = dsigma2_hat
+    sigma2_hat_old = sigma2_hat
+    dlDet_old = dlDet
+    
+    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+      Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      Cs = Cs*Vall[,SGGP$designindex[,dimlcv]]
+    }
+    
+    pw <- SGGP_internal_calcpw(SGGP, y, theta)
+    yhats = Cs%*%pw
+    
+    Cmat1 = t(matrix( rep(Cs , SGGP$numpara ) , ncol = ncol(t(Cs)) , byrow = TRUE ))
+    Cmat2 = Cmat1
+    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+      Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta=TRUE)
+      A = round(as.vector(outer(SGGP$designindex[,dimlcv],length(SGGP$xb)*(0:(SGGP$numpara-1)),FUN=function(x,y) x+y)))
+      G = Vall$C[,SGGP$designindex[,dimlcv]]
+      Cmat2 =  t(matrix( rep( G , SGGP$numpara ) , ncol = ncol(t(G)) , byrow = TRUE ))
+      # print(dim(Cmat1))
+      # print(dim(Cmat2))
+      # print(dim(Vall$dC[,A]))
+      dCs[,,dimlcv] = (Cmat1/Cmat2)*(Vall$dC[,A])
+    }
+    #print(Cs[1:10,1:10])
+    
+    if(HandlingSuppData =="Correct" || HandlingSuppData =="ValidationFull"){
       
       Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1]) 
       dSigma_to = list(Sigma_t,SGGP$d) 
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-        Vall = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta=TRUE)
-        Sigma_t = Vall$C
-        dSigma_to[[dimlcv]] = (1-10^(-14))*Vall$dC 
+        Vall = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+        Sigma_t =Sigma_t*Vall
       }
       
-      MSE_s = list(matrix(0,dim(Xs)[1],dim(Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
-      dMSE_s = list(matrix(0,dim(Xs)[1],dim(Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+      Cmat1 = t(matrix( rep( Sigma_t , SGGP$numpara ) , ncol = ncol(t(Sigma_t)) , byrow = TRUE ))
+      dSigma_to = list(Sigma_t,SGGP$d) 
+      for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+        Vall = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta=TRUE)
+        G = Vall$C
+        Cmat2 =  t(matrix( rep( G , SGGP$numpara ) , ncol = ncol(t(G)) , byrow = TRUE ))
+        dSigma_to[[dimlcv]] = Vall$dC*(Cmat1/Cmat2)
+      }
+      
+      MSE_s = list(matrix(0,dim(Xs)[1],dim(Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1))
+      dMSE_s = list(matrix(0,dim(Xs)[1],dim(Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1))
       for (dimlcv in 1:SGGP$d) {
         for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
           REEALL =SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],SGGP$xb[1:SGGP$sizest[levellcv]],theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat,returndPVMC = TRUE)
@@ -173,64 +252,236 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
         }
       }
       
+      
       dsigma2_hat_part1 = 0*dsigma2_hat
       dsigma2_hat_part2 = 0*dsigma2_hat
       dsigma2_hat_part3 = 0*dsigma2_hat
+      dlDet_new = 0*dlDet
       pw <- SGGP_internal_calcpw(SGGP, y, theta)
-      Sigma_chol = chol((1-10^(-14))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-14))
-      
-      yhats = Cs%*%pw
-      tempvec1= backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,transpose = TRUE))
-      tempvec1= ys-yhats
-      for (dimlcv in 1:SGGP$d) {
       for (blocklcv in 1:SGGP$uoCOUNT) {
-          ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
-          for (dimlcv2 in 1:SGGP$d) {
-            if(dimlcv2 != dimlcv){
-              levelnow = SGGP$uo[blocklcv,dimlcv2]
-              ME_s = ME_s*MSE_s[[(dimlcv2)*SGGP$maxlevel+levelnow]]
-            }
-            }
-            dME_s = matrix( rep( t(ME_s) , SGGP$numpara ) , nrow = nrow(ME_s) , byrow = FALSE )
-            levelnow = SGGP$uo[blocklcv,dimlcv]
-            dME_s = dME_s*dMSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
-            dSigma_to[[dimlcv]] = dSigma_to[[dimlcv]]-(1-10^(-14))*SGGP$w[blocklcv]*(dME_s)
+        ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
+        for (dimlcv in 1:SGGP$d) {
+          levelnow = SGGP$uo[blocklcv,dimlcv]
+          ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+        }
+        Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
+        
+        ME_so1 = t(matrix( rep( (ME_s) , SGGP$numpara ) , ncol = ncol(t(ME_s)) , byrow = TRUE ))
+        ME_so2 = ME_so1
+        for (dimlcv in 1:SGGP$d) {
+          levelnow = SGGP$uo[blocklcv,dimlcv]
+          ME_n = MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+          ME_so2 =  t(matrix( rep( (ME_n) , SGGP$numpara ) , ncol = ncol(t(ME_n)) , byrow = TRUE ))
+          dME_n = dMSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+          dSigma_to[[dimlcv]] = dSigma_to[[dimlcv]]-SGGP$w[blocklcv]*(ME_so1*dME_n/ME_so2)
+        }
       }
+      Sigma_t = (1-10^(-12))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-12)
+      for (dimlcv in 1:SGGP$d) {
+        dSigma_to[[dimlcv]] = (1-10^(-12))*dSigma_to[[dimlcv]]
+      }
+      
+      Sigma_chol = chol(Sigma_t)
+      tempvec1= backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,transpose = TRUE))
+      
+      
+      for (dimlcv in 1:SGGP$d) {
         for(paralcv in 1:SGGP$numpara){
+          dCpn = as.matrix(dCs[,((paralcv-1)*dim(Cs)[2]+1):(paralcv*dim(Cs)[2]),dimlcv])
+          if(is.matrix(dsigma2_hat)){
+            if(dim(dsigma2_hat)[1]>1.5){
+              dsigma2_hat_part2[(dimlcv-1)*SGGP$numpara+paralcv,] = -2*colSums((tempvec1)*(dCpn%*%pw))
+            }else{
+              dsigma2_hat_part2[,(dimlcv-1)*SGGP$numpara+paralcv] =  -2*colSums((tempvec1)*(dCpn%*%pw))
+            }
+          }else{
+            dsigma2_hat_part2[(dimlcv-1)*SGGP$numpara+paralcv] = -2*colSums((tempvec1)*(dCpn%*%pw))
+          }
+          
+          
           dSigma_now = as.matrix((dSigma_to[[dimlcv]])[,((paralcv-1)*dim(Sigma_chol)[2]+1):(paralcv*dim(Sigma_chol)[2])])
           tempvec2= dSigma_now%*%tempvec1
-          dsigma2_hat_part1[,(dimlcv-1)*SGGP$numpara+paralcv] =-0*colSums((ys-yhats)*backsolve(Sigma_chol,backsolve(Sigma_chol,tempvec2,transpose = TRUE)))
+          if(is.matrix(dsigma2_hat)){
+            if(dim(dsigma2_hat)[1]>1.5){
+              dsigma2_hat_part1[(dimlcv-1)*SGGP$numpara+paralcv,] = -colSums(tempvec1*tempvec2)
+            }else{
+              dsigma2_hat_part1[,(dimlcv-1)*SGGP$numpara+paralcv] = -colSums(tempvec1*tempvec2)
+            }
+          }else{
+            dsigma2_hat_part1[(dimlcv-1)*SGGP$numpara+paralcv] = -colSums(tempvec1*tempvec2)
           }
+          
+          
+          dlDet_new[(dimlcv-1)*SGGP$numpara+paralcv] = sum(diag(backsolve(Sigma_chol,backsolve(Sigma_chol,dSigma_now,transpose = TRUE))))
+        }
       }
       
+      dsigma2_hat_part3 =  -2*(SGGP_internal_calcusedforsupp(SGGP,t(Cs)%*%tempvec1,y, theta)$dsigma2)
+      
+      sigma2_hat_new = colSums((ys-yhats)*tempvec1)/dim(Xs)[1]
+      
+      dsigma2_hat_new = (dsigma2_hat_part1+dsigma2_hat_part2+dsigma2_hat_part3)/dim(Xs)[1]
+    }else{
+      Sigma_t = matrix(1,dim(Xs)[1],1)
+      
+      Cmat1 = 0*matrix( rep( (Sigma_t),SGGP$numpara) , nrow = nrow(Cs) , byrow = FALSE )
+      dSigma_to = list(Cmat1,SGGP$d) 
+      for (dimlcv in 1:SGGP$d) {
+        dSigma_to[[dimlcv]] = 0*Cmat1
+      }
+      
+      MSE_s = list(matrix(0,dim(Xs)[1],1),(SGGP$d+1)*(SGGP$maxlevel+1))
+      dMSE_s = list(matrix(0,dim(Xs)[1],1),(SGGP$d+1)*(SGGP$maxlevel+1))
+      for (dimlcv in 1:SGGP$d) {
+        for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
+          REEALL =SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],SGGP$xb[1:SGGP$sizest[levellcv]],theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],CorrMat=SGGP$CorrMat,returndPVMC = TRUE,returndiagonly=TRUE)
+          MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]]  = -(REEALL$Sigma_mat)
+          dMSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]]   = -(REEALL$dSigma_mat)
+        }
+      }
+      
+      
+      dsigma2_hat_part1 = 0*dsigma2_hat
+      dsigma2_hat_part2 = 0*dsigma2_hat
+      dsigma2_hat_part3 = 0*dsigma2_hat
+      dlDet_new = 0*dlDet
+      for (blocklcv in 1:SGGP$uoCOUNT) {
+        ME_s = matrix(1,nrow=dim(Xs)[1],ncol=1)
+        for (dimlcv in 1:SGGP$d) {
+          levelnow = SGGP$uo[blocklcv,dimlcv]
+          ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+        }
+        Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
+        
+        ME_so1 = t(matrix( rep( (ME_s) , SGGP$numpara ) , ncol = ncol(t(ME_s)) , byrow = TRUE ))
+        ME_so2 = ME_so1
+        for (dimlcv in 1:SGGP$d) {
+          levelnow = SGGP$uo[blocklcv,dimlcv]
+          ME_n = (MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]])
+          ME_so2 =  t(matrix( rep( (ME_n) , SGGP$numpara ) , ncol = ncol(t(ME_n)) , byrow = TRUE ))
+          dME_n = dMSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
+          dSigma_to[[dimlcv]] = dSigma_to[[dimlcv]]-SGGP$w[blocklcv]*(ME_so1*dME_n/ME_so2)
+        }
+      }
+      
+      Sigma_t = (1-10^(-12))*Sigma_t+10^(-12)
+      for (dimlcv in 1:SGGP$d) {
+        dSigma_to[[dimlcv]] = (1-10^(-12))*dSigma_to[[dimlcv]]
+      }
       
       for (dimlcv in 1:SGGP$d) {
-      for(paralcv in 1:SGGP$numpara){
-        dCpn = as.matrix(dCs[,((paralcv-1)*dim(Cs)[2]+1):(paralcv*dim(Cs)[2]),dimlcv])
-      dsigma2_hat_part2[,(dimlcv-1)*SGGP$numpara+paralcv] = 2*t(ys-yhats)%*%(dCpn%*%pw)
+        for(paralcv in 1:SGGP$numpara){
+          dSigma_now = as.matrix((dSigma_to[[dimlcv]])[,paralcv])
+          dlDet_new[(dimlcv-1)*SGGP$numpara+paralcv] =-colSums(dSigma_now/Sigma_t)
+        }
       }
+      if(is.matrix(ys)){
+      Sigma_t = t(matrix( rep( Sigma_t , dim(ys)[2] ) , ncol = ncol(t(Sigma_t)) , byrow = TRUE ))
       }
       
-      dsigma2_hat_part3 =  -2*(SGGP_internal_calcusedforsupp(SGGP,t(Cs)%*%(ys-yhats),y, theta)$dsigma2)
-      dsigma2_hat = (-dsigma2_hat_part2+dsigma2_hat_part3)
+      tempvec1= (ys-yhats)/Sigma_t
       
+      for (dimlcv in 1:SGGP$d) {
+        for(paralcv in 1:SGGP$numpara){
+          dCpn = as.matrix(dCs[,((paralcv-1)*dim(Cs)[2]+1):(paralcv*dim(Cs)[2]),dimlcv])
+          if(is.matrix(dsigma2_hat)){
+            if(dim(dsigma2_hat)[1]>1.5){
+              dsigma2_hat_part2[(dimlcv-1)*SGGP$numpara+paralcv,] = -2*colSums((tempvec1)*(dCpn%*%pw))
+            }else{
+              dsigma2_hat_part2[,(dimlcv-1)*SGGP$numpara+paralcv] = -2*colSums((tempvec1)*(dCpn%*%pw))
+            }
+          }else{
+            dsigma2_hat_part2[(dimlcv-1)*SGGP$numpara+paralcv] = -2*colSums((tempvec1)*(dCpn%*%pw))
+          }
+          
+          
+          dSigma_now = as.matrix((dSigma_to[[dimlcv]])[,paralcv])
+          if(is.matrix(ys)){
+          dSigma_now  = t(matrix( rep( dSigma_now  , dim(ys)[2] ) , ncol = ncol(t(dSigma_now)) , byrow = TRUE ))
+          }
+          
+          tempvec2= dSigma_now*tempvec1
+          if(is.matrix(dsigma2_hat)){
+            if(dim(dsigma2_hat)[1]>1.5){
+              dsigma2_hat_part1[(dimlcv-1)*SGGP$numpara+paralcv,] = -colSums(tempvec1*tempvec2)
+            }else{
+              dsigma2_hat_part1[,(dimlcv-1)*SGGP$numpara+paralcv] = -colSums(tempvec1*tempvec2)
+            }
+          }else{
+            dsigma2_hat_part1[(dimlcv-1)*SGGP$numpara+paralcv] = -colSums(tempvec1*tempvec2)
+          }
+          
+          
+        }
+      }
+      dsigma2_hat_part3 =  -2*(SGGP_internal_calcusedforsupp(SGGP,t(Cs)%*%tempvec1,y, theta)$dsigma2)
       
-    #  lDet = lDet + 2*sum(log(diag(Sigma_chol)))
-  }
-  
-  
-  if(!is.matrix(y)){
-    neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
-    gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+ dlDet+ length(y)*dsigma2_hat / sigma2_hat[1]
-    gneglogpost =  dsigma2_hat# / ength(y)*sigma2_hat[1]#gneglogpost/2
-  }else{
-    neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
-    gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
-    for(i in 1:dim(y)[2]){
-      gneglogpost = gneglogpost + dim(y)[1]*dsigma2_hat[,i] / sigma2_hat[i]
+      sigma2_hat_new = colSums((ys-yhats)*tempvec1)/dim(Xs)[1]
+      
+      dsigma2_hat_new = (dsigma2_hat_part1+dsigma2_hat_part2+dsigma2_hat_part3)/dim(Xs)[1]
     }
-    gneglogpost =  gneglogpost/2
-  }
+    
+    
+    if(HandlingSuppData =="Correct"){
+      sigma2_hat = sigma2_hat_old*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+sigma2_hat_new*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
+      dsigma2_hat = dsigma2_hat_old*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+dsigma2_hat_new*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
+      dlDet = dlDet_old+dlDet_new
+      
+      if(!is.matrix(y)){
+        neglogpost = 1/2*((length(y)+length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+        gneglogpost = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*(length(y)+length(ys))*dsigma2_hat / sigma2_hat[1]
+      }else{
+        neglogpost = 1/2*((dim(y)[1]+dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+        gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
+        for(i in 1:dim(y)[2]){
+          gneglogpost = gneglogpost + (dim(y)[1]+dim(ys)[1])*dsigma2_hat[,i] / sigma2_hat[i]
+        }
+        gneglogpost =  gneglogpost/2
+      }
+    }else if (HandlingSuppData =="ValidationFull"){
+      sigma2_hat = sigma2_hat_new
+      dsigma2_hat = dsigma2_hat_new
+      dlDet = dlDet_new
+      
+      if(!is.matrix(y)){
+        neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+      }else{
+        neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
+        gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
+        for(i in 1:dim(y)[2]){
+          gneglogpost = gneglogpost + (dim(ys)[1])*dsigma2_hat[,i] / sigma2_hat[i]
+        }
+        gneglogpost =  gneglogpost/2
+      }
+    }else if (HandlingSuppData =="ValidationMarginal"){
+      sigma2_hat = sigma2_hat_new
+      dsigma2_hat = dsigma2_hat_new
+      dlDet = dlDet_new
+      
+      if(!is.matrix(y)){
+        neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+        gneglogpost =0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*length(ys)*dsigma2_hat / sigma2_hat[1]
+      }else{
+        neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
+        gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
+        for(i in 1:dim(y)[2]){
+          gneglogpost = gneglogpost + (dim(ys)[1])*dsigma2_hat[,i] / sigma2_hat[i]
+        }
+        gneglogpost = gneglogpost/2
+      }
+      
+    }}else{  if(!is.matrix(y)){
+      neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+      gneglogpost = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*(length(y)+length(ys))*dsigma2_hat / sigma2_hat[1]
+    }else{
+      neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+      gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
+      for(i in 1:dim(y)[2]){
+        gneglogpost = gneglogpost + dim(y)[1]*dsigma2_hat[,i] / sigma2_hat[i]
+      }
+      gneglogpost =  gneglogpost/2
+    }
+    }
   
   if(return_lik){
     return(list(neglogpost=neglogpost,gneglogpost=gneglogpost))
@@ -439,6 +690,20 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       control = list(rel.tol = 1e-8,iter.max = 500)
     )
     
+    
+    # opt.out = nlminb(
+    #   opt.out$par,
+    #   objective = SGGP_internal_neglogpost,
+    #   gradient = SGGP_internal_gneglogpost,
+    #   lower = lower, 
+    #   upper = upper,
+    #   y = y.thisloop,
+    #   ys = ys.thisloop,
+    #   Xs = Xs,
+    #   SGGP = SGGP,
+    #   control = list(rel.tol = 1e-8,iter.max = 500)
+    # )
+    
     # for(i in 1:5){
     #   opt.out = nlminb(
     #     runif(SGGP$numpara*SGGP$d, -0.75,0.75),
@@ -471,7 +736,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     grad0 = SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)
     for(c in 1:totnumpara){
       rsad = rep(0,totnumpara)
-      rsad[c] =10^(-4)
+      rsad[c] =10^(-12)
       PSTn=  log((1+thetaMAP)/(1-thetaMAP)) + rsad
       thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
       H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(4)
@@ -503,7 +768,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         progress_bar <- progress::progress_bar$new(
           total=100*SGGP$numPostSamples*2,
           format = " MCMC [:bar] :percent eta: :eta"
-          )
+        )
       }
       for(i in 1:(100*SGGP$numPostSamples)){
         p = rnorm(length(q),0,1)*scalev
@@ -565,12 +830,18 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     }
     
     if(SGGP$supplemented){
-      thetaADJ = 0*thetaMAP
-      thetaADJ[2] = 10^(-3);
-      print(10^3*(SGGP_internal_neglogpost(thetaMAP+thetaADJ,SGGP,y.thisloop)-SGGP_internal_neglogpost(thetaMAP,SGGP,y.thisloop)))
-      print(SGGP_internal_gneglogpost(thetaMAP,SGGP,y.thisloop)[2])
-      print(10^3*(SGGP_internal_neglogpost(thetaMAP+thetaADJ,SGGP,y.thisloop,Xs=Xs,ys=ys.thisloop)-SGGP_internal_neglogpost(thetaMAP,SGGP,y.thisloop,Xs=Xs,ys=ys.thisloop)))
-      print(SGGP_internal_gneglogpost(thetaMAP,SGGP,y.thisloop,Xs=Xs,ys=ys.thisloop)[2])
+      thetaMAP = thetaMAP*0.2
+      for (k in 1:(SGGP$d * SGGP$numpara)){
+        thetaADJ = 0*thetaMAP
+        thetaADJ[k] = 10^(-3)
+
+        print(k)
+        print(10^3*(SGGP_internal_neglogpost(thetaMAP+thetaADJ,SGGP,y.thisloop)-SGGP_internal_neglogpost(thetaMAP,SGGP,y.thisloop)))
+        print(SGGP_internal_gneglogpost(thetaMAP,SGGP,y.thisloop)[k])
+        print(10^3*(SGGP_internal_neglogpost(thetaMAP+thetaADJ,SGGP,y.thisloop,Xs=Xs,ys=ys.thisloop,HandlingSuppData="Correct")
+                    -SGGP_internal_neglogpost(thetaMAP,SGGP,y.thisloop,Xs=Xs,ys=ys.thisloop,HandlingSuppData="Correct")))
+        print(SGGP_internal_gneglogpost(thetaMAP,SGGP,y.thisloop,Xs=Xs,ys=ys.thisloop,HandlingSuppData="Correct")[k])
+      }
       
       Cs = matrix(1,dim(SGGP$Xs)[1],SGGP$ss)
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
@@ -679,45 +950,85 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
 #' SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
 #'              xo=c(.11), theta=c(.1,.2,.3),
 #'              CorrMat=SGGP_internal_CorrMatCauchySQT)
-SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,...,returndPVMC = FALSE) {
-  if(!returndPVMC){
-  S = CorrMat(xo, xo, theta)
-  n = length(xo)
-  cholS = chol(S)
-  
-  C1o = CorrMat(x1, xo, theta)
-  CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
-  C2o = CorrMat(x2, xo, theta)
-  Sigma_mat = - t(CoinvC1o)%*%t(C2o)  
-  return(Sigma_mat)
-  }else{
-    Sall = CorrMat(xo, xo, theta, return_dCdtheta = TRUE)
-    S = Sall$C
-    dS = Sall$dCdtheta
-    n = length(xo)
-    cholS = chol(S)
-    
-    
-    Sall = CorrMat(x1, xo, theta, return_dCdtheta = TRUE)
-    C1o = Sall$C
-    dC1o = Sall$dCdtheta
-    
-    Sall = CorrMat(x2, xo, theta, return_dCdtheta = TRUE)
-    C2o = Sall$C
-    dC2o = Sall$dCdtheta
-    
-    CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
-    Sigma_mat = - t(CoinvC1o)%*%t(C2o)  
-   # browser()
-   # print(dim(dS))
-    dSigma_mat = matrix(0,dim(Sigma_mat)[1],dim(Sigma_mat)[2]*length(theta))
-    for(k in 1:length(theta)){
-    CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
-    dCoinvC1o = -backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
-    dCoinvC1o = dCoinvC1o + backsolve(cholS,backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]), transpose = TRUE))
-    dSigma_mat[,((k-1)*dim(Sigma_mat)[2]+1):(k*dim(Sigma_mat)[2])] =-t(dCoinvC1o)%*%t(C2o)-t(CoinvC1o)%*%t(dC2o[,(n*(k-1)+1):(k*n)])
+SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,...,returndPVMC = FALSE,returndiagonly=FALSE) {
+  if(!returndiagonly){
+    if(!returndPVMC){
+      S = CorrMat(xo, xo, theta)
+      n = length(xo)
+      cholS = chol(S)
+      
+      C1o = CorrMat(x1, xo, theta)
+      CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
+      C2o = CorrMat(x2, xo, theta)
+      Sigma_mat = - t(CoinvC1o)%*%t(C2o)  
+      return(Sigma_mat)
+    }else{
+      Sall = CorrMat(xo, xo, theta, return_dCdtheta = TRUE)
+      S = Sall$C
+      dS = Sall$dCdtheta
+      n = length(xo)
+      cholS = chol(S)
+      
+      
+      Sall = CorrMat(x1, xo, theta, return_dCdtheta = TRUE)
+      C1o = Sall$C
+      dC1o = Sall$dCdtheta
+      
+      Sall = CorrMat(x2, xo, theta, return_dCdtheta = TRUE)
+      C2o = Sall$C
+      dC2o = Sall$dCdtheta
+      
+      CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
+      Sigma_mat = - t(CoinvC1o)%*%t(C2o)  
+      # browser()
+      # print(dim(dS))
+      dSigma_mat = matrix(0,dim(Sigma_mat)[1],dim(Sigma_mat)[2]*length(theta))
+      for(k in 1:length(theta)){
+        CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
+        dCoinvC1o = -backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
+        dCoinvC1o = dCoinvC1o + backsolve(cholS,backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]), transpose = TRUE))
+        dSigma_mat[,((k-1)*dim(Sigma_mat)[2]+1):(k*dim(Sigma_mat)[2])] =-t(dCoinvC1o)%*%t(C2o)-t(CoinvC1o)%*%t(dC2o[,(n*(k-1)+1):(k*n)])
+      }
+      return(list("Sigma_mat"= Sigma_mat,"dSigma_mat" = dSigma_mat))
     }
-    return(list("Sigma_mat"= Sigma_mat,"dSigma_mat" = dSigma_mat))
+  }else {
+    if(!returndPVMC){
+      S = CorrMat(xo, xo, theta)
+      n = length(xo)
+      cholS = chol(S)
+      
+      C1o = CorrMat(x1, xo, theta)
+      CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
+      C2o = CorrMat(x2, xo, theta)
+      Sigma_mat = -rowSums(t(CoinvC1o)*(C2o))
+      return(Sigma_mat)
+    }else{
+      Sall = CorrMat(xo, xo, theta, return_dCdtheta = TRUE)
+      S = Sall$C
+      dS = Sall$dCdtheta
+      n = length(xo)
+      cholS = chol(S)
+      
+      Sall = CorrMat(x1, xo, theta, return_dCdtheta = TRUE)
+      C1o = Sall$C
+      dC1o = Sall$dCdtheta
+      
+      Sall = CorrMat(x2, xo, theta, return_dCdtheta = TRUE)
+      C2o = Sall$C
+      dC2o = Sall$dCdtheta
+      
+      CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
+      Sigma_mat = -rowSums(t(CoinvC1o)*(C2o))
+      
+      dSigma_mat = matrix(0,length(Sigma_mat),length(theta))
+      for(k in 1:length(theta)){
+        CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
+        dCoinvC1o = -backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
+        dCoinvC1o = dCoinvC1o + backsolve(cholS,backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]), transpose = TRUE))
+        dSigma_mat[,k] =-rowSums(t(dCoinvC1o)*(C2o))-rowSums(t(CoinvC1o)*(dC2o[,(n*(k-1)+1):(k*n)]))
+      }
+      return(list("Sigma_mat"= Sigma_mat,"dSigma_mat" = dSigma_mat))
+    }
   }
   
 }

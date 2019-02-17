@@ -16,8 +16,8 @@ borehole <- function(x) {
   m3 <- 1 + 2 * L * Tu / (m2 * rw ^ 2 * Kw) + Tu / Tl
   
   Yn = m1 / m2 / m3
- # return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.25)))
-  return(Yn)
+  return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.25)))
+ # return(Yn)
 }
 
 
@@ -35,11 +35,11 @@ Ys = testf(Xs)
 SGGP = SGGPcreate(d,200) #create the design.  it has so many entries because i am sloppy
 Y = testf(SGGP$design) #the design is $design, simple enough, right?
 SGGP = SGGPfit(SGGP,Y)
-PredGreedy = SGGPpred(SGGP,Xp)
-mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
-mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+Pred = SGGPpred(SGGP,Xp)
+mean(abs(Yp-Pred$mean)^2)  #prediction should be much better
+mean(abs(Yp-Pred$mean)^2/Pred$var+log(Pred$var)) #score should be much better
 
 SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
-PredGreedy = SGGPpred(SGGP,Xp)
+PredGreedy = SGGPpred(SGGPGreedy,Xp)
 mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
 mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
