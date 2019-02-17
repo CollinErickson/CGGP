@@ -40,7 +40,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL) {
     if(!is.null(Xs)){
       Cs = matrix(1,dim(Xs)[1],SGGP$ss)
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
-        V = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+        V = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
         Cs = Cs*V[,SGGP$designindex[,dimlcv]]
       }
      # print(Cs[1:10,1:10])
@@ -140,10 +140,18 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
       dCs = array(1,dim=c(dim(Xs)[1],SGGP$numpara*SGGP$ss,dim(Xs)[2]))
       
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+        Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+        Cs = Cs*Vall[,SGGP$designindex[,dimlcv]]
+      }
+      
+      Cmat1 = matrix( rep( (Cs),SGGP$numpara) , nrow = nrow(Cs) , byrow = FALSE )
+      Cmat2 = Cmat1
+      for (dimlcv in 1:SGGP$d) { # Loop over dimensions
         Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,SGGP$thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta=TRUE)
-        Cs = Cs*(Vall$C[,SGGP$designindex[,dimlcv]])
         A = round(as.vector(outer(SGGP$designindex[,dimlcv],length(SGGP$xb)*(0:(SGGP$numpara-1)),FUN=function(x,y) x+y)))
-        dCs[,,dimlcv] = Vall$dC[,A]
+        G = Vall$C[,SGGP$designindex[,dimlcv]]
+        Cmat2 = matrix( rep( (G),SGGP$numpara) , nrow = nrow(G) , byrow = FALSE )
+        dCs[,,dimlcv] = (Cmat1/Cmat2)*(Vall$dC[,A])
       }
       #print(Cs[1:10,1:10])
       
@@ -204,7 +212,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
       }
       
       dsigma2_hat_part3 =  -2*(SGGP_internal_calcusedforsupp(SGGP,t(Cs)%*%(ys-yhats),y, theta)$dsigma2)
-      dsigma2_hat = (dsigma2_hat_part3)
+      dsigma2_hat = (-dsigma2_hat_part2+dsigma2_hat_part3)
       
       
     #  lDet = lDet + 2*sum(log(diag(Sigma_chol)))
