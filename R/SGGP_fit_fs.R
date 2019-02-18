@@ -19,6 +19,8 @@
 #' SGGP_internal_neglogpost(SG$thetaMAP, SG=SG, y=SG$y)
 SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSuppData = "Correct") {
   # Return Inf if theta is too large
+  epsssV = 10^(-10)
+  
   if (max(theta) >= 1 || min(theta) <= -1) {
     return(Inf)
   } else{
@@ -29,7 +31,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
         V = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
         Sigma_t = Sigma_t*V
       }
-      Sigma_t = (1-10^(-12))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-12)
+      Sigma_t = (1-epsssV)*Sigma_t+diag(dim(Sigma_t)[1])*epsssV
       
       Sigma_chol = chol(Sigma_t)
       
@@ -125,7 +127,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
           }
           Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
         }
-        Sigma_t = (1-10^(-12))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-12)
+        Sigma_t = (1-epsssV)*Sigma_t+diag(dim(Sigma_t)[1])*epsssV
         
         Sigma_chol = chol(Sigma_t)
         
@@ -154,7 +156,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
           }
           Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
         }
-        Sigma_t = (1-10^(-12))*Sigma_t+10^(-12)
+        Sigma_t = (1-epsssV)*Sigma_t+epsssV
         lDet_supp = -sum(log(Sigma_t))
         if(is.matrix(ys)){
           Sigma_t = t(matrix( rep( Sigma_t , dim(ys)[2] ) , ncol = ncol(t(Sigma_t)) , byrow = TRUE ))
@@ -177,9 +179,9 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
         sigma2_hat = sigma2_hat_supp
         lDet = lDet_supp
         if(!is.matrix(y)){
-          neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+          neglogpost = 1/2*((dim(Xs)[1])*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
         }else{
-          neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+          neglogpost = 1/2*((dim(Xs)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
         }
       }else{
         print("ERROR")
@@ -212,13 +214,13 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
 #' SGGP_internal_gneglogpost(SG$thetaMAP, SG=SG, y=SG$y)
 SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NULL,Xs=NULL,HandlingSuppData = "Correct") {
   
+  epsssV = 10^(-10)
   if(is.null(y) || HandlingSuppData == "Only" || HandlingSuppData == "Mixture"){
     Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1])
     for (dimlcv in 1:SGGP$d) { # Loop over dimensions
       V = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
       Sigma_t = Sigma_t*V
     }
-    Sigma_t = (1-10^(-12))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-12)
     
     
     Cmat1 = t(matrix( rep( Sigma_t , SGGP$numpara ) , ncol = ncol(t(Sigma_t)) , byrow = TRUE ))
@@ -228,6 +230,11 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
       G = Vall$C
       Cmat2 =  t(matrix( rep( G , SGGP$numpara ) , ncol = ncol(t(G)) , byrow = TRUE ))
       dSigma_to[[dimlcv]] = Vall$dC*(Cmat1/Cmat2)
+    }
+    
+    Sigma_t = (1-epsssV)*Sigma_t+diag(dim(Sigma_t)[1])*epsssV
+    for (dimlcv in 1:SGGP$d) {
+      dSigma_to[[dimlcv]] = (1-epsssV)*dSigma_to[[dimlcv]]
     }
     
     Sigma_chol = chol(Sigma_t)
@@ -310,6 +317,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
       dsigma2_hat_old = dsigma2_hat
       sigma2_hat_old = sigma2_hat
       dlDet_old = dlDet
+      lDet_old = lDet
       
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
         Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
@@ -319,13 +327,13 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
       pw <- SGGP_internal_calcpw(SGGP, y, theta)
       yhats = Cs%*%pw
       
-      Cmat1 = t(matrix( rep(Cs , SGGP$numpara ) , ncol = ncol(t(Cs)) , byrow = TRUE ))
+      Cmat1 = matrix( rep(Cs , SGGP$numpara ) , nrow = nrow(Cs) , byrow = FALSE )
       Cmat2 = Cmat1
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
         Vall = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta=TRUE)
         A = round(as.vector(outer(SGGP$designindex[,dimlcv],length(SGGP$xb)*(0:(SGGP$numpara-1)),FUN=function(x,y) x+y)))
         G = Vall$C[,SGGP$designindex[,dimlcv]]
-        Cmat2 =  t(matrix( rep( G , SGGP$numpara ) , ncol = ncol(t(G)) , byrow = TRUE ))
+        Cmat2 =  matrix( rep(G , SGGP$numpara ) , nrow = nrow(G) , byrow = FALSE )
         # print(dim(Cmat1))
         # print(dim(Cmat2))
         # print(dim(Vall$dC[,A]))
@@ -342,12 +350,12 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
           Sigma_t =Sigma_t*Vall
         }
         
-        Cmat1 = t(matrix( rep( Sigma_t , SGGP$numpara ) , ncol = ncol(t(Sigma_t)) , byrow = TRUE ))
+        Cmat1 = matrix( rep(Sigma_t , SGGP$numpara ) , nrow = nrow(Sigma_t) , byrow = FALSE )
         dSigma_to = list(Sigma_t,SGGP$d) 
         for (dimlcv in 1:SGGP$d) { # Loop over dimensions
           Vall = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],return_dCdtheta=TRUE)
           G = Vall$C
-          Cmat2 =  t(matrix( rep( G , SGGP$numpara ) , ncol = ncol(t(G)) , byrow = TRUE ))
+          Cmat2 =  matrix( rep(G , SGGP$numpara ) , nrow = nrow(G) , byrow = FALSE )
           dSigma_to[[dimlcv]] = Vall$dC*(Cmat1/Cmat2)
         }
         
@@ -375,19 +383,18 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
           }
           Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
           
-          ME_so1 = t(matrix( rep( (ME_s) , SGGP$numpara ) , ncol = ncol(t(ME_s)) , byrow = TRUE ))
-          ME_so2 = ME_so1
+          
           for (dimlcv in 1:SGGP$d) {
             levelnow = SGGP$uo[blocklcv,dimlcv]
             ME_n = MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
-            ME_so2 =  t(matrix( rep( (ME_n) , SGGP$numpara ) , ncol = ncol(t(ME_n)) , byrow = TRUE ))
+            MEE_n = matrix( rep(ME_s/ME_n , SGGP$numpara ) , nrow = nrow(ME_s) , byrow = FALSE )
             dME_n = dMSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
-            dSigma_to[[dimlcv]] = dSigma_to[[dimlcv]]-SGGP$w[blocklcv]*(ME_so1*dME_n/ME_so2)
+            dSigma_to[[dimlcv]] = dSigma_to[[dimlcv]]-SGGP$w[blocklcv]*(MEE_n*dME_n)
           }
         }
-        Sigma_t = (1-10^(-12))*Sigma_t+diag(dim(Sigma_t)[1])*10^(-12)
+        Sigma_t = (1-epsssV)*Sigma_t+diag(dim(Sigma_t)[1])*epsssV
         for (dimlcv in 1:SGGP$d) {
-          dSigma_to[[dimlcv]] = (1-10^(-12))*dSigma_to[[dimlcv]]
+          dSigma_to[[dimlcv]] = (1-epsssV)*dSigma_to[[dimlcv]]
         }
         
         Sigma_chol = chol(Sigma_t)
@@ -425,9 +432,16 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
           }
         }
         
-        dsigma2_hat_part3 =  -2*(SGGP_internal_calcusedforsupp(SGGP,t(Cs)%*%tempvec1,y, theta)$dsigma2)
+        if(is.vector(y)){
+          temp4 = as.vector(t(Cs)%*%tempvec1)
+        }else{
+          temp4 = t(Cs)%*%tempvec1
+        }
+        ytemp = y
+        dsigma2_hat_part3 =  -2*(SGGP_internal_calcusedforsupp(SGGP,ytemp,temp4, theta)$dsigma2)
         
         sigma2_hat_new = colSums((ys-yhats)*tempvec1)/dim(Xs)[1]
+        lDet_new = 2*sum(log(diag(Sigma_chol)))
         
         dsigma2_hat_new = (dsigma2_hat_part1+dsigma2_hat_part2+dsigma2_hat_part3)/dim(Xs)[1]
       }else{
@@ -473,9 +487,9 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
           }
         }
         
-        Sigma_t = (1-10^(-12))*Sigma_t+10^(-12)
+        Sigma_t = (1-epsssV)*Sigma_t+epsssV
         for (dimlcv in 1:SGGP$d) {
-          dSigma_to[[dimlcv]] = (1-10^(-12))*dSigma_to[[dimlcv]]
+          dSigma_to[[dimlcv]] = (1-epsssV)*dSigma_to[[dimlcv]]
         }
         
         for (dimlcv in 1:SGGP$d) {
@@ -523,9 +537,16 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
             
           }
         }
-        dsigma2_hat_part3 =  -2*(SGGP_internal_calcusedforsupp(SGGP,t(Cs)%*%tempvec1,y, theta)$dsigma2)
+        if(is.vector(y)){
+        temp4 = as.vector(t(Cs)%*%tempvec1)
+        }else{
+          temp4 = t(Cs)%*%tempvec1
+        }
+        ytemp = y
+        dsigma2_hat_part3 =  -2*(SGGP_internal_calcusedforsupp(SGGP,ytemp,temp4, theta)$dsigma2)
         
         sigma2_hat_new = colSums((ys-yhats)*tempvec1)/dim(Xs)[1]
+        lDet_new = -sum(log(Sigma_t))
         
         dsigma2_hat_new = (dsigma2_hat_part1+dsigma2_hat_part2+dsigma2_hat_part3)/dim(Xs)[1]
       }
@@ -535,42 +556,28 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
         sigma2_hat = sigma2_hat_old*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+sigma2_hat_new*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
         dsigma2_hat = dsigma2_hat_old*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+dsigma2_hat_new*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
         dlDet = dlDet_old+dlDet_new
+        lDet = lDet_old+lDet_new
         
         if(!is.matrix(y)){
-          neglogpost = 1/2*((length(y)+length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+          neglogpost = 1/2*((dim(SGGP$design)[1]+dim(Xs)[1])*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
           gneglogpost = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*(length(y)+length(ys))*dsigma2_hat / sigma2_hat[1]
         }else{
-          neglogpost = 1/2*((dim(y)[1]+dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+          neglogpost = 1/2*((dim(SGGP$design)[1]+dim(Xs)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
           gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
           for(i in 1:dim(y)[2]){
-            gneglogpost = gneglogpost + (dim(y)[1]+dim(ys)[1])*dsigma2_hat[,i] / sigma2_hat[i]
+            gneglogpost = gneglogpost + (dim(SGGP$design)[1]+dim(Xs)[1])*dsigma2_hat[,i] / sigma2_hat[i]
           }
           gneglogpost =  gneglogpost/2
         }
-      }else if (HandlingSuppData =="FullValidation"){
+      }else if (HandlingSuppData =="FullValidation" || HandlingSuppData =="MarginalValidation"){
         sigma2_hat = sigma2_hat_new
         dsigma2_hat = dsigma2_hat_new
         dlDet = dlDet_new
+        lDet = lDet_new
         
         if(!is.matrix(y)){
           neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
-          gneglogpost =0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*length(ys)*dsigma2_hat / sigma2_hat[1]
-        }else{
-          neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
-          gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
-          for(i in 1:dim(y)[2]){
-            gneglogpost = gneglogpost + (dim(ys)[1])*dsigma2_hat[,i] / sigma2_hat[i]
-          }
-          gneglogpost =  gneglogpost/2
-        }
-      }else if (HandlingSuppData =="MarginalValidation"){
-        sigma2_hat = sigma2_hat_new
-        dsigma2_hat = dsigma2_hat_new
-        dlDet = dlDet_new
-        
-        if(!is.matrix(y)){
-          neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
-          gneglogpost =0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*length(ys)*dsigma2_hat / sigma2_hat[1]
+          gneglogpost = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*(length(ys))*dsigma2_hat / sigma2_hat[1]
         }else{
           neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
           gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
@@ -718,7 +725,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
         Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
         SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
-        Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+        Eigen_result =eigen(SigV+10^(-5)*diag(length(SGGP$mu)))
         # Had an error with small negative eigenvalues, so set those to zero force
         nonneg_Eigen_result_values <- pmax(Eigen_result$values, 0)
         percent_explained = cumsum(sqrt(nonneg_Eigen_result_values))/sum(sqrt(nonneg_Eigen_result_values))
@@ -753,7 +760,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
           SGGP$st = (colMeans(Ys^2)- colMeans(Ys)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
           Ys_centered = (Ys - matrix(rep(SGGP$mu,each=dim(Ys)[1]), ncol=dim(Ys)[2], byrow=FALSE))%*%diag(1/SGGP$st)
           SigV = 1/dim(Y)[1]*t(Ys_centered)%*%Ys_centered
-          Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+          Eigen_result =eigen(SigV+10^(-5)*diag(length(SGGP$mu)))
           percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
           num_PC = max(min(which(percent_explained>0.99999)),1)
           SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
@@ -769,7 +776,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
           SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
           Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
           SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
-          Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
+          Eigen_result =eigen(SigV+10^(-5)*diag(length(SGGP$mu)))
           percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
           num_PC = max(min(which(percent_explained>0.99999)),1)
           SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
@@ -824,19 +831,62 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       control = list(rel.tol = 1e-8,iter.max = 500)
     )
     
-    
-    # opt.out = nlminb(
+
+  #  opt.out = nlminb(
     #   opt.out$par,
     #   objective = SGGP_internal_neglogpost,
     #   gradient = SGGP_internal_gneglogpost,
-    #   lower = lower, 
+    #   lower = lower,
     #   upper = upper,
     #   y = y.thisloop,
     #   ys = ys.thisloop,
     #   Xs = Xs,
     #   SGGP = SGGP,
+    #   HandlingSuppData = "Correct",
     #   control = list(rel.tol = 1e-8,iter.max = 500)
     # )
+    # 
+    
+    epsval= 9.9^(-4)
+    for(    HandlingSuppDatalcv in c( "MarginalValidation","FullValidation","Correct","Ignore","Only")){
+      print(HandlingSuppDatalcv)
+      thetaMAP <- 0.5*opt.out$par
+    thetagrad <- SGGP_internal_gneglogpost(thetaMAP, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)
+    numgrad <- rep(0, length(SGGP$thetaMAP))
+    for (i in 1:length(SGGP$thetaMAP)) {
+      
+      eps <- rep(0, length(SGGP$thetaMAP))
+      eps[i] = eps[i] + epsval
+       numgrad[i] <- (SGGP_internal_neglogpost(thetaMAP + eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv) - 
+                     SGGP_internal_neglogpost(thetaMAP - eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)) / (2*epsval)
+      #numgrad[i] <- (-SGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+      #                 8*SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
+      #                 8*SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+      #                 SGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
+      # 
+    }
+    
+    print(cbind(as.vector(thetagrad),as.vector(numgrad)))
+    
+    
+    thetaMAP <- opt.out$par
+    
+    thetagrad <- SGGP_internal_gneglogpost(thetaMAP, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)
+    numgrad <- rep(0, length(SGGP$thetaMAP))
+    for (i in 1:length(SGGP$thetaMAP)) {
+      
+      eps <- rep(0, length(SGGP$thetaMAP))
+      eps[i] = eps[i] + epsval
+      numgrad[i] <- (SGGP_internal_neglogpost(thetaMAP + eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv) - 
+                       SGGP_internal_neglogpost(thetaMAP - eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)) / (2*epsval)
+      #numgrad[i] <- (-SGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+      #                 8*SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
+      #                 8*SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+      #                 SGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
+      # 
+    }
+    print(cbind(as.vector(thetagrad),as.vector(numgrad)))
+    }
     
     # for(i in 1:5){
     #   opt.out = nlminb(
@@ -853,7 +903,6 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     #   }
     
     # Set new theta
-    thetaMAP <- opt.out$par
     sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=FALSE)$sigma2
     # If one value, it gives it as matrix. Convert it to scalar
     if (length(sigma2MAP) == 1) {sigma2MAP <- sigma2MAP[1,1]}
