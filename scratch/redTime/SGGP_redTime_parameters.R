@@ -5,8 +5,8 @@
 # T3 was separate opd and no PCA.
 # T4 was same as T3 but with adding sigma2hat in append, so it should focus more on bad spots
 # Sup1 is with supplementary data
-groupID <- "redTimeTestO10_1k"
-groupID_short <- "O10_1k"
+groupID <- "redTimeTestO90_1k"
+groupID_short <- "O90_1k"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
 number_cores <- 50
@@ -36,7 +36,7 @@ use_PCA <- FALSE
 separateoutputparameterdimensions <- TRUE
 
 # outdims: output dimensions to use. Default should be 1:100.
-outdims <- 10 #90
+outdims <- 90
 
 # To use supplementary data
 if (TRUE) {
