@@ -870,10 +870,10 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     grad0 = SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)
     for(c in 1:totnumpara){
       rsad = rep(0,totnumpara)
-      rsad[c] =10^(-12)
+      rsad[c] =10^(-3)
       PSTn=  log((1+thetaMAP)/(1-thetaMAP)) + rsad
       thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
-      H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(4)
+      H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)
     }
     Hmat = H/2+t(H)/2
     # print(Hmat)
