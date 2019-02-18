@@ -3,6 +3,10 @@
 #' @param theta Correlation parameters
 #' @param SGGP SGGP object
 #' @param y Measured values of SGGP$design
+#' @param ... Just a placeholder
+#' @param Xs Supplementary input data
+#' @param ys Supplementary output data
+#' @param HandlingSuppData How should supplementary data be handled?
 #'
 #' @return Likelihood
 #' @export
@@ -193,6 +197,10 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
 #' @param SGGP SGGP object
 #' @param y SGGP$design measured values
 #' @param return_lik If yes, it returns a list with lik and glik
+#' @param ... Just a placeholder
+#' @param Xs Supplementary input data
+#' @param ys Supplementary output data
+#' @param HandlingSuppData How should supplementary data be handled?
 #'
 #' @return Vector for gradient of likelihood w.r.t. x (theta)
 #' @export
@@ -879,7 +887,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       PST= log((1+thetaMAP)/(1-thetaMAP)) + cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),nrow=length(thetaMAP))
       thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
     }else{ # MCMC Metropolis-Hastings
-      U <- function(re){
+      U <- function(re){browser()
         PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%as.vector(re)
         thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
         return(SGGP_internal_neglogpost(thetav,SGGP,y.thisloop))
@@ -1055,6 +1063,9 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
 #' @param theta Correlation parameters
 #' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
 #' for vector of 1D points.
+#' @param ... Placeholder
+#' @param returndPVMC Should dPVMC be returned?
+#' @param returndiagonly Should only the diagonal be returned?
 #'
 #' @return Variance posterior
 #' @export

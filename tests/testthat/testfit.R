@@ -24,6 +24,17 @@ test_that("SGGPfit works with Laplace approx", {
   expect_length(neglogpost2[[1]], 1)
   expect_length(neglogpost2[[2]], length(SG$thetaMAP))
   
+  # Check neglogpost grad matches gneglogpost
+  theta <- SG$thetaMAP / 2 # Don't want values near -1 or +1
+  epsval <- 1e-4
+  thetagrad <- SGGP_internal_gneglogpost(theta, SG, SG$y)
+  for (i in 1:length(SG$thetaMAP)) {
+    eps <- rep(0, length(SG$thetaMAP))
+    eps[i] = eps[i] + epsval
+    numgrad <- (SGGP_internal_neglogpost(theta + eps, SG, SG$y) - SGGP_internal_neglogpost(theta - eps, SG, SG$y)) / (2*epsval)
+    expect_equal(thetagrad[i], numgrad, tol=1e-4)
+  }
+  
   # # Works with supplementary data
   # nsup <- 10
   # xsup <- matrix(runif(nsup*3), nsup, 3)
@@ -44,6 +55,7 @@ test_that("SGGPfit works with Ynew - scalar output", {
   expect_error(SG <- SGGPfit(SG, Y=y, Ynew=y))
   # Works with just Ynew
   SG <- SGGPfit(SG, Ynew=y)
+  expect_true(!is.na(SG$thetaPostSamples))
   
   # After append, only give in Ynew
   SG <- SGGPappend(SG, 50)

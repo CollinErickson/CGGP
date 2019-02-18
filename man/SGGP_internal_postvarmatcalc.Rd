@@ -4,7 +4,8 @@
 \alias{SGGP_internal_postvarmatcalc}
 \title{Calculate posterior variance}
 \usage{
-SGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat)
+SGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat, ...,
+  returndPVMC = FALSE, returndiagonly = FALSE)
 }
 \arguments{
 \item{x1}{Points at which to calculate MSE}
@@ -17,6 +18,12 @@ SGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat)
 
 \item{CorrMat}{Function that gives correlation matrix for vectors of 1D points.
 for vector of 1D points.}
+
+\item{...}{Placeholder}
+
+\item{returndPVMC}{Should dPVMC be returned?}
+
+\item{returndiagonly}{Should only the diagonal be returned?}
 }
 \value{
 Variance posterior

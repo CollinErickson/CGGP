@@ -4,7 +4,8 @@
 \alias{SGGP_internal_neglogpost}
 \title{Calculate negative log posterior}
 \usage{
-SGGP_internal_neglogpost(theta, SGGP, y)
+SGGP_internal_neglogpost(theta, SGGP, y, ..., ys = NULL, Xs = NULL,
+  HandlingSuppData = "Correct")
 }
 \arguments{
 \item{theta}{Correlation parameters}
@@ -12,6 +13,14 @@ SGGP_internal_neglogpost(theta, SGGP, y)
 \item{SGGP}{SGGP object}
 
 \item{y}{Measured values of SGGP$design}
+
+\item{...}{Just a placeholder}
+
+\item{ys}{Supplementary output data}
+
+\item{Xs}{Supplementary input data}
+
+\item{HandlingSuppData}{How should supplementary data be handled?}
 }
 \value{
 Likelihood

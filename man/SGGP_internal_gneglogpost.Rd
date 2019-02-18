@@ -4,7 +4,8 @@
 \alias{SGGP_internal_gneglogpost}
 \title{Gradient of negative log likelihood posterior}
 \usage{
-SGGP_internal_gneglogpost(theta, SGGP, y, return_lik = FALSE)
+SGGP_internal_gneglogpost(theta, SGGP, y, ..., return_lik = FALSE,
+  ys = NULL, Xs = NULL, HandlingSuppData = "Correct")
 }
 \arguments{
 \item{theta}{Log of correlation parameters}
@@ -13,7 +14,15 @@ SGGP_internal_gneglogpost(theta, SGGP, y, return_lik = FALSE)
 
 \item{y}{SGGP$design measured values}
 
+\item{...}{Just a placeholder}
+
 \item{return_lik}{If yes, it returns a list with lik and glik}
+
+\item{ys}{Supplementary output data}
+
+\item{Xs}{Supplementary input data}
+
+\item{HandlingSuppData}{How should supplementary data be handled?}
 }
 \value{
 Vector for gradient of likelihood w.r.t. x (theta)
