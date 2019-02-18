@@ -361,8 +361,8 @@ SGGP_internal_calcusedforsupp <- function(SGGP, revc, y, theta, return_lS=FALSE)
         VVV2=unlist(dMatdtheta[gg+SGGP$uo[blocklcv,]])
         VVV3=SGGP$gridsizest[blocklcv,]
         for(outdimlcv in 1:numout){
-          B0 = y[IS,outdimlcv]
-          B2 = revc[IS,outdimlcv]
+          B2 = y[IS,outdimlcv]
+          B0 = revc[IS,outdimlcv]
           B = (SGGP$w[blocklcv])*B0#/dim(y)[1]
           dB = rcpp_gkronDBS(VVV1,VVV2,B,VVV3)
           dsigma2[,outdimlcv] = dsigma2[,outdimlcv] + as.vector(dB%*%B2)
