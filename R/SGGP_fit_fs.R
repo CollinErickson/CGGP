@@ -747,7 +747,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
         SGGP$st = (colMeans(Y^2)- colMeans(Y)^2)^(1/6) #somewhat arbitrary power, but seems to work. 1/2 is standard
         Y_centered = (Y - matrix(rep(SGGP$mu,each=dim(Y)[1]), ncol=dim(Y)[2], byrow=FALSE))%*%diag(1/SGGP$st)
         SigV = 1/dim(Y)[1]*t(Y_centered)%*%Y_centered
-        Eigen_result =eigen(SigV+10^(-5)*diag(length(SGGP$mu)))
+        Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
         # Had an error with small negative eigenvalues, so set those to zero force
         nonneg_Eigen_result_values <- pmax(Eigen_result$values, 0)
         percent_explained = cumsum(sqrt(nonneg_Eigen_result_values))/sum(sqrt(nonneg_Eigen_result_values))
@@ -831,6 +831,15 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   if (nnn > 1) {
     if (is.vector(theta0)) {
       theta0 <- matrix(theta0, nrow=length(theta0), ncol=nnn, byrow=F)
+    }
+  }
+  
+  # Can get an error for theta0 if number of PCA dimensions has changed
+  if (is.matrix(theta0) && (ncol(theta0) != nnn)) {
+    if (ncol(theta0) > nnn) {
+      theta0 <- theta0[,1:nnn]
+    } else {
+      theta0 <- cbind(theta0, matrix(0,nrow(theta0), nnn-ncol(theta0)))
     }
   }
   

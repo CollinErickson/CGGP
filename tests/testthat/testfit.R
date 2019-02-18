@@ -62,7 +62,7 @@ test_that("SGGPfit works with Laplace approx", {
       # 
       # print(numgrad)
     }
-    expect_equal(c(thetagrad), numgrad, tol=1e-4, info = handling)
+    expect_equal(c(thetagrad), numgrad, tol=1e-2, info = handling)
   }
   # numDeriv::grad(function(th) {SGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
 })

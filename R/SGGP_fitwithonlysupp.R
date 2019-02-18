@@ -98,10 +98,28 @@ SGGP_internal_fitwithonlysupp <- function(SGGP, Xs, Ys, use_PCA,
     
     # Set new theta
     thetaMAP <- opt.out$par
-    sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=FALSE)$sigma2
+    # sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=FALSE)$sigma2
+    
+    
+    Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1])
+    for (dimlcv in 1:SGGP$d) { # Loop over dimensions
+      V = SGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv], theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
+      Sigma_t = Sigma_t*V
+    }
+    Sigma_t = (1-epsssV)*Sigma_t+diag(dim(Sigma_t)[1])*epsssV
+    
+    Sigma_chol = chol(Sigma_t)
+    
+    Sti_resid = backsolve(Sigma_chol,backsolve(Sigma_chol,ys,transpose = TRUE))
+    sigma2_hat_supp = colSums(as.matrix(ys*Sti_resid))/dim(Xs)[1]
+    sigma2MAP <- sigma2_hat_supp
+    
+    
     # If one value, it gives it as matrix. Convert it to scalar
-    if (length(sigma2MAP) == 1) {sigma2MAP <- sigma2MAP[1,1]}
-    pw <- SGGP_internal_calcpw(SGGP=SGGP, y.thisloop, theta=thetaMAP)
+    # if (length(sigma2MAP) == 1) {sigma2MAP <- sigma2MAP[1,1]}
+    # pw <- SGGP_internal_calcpw(SGGP=SGGP, y.thisloop, theta=thetaMAP)
+    
+    
     totnumpara = length(thetaMAP)
     
     # H is the Hessian at thetaMAP with reverse transformation
