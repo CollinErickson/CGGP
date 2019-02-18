@@ -55,7 +55,7 @@ test_that("SGGPfit works with Ynew - scalar output", {
   expect_error(SG <- SGGPfit(SG, Y=y, Ynew=y))
   # Works with just Ynew
   SG <- SGGPfit(SG, Ynew=y)
-  expect_true(!is.na(SG$thetaPostSamples))
+  expect_true(all(!is.na(SG$thetaPostSamples)))
   
   # After append, only give in Ynew
   SG <- SGGPappend(SG, 50)
@@ -110,8 +110,10 @@ test_that("Using MCMC approx works", {
   # First 1D output
   SG <- SGGPcreate(d=3, batchsize=20)
   y1 <- apply(SG$design, 1, f1)
+  SG$numPostSamples <- 5
   
   expect_error(SG <- SGGPfit(SG, Ynew=y1, laplaceapprox = F), NA)
+  expect_equal(dim(SG$thetaPostSamples), c(3*SG$numpara,5))
   
   # All loglikelihoods should be finite for samples
   expect_true(all(is.finite(apply(SG$thetaPostSamples, 2, SGGP_internal_neglogpost, SG=SG, y=SG$y))))
@@ -123,7 +125,7 @@ test_that("Using MCMC approx works", {
   y <- cbind(y1, y2)
   
   # speed up test by reducing number of thetaPostSamples
-  SG$numPostSamples <- 10
+  SG$numPostSamples <- 3
   
   SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F)
   SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T)

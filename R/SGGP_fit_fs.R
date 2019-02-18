@@ -887,7 +887,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       PST= log((1+thetaMAP)/(1-thetaMAP)) + cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),nrow=length(thetaMAP))
       thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
     }else{ # MCMC Metropolis-Hastings
-      U <- function(re){browser()
+      U <- function(re){
         PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%as.vector(re)
         thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
         return(SGGP_internal_neglogpost(thetav,SGGP,y.thisloop))
