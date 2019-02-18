@@ -9,6 +9,8 @@
 #' @param corr Name of correlation function to use. Must be one of "CauchySQT",
 #' "CauchySQ", "Cauchy", "Gaussian", "PowerExp", "Matern32", "Matern52".
 #' @param grid_sizes Size of grid refinements.
+#' @param Xs Supplemental X data
+#' @param Ys Supplemental Y data
 #' @importFrom stats rbeta
 #'
 #' @return SGGP

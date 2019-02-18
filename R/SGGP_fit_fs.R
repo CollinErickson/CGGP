@@ -7,6 +7,13 @@
 #' @param Xs Supplementary input data
 #' @param ys Supplementary output data
 #' @param HandlingSuppData How should supplementary data be handled?
+#' * Correct: full likelihood with grid and supplemental data
+#' * Only: only use supplemental data
+#' * Ignore: ignore supplemental data
+#' * Mixture: sum of grid LLH and supplemental LLH, not statistically valid
+#' * MarginalValidation: a validation shortcut
+#' * FullValidation: a validation shortcut
+#' @md
 #'
 #' @return Likelihood
 #' @export
@@ -24,6 +31,11 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
   if (max(theta) >= 1 || min(theta) <= -1) {
     return(Inf)
   } else{
+    
+    if (!(HandlingSuppData %in% c("Correct", "Only", "Ignore", "Mixture", "MarginalValidation", "FullValidation"))) {
+      stop(paste("HandlingSuppData in SGGP_internal_neglogpost must be one of",
+                 "Correct, Only, Ignore, Mixture, MarginalValidation, FullValidation"))
+    }
     
     if(!is.null(ys) && ( HandlingSuppData == "Only" || HandlingSuppData == "Mixture")){
       Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1])
@@ -49,23 +61,23 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
     }
     
     if(!is.null(y) && HandlingSuppData != "Only"){
-    sigma2anddsigma2 <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
-    
-    lS <- sigma2anddsigma2$lS
-    dlS <-sigma2anddsigma2$dlS
-    
-    sigma2_hat_grid = sigma2anddsigma2$sigma2
-    dsigma2_hat_grid = sigma2anddsigma2$dsigma2
-    
-    lDet_grid = 0 # Not needed for glik, only for lik
-    
-    for (blocklcv in 1:SGGP$uoCOUNT) {
-      nv = SGGP$gridsize[blocklcv]/SGGP$gridsizes[blocklcv,]
-      uonow = SGGP$uo[blocklcv,]
-      for (dimlcv in which(uonow>1.5)) {
+      sigma2anddsigma2 <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y, theta=theta, return_lS=TRUE)
+      
+      lS <- sigma2anddsigma2$lS
+      dlS <-sigma2anddsigma2$dlS
+      
+      sigma2_hat_grid = sigma2anddsigma2$sigma2
+      dsigma2_hat_grid = sigma2anddsigma2$dsigma2
+      
+      lDet_grid = 0 # Not needed for glik, only for lik
+      
+      for (blocklcv in 1:SGGP$uoCOUNT) {
+        nv = SGGP$gridsize[blocklcv]/SGGP$gridsizes[blocklcv,]
+        uonow = SGGP$uo[blocklcv,]
+        for (dimlcv in which(uonow>1.5)) {
           lDet_grid = lDet_grid + (lS[uonow[dimlcv], dimlcv] - lS[uonow[dimlcv] - 1, dimlcv])*nv[dimlcv]
+        }
       }
-    }
     }
     
     
@@ -96,7 +108,6 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
         V = SGGP$CorrMat(Xs[,dimlcv], SGGP$xb,theta[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara])
         Cs = Cs*V[,SGGP$designindex[,dimlcv]]
       }
-      # print(Cs[1:10,1:10])
       
       pw <- SGGP_internal_calcpw(SGGP, y, theta)
       yhats = Cs%*%pw
@@ -184,7 +195,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
           neglogpost = 1/2*((dim(Xs)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
         }
       }else{
-        print("ERROR")
+        stop("ERROR")
       }
     }
   }
@@ -203,6 +214,12 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
 #' @param Xs Supplementary input data
 #' @param ys Supplementary output data
 #' @param HandlingSuppData How should supplementary data be handled?
+#' * Correct: full likelihood with grid and supplemental data
+#' * Only: only use supplemental data
+#' * Ignore: ignore supplemental data
+#' * Mixture: sum of grid LLH and supplemental LLH, not statistically valid
+#' * MarginalValidation: a validation shortcut
+#' * FullValidation: a validation shortcut
 #'
 #' @return Vector for gradient of likelihood w.r.t. x (theta)
 #' @export
@@ -213,6 +230,11 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
 #' SG <- SGGPfit(SG, Y)
 #' SGGP_internal_gneglogpost(SG$thetaMAP, SG=SG, y=SG$y)
 SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NULL,Xs=NULL,HandlingSuppData = "Correct") {
+  
+  if (!(HandlingSuppData %in% c("Correct", "Only", "Ignore", "Mixture", "MarginalValidation", "FullValidation"))) {
+    stop(paste("HandlingSuppData in SGGP_internal_neglogpost must be one of",
+               "Correct, Only, Ignore, Mixture, MarginalValidation, FullValidation"))
+  }
   
   epsssV = 10^(-10)
   if(is.null(y) || HandlingSuppData == "Only" || HandlingSuppData == "Mixture"){
@@ -266,21 +288,21 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
     
     lDet_new = 2*sum(log(diag(Sigma_chol)))
     if( is.null(y) ||  HandlingSuppData == "Only" ){
-    sigma2_hat = sigma2_hat_new
-    dsigma2_hat = dsigma2_hat_new/dim(Xs)[1]
-    dlDet = dlDet_new
-    lDet = lDet_new
-    if(!is.matrix(ys)){
-      neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
-      gneglogpost =0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*length(ys)*dsigma2_hat / sigma2_hat[1]
-    }else{
-      neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
-      gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
-      for(i in 1:dim(y)[2]){
-        gneglogpost = gneglogpost + (dim(ys)[1])*dsigma2_hat[,i] / sigma2_hat[i]
+      sigma2_hat = sigma2_hat_new
+      dsigma2_hat = dsigma2_hat_new/dim(Xs)[1]
+      dlDet = dlDet_new
+      lDet = lDet_new
+      if(!is.matrix(ys)){
+        neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+        gneglogpost =0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*length(ys)*dsigma2_hat / sigma2_hat[1]
+      }else{
+        neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
+        gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
+        for(i in 1:dim(y)[2]){
+          gneglogpost = gneglogpost + (dim(ys)[1])*dsigma2_hat[,i] / sigma2_hat[i]
+        }
+        gneglogpost = gneglogpost/2
       }
-      gneglogpost = gneglogpost/2
-    }
     }
     
   }
@@ -538,7 +560,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
           }
         }
         if(is.vector(y)){
-        temp4 = as.vector(t(Cs)%*%tempvec1)
+          temp4 = as.vector(t(Cs)%*%tempvec1)
         }else{
           temp4 = t(Cs)%*%tempvec1
         }
@@ -589,40 +611,40 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
         
       }}
     else{
+      if(!is.matrix(y)){
+        neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
+        gneglogpost = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*(length(y))*dsigma2_hat / sigma2_hat[1]
+      }else{
+        neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+        gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
+        for(i in 1:dim(y)[2]){
+          gneglogpost = gneglogpost + dim(y)[1]*dsigma2_hat[,i] / sigma2_hat[i]
+        }
+        gneglogpost =  gneglogpost/2
+      }
+      
+      if(HandlingSuppData == "Mixture" && !is.null(ys)){   
+        dsigma2_hat_new = dsigma2_hat_new/dim(Xs)[1]
+        
+        neglogpost_old = neglogpost
+        gneglogpost_old = gneglogpost
+        
         if(!is.matrix(y)){
-          neglogpost = 1/2*(length(y)*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)
-          gneglogpost = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*(length(y))*dsigma2_hat / sigma2_hat[1]
+          neglogpost_new = 1/2*((length(ys))*log(sigma2_hat_new[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet_new)
+          gneglogpost_new = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet_new+ 1/2*(length(ys))*dsigma2_hat_new / sigma2_hat_new[1]
         }else{
-          neglogpost = 1/2*(dim(y)[1]*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
-          gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
+          neglogpost_new = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat_new)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet_new)
+          gneglogpost_new = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet_new
           for(i in 1:dim(y)[2]){
-            gneglogpost = gneglogpost + dim(y)[1]*dsigma2_hat[,i] / sigma2_hat[i]
+            gneglogpost_new = gneglogpost_new + (dim(ys)[1])*dsigma2_hat_new[,i] / sigma2_hat_new[i]
           }
-          gneglogpost =  gneglogpost/2
+          gneglogpost_new =  gneglogpost_new/2
         }
         
-        if(HandlingSuppData == "Mixture" && !is.null(ys)){   
-          dsigma2_hat_new = dsigma2_hat_new/dim(Xs)[1]
-          
-          neglogpost_old = neglogpost
-          gneglogpost_old = gneglogpost
-          
-          if(!is.matrix(y)){
-            neglogpost_new = 1/2*((length(ys))*log(sigma2_hat_new[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet_new)
-            gneglogpost_new = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet_new+ 1/2*(length(ys))*dsigma2_hat_new / sigma2_hat_new[1]
-          }else{
-            neglogpost_new = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat_new)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet_new)
-            gneglogpost_new = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet_new
-            for(i in 1:dim(y)[2]){
-              gneglogpost_new = gneglogpost_new + (dim(ys)[1])*dsigma2_hat_new[,i] / sigma2_hat_new[i]
-            }
-            gneglogpost_new =  gneglogpost_new/2
-          }
-          
-          gneglogpost = gneglogpost_old + gneglogpost_new
-          neglogpost = neglogpost_old + neglogpost_new
-        }
+        gneglogpost = gneglogpost_old + gneglogpost_new
+        neglogpost = neglogpost_old + neglogpost_new
       }
+    }
   }
   if(return_lik){
     return(list(neglogpost=neglogpost,gneglogpost=gneglogpost))
@@ -831,8 +853,8 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       control = list(rel.tol = 1e-8,iter.max = 500)
     )
     
-
-  #  opt.out = nlminb(
+    
+    #  opt.out = nlminb(
     #   opt.out$par,
     #   objective = SGGP_internal_neglogpost,
     #   gradient = SGGP_internal_gneglogpost,
@@ -846,63 +868,9 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     #   control = list(rel.tol = 1e-8,iter.max = 500)
     # )
     # 
-    
-    epsval= 9.9^(-4)
-    for(    HandlingSuppDatalcv in c( "MarginalValidation","FullValidation","Correct","Ignore","Only")){
-      print(HandlingSuppDatalcv)
-      thetaMAP <- 0.5*opt.out$par
-    thetagrad <- SGGP_internal_gneglogpost(thetaMAP, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)
-    numgrad <- rep(0, length(SGGP$thetaMAP))
-    for (i in 1:length(SGGP$thetaMAP)) {
-      
-      eps <- rep(0, length(SGGP$thetaMAP))
-      eps[i] = eps[i] + epsval
-       numgrad[i] <- (SGGP_internal_neglogpost(thetaMAP + eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv) - 
-                     SGGP_internal_neglogpost(thetaMAP - eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)) / (2*epsval)
-      #numgrad[i] <- (-SGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
-      #                 8*SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
-      #                 8*SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
-      #                 SGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
-      # 
-    }
-    
-    print(cbind(as.vector(thetagrad),as.vector(numgrad)))
-    
-    
-    thetaMAP <- opt.out$par
-    
-    thetagrad <- SGGP_internal_gneglogpost(thetaMAP, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)
-    numgrad <- rep(0, length(SGGP$thetaMAP))
-    for (i in 1:length(SGGP$thetaMAP)) {
-      
-      eps <- rep(0, length(SGGP$thetaMAP))
-      eps[i] = eps[i] + epsval
-      numgrad[i] <- (SGGP_internal_neglogpost(thetaMAP + eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv) - 
-                       SGGP_internal_neglogpost(thetaMAP - eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)) / (2*epsval)
-      #numgrad[i] <- (-SGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
-      #                 8*SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
-      #                 8*SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
-      #                 SGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
-      # 
-    }
-    print(cbind(as.vector(thetagrad),as.vector(numgrad)))
-    }
-    
-    # for(i in 1:5){
-    #   opt.out = nlminb(
-    #     runif(SGGP$numpara*SGGP$d, -0.75,0.75),
-    #     objective = SGGP_internal_neglogpost,
-    #     gradient = SGGP_internal_gneglogpost,
-    #     lower = 0.75*lower, 
-    #     upper = 0.75*upper,
-    #     y = y,
-    #     SGGP = SGGP,
-    #     #method = method, #"L-BFGS-B", #"BFGS", Only L-BFGS-B can use upper/lower
-    #     #hessian = TRUE,
-    #     control = list(rel.tol = 1e-8,iter.max = 500))#reltol=1e-4)#abstol = tol)
-    #   }
-    
+
     # Set new theta
+    thetaMAP <- opt.out$par
     sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=FALSE)$sigma2
     # If one value, it gives it as matrix. Convert it to scalar
     if (length(sigma2MAP) == 1) {sigma2MAP <- sigma2MAP[1,1]}
@@ -1152,9 +1120,7 @@ SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,...,returndP
       dC2o = Sall$dCdtheta
       
       CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
-      Sigma_mat = - t(CoinvC1o)%*%t(C2o)  
-      # browser()
-      # print(dim(dS))
+      Sigma_mat = - t(CoinvC1o)%*%t(C2o)
       dSigma_mat = matrix(0,dim(Sigma_mat)[1],dim(Sigma_mat)[2]*length(theta))
       for(k in 1:length(theta)){
         CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o

@@ -2,7 +2,7 @@
 
 test_that("SGGPfit works with Laplace approx", {
   d <- 3
-  SG <- SGGPcreate(d=d, batchsize=20)
+  SG <- SGGPcreate(d=d, batchsize=30)
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
@@ -37,7 +37,7 @@ test_that("SGGPfit works with Laplace approx", {
   }
   
   # Works with supplementary data
-  nsup <- 50
+  nsup <- 30
   xsup <- matrix(runif(nsup*3), nsup, 3)
   ysup <- apply(xsup, 1, f)
   SG <- SGGPappend(SG, 20)

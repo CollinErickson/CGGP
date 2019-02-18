@@ -5,7 +5,7 @@
 \title{Create sparse grid GP}
 \usage{
 SGGPcreate(d, batchsize, corr = "CauchySQ", grid_sizes = c(1, 2, 4, 4,
-  8, 12, 32))
+  8, 12, 32), Xs = NULL, Ys = NULL)
 }
 \arguments{
 \item{d}{Input dimension}
@@ -17,6 +17,10 @@ for now only on predictions}
 "CauchySQ", "Cauchy", "Gaussian", "PowerExp", "Matern32", "Matern52".}
 
 \item{grid_sizes}{Size of grid refinements.}
+
+\item{Xs}{Supplemental X data}
+
+\item{Ys}{Supplemental Y data}
 }
 \value{
 SGGP
