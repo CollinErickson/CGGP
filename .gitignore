@@ -64,3 +64,9 @@ $RECYCLE.BIN/
 src/*.o
 src/*.so
 src/*.dll
+
+scratch/ExternalComparison/ExternalCompExpResults\.html
+
+scratch/ExternalComparison/ExternalComparison\.html
+
+scratch/InternalComparison/InternalComparisonExperiment\.html

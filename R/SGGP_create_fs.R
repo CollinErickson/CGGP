@@ -9,6 +9,8 @@
 #' @param corr Name of correlation function to use. Must be one of "CauchySQT",
 #' "CauchySQ", "Cauchy", "Gaussian", "PowerExp", "Matern32", "Matern52".
 #' @param grid_sizes Size of grid refinements.
+#' @param Xs Supplemental X data
+#' @param Ys Supplemental Y data
 #' @importFrom stats rbeta
 #'
 #' @return SGGP
@@ -19,7 +21,8 @@
 #' d <- 8
 #' SG = SGGPcreate(d,200)
 SGGPcreate <- function(d, batchsize, corr="CauchySQ",
-                       grid_sizes=c(1,2,4,4,8,12,32)
+                       grid_sizes=c(1,2,4,4,8,12,32),
+                       Xs=NULL, Ys=NULL
                        ) {
   if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object
@@ -52,7 +55,15 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
   SGGP$numPostSamples <- 100
   SGGP$thetaPostSamples  <- matrix(2*rbeta(d*SGGP$numpara*SGGP$numPostSamples , 0.5, 0.5)-1,ncol=SGGP$numPostSamples )
-  SGGP$y <- rep(0,0)
+  SGGP$y <- numeric(0)
+  
+  # If supplemental data is given, fit it here
+  if (!missing(Xs) && !missing(Ys)) {
+    browser()
+    SGGP <- SGGP_internal_fitwithonlysupp(SGGP, Xs, Ys,
+                                          use_PCA=TRUE,
+                                          separateoutputparameterdimensions=TRUE)
+  }
   
   # Levels are blocks. Level is like eta from paper.
   SGGP$ML = min(choose(SGGP$d + 6, SGGP$d), 10000) #max levels

@@ -2,7 +2,7 @@
 
 test_that("SGGPfit works with Laplace approx", {
   d <- 3
-  SG <- SGGPcreate(d=d, batchsize=200)
+  SG <- SGGPcreate(d=d, batchsize=30)
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
   SG <- SGGPfit(SG, Y=y)
@@ -31,18 +31,40 @@ test_that("SGGPfit works with Laplace approx", {
   for (i in 1:length(SG$thetaMAP)) {
     eps <- rep(0, length(SG$thetaMAP))
     eps[i] = eps[i] + epsval
-    numgrad <- (SGGP_internal_neglogpost(theta + eps, SG, SG$y) - SGGP_internal_neglogpost(theta - eps, SG, SG$y)) / (2*epsval)
+    numgrad <- (SGGP_internal_neglogpost(theta + eps, SG, SG$y) - 
+                  SGGP_internal_neglogpost(theta - eps, SG, SG$y)) / (2*epsval)
     expect_equal(thetagrad[i], numgrad, tol=1e-4)
   }
   
-  # # Works with supplementary data
-  # nsup <- 10
-  # xsup <- matrix(runif(nsup*3), nsup, 3)
-  # ysup <- apply(xsup, 1, f)
-  # SG <- SGGPappend(SG, 20)
-  # ynew <- apply(SG$design_unevaluated, 1, f)
-  # expect_error(SG <- SGGPfit(SG, Ynew=ynew, Xs=xsup, Ys=ysup), NA)
+  # Works with supplementary data
+  nsup <- 30
+  xsup <- matrix(runif(nsup*3), nsup, 3)
+  ysup <- apply(xsup, 1, f)
+  SG <- SGGPappend(SG, 20)
+  ynew <- apply(SG$design_unevaluated, 1, f)
+  expect_error(SG <- SGGPfit(SG, Ynew=ynew, Xs=xsup, Ys=ysup), NA)
   
+  # Check neglogpost grad matches gneglogpost for all HandlingSuppData options
+  theta <- SG$thetaMAP / 2 # Don't want values near -1 or +1
+  epsval <- 1e-4
+  for (handling in c("Correct", "Only", "Ignore", "Mixture", "MarginalValidation", "FullValidation")) {
+    thetagrad <- SGGP_internal_gneglogpost(theta, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)
+    numgrad <- rep(0, length(SG$thetaMAP))
+    for (i in 1:length(SG$thetaMAP)) {
+      eps <- rep(0, length(SG$thetaMAP))
+      eps[i] = eps[i] + epsval
+      # numgrad <- (SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
+      #               SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (2*epsval)
+      numgrad[i] <- (-SGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+                    8*SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
+                    8*SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+                    SGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
+      # 
+      # print(numgrad)
+    }
+    expect_equal(c(thetagrad), numgrad, tol=1e-2, info = handling)
+  }
+  # numDeriv::grad(function(th) {SGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
 })
 
 test_that("SGGPfit works with Ynew - scalar output", {
@@ -130,7 +152,7 @@ test_that("Using MCMC approx works", {
   SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F)
   SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T)
   expect_equal(dim(SG1$thetaPostSamples), dim(SG2$thetaPostSamples))
-
+  
   SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F, separateoutputparameterdimensions = T)
   SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T, separateoutputparameterdimensions = T)
   expect_equal(dim(SG1$thetaPostSamples), dim(SG2$thetaPostSamples))

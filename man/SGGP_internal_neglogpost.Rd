@@ -20,7 +20,15 @@ SGGP_internal_neglogpost(theta, SGGP, y, ..., ys = NULL, Xs = NULL,
 
 \item{Xs}{Supplementary input data}
 
-\item{HandlingSuppData}{How should supplementary data be handled?}
+\item{HandlingSuppData}{How should supplementary data be handled?
+\itemize{
+\item Correct: full likelihood with grid and supplemental data
+\item Only: only use supplemental data
+\item Ignore: ignore supplemental data
+\item Mixture: sum of grid LLH and supplemental LLH, not statistically valid
+\item MarginalValidation: a validation shortcut
+\item FullValidation: a validation shortcut
+}}
 }
 \value{
 Likelihood

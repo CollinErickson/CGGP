@@ -22,7 +22,13 @@ SGGP_internal_gneglogpost(theta, SGGP, y, ..., return_lik = FALSE,
 
 \item{Xs}{Supplementary input data}
 
-\item{HandlingSuppData}{How should supplementary data be handled?}
+\item{HandlingSuppData}{How should supplementary data be handled?
+* Correct: full likelihood with grid and supplemental data
+* Only: only use supplemental data
+* Ignore: ignore supplemental data
+* Mixture: sum of grid LLH and supplemental LLH, not statistically valid
+* MarginalValidation: a validation shortcut
+* FullValidation: a validation shortcut}
 }
 \value{
 Vector for gradient of likelihood w.r.t. x (theta)
