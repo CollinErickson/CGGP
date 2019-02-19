@@ -16,7 +16,7 @@ borehole <- function(x) {
   m3 <- 1 + 2 * L * Tu / (m2 * rw ^ 2 * Kw) + Tu / Tl
   
   Yn = m1 / m2 / m3
-  return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.25)))
+  return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.1)))
  # return(Yn)
 }
 
@@ -29,10 +29,10 @@ library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
-Xs = randomLHS(20, d)
+Xs = randomLHS(130, d)
 Ys = testf(Xs)
 
-SGGP = SGGPcreate(d,40) #create the design.  it has so many entries because i am sloppy
+SGGP = SGGPcreate(d,200) #create the design.  it has so many entries because i am sloppy
 Y = testf(SGGP$design) #the design is $design, simple enough, right?
 # SGGP = SGGPfit(SGGP,Y)
 # Pred = SGGPpred(SGGP,Xp)
