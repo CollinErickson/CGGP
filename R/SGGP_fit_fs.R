@@ -237,7 +237,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
                "Correct, Only, Ignore, Mixture, MarginalValidation, FullValidation"))
   }
   
-  epsssV = 10^(-14)
+  epsssV = 0 # 10^(-14)
   
   if(is.null(y) || HandlingSuppData == "Only" || HandlingSuppData == "Mixture"){
     Sigma_t = matrix(1,dim(Xs)[1],dim(Xs)[1])

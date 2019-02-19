@@ -11,6 +11,7 @@
 #' @param grid_sizes Size of grid refinements.
 #' @param Xs Supplemental X data
 #' @param Ys Supplemental Y data
+#' @param supp_args Arguments used to fit if Xs and Ys are given
 #' @importFrom stats rbeta
 #'
 #' @return SGGP
@@ -22,7 +23,8 @@
 #' SG = SGGPcreate(d,200)
 SGGPcreate <- function(d, batchsize, corr="CauchySQ",
                        grid_sizes=c(1,2,4,4,8,12,32),
-                       Xs=NULL, Ys=NULL
+                       Xs=NULL, Ys=NULL,
+                       supp_args=list()
                        ) {
   if (d <= 1) {stop("d must be at least 2")}
   # This is list representing our GP object
@@ -59,10 +61,13 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   
   # If supplemental data is given, fit it here
   if (!missing(Xs) && !missing(Ys)) {
-    browser()
-    SGGP <- SGGP_internal_fitwithonlysupp(SGGP, Xs, Ys,
-                                          use_PCA=TRUE,
-                                          separateoutputparameterdimensions=TRUE)
+    # browser()
+    # SGGP <- SGGP_internal_fitwithonlysupp(SGGP, Xs, Ys)
+    if (!is.null(supp_args) && length(supp_args) > 0 && is.null(names(supp_args))) {stop("Give names for supp_args")}
+    supp_args$SGGP <- SGGP
+    supp_args$Xs <- Xs
+    supp_args$Ys <- Ys
+    SGGP <- do.call(SGGP_internal_fitwithonlysupp, supp_args)
   }
   
   # Levels are blocks. Level is like eta from paper.

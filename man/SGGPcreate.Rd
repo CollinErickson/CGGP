@@ -5,7 +5,7 @@
 \title{Create sparse grid GP}
 \usage{
 SGGPcreate(d, batchsize, corr = "CauchySQ", grid_sizes = c(1, 2, 4, 4,
-  8, 12, 32), Xs = NULL, Ys = NULL)
+  8, 12, 32), Xs = NULL, Ys = NULL, supp_args = list())
 }
 \arguments{
 \item{d}{Input dimension}
@@ -21,6 +21,8 @@ for now only on predictions}
 \item{Xs}{Supplemental X data}
 
 \item{Ys}{Supplemental Y data}
+
+\item{supp_args}{Arguments used to fit if Xs and Ys are given}
 }
 \value{
 SGGP

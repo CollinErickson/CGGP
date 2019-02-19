@@ -31,6 +31,9 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
   if (is.null(SGGP$supplemented)) {
     stop("You must run SGGPfit on SGGP object before using SGGPpredict")
   }
+  if (SGGP$supplemented && is.null(SGGP[["Y"]])) {
+    return(SGGPpred_supponly(SGGP=SGGP, xp=xp, fullBayesian=fullBayesian, theta=theta, outdims=outdims))
+  }
   # We could check for design_unevaluated, maybe give warning?
   
   # Full Bayesian
@@ -261,7 +264,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
   # If PCA values were calculated separately, need to do transformation on both before mu is added, then add mu back
   # if (nnn > 1) {meanall <- sweep(sweep(meanall,2,SGGP$mu) %*% SGGP$M,2,SGGP$mu, `+`)}
   if (nnn > 1) {meanall2 <- sweep(meanall2, 2, SGGP$mu, `+`)}
-  # print("need to fix varall too!")
+  
   if (nnn > 1) {
     GP <- list(mean=meanall2, var=tempvarall)
   } else {
