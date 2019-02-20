@@ -3,9 +3,8 @@ library(SGGP)
 
 source("../R/SGGP_fastcalcassist_fs.R")
 source("supp_speedup_fit.R")
-source("supp_speedup_postvarcalc.R")
-source("supp_speedup_gneglogpost.R")
-source("supp_speedup_neglogpost.R")
+source("supp_speedup_returnthings.R")
+source("supp_speedup_corrf.R")
 
 borehole <- function(x) {
   rw <- x[, 1] * (0.15 - 0.05) + 0.05
@@ -22,8 +21,8 @@ borehole <- function(x) {
   m3 <- 1 + 2 * L * Tu / (m2 * rw ^ 2 * Kw) + Tu / Tl
   
   Yn = m1 / m2 / m3
-  return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.1)))
- # return(Yn)
+ # return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.1)))
+  return(Yn)
 }
 
 
@@ -35,7 +34,7 @@ library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
-Xs = randomLHS(30, d)
+Xs = randomLHS(20, d)
 Ys = testf(Xs)
 # 
 # SGGP = SGGPcreate(d,200) #create the design.  it has so many entries because i am sloppy
@@ -55,11 +54,15 @@ Ys = testf(Xs)
 # Pred = SGGPpred(SGGP,Xp)
 # mean(abs(Yp-Pred$mean)^2)  #prediction should be much better
 # mean(abs(Yp-Pred$mean)^2/Pred$var+log(Pred$var)) #score should be much better
-
-source("supp_speedup_fit.R")
+library(tictoc)
 SGGP = SGGPcreate(d,200) #create the design.  it has so many entries because i am sloppy
 Y = testf(SGGP$design) #the design is $design, simple enough, right?
-SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
-PredGreedy = SGGPpred(SGGPGreedy,Xp)
+#SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
+#PredGreedy = SGGPpred(SGGPGreedy,Xp)
 mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
 mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+
+source("supp_speedup_neglogpost.R")
+source("supp_speedup_gneglogpost.R")
+source("supp_speedup_postvarcalc.R")
+SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)

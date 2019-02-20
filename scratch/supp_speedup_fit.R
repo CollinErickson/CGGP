@@ -1,4 +1,3 @@
-
 #' Update SGGP model given data
 #'
 #' @param SGGP Sparse grid objects
@@ -207,26 +206,48 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       SGGP = SGGP,
       control = list(rel.tol = 1e-8,iter.max = 500)
     )
-    print('here')
-    SGGP_internal_gneglogpost(opt.out$par,SGGP = SGGP,y=y.thisloop,ys = ys.thisloop,Xs = Xs)
-    # 
-    if(!is.null(Xs)){
-     opt.out = nlminb(
-      opt.out$par,
-      objective = SGGP_internal_neglogpost,
-      gradient = SGGP_internal_gneglogpost,
-      lower = lower,
-      upper = upper,
-      y = y.thisloop,
-      ys = ys.thisloop,
-      Xs = Xs,
-      SGGP = SGGP,
-      HandlingSuppData = "Correct",
-      control = list(rel.tol = 1e-8,iter.max = 500)
-    )
-    }
-    # 
+    epsval= 9.9^(-4)
+    for(    HandlingSuppDatalcv in c( "MarginalValidation","FullValidation","Correct","Ignore","Only")){
+      print(HandlingSuppDatalcv)
+      thetaMAP <- 0.5*opt.out$par
+      thetagrad <- SGGP_internal_gneglogpost(thetaMAP, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)
+      numgrad <- rep(0, length(SGGP$thetaMAP))
+      for (i in 1:length(SGGP$thetaMAP)) {
 
+        eps <- rep(0, length(SGGP$thetaMAP))
+        eps[i] = eps[i] + epsval
+        numgrad[i] <- (SGGP_internal_neglogpost(thetaMAP + eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv) -
+                         SGGP_internal_neglogpost(thetaMAP - eps, SGGP, y, Xs=Xs, ys=ys, HandlingSuppData = HandlingSuppDatalcv)) / (2*epsval)
+        #numgrad[i] <- (-SGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) +
+        #                 8*SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) -
+        #                 8*SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) +
+        #                 SGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
+        #
+      }
+      print(cbind(as.vector(numgrad),as.vector(thetagrad)))
+    }
+   # SGGP_internal_neglogpost(opt.out$par,SGGP = SGGP,y=y.thisloop,ys = ys.thisloop,Xs = Xs)
+    # 
+    # if(!is.null(Xs)){
+    #   print(opt.out$par)
+    #   tic("optimizingwithsupp")
+    #  opt.out = nlminb(
+    #   opt.out$par,
+    #   objective = SGGP_internal_neglogpost,
+    #   #gradient = SGGP_internal_gneglogpost,
+    #   lower = lower,
+    #   upper = upper,
+    #   y = y.thisloop,
+    #   ys = ys.thisloop,
+    #   Xs = Xs,
+    #   SGGP = SGGP,
+    #   HandlingSuppData = "Correct",
+    #   control = list(rel.tol = 1e-8,iter.max = 500)
+    # )
+    #  print(opt.out$par)
+    #  toc()
+    # }
+    # 
     # Set new theta
     thetaMAP <- opt.out$par
     sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=FALSE)$sigma2
