@@ -132,14 +132,14 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     stop("multioutputdim_weights not acceptable")
   }
   
-  n_before <- nrow(SGGP$design)
-  
-  max_polevels = apply(SGGP$po[1:SGGP$poCOUNT,], 2, max)
+  n_before <- if (is.null(SGGP[["design"]])) {0} else {nrow(SGGP$design)}
+  # browser()
+  max_polevels = apply(SGGP$po[1:SGGP$poCOUNT, ,drop=FALSE], 2, max)
   
   separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
   # nnn is numberofoutputparameterdimensions
   nnn <- if (separateoutputparameterdimensions) {
-    ncol(SGGP$y)
+    ncol(SGGP$y) # If y doesn't exist, but ys does, it will partial match ys
   } else {
     1
   }
@@ -173,7 +173,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     # For all possible blocks, calculate MSE_MAP? Is that all that MSE_de does?
     # IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
     # Need to apply it over nnn
-    IMES_MAP_beforemean = apply(MSE_MAP, 3, function(x) SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], x))
+    IMES_MAP_beforemean = as.matrix(apply(MSE_MAP, 3, function(x) SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ,drop=F], x)))
+    # Need as.matrix in case of single value, i.e. when only supp data and only po is initial point
     # IMES_MAP_apply has a column for each opdlcv, so take rowMeans
     # IMES_MAP[1:SGGP$poCOUNT] = rowMeans(IMES_MAP_beforemean)
     # Need to include sigma2MAP here because weird things can happen if just using correlation.
@@ -217,7 +218,12 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     IMES_PostSamples = matrix(0, SGGP$ML,SGGP$numPostSamples)
     
     # Calculate sigma2 for all samples if needed
-    sigma2.allsamples.alloutputs <- if (nnn == 1 && length(SGGP$sigma2MAP)==1) {
+    sigma2.allsamples.alloutputs <- 
+      if (is.null(SGGP[["y"]])) { # Only supp data
+        # Not sure this is right
+        matrix(SGGP$sigma2MAP, byrow=T, nrow=SGGP$numPostSamples, ncol=length(SGGP$sigma2MAP))
+        
+      } else if (nnn == 1 && length(SGGP$sigma2MAP)==1) { # 1 opd and 1 od
       as.matrix(
         apply(SGGP$thetaPostSamples, 2,
               function(th) {
@@ -228,7 +234,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
               }
         )
       )
-    } else if (nnn == 1) {
+    } else if (nnn == 1) { # 1 opd but 2+ od
       t(
         apply(SGGP$thetaPostSamples, 2,
               function(th) {
@@ -239,7 +245,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
               }
         )
       )
-    } else {outer(1:SGGP$numPostSamples, 1:nnn,
+    } else { # 2+ opd, so must be 2+ od
+      outer(1:SGGP$numPostSamples, 1:nnn,
                   Vectorize(function(samplenum, outputdim) {
                     SGGP_internal_calcsigma2(SGGP,
                                              if (nnn==1) {SGGP$y} else {SGGP$y[,outputdim]},
@@ -273,8 +280,10 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
                                                             })
       }
     }; rm(samplelcv)
-    IMES_UCB = matrix(0, SGGP$ML)
-    IMES_UCB[1:SGGP$poCOUNT] = apply(IMES_PostSamples[1:SGGP$poCOUNT,],1,quantile, probs=0.9)
+    # IMES_UCB = matrix(0, SGGP$ML) # Why was this matrix but other vector?
+    IMES_UCB = numeric(SGGP$ML)
+    # browser()
+    IMES_UCB[1:SGGP$poCOUNT] = apply(IMES_PostSamples[1:SGGP$poCOUNT,, drop=F],1,quantile, probs=0.9)
   } else {
     # Can be Oldest or Random or Lowest
   }
@@ -310,6 +319,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
       stop("Selection method not acceptable")
     }
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
+    cat("class of IMES is ", class(IMES), '\n')
     
     # Old way, no RIMSEperpoint option
     # # Find the best one that still fits
@@ -363,30 +373,38 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     SGGP$ss =  SGGP$ss + SGGP$pogsize[pstar] # Update selected size
     
     # New ancestors???
-    new_an = SGGP$pila[pstar, 1:SGGP$pilaCOUNT[pstar]]
-    total_an = new_an
-    for (anlcv in 1:length(total_an)) { # Loop over ancestors
-      if (total_an[anlcv] > 1.5) { # If there's more than 1, do ???
-        total_an = unique(c(total_an, SGGP$uala[total_an[anlcv], 1:SGGP$ualaCOUNT[total_an[anlcv]]]))
+    # Protect against initial block which has no ancestors
+    # browser()
+    if (SGGP$pilaCOUNT[pstar] > 0) { # Protect for initial block
+      # new_an = if (SGGP$pilaCOUNT[pstar]>0 ){SGGP$pila[pstar, 1:SGGP$pilaCOUNT[pstar]]} else{numeric(0)}
+      new_an = SGGP$pila[pstar, 1:SGGP$pilaCOUNT[pstar]]
+      total_an = new_an
+      for (anlcv in 1:length(total_an)) { # Loop over ancestors
+        if (total_an[anlcv] > 1.5) { # If there's more than 1, do ???
+          total_an = unique(c(total_an, SGGP$uala[total_an[anlcv], 1:SGGP$ualaCOUNT[total_an[anlcv]]]))
+        }
       }
-    }
-    SGGP$ualaCOUNT[SGGP$uoCOUNT]  = length(total_an)
-    SGGP$uala[SGGP$uoCOUNT, 1:length(total_an)] = total_an
-    
-    # Loop over all ancestors, why???
-    for (anlcv in 1:length(total_an)) {
-      lo = SGGP$uo[total_an[anlcv],]
-      if (max(abs(lo - l0)) < 1.5) {
-        SGGP$w[total_an[anlcv]] = SGGP$w[total_an[anlcv]] + (-1)^abs(round(sum(l0-lo)))
+      
+      SGGP$ualaCOUNT[SGGP$uoCOUNT]  = length(total_an)
+      SGGP$uala[SGGP$uoCOUNT, 1:length(total_an)] = total_an
+      
+      # Loop over all ancestors, why???
+      for (anlcv in 1:length(total_an)) {
+        lo = SGGP$uo[total_an[anlcv],]
+        if (max(abs(lo - l0)) < 1.5) {
+          SGGP$w[total_an[anlcv]] = SGGP$w[total_an[anlcv]] + (-1)^abs(round(sum(l0-lo)))
+        }
       }
     }
     SGGP$w[SGGP$uoCOUNT] = SGGP$w[SGGP$uoCOUNT] + 1
     
     
     # Update data. Remove selected item, move rest up.
-    # First get correct indices to change
-    new_indices <- 1:(SGGP$poCOUNT - 1)
-    if (pstar < 1.5) {
+    # First get correct indices to change. Protect when selecting initial point
+    new_indices <- if (SGGP$poCOUNT>1) {1:(SGGP$poCOUNT - 1)} else {numeric(0)}
+    if (SGGP$poCOUNT < 1.5) { # Only option is first block, nothing else to move
+      old_indices <- numeric(0)
+    } else if (pstar < 1.5) {
       old_indices <- 2:SGGP$poCOUNT
     } else if (pstar > (SGGP$poCOUNT - 0.5)) {
       old_indices <- 1:(pstar - 1)
@@ -394,6 +412,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
       old_indices <- c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT)
     } else {stop("Not possible #729588")}
     # Then change the data
+    # browser()
     SGGP$po[new_indices,] = SGGP$po[old_indices,]
     SGGP$pila[new_indices,] = SGGP$pila[old_indices,]
     SGGP$pilaCOUNT[new_indices] = SGGP$pilaCOUNT[old_indices]
@@ -446,7 +465,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
           SGGP$pilaCOUNT[SGGP$poCOUNT] = nap
           
           max_polevels_old = max_polevels
-          max_polevels = apply(SGGP$po[1:SGGP$poCOUNT,], 2, max)
+          max_polevels = apply(SGGP$po[1:SGGP$poCOUNT, ,drop=F], 2, max)
           
           if(selectionmethod=="Greedy"){
             for (opdlcv in 1:nnn) { # Loop over output parameter dimensions
