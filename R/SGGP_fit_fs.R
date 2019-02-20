@@ -300,7 +300,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
       }else{
         neglogpost = 1/2*((dim(ys)[1])*sum(log(c(sigma2_hat)))-0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet)
         gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
-        for(i in 1:dim(y)[2]){
+        for(i in 1:dim(ys)[2]){
           gneglogpost = gneglogpost + (dim(ys)[1])*dsigma2_hat[,i] / sigma2_hat[i]
         }
         gneglogpost = gneglogpost/2

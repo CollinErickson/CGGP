@@ -173,15 +173,22 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     # For all possible blocks, calculate MSE_MAP? Is that all that MSE_de does?
     # IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
     # Need to apply it over nnn
-    IMES_MAP_beforemean = as.matrix(apply(MSE_MAP, 3, function(x) SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ,drop=F], x)))
+    IMES_MAP_beforemean = (apply(MSE_MAP, 3, function(x) SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ,drop=F], x)))
+    if (SGGP$poCOUNT==1) {
+      IMES_MAP_beforemean <- matrix(IMES_MAP_beforemean, nrow=1)
+    }
+    if (!is.matrix(IMES_MAP_beforemean)) {stop("Need a matrix here 0923859")}
     # Need as.matrix in case of single value, i.e. when only supp data and only po is initial point
     # IMES_MAP_apply has a column for each opdlcv, so take rowMeans
     # IMES_MAP[1:SGGP$poCOUNT] = rowMeans(IMES_MAP_beforemean)
     # Need to include sigma2MAP here because weird things can happen if just using correlation.
-    IMES_MAP[1:SGGP$poCOUNT] = rowMeans(sweep(IMES_MAP_beforemean, 2, SGGP$sigma2MAP * multioutputdim_weights, "*"))
+    # IMES_MAP[1:SGGP$poCOUNT] = rowMeans(sweep(IMES_MAP_beforemean, 2, SGGP$sigma2MAP * multioutputdim_weights, "*"))
+    # If multiple output but single opd, need to take mean
+    sigma2MAP.thisloop <- if (nnn==1) {mean(SGGP$sigma2MAP)} else {SGGP$sigma2MAP}
+    IMES_MAP[1:SGGP$poCOUNT] = rowMeans(sweep(IMES_MAP_beforemean, 2, sigma2MAP.thisloop * multioutputdim_weights, "*"))
     
     # Clean up to avoid silly errors
-    rm(opdlcv, thetaMAP.thisloop)
+    rm(opdlcv, thetaMAP.thisloop, sigma2MAP.thisloop)
   } else if (selectionmethod %in% c("UCB", "TS")) { # selectionmethod is UCB or TS
     # MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples))
     # Array needs another dimension for nnn
@@ -269,7 +276,11 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
         # IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
       } else { # Is a 3d array, need to use an apply and then apply again with mean
         IMES_PostSamples_beforemean <- apply(MSE_PostSamples[,,samplelcv,], 3,
-                                             function(x){SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], x)})
+                                             function(x){SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,,drop=F], x)})
+        if (!is.matrix(IMES_PostSamples_beforemean)) { # Happens when SGGP$poCOUNT is 1, when only initial block avail
+          if (SGGP$poCOUNT!=1) {stop("Something is wrong here")}
+          IMES_PostSamples_beforemean <- matrix(IMES_PostSamples_beforemean, nrow=1)
+        }
         # Need sigma2 for this theta sample, already calculated in sigma2.allsamples.alloutputs
         IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] <- apply(IMES_PostSamples_beforemean, 1,
                                                             function(x) {
@@ -319,7 +330,6 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
       stop("Selection method not acceptable")
     }
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
-    cat("class of IMES is ", class(IMES), '\n')
     
     # Old way, no RIMSEperpoint option
     # # Find the best one that still fits

@@ -125,7 +125,7 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   SGGP$uoCOUNT = 0 ###1 # Number of used levels
   # While number selected + min sample size <= batch size, i.e., still have enough spots for a block
   while (SGGP$bss > (SGGP$ss + min(SGGP$pogsize[1:SGGP$poCOUNT]) - 0.5)) {
-    browser()
+    # browser()
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
     
     if (SGGP$uoCOUNT < 1.5) { # Nothing picked yet, so take base block (1,1,...,1)

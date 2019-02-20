@@ -8,13 +8,14 @@ SGGP_internal_fitwithonlysupp <- function(SGGP, Xs, Ys, use_PCA=TRUE,
   SGGP$supplemented = TRUE
   SGGP$Xs = Xs
   SGGP$Ys = Ys
+  SGGP$use_PCA <- use_PCA; rm(use_PCA)
   
-  if(!is.matrix(Ys)){
+  if(!is.matrix(Ys)){ # 1D output
     SGGP$mu = mean(Ys)
     # y = Y-SGGP$mu
     ys = Ys-SGGP$mu
-  } else{
-    if (SGGP$use_PCA) {
+  } else{ # Multiple outputs
+    if (SGGP$use_PCA) {#browser()
       # Have to use Ys for data
       # if (dim(SGGP$Xs)[1] > 2*dim(Ys)[2]){
       SGGP$mu = colMeans(Ys)
@@ -24,6 +25,7 @@ SGGP_internal_fitwithonlysupp <- function(SGGP, Xs, Ys, use_PCA=TRUE,
       SigV = 1/dim(Ys)[1]*t(Ys_centered)%*%Ys_centered
       Eigen_result =eigen(SigV+10^(-12)*diag(length(SGGP$mu)))
       percent_explained = cumsum(sqrt(Eigen_result$values))/sum(sqrt(Eigen_result$values))
+      # browser()
       num_PC = max(min(which(percent_explained>0.99999)),1)
       SGGP$M = t(Eigen_result$vectors[,1:num_PC])%*%diag(SGGP$st)
       ys = Ys_centered%*%diag(1/SGGP$st)%*%t(SGGP$M)
@@ -74,10 +76,25 @@ SGGP_internal_fitwithonlysupp <- function(SGGP, Xs, Ys, use_PCA=TRUE,
   
   # This is all copied from fit
   
+  # Fix theta0
+  if (nnn > 1) {
+    if (is.vector(theta0)) {
+      theta0 <- matrix(theta0, nrow=length(theta0), ncol=nnn, byrow=F)
+    }
+  }
+  
+  # Can get an error for theta0 if number of PCA dimensions has changed
+  if (is.matrix(theta0) && (ncol(theta0) != nnn)) {
+    if (ncol(theta0) > nnn) {
+      theta0 <- theta0[,1:nnn]
+    } else {
+      theta0 <- cbind(theta0, matrix(0,nrow(theta0), nnn-ncol(theta0)))
+    }
+  }
   
   
   
-  
+  # browser()
   if (is.matrix(Ys) && !SGGP$use_PCA) {SGGP$M <- diag(ncol(ys))} # Use identity transformation instead of PCA
   for (opdlcv in 1:nnn) { # output parameter dimension
     
@@ -282,10 +299,11 @@ SGGP_internal_fitwithonlysupp <- function(SGGP, Xs, Ys, use_PCA=TRUE,
       
       # pw_uppadj = pw-pw_adj
       # supppw = solve(Sigma_t, ys)
-      supppw <- Sti %*% ys
+      supppw <- Sti %*% ys.thisloop
       if (is.matrix(supppw) && ncol(supppw)==1) {supppw <- as.vector(supppw)}
       # print(expect_equal(supppw, solve(Sigma_t, ys)))
-      sigma2MAP <- (t(ys) %*% supppw) / nrow(Xs)
+      sigma2MAP <- (t(ys.thisloop) %*% supppw) / nrow(Xs)
+      if (is.matrix(sigma2MAP)) {sigma2MAP <- diag(sigma2MAP)}
     # }
     # browser()
     # Add all new variables to SGGP that are needed
@@ -320,7 +338,7 @@ SGGP_internal_fitwithonlysupp <- function(SGGP, Xs, Ys, use_PCA=TRUE,
         if (opdlcv==1) { # First time initialize all
           
           # SGGP$pw_uppadj <- matrix(NaN, nrow(pw_uppadj), nnn)
-          SGGP$supppw <- matrix(NaN, nrow(supppw), nnn)
+          SGGP$supppw <- matrix(NaN, length(supppw), nnn) # Could be nrow supppw if 1 col matrix
           SGGP$Sti = array(NaN, dim=c(dim(Sti), nnn)) # Sti is matrix, so this is 3 dim array
         }
         # SGGP$pw_uppadj[,opdlcv] <- pw_uppadj

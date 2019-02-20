@@ -43,6 +43,11 @@ test_that("1. MV output, PCA, 1opd", {
   yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
   expect_equal(yMVpred, y, 1e-4)
   
+  # Check that append works without error, don't save it
+  for (sel.method in c("UCB", "TS", "Greedy")) {
+    expect_error(SGGPappend(SG, 30, sel.method), NA)
+  }
+  
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
   ysuppred <- SGGPpred(SG, xsup)$me
@@ -75,6 +80,11 @@ test_that("2. MV output, NO PCA, 1opd", {
   yMVpred <- SGGPpred(SG, SG$design)$mean
   expect_equal(yMVpred, y, 1e-4)
   
+  # Check that append works without error, don't save it
+  for (sel.method in c("UCB", "TS", "Greedy")) {
+    expect_error(SGGPappend(SG, 30, sel.method, NA))
+  }
+  
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
   ysuppred <- SGGPpred(SG, xsup)$me
@@ -95,6 +105,11 @@ test_that("3. MV output, PCA, separate opd", {
   expect_true(ncol(SG$y) == outd_pca)
   yMVpred <- SGGPpred(SG, SG$design)$mean
   expect_equal(yMVpred, y, 1e-4)
+  
+  # Check that append works without error, don't save it
+  for (sel.method in c("UCB", "TS", "Greedy")) {
+    expect_error(SGGPappend(SG, 30, sel.method), NA)
+  }
   
   # Append new data, use RIMSEperpoint
   SG <- SGGPappend(SG, 100, RIMSEperpoint = TRUE, selectionmethod = "UCB")
@@ -152,6 +167,11 @@ test_that("4. MV output, NO PCA, separate opd", {
   # Now check predictions
   yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
   expect_equal(yMVpred, y, 1e-4)
+  
+  # Check that append works without error, don't save it
+  for (sel.method in c("UCB", "TS", "Greedy")) {
+    expect_error(SGGPappend(SG, 30, sel.method), NA)
+  }
   
   # Add supplemental data
   expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
