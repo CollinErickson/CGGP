@@ -3,12 +3,18 @@ SGGP_internal_fitwithonlysupp <- function(SGGP, Xs, Ys, use_PCA=TRUE,
                                           lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                                           theta0=rep(0,SGGP$numpara*SGGP$d),
                                           laplaceapprox=TRUE,
-                                          use_progress_bar=TRUE) {#browser()
+                                          use_progress_bar=TRUE,
+                                          numPostSamples=NULL
+                                          ) {
   
   SGGP$supplemented = TRUE
   SGGP$Xs = Xs
   SGGP$Ys = Ys
   SGGP$use_PCA <- use_PCA; rm(use_PCA)
+  if (!is.null(numPostSamples)) {
+    SGGP$numPostSamples <- numPostSamples
+  }
+  rm(numPostSamples)
   
   if(!is.matrix(Ys)){ # 1D output
     SGGP$mu = mean(Ys)

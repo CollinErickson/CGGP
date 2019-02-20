@@ -57,7 +57,10 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
   SGGP$numPostSamples <- 100
   SGGP$thetaPostSamples  <- matrix(2*rbeta(d*SGGP$numpara*SGGP$numPostSamples , 0.5, 0.5)-1,ncol=SGGP$numPostSamples )
-  # SGGP$y <- numeric(0)
+  # Partial matching is very bad! Keep these as length 0 instead of NULL,
+  #  otherwise SGGP$Y can return SGGP$Ys
+  SGGP$Y <- numeric(0)
+  SGGP$y <- numeric(0)
   
   # If supplemental data is given, fit it here
   if (!missing(Xs) && !missing(Ys)) {

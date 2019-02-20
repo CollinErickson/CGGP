@@ -706,7 +706,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
   # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
   if (!missing(Ynew)) {
     if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}
-    if (is.null(SGGP$Y)) {
+    if (is.null(SGGP$Y) || length(SGGP$Y)==0) {
       if (is.matrix(Ynew) && nrow(Ynew) != nrow(SGGP$design_unevaluated)) {stop("nrow(Ynew) doesn't match")}
       if (!is.matrix(Ynew) && length(Ynew) != nrow(SGGP$design_unevaluated)) {stop("length(Ynew) doesn't match")}
       Y <- Ynew

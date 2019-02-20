@@ -132,14 +132,14 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     stop("multioutputdim_weights not acceptable")
   }
   
-  n_before <- if (is.null(SGGP[["design"]])) {0} else {nrow(SGGP$design)}
+  n_before <- if (is.null(SGGP[["design"]]) || length(SGGP$design)==0) {0} else {nrow(SGGP$design)}
   # browser()
   max_polevels = apply(SGGP$po[1:SGGP$poCOUNT, ,drop=FALSE], 2, max)
   
   separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
   # nnn is numberofoutputparameterdimensions
   nnn <- if (separateoutputparameterdimensions) {
-    ncol(SGGP$y) # If y doesn't exist, but ys does, it will partial match ys
+    if (length(SGGP$y)>0) {ncol(SGGP$y)} else {ncol(SGGP$ys)}
   } else {
     1
   }
@@ -226,7 +226,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     
     # Calculate sigma2 for all samples if needed
     sigma2.allsamples.alloutputs <- 
-      if (is.null(SGGP[["y"]])) { # Only supp data
+      if (is.null(SGGP[["y"]]) || length(SGGP$y)==0) { # Only supp data
         # Not sure this is right
         matrix(SGGP$sigma2MAP, byrow=T, nrow=SGGP$numPostSamples, ncol=length(SGGP$sigma2MAP))
         

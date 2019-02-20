@@ -1,4 +1,4 @@
-SGGPpred_supponly <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
+SGGP_internal_predwithonlysupp <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
   if (!inherits(SGGP, "SGGP")) {
     stop("First argument to SGGP must be an SGGP object")
   }
@@ -15,7 +15,7 @@ SGGPpred_supponly <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=
   if (fullBayesian) {
     if (!is.null(theta)) {stop("Don't give in theta for fullBayesian")}
     preds <- lapply(1:SGGP$numPostSamples, 
-                    function(i) {SGGPpred_supponly(SGGP, xp, theta=SGGP$thetaPostSamples[,i])})
+                    function(i) {SGGP_internal_predwithonlysupp(SGGP, xp, theta=SGGP$thetaPostSamples[,i])})
     means <- sapply(preds, function(x) {x$mean})
     mn <- as.matrix(apply(means, 1, mean))
     vars <- sapply(preds, function(x) {x$var})
@@ -49,15 +49,15 @@ SGGPpred_supponly <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=
   separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
   # nnn is numberofoutputparameterdimensions
   nnn <- if (separateoutputparameterdimensions) {
-    ncol(SGGP$y)
+    ncol(SGGP$ys)
   } else {
     1
   }
   if (nnn > 1) {
     # meanall <- matrix(NaN, nrow(xp), ncol=nnn)
-    meanall2 <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y))
-    # varall <- matrix(NaN, nrow(xp), ncol=ncol(SGGP$Y))
-    tempvarall <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y))
+    meanall2 <- matrix(0, nrow(xp), ncol=ncol(SGGP$Ys))
+    # varall <- matrix(NaN, nrow(xp), ncol=ncol(SGGP$Ys))
+    tempvarall <- matrix(0, nrow(xp), ncol=ncol(SGGP$Ys))
   }
   
   if (!is.null(outdims) && (nnn==1 || any(abs(SGGP$M-diag(1,nrow(SGGP$M),ncol(SGGP$M))) > 1e-10))) {

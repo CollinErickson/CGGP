@@ -40,9 +40,22 @@ test_that("1. Create, append, predict with only supp, scalar out", {
     expect_true(sum(s1.app$uo[2,]) == d+1) # 2nd block only has one 2
     # Make sure 3rd dim is least explored
     s1.app.colMeans <- colMeans(s1.app$uo[1:s1.app$uoCOUNT,])
-    expect_true(s1.app.colMeans[1] > s1.app.colMeans[3])
-    expect_true(s1.app.colMeans[2] > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3])
   }
+  
+  rm(s1, s1.app, s1.app.colMeans)
+  
+  # Again create with only supp, but use MCMC
+  expect_error(s1 <- SGGPcreate(d, 0, Xs=xsup, Ys=ysup,
+                                supp_args=list(laplaceapprox=FALSE,
+                                               numPostSamples=7)), NA)
+  expect_true(is.null(s1[["design"]]))
+  expect_equal(s1$uoCOUNT, 0)
+  expect_equal(s1$poCOUNT, 1)
+  expect_true(all(s1$uo==0))
+  expect_equal(s1$po[1,], rep(1,d))
+  expect_true(all(s1$po[-1,]==0))
   
 })
 
@@ -103,8 +116,8 @@ test_that("2. Create, append, predict with only supp, MVout, yes PCA, yes sepOPD
     expect_true(sum(s1.app$uo[2,]) == d+1) # 2nd block only has one 2
     # Make sure 3rd dim is least explored
     s1.app.colMeans <- colMeans(s1.app$uo[1:s1.app$uoCOUNT,])
-    expect_true(s1.app.colMeans[1] > s1.app.colMeans[3])
-    expect_true(s1.app.colMeans[2] > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3])
   }
   
 })
@@ -164,8 +177,8 @@ test_that("3. Create, append, predict with only supp, MVout, no PCA, yes sepOPD"
     expect_true(sum(s1.app$uo[2,]) == d+1) # 2nd block only has one 2
     # Make sure 3rd dim is least explored
     s1.app.colMeans <- colMeans(s1.app$uo[1:s1.app$uoCOUNT,])
-    expect_true(s1.app.colMeans[1] > s1.app.colMeans[3])
-    expect_true(s1.app.colMeans[2] > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3])
   }
   
 })
@@ -227,8 +240,8 @@ test_that("4. Create, append, predict with only supp, MVout, yes PCA, no sepOPD"
     expect_true(sum(s1.app$uo[2,]) == d+1) # 2nd block only has one 2
     # Make sure 3rd dim is least explored
     s1.app.colMeans <- colMeans(s1.app$uo[1:s1.app$uoCOUNT,])
-    expect_true(s1.app.colMeans[1] > s1.app.colMeans[3])
-    expect_true(s1.app.colMeans[2] > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3])
   }
   
 })
@@ -291,8 +304,8 @@ test_that("5. Create, append, predict with only supp, MVout, no PCA, no sepOPD",
     expect_true(sum(s1.app$uo[2,]) == d+1) # 2nd block only has one 2
     # Make sure 3rd dim is least explored
     s1.app.colMeans <- colMeans(s1.app$uo[1:s1.app$uoCOUNT,])
-    expect_true(s1.app.colMeans[1] > s1.app.colMeans[3])
-    expect_true(s1.app.colMeans[2] > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3])
+    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3])
   }
   
 })

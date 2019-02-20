@@ -31,8 +31,8 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
   if (is.null(SGGP$supplemented)) {
     stop("You must run SGGPfit on SGGP object before using SGGPpredict")
   }
-  if (SGGP$supplemented && is.null(SGGP[["Y"]])) {
-    return(SGGPpred_supponly(SGGP=SGGP, xp=xp, fullBayesian=fullBayesian, theta=theta, outdims=outdims))
+  if (SGGP$supplemented && (is.null(SGGP[["Y"]]) || length(SGGP$Y)==0)) {
+    return(SGGP_internal_predwithonlysupp(SGGP=SGGP, xp=xp, fullBayesian=fullBayesian, theta=theta, outdims=outdims))
   }
   # We could check for design_unevaluated, maybe give warning?
   

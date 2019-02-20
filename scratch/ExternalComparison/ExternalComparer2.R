@@ -196,7 +196,7 @@ excomp$rungrid
 # excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE)
 excomp$run_all()
 
-cat("Completed all runs in ExternalComparer1.R\n")
+cat("Completed all runs in ExternalComparer2.R\n")
 
 # excomp$save_self()
 
