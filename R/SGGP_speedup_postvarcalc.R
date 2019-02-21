@@ -1,14 +1,16 @@
-#' Calculate posterior variance
+#' Calculate posterior variance, faster version
 #'
-#' @param x1 Points at which to calculate MSE
-#' @param x2 Levels along dimension, vector???
-#' @param xo No clue what this is
-#' @param theta Correlation parameters
-#' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
-#' for vector of 1D points.
+#' @param GMat Matrix
+#' @param dGMat Derivative of matrix
+#' @param cholS Cholesky factorization of S
+#' @param dSMat Deriv of SMat
+#' @param INDSN Indices, maybe
+#' @param numpara Number of parameters for correlation function
+#' @param returnlogs Should log scale be returned
+#' @param returnderiratio Should derivative ratio be returned?
+#' @param returndG Should dG be returned
+#' @param returndiag Should diag be returned
 #' @param ... Placeholder
-#' @param returndPVMC Should dPVMC be returned?
-#' @param returndiagonly Should only the diagonal be returned?
 #'
 #' @return Variance posterior
 #' @export
@@ -17,7 +19,9 @@
 #' SGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
 #'              xo=c(.11), theta=c(.1,.2,.3),
 #'              CorrMat=SGGP_internal_CorrMatCauchySQT)
-SGGP_internal_postvarmatcalcfaster <- function(GMat, dGMat,cholS,dSMat,INDSN,numpara,...,returnlogs=FALSE, returnderiratio =FALSE,returndG = FALSE,returndiag = FALSE) {
+SGGP_internal_postvarmatcalcfaster <- function(GMat, dGMat,cholS,dSMat,INDSN,numpara,...,
+                                         returnlogs=FALSE, returnderiratio =FALSE,
+                                         returndG = FALSE,returndiag = FALSE) {
   
   CoinvC1o = backsolve(cholS,backsolve(cholS,t(GMat[,INDSN]), transpose = TRUE))
   if(returndiag){

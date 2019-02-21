@@ -110,6 +110,7 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
 #' Note that this is not the correlation between two vectors.
 #'
 #' @inheritParams SGGP_internal_CorrMatCauchy
+#' @param returnlogs Should log of correlation be returned?
 #'
 #' @return Matrix of correlation values between x1 and x2
 #' @export
@@ -117,7 +118,8 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
 #'
 #' @examples
 #' SGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,-.5))
-SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE,returnlogs = FALSE) {
+SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
+                                          return_numpara =FALSE,returnlogs = FALSE) {
   if(return_numpara){
     return(2);
   }else{ 
