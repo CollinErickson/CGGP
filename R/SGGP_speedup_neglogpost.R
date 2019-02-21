@@ -143,12 +143,14 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
       
       # ME_s = matrix(0,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
       for (blocklcv in 1:SGGP$uoCOUNT) {
+        if(abs(SGGP$w[blocklcv]) > 0.5){
         ME_s=matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
         for (dimlcv in 1:SGGP$d) {
           levelnow = SGGP$uo[blocklcv,dimlcv]
           ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
         }
         Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
+        }
       }
       Sigma_t = (1-epsssV)*Sigma_t+diag(dim(Sigma_t)[1])*epsssV
       
@@ -181,16 +183,18 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
       }
       
       for (blocklcv in 1:SGGP$uoCOUNT) {
+        if(abs(SGGP$w[blocklcv]) > 0.5){
         ME_s = matrix(1,nrow=dim(Xs)[1],1)
         for (dimlcv in 1:SGGP$d) {
           levelnow = SGGP$uo[blocklcv,dimlcv]
           ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
         }
         Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
+        }
       }
       
       Sigma_t = (1-epsssV)*Sigma_t+epsssV
-      lDet_supp = -sum(log(Sigma_t))
+      lDet_supp = sum(log(Sigma_t))
       if(is.matrix(ys)){
         Sigma_t = t(matrix( rep( Sigma_t , dim(ys)[2] ) , ncol = ncol(t(Sigma_t)) , byrow = TRUE ))
       }
