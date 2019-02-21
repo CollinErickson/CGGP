@@ -211,6 +211,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
     dlDet_supp = 0*dlDet_grid
     
     for (blocklcv in 1:SGGP$uoCOUNT) {
+      if(abs(SGGP$w[blocklcv]) > 0.5){
       ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
       for (dimlcv in 1:SGGP$d) {
         levelnow = SGGP$uo[blocklcv,dimlcv]
@@ -224,6 +225,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
         levelnow = SGGP$uo[blocklcv,dimlcv]
         dME_n = MEE_n*dMSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
         dSigma_to[[dimlcv]] = dSigma_to[[dimlcv]]-dME_n
+      }
       }
     }
     Sigma_t = (1-epsssV)*Sigma_t+diag(dim(Sigma_t)[1])*epsssV
@@ -307,6 +309,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
     
     
     for (blocklcv in 1:SGGP$uoCOUNT) {
+      if(abs(SGGP$w[blocklcv]) > 0.5){
       ME_s = matrix(1,nrow=dim(Xs)[1],ncol=1)
       for (dimlcv in 1:SGGP$d) {
         levelnow = SGGP$uo[blocklcv,dimlcv]
@@ -323,6 +326,7 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
         dME_n = dMSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
         dSigma_to[[dimlcv]] = dSigma_to[[dimlcv]]-SGGP$w[blocklcv]*(ME_so1*dME_n/ME_so2)
       }
+      }
     }
     
     
@@ -331,12 +335,12 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
     dsigma2_hat_part3 = 0*dsigma2_hat_grid
     dlDet_supp = 0*dlDet_grid
     
-    lDet_supp = -sum(log(Sigma_t))
+    lDet_supp = sum(log(Sigma_t))
     
     for (dimlcv in 1:SGGP$d) {
       for(paralcv in 1:SGGP$numpara){
         dSigma_now = as.matrix((dSigma_to[[dimlcv]])[,paralcv])
-        dlDet_supp[(dimlcv-1)*SGGP$numpara+paralcv] =-colSums(dSigma_now/Sigma_t)
+        dlDet_supp[(dimlcv-1)*SGGP$numpara+paralcv] =colSums(dSigma_now/Sigma_t)
       }
     }
     if(is.matrix(ys)){
