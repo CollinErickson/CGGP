@@ -35,11 +35,11 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
   epsssV = 0 # 10^(-14)
   
   
-  if(!is.null(Xs) && is.null(y)){
+  if(!is.null(Xs) && (is.null(y) || length(y)==0)){
     HandlingSuppData = "Only"
-  }else if(is.null(Xs) && !is.null(y)){
+  }else if(is.null(Xs) && !(is.null(y) || length(y)==0)){
     HandlingSuppData = "Ignore"
-  }else if(is.null(Xs) && is.null(y)){
+  }else if(is.null(Xs) && (is.null(y) || length(y)==0)){
     stop(paste("You have given no y or ys to SGGP_internal_neglogpost"))
   }
   

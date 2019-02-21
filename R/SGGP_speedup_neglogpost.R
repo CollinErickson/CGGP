@@ -37,11 +37,13 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
                  "Correct, Only, Ignore, Mixture, MarginalValidation, FullValidation"))
     }
     
-    if(!is.null(ys) && is.null(y)){
+    if(!(is.null(ys) || length(ys)==0) && (is.null(y) || length(y)==0)){
       HandlingSuppData = "Only"
-    }else if(is.null(ys) && !is.null(y)){
+      if (runif(1)<.0001) message("Changing HandlingSuppData to Only")
+    }else if((is.null(ys) || length(ys)==0) && !(is.null(y) || length(y)==0)){
       HandlingSuppData = "Ignore"
-    }else if(is.null(ys) && is.null(y)){
+      if (runif(1)<.0001) message("Changing HandlingSuppData to Ignore")
+    }else if((is.null(ys) || length(ys)==0) && (is.null(y) || length(y)==0)){
       stop(paste("You have given no y or ys to SGGP_internal_neglogpost"))
     }
     

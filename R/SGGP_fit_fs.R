@@ -21,6 +21,13 @@
 #' should separate parameters be fit to each dimension?
 #' @param use_progress_bar If using MCMC sampling, should a progress bar be
 #' displayed?
+#' @param HandlingSuppData How should supplementary data be handled?
+#' * Correct: full likelihood with grid and supplemental data
+#' * Only: only use supplemental data
+#' * Ignore: ignore supplemental data
+#' * Mixture: sum of grid LLH and supplemental LLH, not statistically valid
+#' * MarginalValidation: a validation shortcut
+#' * FullValidation: a validation shortcut
 #' 
 #' @importFrom stats optim rnorm runif nlminb
 #'
@@ -35,6 +42,7 @@
 SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     theta0 = SGGP$thetaMAP, #rep(0,SGGP$numpara*SGGP$d),
                     laplaceapprox = TRUE,
+                    HandlingSuppData="Ignore",
                     lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                     use_PCA=SGGP$use_PCA,
                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
@@ -206,6 +214,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       upper = upper,
       y = y.thisloop,
       SGGP = SGGP,
+      HandlingSuppData=HandlingSuppData,
       control = list(rel.tol = 1e-8,iter.max = 500)
     )
     

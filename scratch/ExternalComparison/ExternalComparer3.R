@@ -1,6 +1,6 @@
 # Compare ours with and without supp
 
-run_lagp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
+run_lagp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_agp=FALSE) {
   if (!missing(seed)) {set.seed(seed)}
   # browser()
   if (missing(x) && missing(y)) {
@@ -11,10 +11,14 @@ run_lagp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   sdy <- sd(y)
   mny <- mean(y)
   y <- (y-mny) / sdy
-  # mod.agp <- laGP::newGPsep(X=x, Z=y, d=laGP::darg(d=list(mle = TRUE, max = 100), X=x)$start,
-  #                           g=laGP::garg(g=list(mle = TRUE), y=y)$start)
-  # laGP::updateGPsep(mod.agp, x, y)
-  pred <- laGP::aGPsep(X=x, Z=y, XX=xtest, method="alc")
+  if (use_agp) {
+    pred <- laGP::aGPsep(X=x, Z=y, XX=xtest, method="alc")
+  } else {
+    mod.agp <- laGP::newGPsep(X=x, Z=y, d=laGP::darg(d=list(mle = TRUE, max = 100), X=x)$start,
+                              g=laGP::garg(g=list(mle = TRUE), y=y)$start)
+    laGP::updateGPsep(mod.agp, x, y)
+    pred <- laGP::predGPsep(mod.agp, xtest, lite=T)
+  }
   # browser()
   pred$mean <- pred$mean * sdy + mny
   pred$var <- pred$var * sdy^2
@@ -101,6 +105,8 @@ run_one <- function(package, f, d, n) {
     out <- run_SGGP(Nappend=c(), Nlhs=n, f=f, d=d, xtest=xtest)
   } else if (package == "laGP") {
     out <- run_lagp(Ntotal=n, f=f, d=d, xtest=xtest)
+  } else if (package == "aGP") {
+    out <- run_lagp(Ntotal=n, f=f, d=d, xtest=xtest, use_agp=TRUE)
   } else if (package == "GPflow") {
     out <- run_GPflow(Ntotal=n, f=f, d=d, xtest=xtest)
   } else if (package == "GPflow.SVGP") {
@@ -129,7 +135,7 @@ excomp <- ffexp$new(
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight")[funcstouse],
                 d=c(3,6,7,8,10)[funcstouse],
                 row.names = c("beam","OTL","piston","borehole","wingweight")[funcstouse], stringsAsFactors = F),
-  package=c("MRFA", "svm", "laGP", "SGGP", "SGGPsupp", "SGGPsupponly"), # GPflow.SVGP is slow/bad
+  package=c("SGGP", "SGGPsupp", "SGGPsupponly", "MRFA", "svm", "laGP", "aGP"), # GPflow.SVGP is slow/bad
   # n_increments=list(n_increments=list(c(100,200,300,400,500))),
   n = c(100), #, 250, 500, 750, 1000),
   parallel=FALSE,
