@@ -5,7 +5,7 @@
 \title{Cauchy correlation function}
 \usage{
 SGGP_internal_CorrMatCauchy(x1, x2, theta, return_dCdtheta = FALSE,
-  return_numpara = FALSE)
+  return_numpara = FALSE, returnlogs = FALSE)
 }
 \arguments{
 \item{x1}{Vector of coordinates from same dimension}
@@ -22,6 +22,8 @@ SGGP_internal_CorrMatCauchy(x1, x2, theta, return_dCdtheta = FALSE,
 \item{return_dCdtheta}{Should dCdtheta be returned?}
 
 \item{return_numpara}{Should it just return the number of parameters?}
+
+\item{returnlogs}{Should log of correlation be returned?}
 }
 \value{
 Matrix of correlation values between x1 and x2

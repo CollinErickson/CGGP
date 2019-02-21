@@ -329,3 +329,62 @@ test_that("Correlation CorrMatPowerExp works", {
     expect_equal(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
 })
+
+test_that("Logs work for all", {
+  corrs <- list(SGGP_internal_CorrMatCauchySQ, SGGP_internal_CorrMatCauchySQT,
+             SGGP_internal_CorrMatCauchy, SGGP_internal_CorrMatGaussian,
+             SGGP_internal_CorrMatMatern32, SGGP_internal_CorrMatMatern52,
+             SGGP_internal_CorrMatPowerExp
+  )
+  n1 <- 5
+  n2 <- 6
+  for (icorr in rev(1:length(corrs))) {
+    corr <- corrs[[icorr]]
+    numpara <- corr(return_numpara = T)
+    x1 <- runif(n1)
+    x2 <- runif(n2)
+    theta <- runif(numpara)*2-1
+    
+    # Check that it actually equals log of normal corr
+    c1 <- corr(x1 = x1, x2 = x2, theta = theta)
+    c1_log <- corr(x1 = x1, x2 = x2, theta = theta, returnlogs = T)
+    expect_is(c1, "matrix")
+    expect_is(c1_log, "matrix")
+    expect_equal(log(c1), c1_log)
+    
+    # Check grad has correct C
+    d1_log <- corr(x1 = x1, x2 = x2, theta = theta, returnlogs = T, return_dCdtheta = T)
+    expect_is(d1_log$dCdtheta, "matrix")
+    expect_is(d1_log, "list")
+    expect_equal(d1_log$C, c1_log)
+    
+    # Check grad matches, this is repeat of what is done in each section above
+    corr_C_dC <- corr(x1 = x1, x2 = x2, theta = theta, return_dCdtheta=T)
+    eps <- 1e-6
+    for (i in 1:numpara) {
+      thd <- rep(0, numpara)
+      thd[i] <- eps
+      numdC <- (corr(x1=x1, x2=x2, theta=theta+thd) -
+                  corr(x1=x1, x2=x2, theta=theta-thd)) / (2*eps)
+      # Should be more accurate but was exactly the same
+      expect_equal(numdC, corr_C_dC$dCdtheta[,(1+n2*i-n2):(n2*i)], info = paste("theta dimension with error is",i))
+    }
+    
+    # Check grad matches on log scale
+    corr_C_dC_logs <- corr(x1 = x1, x2 = x2, theta = theta, return_dCdtheta=T, returnlogs = T)
+    eps <- 1e-6
+    for (i in 1:numpara) {
+      thd <- rep(0, numpara)
+      thd[i] <- eps
+      numdC <- (corr(x1=x1, x2=x2, theta=theta+thd, returnlogs = T) -
+                  corr(x1=x1, x2=x2, theta=theta-thd, returnlogs = T)) / (2*eps)
+      # Should be more accurate but was exactly the same
+      expect_equal(numdC, corr_C_dC_logs$dCdtheta[,(1+n2*i-n2):(n2*i)],
+                   info = paste("theta dimension with error is",i))
+    }
+    
+    
+    
+    rm(numpara, c1, c1_log)
+  }
+})
