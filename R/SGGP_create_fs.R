@@ -112,7 +112,7 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   SGGP$pila[1, 1] <- 0
   # browser()
   
-  SGGP$bss = batchsize#1+4*SGGP$d  #must be at least 3*d
+  # SGGP$bss = batchsize#1+4*SGGP$d  #must be at least 3*d
   # SGGP$sizes = c(1,2,4,4,8,12,32) # Num of points added to 1D design as you go further in any dimension
   SGGP$sizes <- grid_sizes
   SGGP$maxlevel = length(SGGP$sizes)
@@ -127,7 +127,7 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   ###SGGP$w[1] = 1 #keep track of + and - for prediction
   SGGP$uoCOUNT = 0 ###1 # Number of used levels
   # While number selected + min sample size <= batch size, i.e., still have enough spots for a block
-  while (SGGP$bss > (SGGP$ss + min(SGGP$pogsize[1:SGGP$poCOUNT]) - 0.5)) {
+  while (batchsize > (SGGP$ss + min(SGGP$pogsize[1:SGGP$poCOUNT]) - 0.5)) { # Replaced bss w/ batchsize
     # browser()
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
     
@@ -140,7 +140,8 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
       if (SGGP$uoCOUNT < (2 * SGGP$d + 1.5)) {
         pstar = sample(which(SGGP$pogsize[1:SGGP$poCOUNT] <= 0.5 + min(SGGP$pogsize[1:SGGP$poCOUNT])), 1)
       } else{ # After that randomly select from blocks that still fit
-        pstar = sample(which(SGGP$pogsize[1:SGGP$poCOUNT] < min(SGGP$bss - SGGP$ss + 0.5,SGGP$maxgridsize)), 1)
+        # Replaced bss w/ batchsize
+        pstar = sample(which(SGGP$pogsize[1:SGGP$poCOUNT] < min(batchsize - SGGP$ss + 0.5,SGGP$maxgridsize)), 1)
       }
     }
     

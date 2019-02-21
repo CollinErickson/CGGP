@@ -5,8 +5,9 @@
 \title{Update SGGP model given data}
 \usage{
 SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
-  laplaceapprox = TRUE, lower = rep(-1, SGGP$numpara * SGGP$d),
-  upper = rep(1, SGGP$numpara * SGGP$d), use_PCA = SGGP$use_PCA,
+  laplaceapprox = TRUE, HandlingSuppData = "Ignore", lower = rep(-1,
+  SGGP$numpara * SGGP$d), upper = rep(1, SGGP$numpara * SGGP$d),
+  use_PCA = SGGP$use_PCA,
   separateoutputparameterdimensions = is.matrix(SGGP$thetaMAP),
   use_progress_bar = TRUE, Ynew)
 }
@@ -22,6 +23,14 @@ SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
 \item{theta0}{Initial theta}
 
 \item{laplaceapprox}{Should Laplace approximation be used?}
+
+\item{HandlingSuppData}{How should supplementary data be handled?
+* Correct: full likelihood with grid and supplemental data
+* Only: only use supplemental data
+* Ignore: ignore supplemental data
+* Mixture: sum of grid LLH and supplemental LLH, not statistically valid
+* MarginalValidation: a validation shortcut
+* FullValidation: a validation shortcut}
 
 \item{lower}{Lower bound for parameter optimization}
 

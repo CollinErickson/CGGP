@@ -13,15 +13,16 @@ run_lagp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_agp=FA
   y <- (y-mny) / sdy
   if (use_agp) {
     pred <- laGP::aGPsep(X=x, Z=y, XX=xtest, method="alc")
+    pred$var <- pred$var * sdy^2
   } else {
     mod.agp <- laGP::newGPsep(X=x, Z=y, d=laGP::darg(d=list(mle = TRUE, max = 100), X=x)$start,
                               g=laGP::garg(g=list(mle = TRUE), y=y)$start)
     laGP::updateGPsep(mod.agp, x, y)
     pred <- laGP::predGPsep(mod.agp, xtest, lite=T)
+    pred$var <- pred$s2 * sdy^2
   }
   # browser()
   pred$mean <- pred$mean * sdy + mny
-  pred$var <- pred$var * sdy^2
   list(mean=pred$mean, var=pred$var, n=nrow(x))
 }
 
@@ -56,7 +57,7 @@ run_svm <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
 run_SGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {
   require("SGGP")
   if (!missing(seed)) {set.seed(seed)}
-  browser()
+  # browser()
   if (!missing(Nlhs)) {
     xsup <- matrix(runif(Nlhs*d), Nlhs, d)
     ysup <- apply(xsup, 1, f)
@@ -65,24 +66,27 @@ run_SGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {
     xsup <- NULL
     ysup <- NULL
   }
-  if (any(abs(floor(Nappend)-Nappend)>1e-8)) {stop("Need integers")}
-  for (i in 1:length(Nappend)) {
-    ni <- Nappend[i]
-    if (exists('sg')) {
-      if (!is.null(sg$design)) {ni <- ni - nrow(sg$design)}
-      if (!is.null(sg$Xs)) {ni <- ni - nrow(sg$Xs)}
+  if (!is.null(Nappend) && length(Nappend) > 0) {
+    if (any(abs(floor(Nappend)-Nappend)>1e-8)) {stop("Need integers")}
+    for (i in 1:length(Nappend)) {
+      ni <- Nappend[i]
+      if (exists('sg')) {
+        if (!is.null(sg$design)) {ni <- ni - nrow(sg$design)}
+        if (!is.null(sg$Xs)) {ni <- ni - nrow(sg$Xs)}
+      }
+      if (missing(Nlhs) && i==1) { # First time create it
+        sg <- SGGPcreate(d, ni)
+      } else{
+        sg <- SGGPappend(sg, batchsize = ni)
+      }
+      ynew <- apply(sg$design_unevaluated, 1, f)
+      sg <- SGGPfit(sg, Ynew=ynew, Xs=xsup, Ys=ysup)
     }
-    if (missing(Nlhs) && i==1) { # First time create it
-      sg <- SGGPcreate(d, ni)
-    } else{
-      sg <- SGGPappend(sg, batchsize = ni)
-    }
-    ynew <- apply(sg$design_unevaluated, 1, f)
-    sg <- SGGPfit(sg, Ynew=ynew, Xs=xsup, Ys=ysup)
   }
   
   pred <- predict(sg, xtest)
-  list(mean=pred$mean, var=pred$var, n=nrow(sg$design) + if (!is.null(sg$Xs)) {nrow(sg$Xs)} else {0})
+  list(mean=pred$mean, var=pred$var,
+       n=if (!is.null(sg$design)) {nrow(sg$design)} else {0} + if (!is.null(sg$Xs)) {nrow(sg$Xs)} else {0})
 }
 
 
@@ -118,7 +122,7 @@ run_one <- function(package, f, d, n) {
   } else {
     stop(paste("Package", package, "not recognized"))
   }
-  browser()
+  # browser()
   outstats <- SGGP::valstats(predmean=out[[1]], predvar=out[[2]],Yval=ytest) #, bydim=FALSE)
   if (out$n > n) {warning(paste("n too big for", package, n, f, d))}
   outstats
@@ -129,7 +133,7 @@ run_one <- function(package, f, d, n) {
 
 require("comparer")
 
-funcstouse <- 1
+funcstouse <- 1:5
 excomp <- ffexp$new(
   eval_func = run_one,
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight")[funcstouse],
@@ -137,7 +141,7 @@ excomp <- ffexp$new(
                 row.names = c("beam","OTL","piston","borehole","wingweight")[funcstouse], stringsAsFactors = F),
   package=c("SGGP", "SGGPsupp", "SGGPsupponly", "MRFA", "svm", "laGP", "aGP"), # GPflow.SVGP is slow/bad
   # n_increments=list(n_increments=list(c(100,200,300,400,500))),
-  n = c(100), #, 250, 500, 750, 1000),
+  n = c(100, 200), #, 250, 500, 750, 1000),
   parallel=FALSE,
   parallel_cores = 37,
   # replicate=1:10,
@@ -160,6 +164,7 @@ cat("Saved self\n")
 if (F) {
   excomp$plot_run_times()
   plyr::dlply(excomp$outcleandf, "d")
+  require('ggplot2')
   ggplot(data=excomp$outcleandf, mapping=aes(n, RMSE)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
   ggplot(data=excomp$outcleandf, mapping=aes(n, score)) + geom_point() + facet_grid(f ~ package, scales="free_y")
   ggplot(data=excomp$outcleandf, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()

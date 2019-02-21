@@ -132,6 +132,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     stop("multioutputdim_weights not acceptable")
   }
   
+  
   n_before <- if (is.null(SGGP[["design"]]) || length(SGGP$design)==0) {0} else {nrow(SGGP$design)}
   # browser()
   max_polevels = apply(SGGP$po[1:SGGP$poCOUNT, ,drop=FALSE], 2, max)
@@ -300,11 +301,13 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
   }
   
   
+  # Removing bss entirely, was wrong and redundant.
   # Increase count of points evaluated. Do we check this if not reached exactly???
-  SGGP$bss = SGGP$bss + batchsize
+  # SGGP$bss = SGGP$bss + batchsize
+  max_design_points = SGGP$ss + batchsize
   
   # Keep adding points until reaching bss
-  while (SGGP$bss > (SGGP$ss + min(SGGP$pogsize[1:SGGP$poCOUNT]) - 0.5)) {
+  while (max_design_points > (SGGP$ss + min(SGGP$pogsize[1:SGGP$poCOUNT]) - 0.5)) {
     
     if(selectionmethod=="Greedy"){
       IMES = IMES_MAP
@@ -338,7 +341,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     # possibleO =which((IMES[1:SGGP$poCOUNT] >= 0.99*M_comp)&(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5)))
     
     # New way, now you can pick best IMES per point in the block, more efficient
-    stillpossible <- which(SGGP$pogsize[1:SGGP$poCOUNT] < (SGGP$bss - SGGP$ss + 0.5))
+    stillpossible <- which(SGGP$pogsize[1:SGGP$poCOUNT] < (max_design_points - SGGP$ss + 0.5))
     
     # Either pick block with max IMES or with max IMES per point in the block.
     if (RIMSEperpoint) {
@@ -651,5 +654,6 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     # Save design_unevaluated to make it easy to know which ones to add
     SGGP$design_unevaluated <- SGGP$design[(n_before+1):nrow(SGGP$design),]
   }
+  
   return(SGGP)
 }
