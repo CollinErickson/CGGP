@@ -34,14 +34,17 @@ Y = testf(SG$design)
 SG = SGGPfit(SG, Y)
 cat("Now doing Bayesian\n")
 
-for(c in 1:round((N-201)/200)){
-  cat(c, " ")
+# Changing this so it doesn't call fit 40 times with no param updates
+for (ic in (1:round((N-201)/200))[1:9]) {
+  cat(ic, " ")
   SG=SGGPappend(SG,200) #add 200 points to the design based on thetahat
   Y = testf(SG$design)
-  if( c< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
+  if( ic< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
     SG = SGGPfit(SG,Y) #estimate the parameter (SG structure is important)
   }
 }
+SG=SGGPappend(SG, 200*length((1:round((N-201)/200))[-(1:9)]))
+
 cat("\n")
 Y = testf(SG$design)
 timelastlogthetaMLEstart <- Sys.time()

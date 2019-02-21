@@ -13,6 +13,10 @@ test_that("SGGPappend works", {
   }
   # Error, UC is not an option.
   expect_error(SGGPappend(SG, 20, selectionmethod = "UC"))
+  
+  # # Can append after append without fitting between
+  # expect_error(SG <- SGGPappend(SG, 20), NA)
+  # expect_error(SG <- SGGPappend(SG, 20), NA)
 })
 
 test_that("SGGPappend works with large number", {
