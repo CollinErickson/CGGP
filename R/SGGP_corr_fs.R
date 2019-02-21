@@ -117,7 +117,7 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
 #'
 #' @examples
 #' SGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,-.5))
-SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE) {
+SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE, return_numpara =FALSE,returnlogs = FALSE) {
   if(return_numpara){
     return(2);
   }else{ 
@@ -131,9 +131,17 @@ SGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
     halpha = h^alpha
     pow = -expHE/alpha
     
-    C = (1-10^(-10))*(1+halpha)^pow+10^(-10)*(diffmat<10^(-4))
+    if(!returnlogs){
+      C = (1+halpha)^pow
+    }else{
+      C = pow*log(1+halpha)
+    }
     if(return_dCdtheta){
-      dCdtheta = (1-10^(-10))*cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
+      if(!returnlogs){
+        dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
+      }else{
+        dCdtheta = cbind(3*expHE*halpha/(1+halpha),3*C)
+      }
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)
