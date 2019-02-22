@@ -39,7 +39,7 @@
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- SGGPfit(SG=SG, Y=y)
-SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
+SGGPfit <- function(SGGP, Y,..., Xs=NULL,Ys=NULL,
                     theta0 = SGGP$thetaMAP, #rep(0,SGGP$numpara*SGGP$d),
                     laplaceapprox = TRUE,
                     HandlingSuppData="Ignore",
@@ -47,7 +47,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
                     use_PCA=SGGP$use_PCA,
                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
                     use_progress_bar=TRUE,
-                    Ynew) {
+                    Ynew, SuppData="Ignore") {
   # If Y or Ynew is matrix with 1 column, convert it to vector to avoid issues
   if (!missing(Y) && is.matrix(Y) && ncol(Y)==1) {
     Y <- c(Y)
@@ -215,6 +215,20 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       y = y.thisloop,
       SGGP = SGGP,
       HandlingSuppData=HandlingSuppData,
+      control = list(rel.tol = 1e-8,iter.max = 500)
+    )
+    
+    opt.out = nlminb(
+      opt.out$par,
+      objective = SGGP_internal_neglogpost,
+      gradient = SGGP_internal_gneglogpost,
+      lower = lower, 
+      upper = upper,
+      y = y.thisloop,
+      SGGP = SGGP,
+      ys = ys.thisloop,
+      Xs = Xs,
+      HandlingSuppData = SuppData,
       control = list(rel.tol = 1e-8,iter.max = 500)
     )
     

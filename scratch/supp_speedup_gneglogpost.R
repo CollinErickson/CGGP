@@ -331,12 +331,12 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
     dsigma2_hat_part3 = 0*dsigma2_hat_grid
     dlDet_supp = 0*dlDet_grid
     
-    lDet_supp = -sum(log(Sigma_t))
+    lDet_supp = sum(log(Sigma_t))
     
     for (dimlcv in 1:SGGP$d) {
       for(paralcv in 1:SGGP$numpara){
         dSigma_now = as.matrix((dSigma_to[[dimlcv]])[,paralcv])
-        dlDet_supp[(dimlcv-1)*SGGP$numpara+paralcv] =-colSums(dSigma_now/Sigma_t)
+        dlDet_supp[(dimlcv-1)*SGGP$numpara+paralcv] = colSums(dSigma_now/Sigma_t)
       }
     }
     if(is.matrix(ys)){
@@ -408,9 +408,9 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
         gneglogpostn = gneglogpostn + dim(Xs)[1]*dsigma2_hat[,i] / sigma2_hat[i]
       }
       gneglogpost = gneglogpost+  gneglogpostn/2
-      
     }
   }
+  
   if(HandlingSuppData =="Ignore" || HandlingSuppData == "Mixture"){
     sigma2_hat = sigma2_hat_grid
     dsigma2_hat = dsigma2_hat_grid
@@ -450,11 +450,15 @@ SGGP_internal_gneglogpost <- function(theta, SGGP, y,..., return_lik=FALSE,ys=NU
   }
   
   if (HandlingSuppData =="FullValidation" || HandlingSuppData =="MarginalValidation"){
-    sigma2_hat = sigma2_hat_grid*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+sigma2_hat_supp*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
-    dsigma2_hat = dsigma2_hat_grid*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+dsigma2_hat_supp*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
+    sigma2_hat = sigma2_hat_grid*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+
+      sigma2_hat_supp*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
+    dsigma2_hat = dsigma2_hat_grid*dim(SGGP$design)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])+
+      dsigma2_hat_supp*dim(Xs)[1]/(dim(Xs)[1]+dim(SGGP$design)[1])
     dlDet = dlDet_supp
     lDet = lDet_supp
     
+    print(sigma2_hat_grid)
+    print(sigma2_hat_supp)
     if(!is.matrix(y)){
       neglogpost = 1/2*((length(ys))*log(sigma2_hat[1])-0.500*sum(log(1-theta)+log(theta+1))+lDet)+1/2*length(ys)*(sigma2_hat_supp/sigma2_hat)
       gneglogpost = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet+ 1/2*(length(ys))*dsigma2_hat / sigma2_hat[1]+ 1/2*(length(ys))*dsigma2_hat_supp / sigma2_hat[1]- 1/2*(length(ys))*sigma2_hat_supp*dsigma2_hat/sigma2_hat[1]^2

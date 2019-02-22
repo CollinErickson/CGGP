@@ -190,7 +190,7 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
       }
       
       Sigma_t = (1-epsssV)*Sigma_t+epsssV
-      lDet_supp = -sum(log(Sigma_t))
+      lDet_supp = sum(log(Sigma_t))
       if(is.matrix(ys)){
         Sigma_t = t(matrix( rep( Sigma_t , dim(ys)[2] ) , ncol = ncol(t(Sigma_t)) , byrow = TRUE ))
       }

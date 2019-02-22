@@ -1,8 +1,6 @@
 rm(list = ls())
 library(SGGP)
 
-source("../R/SGGP_fastcalcassist_fs.R")
-source("supp_speedup_fit.R")
 borehole <- function(x) {
   rw <- x[, 1] * (0.15 - 0.05) + 0.05
   r <-  x[, 2] * (50000 - 100) + 100
@@ -31,39 +29,46 @@ library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
-Xs = randomLHS(100, d)
-Ys = testf(Xs)
-# 
-# SGGP = SGGPcreate(d,200) #create the design.  it has so many entries because i am sloppy
-# Y = testf(SGGP$design) #the design is $design, simple enough, right?
-# SGGP1 = SGGP#create the design.  it has so many entries because i am sloppy
-# Y1 = testf(SGGP1$design) #the design is $design, simple enough, right?
-# SGGP = SGGPfit(SGGP,Y)
-# SGGP = SGGPappend(SGGP,200) #create the design.  it has so many entries because i am sloppy
-# Y = testf(SGGP$design) #the design is $design, simple enough, right?
-# SGGP = SGGPfit(SGGP,Y)
-# SGGP = SGGPappend(SGGP,200) #create the design.  it has so many entries because i am sloppy
-# Y = testf(SGGP$design) #the design is $design, simple enough, right?
-# SGGP = SGGPfit(SGGP,Y)
-# SGGP = SGGPappend(SGGP,200) #create the design.  it has so many entries because i am sloppy
-# Y = testf(SGGP$design) #the design is $design, simple enough, right?
-# SGGP = SGGPfit(SGGP,Y)
-# Pred = SGGPpred(SGGP,Xp)
-# mean(abs(Yp-Pred$mean)^2)  #prediction should be much better
-# mean(abs(Yp-Pred$mean)^2/Pred$var+log(Pred$var)) #score should be much better
-library(tictoc)
-SGGP = SGGPcreate(d,1000) #create the design.  it has so many entries because i am sloppy
-Y = testf(SGGP$design) #the design is $design, simple enough, right?
-#SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
-#PredGreedy = SGGPpred(SGGPGreedy,Xp)
-mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
-mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+Xs1 = randomLHS(100, d)
+Ys1 = testf(Xs1)
+Xs2 = randomLHS(200, d)
+Ys2 = testf(Xs2)
+Xs3 = randomLHS(300, d)
+Ys3 = testf(Xs3)
 
-#SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
-source("supp_speedup_returnthings.R")
-source("supp_speedup_neglogpost.R")
-source("supp_speedup_gneglogpost.R")
-source("supp_speedup_postvarcalc.R")
-source("supp_speedup_fit.R")
-SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
-
+SGGP = SGGPcreate(d,200) #create the design.  it has so many entries because i am sloppy
+Y = testf(SGGP$design) 
+for(MethodSupp in c( "Ignore", "MarginalValidation","FullValidation")){
+SGGP1 = SGGPfit(SGGP,Y,Xs=Xs1,Ys=Ys1,SuppData=MethodSupp)
+PredGreedy = SGGPpred(SGGP1,Xp)
+SSE1 = mean(abs(Yp-PredGreedy$mean)^2) 
+Score1=mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+SGGP1 = SGGPappend(SGGP1,200) #create the design.  it has so many entries because i am sloppy
+Y1 = testf(SGGP1$design) #the design is $design, simple enough, right?
+SGGP1 = SGGPfit(SGGP1,Y1,Xs=Xs1,Ys=Ys1,SuppData=MethodSupp)
+PredGreedy = SGGPpred(SGGP1,Xp)
+SSE2 = mean(abs(Yp-PredGreedy$mean)^2) 
+Score2=mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+SGGP1 = SGGPappend(SGGP1,200) #create the design.  it has so many entries because i am sloppy
+Y1 = testf(SGGP1$design) #the design is $design, simple enough, right?
+SGGP1 = SGGPfit(SGGP1,Y1,Xs=Xs1,Ys=Ys1,SuppData=MethodSupp)
+PredGreedy = SGGPpred(SGGP1,Xp)
+SSE3 =mean(abs(Yp-PredGreedy$mean)^2) 
+Score3=mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much betterv
+SGGP1 = SGGPfit(SGGP1,Y1,Xs=Xs2,Ys=Ys2,SuppData=MethodSupp)
+PredGreedy = SGGPpred(SGGP1,Xp)
+SSE4 =mean(abs(Yp-PredGreedy$mean)^2) 
+Score4=mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much betterr
+SGGP1 = SGGPappend(SGGP1,200) #create the design.  it has so many entries because i am sloppy
+Y1 = testf(SGGP1$design) #the design is $design, simple enough, right?
+SGGP1 = SGGPfit(SGGP1,Y1,Xs=Xs2,Ys=Ys2,SuppData=MethodSupp)
+PredGreedy = SGGPpred(SGGP1,Xp)
+SSE5 =mean(abs(Yp-PredGreedy$mean)^2) 
+Score5= mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much betterr
+SGGP1 = SGGPfit(SGGP1,Y1,Xs=Xs3,Ys=Ys3,SuppData=MethodSupp)
+PredGreedy = SGGPpred(SGGP1,Xp)
+SSE6 =mean(abs(Yp-PredGreedy$mean)^2) 
+Score6= mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much betterr
+print(MethodSupp)
+print(cbind(c(300,500,700,800,1000,1100),c(SSE1,SSE2,SSE3,SSE4,SSE5,SSE6),c(Score1,Score2,Score3,Score4,Score5,Score6)))
+}
