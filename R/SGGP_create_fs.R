@@ -12,6 +12,15 @@
 #' @param Xs Supplemental X data
 #' @param Ys Supplemental Y data
 #' @param supp_args Arguments used to fit if Xs and Ys are given
+#' @param ... Force named arguments
+#' @param HandlingSuppData How should supplementary data be handled?
+#' * Correct: full likelihood with grid and supplemental data
+#' * Only: only use supplemental data
+#' * Ignore: ignore supplemental data
+#' * Mixture: sum of grid LLH and supplemental LLH, not statistically valid
+#' * MarginalValidation: a validation shortcut
+#' * FullValidation: a validation shortcut
+#' 
 #' @importFrom stats rbeta
 #'
 #' @return SGGP
@@ -22,16 +31,20 @@
 #' d <- 8
 #' SG = SGGPcreate(d,200)
 SGGPcreate <- function(d, batchsize, corr="CauchySQ",
+                       ...,
                        grid_sizes=c(1,2,4,4,8,12,32),
                        Xs=NULL, Ys=NULL,
+                       HandlingSuppData="Ignore",
                        supp_args=list()
 ) {
   if (d <= 1) {stop("d must be at least 2")}
+  if (length(list(...))>0) {stop("Unnamed arguments given to SGGPcreate")}
   # This is list representing our GP object
   SGGP = list()
   class(SGGP) <- c("SGGP", "list") # Give it class SGGP
   
   SGGP$d <- d
+  SGGP$HandlingSuppData <- HandlingSuppData
   # SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
   if (is.function(corr)) {
     SGGP$CorrMat <- corr

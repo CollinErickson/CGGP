@@ -30,7 +30,7 @@ run_MRFA <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   if (!missing(seed)) {set.seed(seed)}
   # browser()
   if (missing(x) && missing(y)) {
-    x <- matrix(runif(Ntotal*d), Ntotal, d)
+    x <- lhs::maximinLHS(Ntotal, d)
     y <- apply(x, 1, f)
   }
   mod <- MRFA::MRFA_fit(X=x, Y=y, verbose=FALSE)
@@ -43,7 +43,7 @@ run_svm <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
   if (!missing(seed)) {set.seed(seed)}
   # browser()
   if (missing(x) && missing(y)) {
-    x <- matrix(runif(Ntotal*d), Ntotal, d)
+    x <- lhs::maximinLHS(Ntotal, d)
     y <- apply(x, 1, f)
   }
   require(e1071)
@@ -59,7 +59,8 @@ run_SGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {
   if (!missing(seed)) {set.seed(seed)}
   # browser()
   if (!missing(Nlhs)) {
-    xsup <- matrix(runif(Nlhs*d), Nlhs, d)
+    # xsup <- matrix(runif(Nlhs*d), Nlhs, d)
+    xsup <- lhs::maximinLHS(Nlhs, d)
     ysup <- apply(xsup, 1, f)
     sg <- SGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup)
   } else {
@@ -133,27 +134,38 @@ run_one <- function(package, f, d, n) {
 
 require("comparer")
 
+packxn <- rbind(
+  data.frame(package="SGGP", n=c(100,200,400,800,1600,3200,6400,12800), stringsAsFactors=F),
+  data.frame(package="SGGPsupp", n=c(100,200,400,800,1600,3200,6400)),
+  data.frame(package="SGGPsupponly", n=c(100,200,400,800)),
+  data.frame(package="MRFA", n=c(100,200,400,800,1600,3200,6400,12800)),
+  data.frame(package="svm", n=c(100,200,400,800,1600,3200,6400,12800)),
+  data.frame(package="laGP", n=c(100,200,400,800)),
+  data.frame(package="aGP", n=c(100,200,400,800,1600,3200,6400,12800))
+)
+
 funcstouse <- 1:5
 excomp <- ffexp$new(
-  eval_func = run_one,
+  eval_func = run_one_parallel,
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight")[funcstouse],
                 d=c(3,6,7,8,10)[funcstouse],
                 row.names = c("beam","OTL","piston","borehole","wingweight")[funcstouse], stringsAsFactors = F),
-  package=c("SGGP", "SGGPsupp", "SGGPsupponly", "MRFA", "svm", "laGP", "aGP"), # GPflow.SVGP is slow/bad
-  # n_increments=list(n_increments=list(c(100,200,300,400,500))),
-  n = c(100, 200), #, 250, 500, 750, 1000),
-  parallel=FALSE,
-  parallel_cores = 37,
+  # package=c("SGGP", "SGGPsupp", "SGGPsupponly", "MRFA", "svm", "laGP", "aGP"), # GPflow.SVGP is slow/bad
+  # n = c(100, 200), #, 250, 500, 750, 1000),
+  packxn=packxn,
+  parallel=T,
+  parallel_cores = 4,
   # replicate=1:10,
-  folder_path= "/home/collin/scratch/SGGP/scratch/ExternalComparison/ComparerRun6" #"./scratch/sggpout"
+  # folder_path= "/home/collin/scratch/SGGP/scratch/ExternalComparison/ComparerRun6" #"./scratch/sggpout"
+  folder_path="./scratch/ExternalComparison/ExComp3/"
 )
 
 excomp$rungrid
 # try because it gave delete error before, but shouldn't need it now
-# try(excomp$recover_parallel_temp_save(delete_after = FALSE))
-# excomp$save_self()
-# excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE)
-excomp$run_all()
+try(excomp$recover_parallel_temp_save(delete_after = FALSE))
+excomp$save_self()
+excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE)
+# excomp$run_all()
 
 cat("Completed all runs in ExternalComparer3.R\n")
 
@@ -165,9 +177,10 @@ if (F) {
   excomp$plot_run_times()
   plyr::dlply(excomp$outcleandf, "d")
   require('ggplot2')
-  ggplot(data=excomp$outcleandf, mapping=aes(n, RMSE)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
-  ggplot(data=excomp$outcleandf, mapping=aes(n, score)) + geom_point() + facet_grid(f ~ package, scales="free_y")
-  ggplot(data=excomp$outcleandf, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
-  ggplot(data=excomp$outcleandf, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+  ecdf <- excomp$outcleandf[excomp$completed_runs,]
+  ggplot(data=ecdf, mapping=aes(n, RMSE, color=as.factor(n))) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+  ggplot(data=ecdf, mapping=aes(n, score, color=as.factor(n))) + geom_point() + facet_grid(f ~ package, scales="free_y")
+  ggplot(data=ecdf, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+  ggplot(data=ecdf, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
   # saveRDS(excomp, "./scratch/ExternalComparison/ExComp1_completed.rds")
 }

@@ -28,6 +28,7 @@
 #' * Mixture: sum of grid LLH and supplemental LLH, not statistically valid
 #' * MarginalValidation: a validation shortcut
 #' * FullValidation: a validation shortcut
+#' @param ... Forces you to name arguments.
 #' 
 #' @importFrom stats optim rnorm runif nlminb
 #'
@@ -39,15 +40,16 @@
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- SGGPfit(SG=SG, Y=y)
-SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
+SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
                     theta0 = SGGP$thetaMAP, #rep(0,SGGP$numpara*SGGP$d),
                     laplaceapprox = TRUE,
-                    HandlingSuppData="Ignore",
+                    HandlingSuppData=SGGP$HandlingSuppData,
                     lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                     use_PCA=SGGP$use_PCA,
                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
                     use_progress_bar=TRUE,
                     Ynew) {
+  if (length(list(...))>0) {stop("Unnamed arguments given to SGGPcreate")}
   # If Y or Ynew is matrix with 1 column, convert it to vector to avoid issues
   if (!missing(Y) && is.matrix(Y) && ncol(Y)==1) {
     Y <- c(Y)
@@ -204,6 +206,7 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     
     y.thisloop <- if (nnn==1) {y} else {y[,opdlcv]} # All of y or single column
     if (!is.null(Ys)) {ys.thisloop <- if (nnn==1) {ys} else {ys[,opdlcv]}} # All of y or single column
+    else {ys.thisloop <- NULL}
     theta0.thisloop <- if (nnn==1) {theta0} else {theta0[,opdlcv]}
     
     opt.out = nlminb(
@@ -214,6 +217,8 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       upper = upper,
       y = y.thisloop,
       SGGP = SGGP,
+      ys = ys.thisloop,
+      Xs = Xs,
       HandlingSuppData=HandlingSuppData,
       control = list(rel.tol = 1e-8,iter.max = 500)
     )
@@ -249,13 +254,19 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     # Reverse transformation
     thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
     # Grad of reverse transformation function
-    grad0 = SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)
+    grad0 = SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop,
+                                      Xs=Xs, ys=ys.thisloop,
+                                      HandlingSuppData=HandlingSuppData) *
+      (2*(exp(PSTn))/(exp(PSTn)+1)^2)
     for(c in 1:totnumpara){
       rsad = rep(0,totnumpara)
       rsad[c] =10^(-3)
       PSTn=  log((1+thetaMAP)/(1-thetaMAP)) + rsad
       thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
-      H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop)*(2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)
+      H[c,] = (SGGP_internal_gneglogpost(thetav,SGGP,y.thisloop,
+                                         Xs=Xs, ys=ys.thisloop,
+                                         HandlingSuppData=HandlingSuppData) *
+                 (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)
     }
     Hmat = H/2+t(H)/2
     # print(Hmat)
@@ -266,13 +277,17 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
     
     # Get posterior samples
     if(laplaceapprox){
-      PST= log((1+thetaMAP)/(1-thetaMAP)) + cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),nrow=length(thetaMAP))
+      PST= log((1+thetaMAP)/(1-thetaMAP)) +
+        cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),
+                     nrow=length(thetaMAP))
       thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
     }else{ # MCMC Metropolis-Hastings
       U <- function(re){
         PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%as.vector(re)
         thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
-        return(SGGP_internal_neglogpost(thetav,SGGP,y.thisloop))
+        return(SGGP_internal_neglogpost(thetav,SGGP,y.thisloop,
+                                        Xs=Xs, ys=ys.thisloop,
+                                        HandlingSuppData=HandlingSuppData))
       }
       q = rep(0,totnumpara) # Initial point is 0, this is thetaMAP after transform
       Uo = U(q)
@@ -361,10 +376,11 @@ SGGPfit <- function(SGGP, Y, Xs=NULL,Ys=NULL,
       MSE_s = list(matrix(0,dim(SGGP$Xs)[1],dim(SGGP$Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
       for (dimlcv in 1:SGGP$d) {
         for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
-          MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(-SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],
-                                                                                   SGGP$xb[1:SGGP$sizest[levellcv]],
-                                                                                   thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
-                                                                                   CorrMat=SGGP$CorrMat))
+          MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =
+            (-SGGP_internal_postvarmatcalc(SGGP$Xs[,dimlcv],SGGP$Xs[,dimlcv],
+                                           SGGP$xb[1:SGGP$sizest[levellcv]],
+                                           thetaMAP[(dimlcv-1)*SGGP$numpara+1:SGGP$numpara],
+                                           CorrMat=SGGP$CorrMat))
         }
       }
       
@@ -491,7 +507,8 @@ SGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,...,returndP
         CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
         dCoinvC1o = -backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
         dCoinvC1o = dCoinvC1o + backsolve(cholS,backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]), transpose = TRUE))
-        dSigma_mat[,((k-1)*dim(Sigma_mat)[2]+1):(k*dim(Sigma_mat)[2])] =-t(dCoinvC1o)%*%t(C2o)-t(CoinvC1o)%*%t(dC2o[,(n*(k-1)+1):(k*n)])
+        dSigma_mat[,((k-1)*dim(Sigma_mat)[2]+1):(k*dim(Sigma_mat)[2])] =
+          -t(dCoinvC1o)%*%t(C2o)-t(CoinvC1o)%*%t(dC2o[,(n*(k-1)+1):(k*n)])
       }
       return(list("Sigma_mat"= Sigma_mat,"dSigma_mat" = dSigma_mat))
     }

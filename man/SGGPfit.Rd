@@ -4,10 +4,10 @@
 \alias{SGGPfit}
 \title{Update SGGP model given data}
 \usage{
-SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
-  laplaceapprox = TRUE, HandlingSuppData = "Ignore", lower = rep(-1,
-  SGGP$numpara * SGGP$d), upper = rep(1, SGGP$numpara * SGGP$d),
-  use_PCA = SGGP$use_PCA,
+SGGPfit(SGGP, Y, ..., Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
+  laplaceapprox = TRUE, HandlingSuppData = SGGP$HandlingSuppData,
+  lower = rep(-1, SGGP$numpara * SGGP$d), upper = rep(1, SGGP$numpara *
+  SGGP$d), use_PCA = SGGP$use_PCA,
   separateoutputparameterdimensions = is.matrix(SGGP$thetaMAP),
   use_progress_bar = TRUE, Ynew)
 }
@@ -15,6 +15,8 @@ SGGPfit(SGGP, Y, Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
 \item{SGGP}{Sparse grid objects}
 
 \item{Y}{Output values calculated at SGGP$design}
+
+\item{...}{Forces you to name arguments.}
 
 \item{Xs}{Supplemental X matrix}
 

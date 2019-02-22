@@ -4,8 +4,9 @@
 \alias{SGGPcreate}
 \title{Create sparse grid GP}
 \usage{
-SGGPcreate(d, batchsize, corr = "CauchySQ", grid_sizes = c(1, 2, 4, 4,
-  8, 12, 32), Xs = NULL, Ys = NULL, supp_args = list())
+SGGPcreate(d, batchsize, corr = "CauchySQ", ..., grid_sizes = c(1, 2,
+  4, 4, 8, 12, 32), Xs = NULL, Ys = NULL,
+  HandlingSuppData = "Ignore", supp_args = list())
 }
 \arguments{
 \item{d}{Input dimension}
@@ -16,11 +17,21 @@ for now only on predictions}
 \item{corr}{Name of correlation function to use. Must be one of "CauchySQT",
 "CauchySQ", "Cauchy", "Gaussian", "PowerExp", "Matern32", "Matern52".}
 
+\item{...}{Force named arguments}
+
 \item{grid_sizes}{Size of grid refinements.}
 
 \item{Xs}{Supplemental X data}
 
 \item{Ys}{Supplemental Y data}
+
+\item{HandlingSuppData}{How should supplementary data be handled?
+* Correct: full likelihood with grid and supplemental data
+* Only: only use supplemental data
+* Ignore: ignore supplemental data
+* Mixture: sum of grid LLH and supplemental LLH, not statistically valid
+* MarginalValidation: a validation shortcut
+* FullValidation: a validation shortcut}
 
 \item{supp_args}{Arguments used to fit if Xs and Ys are given}
 }
