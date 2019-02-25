@@ -132,7 +132,7 @@ r1 <- comparer::ffexp$new(eval_func = function(...)run_func(...),
 )
 r1$run_all(run_order = "random")
 
-
+# saveRDS(r1, "./scratch/redTime/redTimeSuppExp/redTimeSuppExp1_object.rds")
 
 if (F) {
   r1$plot_run_times()

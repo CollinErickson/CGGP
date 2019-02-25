@@ -209,36 +209,53 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
     else {ys.thisloop <- NULL}
     theta0.thisloop <- if (nnn==1) {theta0} else {theta0[,opdlcv]}
     
-    opt.out = nlminb(
-      theta0.thisloop,
-      objective = SGGP_internal_neglogpost,
-      gradient = SGGP_internal_gneglogpost,
-      lower = lower, 
-      upper = upper,
-      y = y.thisloop,
-      SGGP = SGGP,
-      ys = ys.thisloop,
-      Xs = Xs,
-      HandlingSuppData=HandlingSuppData,
-      control = list(rel.tol = 1e-8,iter.max = 500)
-    )
+    double_optimize = TRUE
+    if (!double_optimize){
+      opt.out = nlminb(
+        theta0.thisloop,
+        objective = SGGP_internal_neglogpost,
+        gradient = SGGP_internal_gneglogpost,
+        lower = lower, 
+        upper = upper,
+        y = y.thisloop,
+        SGGP = SGGP,
+        ys = ys.thisloop,
+        Xs = Xs,
+        HandlingSuppData=HandlingSuppData,
+        control = list(rel.tol = 1e-8,iter.max = 500)
+      )
+    } else { # Double opt
+      # Only grid data b/c it's fast
+      opt.out = nlminb(
+        theta0.thisloop,
+        objective = SGGP_internal_neglogpost,
+        gradient = SGGP_internal_gneglogpost,
+        lower = lower, 
+        upper = upper,
+        y = y.thisloop,
+        SGGP = SGGP,
+        control = list(rel.tol = 1e-8,iter.max = 500)
+      )
+      
+      # Then use best point as initial point with supp data
+      opt.out = nlminb(
+        opt.out$par,
+        objective = SGGP_internal_neglogpost,
+        gradient = SGGP_internal_gneglogpost,
+        lower = lower,
+        upper = upper,
+        y = y.thisloop,
+        ys = ys.thisloop,
+        Xs = Xs,
+        SGGP = SGGP,
+        HandlingSuppData = "Correct",
+        control = list(rel.tol = 1e-8,iter.max = 500)
+      )
+      
+    }
     
     
-    #  opt.out = nlminb(
-    #   opt.out$par,
-    #   objective = SGGP_internal_neglogpost,
-    #   gradient = SGGP_internal_gneglogpost,
-    #   lower = lower,
-    #   upper = upper,
-    #   y = y.thisloop,
-    #   ys = ys.thisloop,
-    #   Xs = Xs,
-    #   SGGP = SGGP,
-    #   HandlingSuppData = "Correct",
-    #   control = list(rel.tol = 1e-8,iter.max = 500)
-    # )
-    # 
-
+    
     # Set new theta
     thetaMAP <- opt.out$par
     sigma2MAP <- SGGP_internal_calcsigma2anddsigma2(SGGP=SGGP, y=y.thisloop, theta=thetaMAP, return_lS=FALSE)$sigma2
