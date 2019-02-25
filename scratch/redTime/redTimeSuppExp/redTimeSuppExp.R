@@ -2,7 +2,7 @@
 # 6 HandlingSupp options
 # A few different redTime objects.
 # Can also compare laGP and MRFA on same data.
-
+expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
 
 # Load test data
 xlhs8039 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
@@ -18,27 +18,50 @@ ysup <- log(unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_
 
 
 run_func <- function(package, Ngrid, Nsupp, Supp, outdim) {
+  # Need this first chunk inside when running parallel
   
+  # Load test data
+  xlhs8039 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
+  ylhs8039 <- log(as.matrix(
+    read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1]))
+  xtest <- xlhs8039[1:1000,]
+  ytest <- ylhs8039[1:1000,]
+  # Load sup data
+  xsup <- as.matrix(unname(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_Xmatrix.csv")[,-1]))
+  ysup <- log(unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_all_output.csv")[,-1])))
+  
+  
+  
+  # browser()
   # Get SGGP/grid data
   if (Ngrid == 1319) {
     sgo <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_1319.rds")
+    Y <- log(sgo$Y)
   } else if (Ngrid == 8039) {
     sgo <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_8039.rds")
+    Y <- log(sgo$Y)
   } else if (Ngrid == 3119) {
     sgo <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_3119.rds")
+    Y <- log(sgo$Y)
   } else if (Ngrid == 1319) {
     sgo <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_1319.rds")
+    Y <- log(sgo$Y)
   } else if (Ngrid == 227) {
     sgo <- readRDS("../../../Desktop/redTimeData/out_T2_SGGP-227.rds")
+    Y <- sgo$Y
   } else if (Ngrid == 455) {
     sgo <- readRDS("../../../Desktop/redTimeData/out_T2_SGGP-455.rds")
+    Y <- sgo$Y
   } else if (Ngrid == 1063) {
     sgo <- readRDS("../../../Desktop/redTimeData/out_T2_SGGP-1063.rds")
+    Y <- sgo$Y
   } else if (Ngrid == 0) {
     sgo <- list(Y <- numeric(0))
+    Y <- numeric(0)
   } else {
     stop(paste("Not acceptable Ngrid", Ngrid))
   }
+  if (length(Y) > 0) {Y <- Y[,outdim]}
   
   # Get LHS data
   if (Nsupp > 0) {
@@ -60,13 +83,14 @@ run_func <- function(package, Ngrid, Nsupp, Supp, outdim) {
       sgo$CorrMat <- SGGP_internal_CorrMatCauchySQ
       sgo$thetaMAP <- rep(0,18)
       sgo$numpara <- 2
-      sgo <- SGGPfit(sgo, Y=log(sgo$Y[,outdim]), Xs=Xs, Ys=Ys)
+      sgo <- SGGPfit(sgo, Y=Y, Xs=Xs, Ys=Ys) # Doesn't need HandlingSuppData since it is set to sgo
     }
     pred <- SGGPpred(sgo, xtest)
   } else {
     x <- rbind(sgo$design, Xs)
     # browser()
-    y <- c(if (length(sgo$Y)>0) log(sgo$Y[,outdim]) else numeric(0), Ys) # sup was already log
+    # y <- c(if (length(sgo$Y)>0) log(sgo$Y[,outdim]) else numeric(0), Ys) # sup was already log
+    y <- c(Y, Ys)
     if (nrow(x) != Ngrid+Nsupp) {stop("wrong agp x length")}
     if (nrow(x) != length(y)) {stop("agp x and y don't match")}
     if (package == "aGP") {
@@ -110,29 +134,38 @@ pko <- expand.grid.df(
     data.frame(
       package="SGGP",
       Supp=c("Ignore", "Only", "Correct","Mixture", "MarginalValidation","FullValidation")),
-    data.frame(package=c("aGP","laGP","SVM","mlegp"), Supp=c("aGP","laGP","SVM","mlegp"), stringsAsFactors=F)),
+    data.frame(package=c("aGP","laGP","SVM","mlegp","MRFA"), Supp=c("aGP","laGP","SVM","mlegp","MRFA"), stringsAsFactors=F)),
   data.frame(Ngrid=c(0,227,455,1063,1319,3119, 8039)),
              data.frame(Nsupp=9*c(0, 5, 10, 20)),
-                        data.frame(outdim=10)
+                        data.frame(outdim=50)
 )
 pko$package <- as.character(pko$package)
 pko$Supp <- as.character(pko$Supp)
 # Remove when Ngrid and Nsupp both 0
 pko <- pko[!(pko$Ngrid==0 & pko$Nsupp==0),]
 # Remove big laGP
-pko <- pko[!(pko$package=="laGP" & (pko$Ngrid+pko$Nsupp)>500),]
+pko <- pko[!(pko$package=="laGP" & (pko$Ngrid+pko$Nsupp)>600),]
 # Remove medium mlegp
-pko <- pko[!(pko$package=="mlegp" & (pko$Ngrid+pko$Nsupp)>200),]
+pko <- pko[!(pko$package=="mlegp" & (pko$Ngrid+pko$Nsupp)>300),]
 rownames(pko) <- NULL
 
-r1 <- comparer::ffexp$new(eval_func = function(...)run_func(...),
+r1 <- comparer::ffexp$new(
+  #eval_func = function(...)run_func(...),
+  eval_func = run_func,
                     pko=pko,
                     parallel=F,
-                    folder_path = NULL
+                    folder_path = "./scratch/redTime/redTimeSuppExp/redTimeSuppExp1_od50/"
 )
-r1$run_all(run_order = "random")
+# r1$run_all(run_order = "random")
 
-# saveRDS(r1, "./scratch/redTime/redTimeSuppExp/redTimeSuppExp1_object.rds")
+# saveRDS(r1, "./scratch/redTime/redTimeSuppExp/redTimeSuppExp1_od10_object.rds")
+
+if (F) {
+  r1$parallel <- T
+  r1$parallel_cores <- 3
+  r1$save_output <- T
+  r1$run_all(parallel_temp_save = T, delete_parallel_temp_save_after = F)
+}
 
 if (F) {
   r1$plot_run_times()
@@ -143,6 +176,6 @@ if (F) {
   ggplot(data=ecdf[ecdf$package!="aGP",], mapping=aes(Ngrid, RMSE, color=as.factor(Nsupp))) + geom_point() + facet_grid(. ~ package+Supp, scales="free_y") + scale_y_log10()
   ggplot(data=ecdf, mapping=aes(n, score, color=as.factor(n))) + geom_point() + facet_grid(f ~ package, scales="free_y")
   ggplot(data=ecdf, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
-  ggplot(data=ecdf, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+  ggplot(data=ecdf, mapping=aes(Ngrid, runtime)) + geom_point() + facet_grid(. ~ package, scales="free_y") + scale_y_log10()
   # saveRDS(excomp, "./scratch/ExternalComparison/ExComp1_completed.rds")
 }
