@@ -76,7 +76,7 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   SGGP$y <- numeric(0)
   
   # If supplemental data is given, fit it here
-  if (!missing(Xs) && !missing(Ys)) {
+  if (!is.null(Xs) && !is.null(Ys)) {
     # browser()
     # SGGP <- SGGP_internal_fitwithonlysupp(SGGP, Xs, Ys)
     if (!is.null(supp_args) && length(supp_args) > 0 && is.null(names(supp_args))) {stop("Give names for supp_args")}

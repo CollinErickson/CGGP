@@ -102,8 +102,14 @@ run_func <- function(package, Ngrid, Nsupp, Supp, outdim) {
       pred <- laGP::predGPsep(mod.agp, xtest, lite=T)
       pred$var <- pred$s2
     } else if (package == "MRFA") {
-      mod <- MRFA::MRFA_fit(X=x, Y=y, verbose=FALSE)
-      pred <- predict(mod, xtest, lambda = min(mod$lambda))
+      mrfa.try <- try({
+        mod <- MRFA::MRFA_fit(X=x, Y=y, verbose=FALSE)
+        pred <- list(mean=predict(mod, xtest, lambda = min(mod$lambda))$y_hat)
+      })
+      # browser()
+      if (inherits(mrfa.try, "try-error")) {
+        pred <- list(mean=rep(mean(y), nrow(xtest)))
+      }
       pred$var <- rep(NaN, nrow(xtest))
     } else if (package == "mlegp") {
       mod <- mlegp::mlegp(X=x, Z=y)
@@ -150,20 +156,22 @@ pko <- pko[!(pko$package=="mlegp" & (pko$Ngrid+pko$Nsupp)>300),]
 rownames(pko) <- NULL
 
 r1 <- comparer::ffexp$new(
-  #eval_func = function(...)run_func(...),
-  eval_func = run_func,
+  eval_func = function(...)run_func(...),
+  # eval_func = run_func,
                     pko=pko,
                     parallel=F,
                     folder_path = "./scratch/redTime/redTimeSuppExp/redTimeSuppExp1_od50/"
 )
-# r1$run_all(run_order = "random")
+r1$run_all(run_order = "random")
 
 # saveRDS(r1, "./scratch/redTime/redTimeSuppExp/redTimeSuppExp1_od10_object.rds")
+# saveRDS(r1, "./scratch/redTime/redTimeSuppExp/redTimeSuppExp1_od50_object.rds")
 
 if (F) {
   r1$parallel <- T
   r1$parallel_cores <- 3
   r1$save_output <- T
+  r1$recover_parallel_temp_save(delete_after=F)
   r1$run_all(parallel_temp_save = T, delete_parallel_temp_save_after = F)
 }
 
@@ -171,7 +179,7 @@ if (F) {
   r1$plot_run_times()
   # plyr::dlply(r1$outcleandf, "d")
   require('ggplot2')
-  ecdf <- r1$outcleandf[r1$completed_runs,]
+  ecdf <- r1$outcleandf[r1$completed_runs & r1$outcleandf$package!="MRFA",]
   ggplot(data=ecdf, mapping=aes(Ngrid, RMSE, color=as.factor(Nsupp))) + geom_point() + facet_grid(. ~ package+Supp, scales="free_y") + scale_y_log10()
   ggplot(data=ecdf[ecdf$package!="aGP",], mapping=aes(Ngrid, RMSE, color=as.factor(Nsupp))) + geom_point() + facet_grid(. ~ package+Supp, scales="free_y") + scale_y_log10()
   ggplot(data=ecdf, mapping=aes(n, score, color=as.factor(n))) + geom_point() + facet_grid(f ~ package, scales="free_y")
