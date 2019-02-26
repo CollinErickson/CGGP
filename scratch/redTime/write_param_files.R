@@ -1,9 +1,12 @@
 # Write out params_redTimexx.out file to run on cluster
 
 convert_x_from_01_to_ranges <- function(x,
-                                        low= c(.85 ,.7,.55,.12,.0215,0,-1.3,-1.5),
-                                        high=c(1.05,.9,.85,.155,.0235,.01,-.7,1.15),
-                                        low_redshift=0, high_redshift=5
+                                        # low= c(.85 ,.7,.55,.12,.0215,0,-1.3,-1.5),
+                                        # high=c(1.05,.9,.85,.155,.0235,.01,-.7,1.15), # Original high/low
+                                        low= c(.5 , .5, .5, .05, .010,   0,-1.5,-2.50),
+                                        high=c(1.5,1.0, 1., .20, .025, .02, -.5, 1.25), # Expanded ranges
+                                        # low_redshift=0, high_redshift=5 # Original redshift
+                                        low_redshift=0, high_redshift=10 # Expanded ranges
                                         ) {
   if (any(x<0) || any(x>1)) {stop("x must be in range [0,1]^n")}
   if (length(x)==9) {low <- c(low, low_redshift); high <- c(high, high_redshift)}

@@ -6,6 +6,7 @@ run_lagp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_agp=FA
   if (missing(x) && missing(y)) {
     # x <- matrix(runif(Ntotal*d), Ntotal, d)
     x <- lhs::maximinLHS(Ntotal, d)
+    # x <- sFFLHD::decentLHS(Ntotal, d, max.time=5)
     y <- apply(x, 1, f)
   }
   sdy <- sd(y)
@@ -30,7 +31,8 @@ run_MRFA <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   if (!missing(seed)) {set.seed(seed)}
   # browser()
   if (missing(x) && missing(y)) {
-    x <- lhs::maximinLHS(Ntotal, d)
+    # x <- lhs::maximinLHS(Ntotal, d)
+    x <- sFFLHD::decentLHS(Ntotal, d, max.time=5)
     y <- apply(x, 1, f)
   }
   mod <- MRFA::MRFA_fit(X=x, Y=y, verbose=FALSE)
@@ -43,7 +45,8 @@ run_svm <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
   if (!missing(seed)) {set.seed(seed)}
   # browser()
   if (missing(x) && missing(y)) {
-    x <- lhs::maximinLHS(Ntotal, d)
+    # x <- lhs::maximinLHS(Ntotal, d)
+    x <- sFFLHD::decentLHS(Ntotal, d, max.time=5)
     y <- apply(x, 1, f)
   }
   require(e1071)
