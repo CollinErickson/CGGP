@@ -12,6 +12,7 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
   nval <- 1e4
   Xval <- matrix(runif(nval*d), nval, d)
   Yval <- apply(Xval, 1, f)
+  nmax <- 8192 #16384
   # Reset seed so you don't get repeats
   set.seed(Sys.time())
   
@@ -60,7 +61,7 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
       newstats <- SGGPvalstats(sg, Xval = Xval, Yval = Yval, fullBayesian=pred.fullBayes)
       newstats$nallotted <- nallotted
       newstats$nused <- nrow(sg$design)
-      newstats$nsupp <- nrow(sg$Xs)
+      newstats$nsupp <- if (is.null(sg$Xs)) {0} else {nrow(sg$Xs)}
       newstats$ntotal <- nrow(sg$design) + if (!is.null(sg$Xs)) {nrow(sg$Xs)} else {0}
       newstats$elapsedtime <- as.numeric(Sys.time() - start.time, units='secs')
       sg.stats <- if (is.null(sg.stats)) newstats else rbind(sg.stats, newstats)
@@ -69,7 +70,7 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
   }
   # Aafter 1024 add in batches of larger size
   batchsize2 <- 512 # was 512
-  while(nallotted < 16384) {
+  while(nallotted < nmax) { #16384) {
     sg <- SGGPappend(sg, batchsize=batchsize2, selectionmethod=sel.method, RIMSEperpoint = append.rimseperpoint)
     y <- apply(sg$design, 1, f)
     sg <- SGGPfit(sg, Y=y, laplaceapprox=use_laplaceapprox,
@@ -79,7 +80,7 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
       newstats <- SGGPvalstats(sg, Xval = Xval, Yval = Yval, fullBayesian=pred.fullBayes)
       newstats$nallotted <- nallotted
       newstats$nused <- nrow(sg$design)
-      newstats$nsupp <- nrow(sg$Xs)
+      newstats$nsupp <- if (is.null(sg$Xs)) {0} else {nrow(sg$Xs)}
       newstats$ntotal <- nrow(sg$design) + if (!is.null(sg$Xs)) {nrow(sg$Xs)} else {0}
       newstats$elapsedtime <- as.numeric(Sys.time() - start.time, units='secs')
       sg.stats <- if (is.null(sg.stats)) newstats else rbind(sg.stats, newstats)
@@ -95,7 +96,7 @@ require("comparer")
 
 e2 <- ffexp$new(
   eval_func = sggpexp_func,
-  corr = c("cauchysq", "powerexp"), #"cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
+  corr = c("cauchysq", "powerexp")[1], #"cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
   sel.method = c("UCB"), #c("TS", "UCB", "Greedy"),
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"), d=c(3,6,7,8,10),
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
@@ -107,10 +108,10 @@ e2 <- ffexp$new(
   pred.fullBayes=c(FALSE), # No full Bayes prediction, too slow
   grid_size=c("medium"), #"fast", "slow"),
   parallel=TRUE,
-  parallel_cores = 20,
+  parallel_cores = 12,
   replicate=1:3,
-  folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun6" #"./scratch/sggpout"
-  # folder_path="./scratch/delthisnow/"
+  # folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun6" #"./scratch/sggpout"
+  folder_path="./scratch/InternalComparison/ComparerRun6/"
 )
 
 e2$rungrid
@@ -121,6 +122,7 @@ e2$save_self()
 e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
            write_start_files=TRUE)
 # }
+e2$recover_parallel_temp_save(delete_after = F)
 e2$save_self()
 
 print("Completed all runs in ComparerRun6.R")
