@@ -5,7 +5,7 @@
 sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
                          supppd, sup.method, Nsupppd,
                          replicate, # Not used, just to allow it to do multiples
-                         append.rimseperpoint, use_laplaceapprox, grid_size) {browser()
+                         append.rimseperpoint, use_laplaceapprox, grid_size) {#browser()
   require("SGGP")
   f <- eval(parse(text=paste0("TestFunctions::", f)))
   set.seed(0)

@@ -4,8 +4,9 @@ redtimefolder <- "../../../Desktop/redTimeData/"
 lo.in <- read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_all_output.csv")
 lo <- lo.in[,-1]
 lo <- log(as.matrix(lo))
-set.seed(1225)
-lx <- lhs::maximinLHS(n=1000, k=9)
+# set.seed(1225)
+# lx <- lhs::maximinLHS(n=1000, k=9)
+lx <- as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_all_input.csv")[,-1])
 
 # These were fit on non-log scale
 sg8in <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_8039.rds")

@@ -5,8 +5,12 @@
 # 4. qsub the files
 
 create_LHS_and_submit <- function(n, prefix='', holdnum=NULL, seed=NULL) {
+  # Create LHS
   if (!is.null(seed)) {set.seed(seed)}
   X <- lhs::maximinLHS(n=n, k=9)
+  # Write out csv, can't replicate same lhs on my computer anymore
+  write.csv(X, paste0("~/scratch/redTime_v0.1/SGGPruns/important_files/", prefix, "all_input.csv"))
+  # Run for each row of x
   sapply(1:n,
          function(i) {
            write_params_file(x01 = X[i,], fileID = paste0(prefix,i))

@@ -9,4 +9,5 @@ source('write_sh_files.R')
 
 # create_LHS_and_submit(n=8039, prefix='LHS1L_n8039_s1226_', holdnum=80, seed=1226)
 # Running with expanded parameter ranges
-create_LHS_and_submit(n=1000, prefix='ExpandedRanges_LHS1L_n1000_s0226_', holdnum=40, seed=0226)
+# create_LHS_and_submit(n=1000, prefix='ExpandedRanges_LHS1L_n1000_s0227_', holdnum=40, seed=0227)
+create_LHS_and_submit(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0227_', holdnum=40, seed=0227)
