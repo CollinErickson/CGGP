@@ -72,7 +72,9 @@ cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew), "\n")
 library("SGGP")
 SG <- SGGPfit(SG, Ynew=Ynew[,outdims], use_PCA=use_PCA,
               Xs=Xsup, Ys=Ysup[,outdims],
-              separateoutputparameterdimensions=separateoutputparameterdimensions)
+              separateoutputparameterdimensions=separateoutputparameterdimensions,
+              HandlingSuppData = "Correct"
+              )
 cat("SGGPfit successful\n")
 
 # Save SGGP object

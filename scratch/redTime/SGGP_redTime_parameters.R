@@ -5,8 +5,9 @@
 # T3 was separate opd and no PCA.
 # T4 was same as T3 but with adding sigma2hat in append, so it should focus more on bad spots
 # Sup1 is with supplementary data
-groupID <- "redTimeTestO90_1k"
-groupID_short <- "O90_1k"
+# Sup2 is with supp data, but on expandedranges2
+groupID <- "redTimeTestSup2o50"
+groupID_short <- "S2o50"#"O90_1k"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
 number_cores <- 50
@@ -15,15 +16,15 @@ number_cores <- 50
 d <- 9
 
 # Initial sample size
-N0 <- 200 #100
+N0 <- 50 #100
 # Number of points to add in each batch
-batchsize <- 200 #100
+batchsize <- 100 #100
 
 # Correlation function
 corr <- "CauchySQ"
 
 # Number of points after which to stop (will go up to batchsize-1 over)
-Nfinal <- 1150
+Nfinal <- 8000
 
 # Grid size to use. This option wasn't included in Test1
 # grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
@@ -36,18 +37,22 @@ use_PCA <- FALSE
 separateoutputparameterdimensions <- TRUE
 
 # outdims: output dimensions to use. Default should be 1:100.
-outdims <- 90
+outdims <- 50
 
 # To use supplementary data
-if (TRUE) {
+if (FALSE) {
+  stop("use supp")
   Xsup <- NULL
   Ysup <- NULL
 } else {
-  Xall <- unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_Xmatrix.csv")[,-1]))
-  Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_all_output.csv")[,-1])))
-  set.seed(100) # Set seed for reproducibility
-  SupRows <- sample(1:nrow(Xall), 100, replace=FALSE)
-  set.seed(Sys.time()) # Clear seed in case running a repeat
+  # Xall <- unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_Xmatrix.csv")[,-1]))
+  # Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_all_output.csv")[,-1])))
+  Xall <-     unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n100_s0228_all_input.csv")[,-1]))
+  Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n100_s0228_all_output.csv")[,-1])))
+  # set.seed(100) # Set seed for reproducibility
+  # SupRows <- sample(1:nrow(Xall), 100, replace=FALSE)
+  SupRows <- 1:nrow(Xall)
+  # set.seed(Sys.time()) # Clear seed in case running a repeat
   Xsup <- Xall[SupRows,]
   Ysup <- Yall[SupRows,]
   cat("Str of Xsup is\n", str(Xsup), "\n")
@@ -60,7 +65,7 @@ use_log_redTime <- TRUE
 
 # When should the object be saved
 # save_after <- c(200, 400, 1000, 2000, 4000, 8000)
-save_after <- c(100, 300, 500, 700, 900, 1100)
+save_after <- c(100, 200, 300, 500, 700, 900, 1100,1500,1900,2400,3000,4000,5000,6000,7000,8000)
 # save_after <- c(50,150,250,350,450,550)
 
 sourcefilepath <- "/home/collin/scratch/SGGP/scratch/redTime/"
