@@ -59,6 +59,7 @@ if (F) {
 }
 
 # SGGP from Test2, was run on log scale. Used PCA and single theta
+# T3  onward were run on log scale.
 sgT2_227 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-227.rds"))
 sgT2_455 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-455.rds"))
 sgT2_1063 <- readRDS(paste0(redtimefolder, "out_T2_SGGP-1063.rds"))
