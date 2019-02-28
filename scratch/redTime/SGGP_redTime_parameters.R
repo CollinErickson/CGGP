@@ -28,7 +28,7 @@ Nfinal <- 8000
 
 # Grid size to use. This option wasn't included in Test1
 # grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
-grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 8, 12)
+grid_sizes <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 8, 12)
 
 # use_PCA, 100 outputs, PCA can reduce to 37 I think.
 use_PCA <- FALSE
