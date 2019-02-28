@@ -23,7 +23,7 @@ library('SGGP')
 cat("SGGP loaded successfully\n")
 
 # Create SGGP object
-SG <- SGGPcreate(d=d, batchsize=N0, corr=corr, grid_size=grid_size)
+SG <- SGGPcreate(d=d, batchsize=N0, corr=corr, grid_sizes=grid_sizes)
 print(SG)
 cat("SGGPcreate successful\n")
 
