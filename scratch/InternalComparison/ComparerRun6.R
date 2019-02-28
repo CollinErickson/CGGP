@@ -120,7 +120,7 @@ try(e2$recover_parallel_temp_save(delete_after = FALSE))
 e2$save_self()
 # if (F) {
 e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
-           write_start_files=TRUE)
+           write_start_files=TRUE, write_error_files=T)
 # }
 e2$recover_parallel_temp_save(delete_after = F)
 e2$save_self()
