@@ -23,9 +23,9 @@ library('SGGP')
 cat("SGGP loaded successfully\n")
 
 # Create SGGP object
-if (!is.null(Xs)) { # If supp, create/fit with that, then append N0
+if (!is.null(Xsup)) { # If supp, create/fit with that, then append N0
   SG <- SGGPcreate(d=d, batchsize=0,
-                   Xs=Xs, Ys=Ys,
+                   Xs=Xsup, Ys=Ysup,
                    corr=corr, grid_sizes=grid_sizes)
   SG <- SGGPappend(SG, batchsize=batchsize)
 } else { # No sup, do as regular
