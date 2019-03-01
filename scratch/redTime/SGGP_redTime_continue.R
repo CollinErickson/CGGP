@@ -82,7 +82,8 @@ saveRDS(object = SG, file = paste0(SGGP_after_fit_RDS_path))
 cat("Saved SG successfully\n")
 
 # Save if reached save_after number of points 
-if (any(SG$ss >= save_after & SG$ss < save_after+batchsize)) {
+# This shouldn't actually be batchsize2 in next line, should generalize
+if (any(SG$ss >= save_after & SG$ss < save_after+batchsize2)) {
   saveRDS(object = SG, file = paste0(SGGP_save_after_fit_RDS_path, "-", SG$ss, ".rds"))
   cat("Also saving because of save_after, ", SG$ss, "\n")
 }
@@ -97,6 +98,7 @@ if (SG$ss >= Nfinal) {
 set.seed(SG$ss)
 
 # Append new values
+batchsize <- if (SG$ss<1000) {batchsize1} else {batchsize2}
 SG <- SGGPappend(SG, batchsize)
 cat("SGGPappend successful\n")
 
