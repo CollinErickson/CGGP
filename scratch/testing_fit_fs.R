@@ -265,6 +265,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
     lik_stuff <- SGGP_internal_faststuff1(SGGP=SGGP, y.thisloop, theta=thetaMAP)
     cholSs = lik_stuff$cholS
     pw <- lik_stuff$pw
+    
     totnumpara = length(thetaMAP)
     
     # H is the Hessian at thetaMAP with reverse transformation
@@ -425,7 +426,6 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
       pw_uppadj = pw-pw_adj
       supppw = Sti_resid
     }
-    
     
     # Add all new variables to SGGP that are needed
     if (nnn==1) { # Only 1 output parameter dim, so just set them
