@@ -16,9 +16,11 @@ number_cores <- 50
 d <- 9
 
 # Initial sample size
-N0 <- 50 #100
+N0 <- NA #100
 # Number of points to add in each batch
-batchsize <- 100 #100
+# batchsize <- 100 #100
+batchsize1 <- 100
+batchsize2 <- 200
 
 # Correlation function
 corr <- "CauchySQ"

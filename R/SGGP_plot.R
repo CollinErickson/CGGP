@@ -285,6 +285,7 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #' @param bydim If multiple outputs, should it be done separately by dimension?
 #' @param metrics Optional additional metrics to be calculated. Should have
 #'  same first three parameters as this function.
+#' @param min_var Minimum value of the predicted variance.
 #'
 #' @return data frame
 #' @export
@@ -304,7 +305,12 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #' valstats(cbind(c(.8,1.2,3.4), c(8,12,34)),
 #'          cbind(c(.01,.01,.01),c(1.1,.81,1.1)),
 #'          cbind(c(1,2,3),c(10,20,30)), bydim=FALSE)
-valstats <- function(predmean, predvar, Yval, bydim=TRUE, metrics) {
+valstats <- function(predmean, predvar, Yval, bydim=TRUE, metrics,
+                     min_var=.Machine$double.eps) {
+  # Boost up all variances to at least min_var, should be tiny number
+  if (is.numeric(min_var) && !is.na(min_var) && min_var>=0) {
+    predvar <- pmax(predvar, min_var)
+  }
   if ((is.matrix(predmean) && 
        (any(dim(predmean)!=dim(predvar)) || any(dim(predmean)!=dim(Yval)))
   ) ||

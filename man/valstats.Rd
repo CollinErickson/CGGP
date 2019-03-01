@@ -4,7 +4,8 @@
 \alias{valstats}
 \title{Calculate stats for prediction on validation data}
 \usage{
-valstats(predmean, predvar, Yval, bydim = TRUE, metrics)
+valstats(predmean, predvar, Yval, bydim = TRUE, metrics,
+  min_var = .Machine$double.eps)
 }
 \arguments{
 \item{predmean}{Predicted mean}
@@ -17,6 +18,8 @@ valstats(predmean, predvar, Yval, bydim = TRUE, metrics)
 
 \item{metrics}{Optional additional metrics to be calculated. Should have
 same first three parameters as this function.}
+
+\item{min_var}{Minimum value of the predicted variance.}
 }
 \value{
 data frame

@@ -40,8 +40,9 @@ test_that("1. Create, append, predict with only supp, scalar out", {
     expect_true(sum(s1.app$uo[2,]) == d+1) # 2nd block only has one 2
     # Make sure 3rd dim is least explored
     s1.app.colMeans <- colMeans(s1.app$uo[1:s1.app$uoCOUNT,])
-    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3])
-    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3])
+    # print(s1.app.colMeans)
+    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3], info = paste("s1s3",s1.app.colMeans, sel.method))
+    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3], info = paste("s2s3",s1.app.colMeans, sel.method))
   }
   
   rm(s1, s1.app, s1.app.colMeans)

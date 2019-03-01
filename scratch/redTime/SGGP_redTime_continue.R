@@ -93,6 +93,9 @@ if (SG$ss >= Nfinal) {
   stop("All done")
 }
 
+# Set seed here to check refitting on laptop
+set.seed(SG$ss)
+
 # Append new values
 SG <- SGGPappend(SG, batchsize)
 cat("SGGPappend successful\n")
