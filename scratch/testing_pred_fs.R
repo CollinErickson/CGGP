@@ -112,6 +112,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
     mu.thisloop <- if (nnn==1) SGGP$mu else SGGP$mu[opdlcv] # Not used for PCA, added back at end
     
     
+    
     # Cp is sigma(x_0) in paper, correlation vector between design points and xp
     Cp = matrix(0,dim(xp)[1],SGGP$ss)
     GGGG = list(matrix(1,dim(xp)[1],length(SGGP$xb)),SGGP$d)
@@ -202,6 +203,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
         stop("Give theta in not implemented in SGGPpred. Need to fix sigma2MAP here too!")
       }
       
+      
       Cps = matrix(0,dim(xp)[1],dim(SGGP$Xs)[1])
       GGGG2 = list(matrix(0,nrow=dim(xp)[1],ncol=dim(SGGP$Xs)[1]),SGGP$d)
       for (dimlcv in 1:SGGP$d) { # Loop over dimensions
@@ -229,19 +231,18 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
           INDSN = 1:SGGP$sizest[levellcv]
           INDSN = INDSN[sort(SGGP$xb[1:SGGP$sizest[levellcv]],index.return = TRUE)$ix]
           MSE_ps[[(dimlcv)*SGGP$maxlevel+levellcv]] = SGGP_internal_postvarmatcalcfasterasym6(GGGG[[dimlcv]],
-                                                                                              GGGG2[[dimlcv]],
-                                                                                              as.matrix(cholS.thisloop[[gg+levellcv]]),
-                                                                                              INDSN)
+                                                                                             GGGG2[[dimlcv]],
+                                                                                             as.matrix(cholS.thisloop[[gg+levellcv]]),
+                                                                                             INDSN)
         }
       }
       
+      gg = (1:(SGGP$d))*SGGP$maxlevel
       for (blocklcv in 1:SGGP$uoCOUNT) {
-        ME_ps = matrix(1,nrow=dim(xp)[1],ncol=dim(SGGP$Xs)[1])
-        for (dimlcv in 1:SGGP$d) {
-          levelnow = SGGP$uo[blocklcv,dimlcv]
-          ME_ps = ME_ps*MSE_ps[[(dimlcv)*SGGP$maxlevel+levelnow]]
-        }
+        if( abs(SGGP$w[blocklcv]) > 0.5){
+        ME_ps = Reduce("*", MSE_ps[(gg+SGGP$uo[blocklcv,])])
         Cps = Cps-SGGP$w[blocklcv]*(ME_ps)
+        }
       }
       ME_adj = rowSums((Cps%*%Sti.thisloop)*Cps)
       
@@ -325,6 +326,7 @@ SGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
   MSE_val = 1 - rowSums(t(CiCp)*((Cp)))
   return(MSE_val)
 }
+
 
 
 
