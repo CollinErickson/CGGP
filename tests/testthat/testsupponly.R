@@ -3,6 +3,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   # f <- function(x){1*(cos(x[3]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + log(x[3]+.2))}
   f <- function(x){1*(cos(x[1]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + (1+x[2])*log(x[1]+.2))}
   
+  set.seed(0)
   nsup <- 30
   xsup <- matrix(runif(nsup*d), nsup, d)
   ysup <- apply(xsup, 1, f)
@@ -31,6 +32,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   expect_true(all(p1test$var < var(ytest)))
   
   # Append points, all three methods
+  set.seed(0) # Fails on test, but never in console
   for (sel.method in c("Greedy", "UCB", "TS")) {
     expect_error(s1.app <- SGGPappend(s1, 100, sel.method), NA)
     expect_true(nrow(s1.app$design) > 90)
@@ -40,11 +42,11 @@ test_that("1. Create, append, predict with only supp, scalar out", {
     expect_true(sum(s1.app$uo[2,]) == d+1) # 2nd block only has one 2
     # Make sure 3rd dim is least explored
     s1.app.colMeans <- colMeans(s1.app$uo[1:s1.app$uoCOUNT,])
-    # print(s1.app.colMeans)
-    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3], info = paste("s1s3",s1.app.colMeans, sel.method))
-    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3], info = paste("s2s3",s1.app.colMeans, sel.method))
+    # print(c(sel.method,s1.app.colMeans))
+    expect_true(s1.app.colMeans[1]+.1 > s1.app.colMeans[3], info = paste("s1s3",s1.app.colMeans, sel.method, collapse = " "))
+    expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3], info = paste("s2s3",s1.app.colMeans, sel.method, collapse = " "))
   }
-  
+  set.seed(Sys.time())
   rm(s1, s1.app, s1.app.colMeans)
   
   # Again create with only supp, but use MCMC

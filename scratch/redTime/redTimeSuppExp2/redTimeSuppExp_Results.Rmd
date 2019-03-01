@@ -1,0 +1,87 @@
+---
+title: "redTime HandlingSuppData option comparison"
+author: "Collin Erickson"
+date: "February 28, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=13)
+knitr::opts_chunk$set(fig.height=9)
+library(ggplot2)
+library(magrittr)
+```
+
+# Rerunning redTime on already gathered data with supplementary data
+
+I took a sequence of SGGP objects from an already completed redTime run.
+I gave it supplementary data and had it refit, then checked on test set.
+So the points chosen had nothing to do with supp data, but we should see
+that it gets better with more data.
+And we can compare it to other models.
+
+## Output dimension 10
+
+```{r}
+# s10 <- readRDS("./scratch/redTime/redTimeSuppExp2/redTimeSuppExp2_od10_object.rds")
+s10 <- readRDS("../redTimeSuppExp2/redTimeSuppExp2_od10_object.rds")
+s10$completed_runs %>% table
+```
+
+```{r}
+df10 <- s10$outcleandf
+```
+
+```{r}
+ggplot(data=df10, mapping=aes(Ngrid, RMSE, color=as.factor(Nsupp))) + geom_point(size=4) + facet_grid(. ~ package+Supp, scales="free_y") + scale_y_log10()
+```
+
+
+```{r}
+ggplot(data=df10, mapping=aes(Ngrid, score, color=as.factor(Nsupp))) + geom_point(size=4) + facet_grid(. ~ package+Supp, scales="free_y")# + scale_y_log10()
+```
+
+
+```{r}
+ggplot(data=df10, mapping=aes(Ngrid, CRPscore, color=as.factor(Nsupp))) + geom_point(size=4) + facet_grid(. ~ package+Supp, scales="free_y") + scale_y_log10()
+```
+
+
+```{r}
+rm(df10)
+```
+
+
+## Output dimension 50
+
+```{r}
+
+# s50 <- readRDS("./scratch/redTime/redTimeSuppExp2/redTimeSuppExp2_od50_object.rds")
+s50 <- readRDS("../redTimeSuppExp2/redTimeSuppExp2_od50_object.rds")
+s50$completed_runs %>% table
+```
+
+
+```{r}
+df50 <- s50$outcleandf
+```
+
+```{r}
+ggplot(data=df50, mapping=aes(Ngrid, RMSE, color=as.factor(Nsupp))) + geom_point(size=4) + facet_grid(. ~ package+Supp, scales="free_y") + scale_y_log10()
+```
+
+
+```{r}
+ggplot(data=df50, mapping=aes(Ngrid, score, color=as.factor(Nsupp))) + geom_point(size=4) + facet_grid(. ~ package+Supp, scales="free_y")# + scale_y_log10()
+```
+
+
+```{r}
+ggplot(data=df50, mapping=aes(Ngrid, CRPscore, color=as.factor(Nsupp))) + geom_point(size=4) + facet_grid(. ~ package+Supp, scales="free_y") + scale_y_log10()
+```
+
+
+```{r}
+rm(df50)
+```
