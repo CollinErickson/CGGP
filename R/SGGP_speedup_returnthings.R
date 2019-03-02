@@ -17,7 +17,7 @@ SGGP_internal_faststuff1 <- function(SGGP,y,theta) {
       # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
       solvetry <- try({
         cS = chol(S)
-        cholS[[(dimlcv-1)*Q+levellcv]]= cS+t(cS)-diag(diag(cS)) #store the symmetric version for C code
+        cholS[[(dimlcv-1)*Q+levellcv]]= as.matrix(cS+t(cS)-diag(diag(cS))) #store the symmetric version for C code
       })
       if (inherits(solvetry, "try-error")) {return(Inf)}
       lS[levellcv, dimlcv] = 2*sum(log(diag(cS)))
@@ -90,7 +90,7 @@ SGGP_internal_faststuff2 <- function(SGGP,y,theta) {
       S = Sstuff$C
       cS = chol(S)
       
-      cholS[[(dimlcv-1)*Q+levellcv]] = cS+t(cS)-diag(diag(cS)) #store the symmetric version for C code
+      cholS[[(dimlcv-1)*Q+levellcv]] = as.matrix(cS+t(cS)-diag(diag(cS)))#store the symmetric version for C code
       dMatdtheta[[(dimlcv-1)*Q+levellcv]] = -backsolve(cS,backsolve(cS,Sstuff$dCdtheta, transpose = TRUE))
       for(paralcv in 1:SGGP$numpara){
         dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv] = t(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv])

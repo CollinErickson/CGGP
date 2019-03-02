@@ -32,10 +32,43 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_fastmatclcr
+void rcpp_fastmatclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat, NumericVector S, int maxlevel);
+RcppExport SEXP _SGGP_rcpp_fastmatclcr(SEXP ISEXP, SEXP wSEXP, SEXP MSEmatSEXP, SEXP SSEXP, SEXP maxlevelSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type I(ISEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type MSEmat(MSEmatSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type S(SSEXP);
+    Rcpp::traits::input_parameter< int >::type maxlevel(maxlevelSEXP);
+    rcpp_fastmatclcr(I, w, MSEmat, S, maxlevel);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_fastmatclcranddclcr
+void rcpp_fastmatclcranddclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat, NumericMatrix dMSEmat, NumericVector S, NumericMatrix dS, int maxlevel, int numpara);
+RcppExport SEXP _SGGP_rcpp_fastmatclcranddclcr(SEXP ISEXP, SEXP wSEXP, SEXP MSEmatSEXP, SEXP dMSEmatSEXP, SEXP SSEXP, SEXP dSSEXP, SEXP maxlevelSEXP, SEXP numparaSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type I(ISEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type MSEmat(MSEmatSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type dMSEmat(dMSEmatSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type S(SSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type dS(dSSEXP);
+    Rcpp::traits::input_parameter< int >::type maxlevel(maxlevelSEXP);
+    Rcpp::traits::input_parameter< int >::type numpara(numparaSEXP);
+    rcpp_fastmatclcranddclcr(I, w, MSEmat, dMSEmat, S, dS, maxlevel, numpara);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_SGGP_rcpp_kronDBS", (DL_FUNC) &_SGGP_rcpp_kronDBS, 3},
     {"_SGGP_rcpp_gkronDBS", (DL_FUNC) &_SGGP_rcpp_gkronDBS, 4},
+    {"_SGGP_rcpp_fastmatclcr", (DL_FUNC) &_SGGP_rcpp_fastmatclcr, 5},
+    {"_SGGP_rcpp_fastmatclcranddclcr", (DL_FUNC) &_SGGP_rcpp_fastmatclcranddclcr, 8},
     {NULL, NULL, 0}
 };
 
