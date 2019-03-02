@@ -141,3 +141,7 @@ if (F) {
   ggplot(data=e2df, mapping=aes(nallotted, elapsedtime, color=as.factor(Nsupppd))) + geom_point(size=4) + facet_grid(f ~ sup.method, scales="free_y") + scale_y_log10()
   
 }
+
+if (F) {
+  e2 <- readRDS("./scratch/InternalComparison/ComparerRun6_object_328_of_360.rds")
+}
