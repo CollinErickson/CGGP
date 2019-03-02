@@ -133,33 +133,28 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
       }
       Sigma_t = exp(Sigma_t)
       
-      MSE_s = list(matrix(0,dim(Xs)[1],dim(Xs)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+      MSE_s = matrix(NaN,nrow=dim(Xs)[1]*dim(Xs)[1],ncol=(SGGP$d)*(SGGP$maxlevel))
       Q  = max(SGGP$uo[1:SGGP$uoCOUNT,])
       for (dimlcv in 1:SGGP$d) {
         gg = (dimlcv-1)*Q
+        TT1 = GGGG[[dimlcv]]
         for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
           INDSN = 1:SGGP$sizest[levellcv]
           INDSN = INDSN[sort(SGGP$xb[1:SGGP$sizest[levellcv]],index.return = TRUE)$ix]
-          MSE_s[[(dimlcv)*SGGP$maxlevel+levellcv]] =(SGGP_internal_postvarmatcalcfaster(GGGG[[dimlcv]],
+          REEALL =(SGGP_internal_postvarmatcalcfaster(TT1,
                                                                                         c(),
                                                                                         as.matrix(cholS[[gg+levellcv]]),
                                                                                         c(),
                                                                                         INDSN,
                                                                                         SGGP$numpara))
+          MSE_s[,(dimlcv-1)*SGGP$maxlevel+levellcv]  =  as.vector(REEALL)
         }
       }
       
-      # ME_s = matrix(0,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
-      for (blocklcv in 1:SGGP$uoCOUNT) {
-        if(abs(SGGP$w[blocklcv]) > 0.5){
-        ME_s=matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
-        for (dimlcv in 1:SGGP$d) {
-          levelnow = SGGP$uo[blocklcv,dimlcv]
-          ME_s = ME_s*MSE_s[[(dimlcv)*SGGP$maxlevel+levelnow]]
-        }
-        Sigma_t = Sigma_t-SGGP$w[blocklcv]*(ME_s)
-        }
-      }
+      Sigma_t2 = as.vector(Sigma_t)
+      rcpp_fastmatclcr(SGGP$uo[1:SGGP$uoCOUNT,], SGGP$w[1:SGGP$uoCOUNT], MSE_s,Sigma_t2,SGGP$maxlevel)
+      Sigma_t = matrix(Sigma_t2,nrow=dim(Xs)[1] , byrow = FALSE)
+      
       Sigma_t = (1-epsssV)*Sigma_t+diag(dim(Sigma_t)[1])*epsssV
       
       Sigma_chol = chol(Sigma_t)

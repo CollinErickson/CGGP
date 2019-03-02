@@ -221,28 +221,28 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       
       yhatp = Cp%*%pw_uppad.thisloop + Cps%*%supppw.thisloop
       
-      MSE_ps = list(matrix(0,dim(SGGP$Xs)[1],dim(xp)[1]),(SGGP$d+1)*(SGGP$maxlevel+1)) 
+      
+      MSE_ps = matrix(NaN,nrow=dim(Xs)[1]*dim(xp)[1],ncol=(SGGP$d)*(SGGP$maxlevel))
       Q  = max(SGGP$uo[1:SGGP$uoCOUNT,])
       for (dimlcv in 1:SGGP$d) {
         gg = (dimlcv-1)*Q
         for (levellcv in 1:max(SGGP$uo[1:SGGP$uoCOUNT,dimlcv])) {
           INDSN = 1:SGGP$sizest[levellcv]
           INDSN = INDSN[sort(SGGP$xb[1:SGGP$sizest[levellcv]],index.return = TRUE)$ix]
-          MSE_ps[[(dimlcv)*SGGP$maxlevel+levellcv]] = SGGP_internal_postvarmatcalcfasterasym6(GGGG[[dimlcv]],
+          REEALL= SGGP_internal_postvarmatcalcfasterasym6(GGGG[[dimlcv]],
                                                                                               GGGG2[[dimlcv]],
                                                                                               as.matrix(cholS.thisloop[[gg+levellcv]]),
                                                                                               INDSN)
+          MSE_ps[,(dimlcv-1)*SGGP$maxlevel+levellcv]  =  as.vector(REEALL)
         }
       }
       
-      for (blocklcv in 1:SGGP$uoCOUNT) {
-        ME_ps = matrix(1,nrow=dim(xp)[1],ncol=dim(SGGP$Xs)[1])
-        for (dimlcv in 1:SGGP$d) {
-          levelnow = SGGP$uo[blocklcv,dimlcv]
-          ME_ps = ME_ps*MSE_ps[[(dimlcv)*SGGP$maxlevel+levelnow]]
-        }
-        Cps = Cps-SGGP$w[blocklcv]*(ME_ps)
-      }
+      
+      Cps2 = as.vector(Cps)
+      rcpp_fastmatclcr(SGGP$uo[1:SGGP$uoCOUNT,], SGGP$w[1:SGGP$uoCOUNT], MSE_ps, Cps2,SGGP$maxlevel)
+      Cps = matrix(Cps2,ncol=dim(Xs)[1] , byrow = FALSE)
+      
+      
       ME_adj = rowSums((Cps%*%Sti.thisloop)*Cps)
       
       

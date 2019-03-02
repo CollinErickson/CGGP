@@ -1,8 +1,11 @@
 rm(list = ls())
 library(SGGP)
+library(Rcpp)
 
-source("../R/SGGP_fastcalcassist_fs.R")
-source("../R/SGGP_speedup_returnthings.R")
+#sourceCpp("../src/testing_C_function.cpp")
+
+#source("../R/SGGP_fastcalcassist_fs.R")
+#source("../R/SGGP_speedup_returnthings.R")
 borehole <- function(x) {
   rw <- x[, 1] * (0.15 - 0.05) + 0.05
   r <-  x[, 2] * (50000 - 100) + 100
@@ -26,12 +29,12 @@ borehole <- function(x) {
 d = 8
 testf<-function (x) {  return(borehole(x))} 
 
-Npred <- 1000
+Npred <- 2000
 library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
-Xs = randomLHS(200, d)
+Xs = randomLHS(80, d)
 Ys = testf(Xs)
 SGGP = SGGPcreate(d,1000) #create the design.  it has so many entries because i am sloppy
 Y = testf(SGGP$design) #the design is $design, simple enough, right?
