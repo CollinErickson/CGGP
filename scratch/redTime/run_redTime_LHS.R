@@ -15,6 +15,7 @@ create_LHS_and_submit(n=100, prefix='ExpandedRanges2_LHS1L_n100_s0228_', holdnum
 
 
 # After done, run
+# source("extract_redTime.R")
 # extract_redTime_from_completed_LHS(n=, prefix=)
 # extract_redTime_from_completed_LHS(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0227_')
 # extract_redTime_from_completed_LHS(n=100, prefix='ExpandedRanges2_LHS1L_n100_s0228_')

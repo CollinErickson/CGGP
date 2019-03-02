@@ -6,7 +6,7 @@ convert_x_from_01_to_ranges <- function(x,
                                         # low= c(.5 , .5, .5, .05, .010,   0,-1.5,-2.50),
                                         # high=c(1.5,1.0, 1., .20, .025, .02, -.5, 1.25), # Expanded ranges bad, some gave NA
                                         low= c(.5 , .5, .3, .05, .010,   0,-1.5,-2.50),
-                                        high=c(1.3,1.0, 1., .30, .030, .02, -.7, 1.25), # Expanded ranges
+                                        high=c(1.3,1.0, 1., .30, .030, .01, -.5, 1.25), # Expanded ranges
                                         # low_redshift=0, high_redshift=5 # Original redshift
                                         # low_redshift=0, high_redshift=10 # Expanded ranges bad, either this or x1 caused it
                                         low_redshift=0, high_redshift=8 # Expanded ranges
