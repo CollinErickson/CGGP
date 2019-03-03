@@ -27,30 +27,31 @@ rcpp_gkronDBS <- function(A, dA, B, p) {
     .Call('_SGGP_rcpp_gkronDBS', PACKAGE = 'SGGP', A, dA, B, p)
 }
 
-#' rcpp_kronDBS
+#' rcpp_fastmatclcr
 #' 
-#' @param A Vector
-#' @param dA Vector
-#' @param B Vector
-#' @param p Vector
-#' @return kronDBS calculation
+#' @param I Matrix
+#' @param w vector
+#' @param MSEmat Matrix
+#' @param S Vector
+#' @param maxlevel Integer
+#' @return Nothing, void
 #' @export
-#' @examples
-#' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 rcpp_fastmatclcr <- function(I, w, MSEmat, S, maxlevel) {
     invisible(.Call('_SGGP_rcpp_fastmatclcr', PACKAGE = 'SGGP', I, w, MSEmat, S, maxlevel))
 }
 
-#' rcpp_kronDBS
+#' rcpp_fastmatclcranddclcr
 #' 
-#' @param A Vector
-#' @param dA Vector
-#' @param B Vector
-#' @param p Vector
-#' @return kronDBS calculation
+#' @param I Matrix
+#' @param w vector
+#' @param MSEmat Matrix
+#' @param dMSEmat Matrix
+#' @param S Vector
+#' @param dS Matrix
+#' @param maxlevel Integer
+#' @param numpara Integer
+#' @return Nothing, void
 #' @export
-#' @examples
-#' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 rcpp_fastmatclcranddclcr <- function(I, w, MSEmat, dMSEmat, S, dS, maxlevel, numpara) {
     invisible(.Call('_SGGP_rcpp_fastmatclcranddclcr', PACKAGE = 'SGGP', I, w, MSEmat, dMSEmat, S, dS, maxlevel, numpara))
 }

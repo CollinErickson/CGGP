@@ -22,8 +22,10 @@
 SGGP_internal_postvarmatcalcfaster <- function(GMat, dGMat,cholS,dSMat,INDSN,numpara,...,
                                          returnlogs=FALSE, returnderiratio =FALSE,
                                          returndG = FALSE,returndiag = FALSE) {
-  
-  CoinvC1o = backsolve(cholS,backsolve(cholS,t(GMat[,INDSN]), transpose = TRUE))
+  # Next line was giving error with single value, so I changed it
+  CoinvC1o = backsolve(cholS,backsolve(cholS, t(GMat[,INDSN, drop=F]), transpose = TRUE))
+  # backsolve1 <- backsolve(cholS,if (is.matrix(GMat[,INDSN]) && ncol(GMat[,INDSN])>1) t(GMat[,INDSN]) else GMat[,INDSN], transpose = TRUE)
+  # CoinvC1o = backsolve(cholS,backsolve1)
   if(returndiag){
     if(!returnlogs){
       Sigma_mat = rowSums(t((CoinvC1o))*((GMat[,INDSN])))

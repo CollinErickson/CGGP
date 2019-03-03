@@ -1,16 +1,15 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-//' rcpp_kronDBS
+//' rcpp_fastmatclcr
 //' 
-//' @param A Vector
-//' @param dA Vector
-//' @param B Vector
-//' @param p Vector
-//' @return kronDBS calculation
+//' @param I Matrix
+//' @param w vector
+//' @param MSEmat Matrix
+//' @param S Vector
+//' @param maxlevel Integer
+//' @return Nothing, void
 //' @export
-//' @examples
-//' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 // [[Rcpp::export]]
 void rcpp_fastmatclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat, NumericVector S, int maxlevel){
   
@@ -38,18 +37,21 @@ void rcpp_fastmatclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat, Nu
 #include <Rcpp.h>
 using namespace Rcpp;
 
-//' rcpp_kronDBS
+//' rcpp_fastmatclcranddclcr
 //' 
-//' @param A Vector
-//' @param dA Vector
-//' @param B Vector
-//' @param p Vector
-//' @return kronDBS calculation
+//' @param I Matrix
+//' @param w vector
+//' @param MSEmat Matrix
+//' @param dMSEmat Matrix
+//' @param S Vector
+//' @param dS Matrix
+//' @param maxlevel Integer
+//' @param numpara Integer
+//' @return Nothing, void
 //' @export
-//' @examples
-//' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 // [[Rcpp::export]]
-void rcpp_fastmatclcranddclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat, NumericMatrix dMSEmat, NumericVector S, NumericMatrix dS, int maxlevel, int numpara){
+void rcpp_fastmatclcranddclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat,
+                              NumericMatrix dMSEmat, NumericVector S, NumericMatrix dS, int maxlevel, int numpara){
   
   int ns = S.size();
   int nb = w.size();

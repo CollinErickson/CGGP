@@ -451,15 +451,17 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
         SGGP$pw <- matrix(NaN, length(pw), nnn) 
         # thetaPostSamples is matrix, so this is 3dim array below
         SGGP$thetaPostSamples <- array(data = NaN, dim=c(dim(thetaPostSamples), nnn))
-        SGGP$cholSs <- array(data = NaN, dim=c(dim(cholSs), nnn))
+        # SGGP$cholSs <- array(data = NaN, dim=c(dim(cholSs), nnn))
+        SGGP$cholSs <- vector("list", nnn) #array(data = NaN, dim=c(dim(cholSs), nnn))
       }
       SGGP$thetaMAP[,opdlcv] <- thetaMAP
       SGGP$sigma2MAP[opdlcv] <- sigma2MAP
       
-      
+      # browser()
       SGGP$pw[,opdlcv] <- pw
       SGGP$thetaPostSamples[,,opdlcv] <- thetaPostSamples
-      SGGP$cholSs[,,opdlcv] <- cholSs
+      # SGGP$cholSs[,,opdlcv] <- cholSs
+      SGGP$cholSs[[opdlcv]] <- cholSs
       if (SGGP$supplemented) {
         if (opdlcv==1) { # First time initialize all
           

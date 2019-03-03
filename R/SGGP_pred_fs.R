@@ -94,8 +94,8 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
     if (!recalculate_pw) { # use already calculated
       pw.thisloop <- if (nnn==1) SGGP$pw else SGGP$pw[,opdlcv]
       # sigma2MAP.thisloop <- if (nnn==1) SGGP$sigma2MAP else SGGP$sigma2MAP[opdlcv]
-      sigma2MAP.thisloop <- SGGP$sigma2MAP
-      cholS.thisloop <- SGGP$cholSs
+      sigma2MAP.thisloop <- SGGP$sigma2MAP # Need this, not above, bc of PCA?
+      cholS.thisloop <- if (nnn==1) SGGP$cholSs else SGGP$cholSs[[opdlcv]]
     } else { # recalculate pw and sigma2MAP
       y.thisloop <- if (nnn==1) SGGP$y else SGGP$y[,opdlcv]
       
@@ -177,6 +177,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
           tempM[-opdlcv,] <- 0
           tempsigma2.thisloop <- sigma2MAP.thisloop
           tempsigma2.thisloop[-opdlcv] <- 0
+          # browser()
           tempvar <- (as.vector(ME_t)%*%t(diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM))))
           # print((as.vector(ME_t)%*%t(diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM)))) %>% c %>% summary)
         }
@@ -222,7 +223,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       yhatp = Cp%*%pw_uppad.thisloop + Cps%*%supppw.thisloop
       
       
-      MSE_ps = matrix(NaN,nrow=dim(Xs)[1]*dim(xp)[1],ncol=(SGGP$d)*(SGGP$maxlevel))
+      MSE_ps = matrix(NaN,nrow=dim(SGGP$Xs)[1]*dim(xp)[1],ncol=(SGGP$d)*(SGGP$maxlevel))
       Q  = max(SGGP$uo[1:SGGP$uoCOUNT,])
       for (dimlcv in 1:SGGP$d) {
         gg = (dimlcv-1)*Q
@@ -240,7 +241,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       
       Cps2 = as.vector(Cps)
       rcpp_fastmatclcr(SGGP$uo[1:SGGP$uoCOUNT,], SGGP$w[1:SGGP$uoCOUNT], MSE_ps, Cps2,SGGP$maxlevel)
-      Cps = matrix(Cps2,ncol=dim(Xs)[1] , byrow = FALSE)
+      Cps = matrix(Cps2,ncol=dim(SGGP$Xs)[1] , byrow = FALSE)
       
       
       ME_adj = rowSums((Cps%*%Sti.thisloop)*Cps)
@@ -332,17 +333,10 @@ SGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
 
 #' Calculate posterior variance, faster version
 #'
-#' @param GMat Matrix
-#' @param dGMat Derivative of matrix
+#' @param GMat1 Matrix 1
+#' @param GMat2 Matrix 2
 #' @param cholS Cholesky factorization of S
-#' @param dSMat Deriv of SMat
 #' @param INDSN Indices, maybe
-#' @param numpara Number of parameters for correlation function
-#' @param returnlogs Should log scale be returned
-#' @param returnderiratio Should derivative ratio be returned?
-#' @param returndG Should dG be returned
-#' @param returndiag Should diag be returned
-#' @param ... Placeholder
 #'
 #' @return Variance posterior
 #' @export
