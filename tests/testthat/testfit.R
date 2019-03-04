@@ -160,3 +160,30 @@ test_that("Using MCMC approx works", {
     boxplot(SG1$thetaPostSamples[1,,1], SG2$thetaPostSamples[1,,1])
   }
 })
+
+test_that("postvarmatcalc", {
+  x1 <- runif(5)
+  x2 <- x1
+  o1 <- SGGP_internal_postvarmatcalc(x1, x2,
+                               xo=c(.11), theta=c(.1,.2,.3),
+                               CorrMat=SGGP_internal_CorrMatCauchySQT,
+                               returndPVMC=F, returndiagonly=F)
+  o2 <- SGGP_internal_postvarmatcalc(x1, x2,
+                                     xo=c(.11), theta=c(.1,.2,.3),
+                                     CorrMat=SGGP_internal_CorrMatCauchySQT,
+                                     returndPVMC=F, returndiagonly=T)
+  o3 <- SGGP_internal_postvarmatcalc(x1, x2,
+                                     xo=c(.11), theta=c(.1,.2,.3),
+                                     CorrMat=SGGP_internal_CorrMatCauchySQT,
+                                     returndPVMC=T, returndiagonly=F)
+  o4 <- SGGP_internal_postvarmatcalc(x1, x2,
+                                     xo=c(.11), theta=c(.1,.2,.3),
+                                     CorrMat=SGGP_internal_CorrMatCauchySQT,
+                                     returndPVMC=T, returndiagonly=T)
+  expect_equal(o1, o3$Sigma_mat)
+  expect_equal(diag(o1), o2)
+  expect_equal(o4$Sigma_mat, diag(o3$Sigma_mat))
+  expect_equal(o4$dSigma_mat[,1], diag(o3$dSigma_mat[,1:5]))
+  expect_equal(o4$dSigma_mat[,2], diag(o3$dSigma_mat[,6:10]))
+  expect_equal(o4$dSigma_mat[,3], diag(o3$dSigma_mat[,11:15]))
+})

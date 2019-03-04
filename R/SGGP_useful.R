@@ -36,7 +36,8 @@ SGGP_internal_set_corr <- function(SGGP, corr) {
     SGGP$CorrName <- "Matern52"
   } else {
     stop(paste0("corr given to SGGPcreate should be one of CauchySQT, CauchySQ,", 
-                " Cauchy, Gaussian, PowerExponential, Matern32, or Matern52"))
+                " Cauchy, Gaussian, PowerExponential, Matern32, or Matern52.\n",
+                "Given value was ", corr, "."))
   }
   
   # Fix related parameters stored with SGGP

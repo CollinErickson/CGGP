@@ -92,12 +92,14 @@ test_that("Prediction matches exact on small samples", {
   
   rm(my, dy, Sig, s, expred, SGpred)
   
-  # And with supp data???
+  # -----------------------------
+  # And check grid with supp data
+  # -----------------------------
   ns <- 10
   Xs <- matrix(runif(ns*d), ns, d)
   Ys <- testf(Xs)
   SGs <- SGGPfit(SG, SG$Y, Xs=Xs, Ys=Ys, HandlingSuppData="Correct")
-rm(SG)
+  rm(SG)
   SGpred <- SGGPpred(xp=xp, SGGP=SGs)
 
   Xall <- rbind(SGs$design, Xs)
@@ -127,6 +129,40 @@ rm(SG)
     summary((c(SGpred$var)- exvar) / exvar)
   }
   expect_equal(c(SGpred$var), exvar)
+  
+  rm(SGs, Xall, Yall, my, dy, Sig, s, expred, SGpred, s2, exvar)
+  
+  
+  # ----------------------------
+  # Pred with only supp is exact
+  # ----------------------------
+  sg <- SGGPcreate(d, 0, Xs=Xs, Ys=Ys, corr="CauchySQT")
+  SGpred <- predict(sg, xp)
+  my <- mean(Ys)
+  dy <- Ys - my
+  Sig <- CorrMatCauchySQTFull(Xs, theta=sg$thetaMAP)
+  s <- CorrMatCauchySQTFull2(xp, Xs, theta = sg$thetaMAP)
+  expred <- my + s %*% solve(Sig, dy)
+  
+  # Check mean predictions
+  if (F) {
+    plot(expred, SGpred$mean); abline(a=0,b=1, col=2)
+    summary((c(SGpred$mean)- expred) / expred)
+  }
+  expect_equal(SGpred$mean, expred)
+  
+  # Test var predictions
+  # Calculating s2 like this doesn't work since we use MAP
+  # s2 <- c(t(Y) %*%solve(Sig, Y) / length(Y))
+  # Just use the MAP value
+  s2 <- sg$sigma2MAP
+  exvar <- s2 * (1 - colSums(t(s) * solve(Sig, t(s))))
+  if (F) {
+    print(1/SGpred$var* exvar)
+    plot(exvar, SGpred$var); abline(a=0,b=1, col=2)
+    summary((c(SGpred$var)- exvar) / exvar)
+  }
+  expect_equal(c(SGpred$var), exvar, tol=1e-5)
 })
 
 test_that("predMV works", {

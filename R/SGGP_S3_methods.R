@@ -20,6 +20,7 @@ print.SGGP <- function(x, ...) {
     c(
       "SGGP object\n",
       "   d = ", x$d, '\n',
+      "   CorrFunc = ", x$CorrName, '\n',
       "   number of design points = ", if (is.null(x$design) || length(x$design)==0) {"0"} else {nrow(x$design)}, '\n',
       "   number of unevaluated design points = ", if (is.null(x$design_unevaluated)) 0 else nrow(x$design_unevaluated), '\n',
       if (is.null(x$Xs)) {""} else {paste0("   number of supplementary points = ", nrow(x$design_unevaluated), '\n')},

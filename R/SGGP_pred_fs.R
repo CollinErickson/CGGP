@@ -252,8 +252,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       if(is.vector(pw.thisloop)){
         if (nnn == 1) {
           mean = (SGGP$mu+ yhatp)
-          message("You didn't fix var here")
-          if (length(SGGP$sigma2MAP)>1) {warning("Really should fix var here")}
+          if (length(SGGP$sigma2MAP)>1) {warning("If this happens, you should fix var here")}
           # Should this be sigma2MAP.thisloop?
           var=SGGP$sigma2MAP[1]*ME_t
         }
