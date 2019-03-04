@@ -248,7 +248,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
         ys = ys.thisloop,
         Xs = Xs,
         SGGP = SGGP,
-        HandlingSuppData = "Correct",
+        HandlingSuppData = HandlingSuppData,
         control = list(rel.tol = 1e-8,iter.max = 500)
       )
       
