@@ -118,7 +118,7 @@ SGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
       if (!returnlogs) {
         dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha),LO*Q)
       } else {
-        dCdtheta = cbind(3*expHE*halpha/(1+halpha), 3*C*pow*log(1+halpha)/C, LO/(1+halpha))
+        dCdtheta = cbind(3*expHE*halpha/(1+halpha), 3*pow*log(1+halpha), LO/(1+halpha))
       }
       out <- list(C=C,dCdtheta=dCdtheta)
       return(out)
