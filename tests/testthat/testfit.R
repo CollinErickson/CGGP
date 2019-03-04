@@ -162,6 +162,8 @@ test_that("Using MCMC approx works", {
 })
 
 test_that("postvarmatcalc", {
+  # These don't work unless x1 and x2 have same length.
+  # Maybe only makes sense when x1 == x2?
   x1 <- runif(5)
   x2 <- x1
   o1 <- SGGP_internal_postvarmatcalc(x1, x2,
