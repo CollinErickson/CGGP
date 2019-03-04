@@ -45,31 +45,8 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   
   SGGP$d <- d
   SGGP$HandlingSuppData <- HandlingSuppData
-  # SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
-  if (is.function(corr)) {
-    SGGP$CorrMat <- corr
-  } else if (tolower(corr) %in% c("cauchysqt")) {
-    SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQT
-  } else if (tolower(corr) %in% c("cauchysq")) {
-    SGGP$CorrMat <- SGGP_internal_CorrMatCauchySQ
-  } else if (tolower(corr) %in% c("cauchy")) {
-    SGGP$CorrMat <- SGGP_internal_CorrMatCauchy
-  } else if (tolower(corr) %in% c("gaussian", "gauss", "sqexp")) {
-    SGGP$CorrMat <- SGGP_internal_CorrMatGaussian
-  } else if (tolower(corr) %in% c("powerexp", "pe", "powerexponential")) {
-    SGGP$CorrMat <- SGGP_internal_CorrMatPowerExp
-  } else if (tolower(corr) %in% c("matern32", "m32", "m3")) {
-    SGGP$CorrMat <- SGGP_internal_CorrMatMatern32
-  } else if (tolower(corr) %in% c("matern52", "m52", "m5")) {
-    SGGP$CorrMat <- SGGP_internal_CorrMatMatern52
-  } else {
-    stop(paste0("corr given to SGGPcreate should be one of CauchySQT, CauchySQ,", 
-                " Gaussian, PowerExponential, Matern32, or Matern52"))
-  }
-  SGGP$numpara <- SGGP$CorrMat(return_numpara=TRUE)
-  SGGP$thetaMAP <- rep(0,d*SGGP$numpara)
-  SGGP$numPostSamples <- 100
-  SGGP$thetaPostSamples  <- matrix(2*rbeta(d*SGGP$numpara*SGGP$numPostSamples , 0.5, 0.5)-1,ncol=SGGP$numPostSamples )
+  SGGP <- SGGP_internal_set_corr(SGGP, corr)
+  
   # Partial matching is very bad! Keep these as length 0 instead of NULL,
   #  otherwise SGGP$Y can return SGGP$Ys
   SGGP$Y <- numeric(0)

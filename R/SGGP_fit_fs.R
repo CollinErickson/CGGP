@@ -28,6 +28,8 @@
 #' * Mixture: sum of grid LLH and supplemental LLH, not statistically valid
 #' * MarginalValidation: a validation shortcut
 #' * FullValidation: a validation shortcut
+#' @param corr Will update correlation function, if left missing it will be
+#' same as last time.
 #' @param ... Forces you to name arguments.
 #' 
 #' @importFrom stats optim rnorm runif nlminb
@@ -48,8 +50,16 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
                     use_PCA=SGGP$use_PCA,
                     separateoutputparameterdimensions=is.matrix(SGGP$thetaMAP),
                     use_progress_bar=TRUE,
+                    corr,
                     Ynew) {
   if (length(list(...))>0) {stop("Unnamed arguments given to SGGPcreate")}
+  
+  # If different correlation function is given, update it
+  if (!missing(corr)) {
+    message("Changing correlation function")
+    SGGP <- SGGP_internal_set_corr(SGGP, corr)
+  }
+  
   # If Y or Ynew is matrix with 1 column, convert it to vector to avoid issues
   if (!missing(Y) && is.matrix(Y) && ncol(Y)==1) {
     Y <- c(Y)
