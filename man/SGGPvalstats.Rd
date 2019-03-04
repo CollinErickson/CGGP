@@ -4,7 +4,7 @@
 \alias{SGGPvalstats}
 \title{Calculate stats for SGGP prediction on validation data}
 \usage{
-SGGPvalstats(SGGP, Xval, Yval, bydim = TRUE, fullBayesian = FALSE)
+SGGPvalstats(SGGP, Xval, Yval, bydim = TRUE, fullBayesian = FALSE, ...)
 }
 \arguments{
 \item{SGGP}{SGGP object}
@@ -17,6 +17,8 @@ SGGPvalstats(SGGP, Xval, Yval, bydim = TRUE, fullBayesian = FALSE)
 
 \item{fullBayesian}{Should prediction be done fully Bayesian? Much slower.
 Averages over theta samples instead of using thetaMAP.}
+
+\item{...}{Passed to valstats, such as which stats to calculate.}
 }
 \value{
 data frame

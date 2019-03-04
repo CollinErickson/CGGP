@@ -4,8 +4,9 @@
 \alias{valstats}
 \title{Calculate stats for prediction on validation data}
 \usage{
-valstats(predmean, predvar, Yval, bydim = TRUE, metrics,
-  min_var = .Machine$double.eps)
+valstats(predmean, predvar, Yval, bydim = TRUE, RMSE = TRUE,
+  score = TRUE, CRPscore = TRUE, coverage = TRUE, corr = TRUE,
+  R2 = TRUE, MAE = FALSE, metrics, min_var = .Machine$double.eps)
 }
 \arguments{
 \item{predmean}{Predicted mean}
@@ -15,6 +16,20 @@ valstats(predmean, predvar, Yval, bydim = TRUE, metrics,
 \item{Yval}{Y validation data}
 
 \item{bydim}{If multiple outputs, should it be done separately by dimension?}
+
+\item{RMSE}{Should root mean squared error (RMSE) be included?}
+
+\item{score}{Should score be included?}
+
+\item{CRPscore}{Should CRP scorebe included?}
+
+\item{coverage}{Should coverage be included?}
+
+\item{corr}{Should correlation between predicted and true mean be included?}
+
+\item{R2}{Should R^2 be included?}
+
+\item{MAE}{Should mean absolute error (MAE) be included?}
 
 \item{metrics}{Optional additional metrics to be calculated. Should have
 same first three parameters as this function.}

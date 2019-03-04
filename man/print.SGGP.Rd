@@ -18,7 +18,7 @@ String to be printed
 Default print as a list is bad since there's a lot of elements.
 }
 \examples{
-SG = SGGPcreate(3,201)
+SG = SGGPcreate(3,21)
 print(SG)
 f <- function(x) {x[1]+exp(x[2]) + log(x[3]+4)}
 y <- apply(SG$design, 1, f)

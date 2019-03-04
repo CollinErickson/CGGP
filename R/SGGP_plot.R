@@ -286,6 +286,13 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #' @param metrics Optional additional metrics to be calculated. Should have
 #'  same first three parameters as this function.
 #' @param min_var Minimum value of the predicted variance.
+#' @param RMSE Should root mean squared error (RMSE) be included?
+#' @param score Should score be included?
+#' @param CRPscore Should CRP scorebe included?
+#' @param coverage Should coverage be included?
+#' @param R2 Should R^2 be included?
+#' @param corr Should correlation between predicted and true mean be included?
+#' @param MAE Should mean absolute error (MAE) be included?
 #'
 #' @return data frame
 #' @export
@@ -305,7 +312,10 @@ SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
 #' valstats(cbind(c(.8,1.2,3.4), c(8,12,34)),
 #'          cbind(c(.01,.01,.01),c(1.1,.81,1.1)),
 #'          cbind(c(1,2,3),c(10,20,30)), bydim=FALSE)
-valstats <- function(predmean, predvar, Yval, bydim=TRUE, metrics,
+valstats <- function(predmean, predvar, Yval, bydim=TRUE,
+                     RMSE=TRUE, score=TRUE, CRPscore=TRUE, coverage=TRUE,
+                     corr=TRUE, R2=TRUE, MAE=FALSE,
+                     metrics,
                      min_var=.Machine$double.eps) {
   # Boost up all variances to at least min_var, should be tiny number
   if (is.numeric(min_var) && !is.na(min_var) && min_var>=0) {
@@ -330,16 +340,20 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE, metrics,
   v <- pmax(predvar, 0)
   s <- sqrt(v)
   z <- (Yval - m) / s
-  RMSE <- sqrt(mean((predmean - Yval)^2))
-  score <- mean((Yval-predmean)^2/predvar+log(predvar))
-  CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
-  coverage <- mean((Yval<= predmean+1.96*sqrt(predvar)) & 
+  
+  # Create out df, add desired elements
+  out <- data.frame(DELETETHISELEMENT=NaN)
+  if (RMSE) out$RMSE <- sqrt(mean((predmean - Yval)^2))
+  if (score) out$score <- mean((Yval-predmean)^2/predvar+log(predvar))
+  if (CRPscore) out$CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
+  if (coverage) out$coverage <- mean((Yval<= predmean+1.96*sqrt(predvar)) & 
                      (Yval>= predmean-1.96*sqrt(predvar)))
-  corr <- cor(c(predmean), c(Yval))
-  R2 <- 1 - (sum((Yval - predmean)^2) / sum((Yval - mean(Yval))^2))
-  # Return df with values
-  out <- data.frame(RMSE=RMSE, score=score, CRPscore=CRPscore, coverage=coverage,
-                    corr=corr, R2=R2)
+  if (corr) out$corr <- cor(c(predmean), c(Yval))
+  if (R2) out$R2 <- 1 - (sum((Yval - predmean)^2) / sum((Yval - mean(Yval))^2))
+  if (MAE) out$MAE <- mean(abs(predmean - Yval))
+  
+  # Remove initial element
+  out$DELETETHISELEMENT <- NULL
   
   # Add normalized RMSE, dividing MSE in each dimension by variance
   if (is.matrix(predmean) && ncol(predmean) > 1) {
@@ -373,6 +387,7 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE, metrics,
 #' @param bydim If multiple outputs, should it be done separately by dimension?
 #' @param fullBayesian Should prediction be done fully Bayesian? Much slower.
 #' Averages over theta samples instead of using thetaMAP.
+#' @param ... Passed to valstats, such as which stats to calculate.
 #'
 #' @return data frame
 #' @export
@@ -402,11 +417,11 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE, metrics,
 #' SGGPvalstats(SG, Xval, Yval)
 #' SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
 #' }
-SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE) {
+SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE, ...) {
   # Make predictions
   ypred <- SGGPpred(SGGP=SGGP, xp=Xval, fullBayesian=fullBayesian)
   # Use valstats to get df with values
-  valstats(ypred$mean, ypred$var, Yval=Yval, bydim=bydim)
+  valstats(ypred$mean, ypred$var, Yval=Yval, bydim=bydim, ...)
 }
 
 #' Plot correlation samples
