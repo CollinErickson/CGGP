@@ -36,3 +36,47 @@ extract_redTime_from_completed_LHS <- function(n, prefix='') {
   outpath <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/", prefix, "all_output.csv")
   write.csv(x=Ynew, file = outpath)
 }
+
+extract_redTime_from_SGGP_run <- function(n, prefix) {
+  # 
+  
+  # Get all output files
+  lfout <- list.files(paste0("~/scratch/redTime_v0.1/SGGPruns/", prefix,"/output_files/"), pattern=".out")
+  # Param files
+  lfpar <- list.files(paste0("~/scratch/redTime_v0.1/SGGPruns/", prefix,"/param_files/"), pattern=".dat")
+
+  if (length(lfout) != length(lfpar)) {
+    stop(paste("lfout and lfpar have different lengths", length(lfout), length(lfpar)))
+  }
+  
+  dfpar <- cbind(lfpar, do.call(rbind, lapply(strsplit(unlist(strsplit(lfpar, ".dat")), "_"), function (ss) data.frame(N1=as.integer(ss[length(ss)-1]), N2=as.integer(ss[length(ss)])))))
+  dfout <- cbind(lfout, do.call(rbind, lapply(strsplit(unlist(strsplit(lfout, ".out")), "_"), function (ss) data.frame(N1=as.integer(ss[length(ss)-1]), N2=as.integer(ss[length(ss)])))))
+  dfall <- merge(dfpar, dfout, by=c("N1", "N2"))
+
+  
+  
+  if ((nrow(dfpar) != nrow(dfall)) || (nrow(dfout) != nrow(dfall))) {
+    stop("Problem merging, losing rows")
+  }
+  dfall2 = plyr::ddply(dfall, "N1", function(x) {x$N2max = max(x$N2); x})
+  dfall2$iii = dfall2$N1-dfall2$N2max + dfall2$N2
+  
+  Ynew <- matrix(NaN, nrow(dfall2), 100)
+  
+  for (i in 1:nrow(dfall2)) {
+    # Get row from single LHS run
+    # outputpath <- paste0(outpathbase, fileID, ".out")
+    newoutput <- extract_redTime_output(outpath = paste0("~/scratch/redTime_v0.1/SGGPruns/", prefix,"/output_files/", dfall2[i,lfpar],".out")) #outpath=outpath)
+    
+    # # Add it to df
+    # if (is.null(Ynew)) {Ynew <- newrow}
+    # else {Ynew <- rbind(Ynew, newrow)}
+    Ynew[dfall2$iii[i],] <- newoutput
+  }
+  
+  rownames(Ynew) <- NULL
+  
+  outpath <- paste0("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/", prefix, "all_output.csv")
+  if (file.exists(outpath)) {stop(paste("outpath already exists:", outpath))}
+  write.csv(x=Ynew, file = outpath)
+}
