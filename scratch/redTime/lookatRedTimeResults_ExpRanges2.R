@@ -61,6 +61,15 @@ stats.rt.sggp.1299.pe <- SGGPvalstats(SGGPfit(rt.sggp.1299, rt.sggp.1299$Y, Xs=r
 stats.rt.sggp.2499.m3 <- SGGPvalstats(SGGPfit(rt.sggp.2499, rt.sggp.2499$Y, Xs=rt.sggp.2499$Xs, Ys=rt.sggp.2499$Ys, corr="m32"), x1000, y1000[,50])
 stats.rt.sggp.2499.cauchy <- SGGPvalstats(SGGPfit(rt.sggp.2499, rt.sggp.2499$Y, Xs=rt.sggp.2499$Xs, Ys=rt.sggp.2499$Ys, corr="cauchy"), x1000, y1000[,50])
 stats.rt.sggp.2499.pe <- SGGPvalstats(SGGPfit(rt.sggp.2499, rt.sggp.2499$Y, Xs=rt.sggp.2499$Xs, Ys=rt.sggp.2499$Ys, corr="pe"), x1000, y1000[,50])
+stats.rt.sggp.6099.m3 <- SGGPvalstats(SGGPfit(rt.sggp.6099, rt.sggp.6099$Y, Xs=rt.sggp.6099$Xs, Ys=rt.sggp.6099$Ys, corr="m32"), x1000, y1000[,50])
+stats.rt.sggp.6099.cauchy <- SGGPvalstats(SGGPfit(rt.sggp.6099, rt.sggp.6099$Y, Xs=rt.sggp.6099$Xs, Ys=rt.sggp.6099$Ys, corr="cauchy"), x1000, y1000[,50])
+stats.rt.sggp.6099.pe <- SGGPvalstats(SGGPfit(rt.sggp.6099, rt.sggp.6099$Y, Xs=rt.sggp.6099$Xs, Ys=rt.sggp.6099$Ys, corr="pe"), x1000, y1000[,50])
+
+# SGGP with more supp data
+stats.rt.sggp.199.300        <- SGGPvalstats(SGGPfit(rt.sggp.199, rt.sggp.199$Y, Xs=x1000_2[1:300,], Ys=y1000_2[1:300,50]),                x1000, y1000[,50])
+stats.rt.sggp.199.300.m3     <- SGGPvalstats(SGGPfit(rt.sggp.199, rt.sggp.199$Y, Xs=x1000_2[1:300,], Ys=y1000_2[1:300,50], corr="m32"),    x1000, y1000[,50])
+stats.rt.sggp.199.300.cauchy <- SGGPvalstats(SGGPfit(rt.sggp.199, rt.sggp.199$Y, Xs=x1000_2[1:300,], Ys=y1000_2[1:300,50], corr="cauchy"), x1000, y1000[,50])
+stats.rt.sggp.199.300.pe     <- SGGPvalstats(SGGPfit(rt.sggp.199, rt.sggp.199$Y, Xs=x1000_2[1:300,], Ys=y1000_2[1:300,50], corr="pe"),     x1000, y1000[,50])
 
 
 # Run with mlegp
@@ -82,11 +91,23 @@ stats.mlegp.300 <- valstats(pred.mlegp.300$fit, pred.mlegp.300$se, y1000[,50])
 mod.mlegp.400 <- mlegp::mlegp(x1000_2[1:400,], y1000_2[1:400,50])
 pred.mlegp.400 <- predict(mod.mlegp.400, x1000, se=T)
 stats.mlegp.400 <- valstats(pred.mlegp.400$fit, pred.mlegp.400$se, y1000[,50])
+mod.mlegp.500 <- mlegp::mlegp(x1000_2[1:500,], y1000_2[1:500,50])
+pred.mlegp.500 <- predict(mod.mlegp.500, x1000, se=T)
+stats.mlegp.500 <- valstats(pred.mlegp.500$fit, pred.mlegp.500$se, y1000[,50])
 
 # Run with DK
 mod.DK.100 <- DiceKriging::km(design=x100, response=y100[,50])
 pred.DK.100 <- DiceKriging::predict.km(mod.DK.100, x1000, se=T, type = "SK")
 stats.DK.100 <- valstats(pred.DK.100$mean, pred.DK.100$sd, y1000[,50])
+mod.DK.200 <- DiceKriging::km(design=x1000_2[1:200,], response=y1000_2[1:200,50])
+pred.DK.200 <- DiceKriging::predict.km(mod.DK.200, x1000, se=T, type = "SK")
+stats.DK.200 <- valstats(pred.DK.200$mean, pred.DK.200$sd, y1000[,50])
+mod.DK.300 <- DiceKriging::km(design=x1000_2[1:300,], response=y1000_2[1:300,50])
+pred.DK.300 <- DiceKriging::predict.km(mod.DK.300, x1000, se=T, type = "SK")
+stats.DK.300 <- valstats(pred.DK.300$mean, pred.DK.300$sd, y1000[,50])
+mod.DK.400 <- DiceKriging::km(design=x1000_2[1:400,], response=y1000_2[1:400,50])
+pred.DK.400 <- DiceKriging::predict.km(mod.DK.400, x1000, se=T, type = "SK")
+stats.DK.400 <- valstats(pred.DK.400$mean, pred.DK.400$sd, y1000[,50])
 
 # 100+199 0.03076381 -6.262226 0.01522756    0.927 0.9996693 0.9993362
 stats50 <- list(
@@ -125,6 +146,16 @@ stats50 <- list(
   ,data.frame("SGGP", 100, 2499, 0.01060865, -7.238947, 0.007474609,    0.999, 0.9999607, 0.9999211, "m32")
   ,data.frame("SGGP", 100, 2499, 0.01032681, -8.140031, 0.005506091,     0.97, 0.9999627, 0.9999252, "Cauchy")
   ,data.frame("SGGP", 100, 2499, 0.01154785, -6.110847, 0.01194843,         1, 0.9999535, 0.9999065, "PowExp")
+  ,data.frame("SGGP", 100, 6099, 0.006155724, -7.200618, 0.0070135,      0.999, 0.9999868, 0.9999734, "m32")
+  ,data.frame("SGGP", 100, 6099, 0.004818425, -8.291389, 0.00414775,     0.997, 0.9999919, 0.9999837, "Cauchy")
+  ,data.frame("SGGP", 100, 6099, 0.004711587, -7.111454, 0.006963024,        1, 0.9999922, 0.9999844, "PowExp")
+  
+  # Refit with 300 supp pts
+  ,data.frame("SGGP", 100, 199, 0.03076381, -6.262226, 0.01522756,    0.927, 0.9996693, 0.9993362, "CauchySQ")
+  ,data.frame("SGGP", 100, 199, 0.03216928, -6.083981, 0.01645107,    0.981, 0.9996371, 0.9992742, "m32")
+  ,data.frame("SGGP", 100, 199, 0.03084337, -6.275035, 0.01536157,    0.949, 0.9996666, 0.9993328, "Cauchy")
+  ,data.frame("SGGP", 100, 199, 0.03434129, -5.302393, 0.02072374,    0.995, 0.9995864, 0.9991729, "PowExp")
+  
   # ,data.frame("SGGP", 100, 199, )
   # ,data.frame("SGGP", 100, 199, )
   ,data.frame("mlegp", 50, 0, 0.2270544, -1.913619, 0.1250952,    0.999, 0.9831718, 0.9638425, "gauss")
@@ -132,9 +163,13 @@ stats50 <- list(
   ,data.frame("mlegp", 100, 0, 0.06409675, -3.36158, 0.05061328,        1, 0.9985716, 0.9971186, "gauss")
   ,data.frame("mlegp", 200, 0, 0.06407573, 157685457, 0.03691848,    0.986, 0.9985597, 0.9971204, "gauss")
   ,data.frame("mlegp", 300, 0, 0.05759601, 1169074, 0.03370455,    0.998, 0.9988548, 0.9976734, "gauss")
+  ,data.frame("mlegp", 400, 0, 0.05136801, -4.237131, 0.03544184,        1, 0.9990808, 0.9981494, "gauss")
   # ,data.frame("mlegp", 0, 100, )
   # ,data.frame("mlegp", 0, 100, )
   ,data.frame("DK", 100, 0, 0.1124202, -2.070725, 0.09362545,        1, 0.9958498, 0.9911361, "m52")
+  ,data.frame("DK", 200, 0, 0.154419, -2.548706, 0.08653054,    0.997, 0.995057, 0.983276, "m52")
+  ,data.frame("DK", 300, 0, 0.1016811, -3.085017, 0.06229843,    0.996, 0.9974675, 0.9927487, "m52")
+  ,data.frame("DK", 400, 0, 0.07295021, -3.397965, 0.05084728,    0.997, 0.9984053, 0.9962676, "m52")
 )
 stats50 <- lapply(stats50, function(x){colnames(x) <- c("Package", 'Nsup',"Ngrid","RMSE","score","CRPscore","coverage","corr","R2","Corr");x})
 stats50 <- do.call(rbind, stats50)
@@ -142,3 +177,4 @@ stats50$Ntotal <- stats50$Nsup + stats50$Ngrid
 library(ggplot2)
 ggplot(data=stats50, mapping=aes(Ntotal, RMSE, color=interaction(Package,Corr), shape=as.factor(Nsup))) + geom_point(size=3)
 ggplot(data=stats50, mapping=aes(Ntotal, RMSE, color=interaction(Package,Corr), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10() + scale_y_log10()
+ggplot(data=stats50 %>% filter(score<1e5), mapping=aes(Ntotal, score, color=interaction(Package,Corr), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10()
