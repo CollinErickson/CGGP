@@ -21,3 +21,4 @@ create_LHS_and_submit(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0304_', holdn
 # extract_redTime_from_completed_LHS(n=, prefix=)
 # extract_redTime_from_completed_LHS(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0227_')
 # extract_redTime_from_completed_LHS(n=100, prefix='ExpandedRanges2_LHS1L_n100_s0228_')
+# extract_redTime_from_completed_LHS(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0304_')

@@ -4,6 +4,8 @@ x100 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/ExpandedRanges2_
 y100 <- log(unname(as.matrix(read.csv("../../../Desktop/redTimeData/ExpandedRanges2_LHS1L_n100_s0228_all_output.csv")[,-1])))
 x1000 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_input.csv")[,-1]))
 y1000 <- log(unname(as.matrix(read.csv("../../../Desktop/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_output.csv")[,-1])))
+x1000_2 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/ExpandedRanges2_LHS1L_n1000_s0304_all_input.csv")[,-1]))
+y1000_2 <- log(unname(as.matrix(read.csv("../../../Desktop/redTimeData/ExpandedRanges2_LHS1L_n1000_s0304_all_output.csv")[,-1])))
 
 
 # Ran SGGP on output dimension 50
@@ -22,6 +24,10 @@ rt.sggp.1699 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-1699.rds")
 rt.sggp.2099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-2099.rds")
 rt.sggp.2499 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-2499.rds")
 rt.sggp.3099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-3099.rds")
+rt.sggp.4099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-4099.rds")
+rt.sggp.5099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-5099.rds")
+rt.sggp.6099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-6099.rds")
+rt.sggp.6299 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-6299.rds")
 stats.rt.sggp.199 <- SGGPvalstats(rt.sggp.199, x1000, y1000[,50])
 stats.rt.sggp.299 <- SGGPvalstats(rt.sggp.299, x1000, y1000[,50])
 stats.rt.sggp.399 <- SGGPvalstats(rt.sggp.399, x1000, y1000[,50])
@@ -37,6 +43,10 @@ stats.rt.sggp.1699 <- SGGPvalstats(rt.sggp.1699, x1000, y1000[,50])
 stats.rt.sggp.2099 <- SGGPvalstats(rt.sggp.2099, x1000, y1000[,50])
 stats.rt.sggp.2499 <- SGGPvalstats(rt.sggp.2499, x1000, y1000[,50])
 stats.rt.sggp.3099 <- SGGPvalstats(rt.sggp.3099, x1000, y1000[,50])
+stats.rt.sggp.4099 <- SGGPvalstats(rt.sggp.4099, x1000, y1000[,50])
+stats.rt.sggp.5099 <- SGGPvalstats(rt.sggp.5099, x1000, y1000[,50])
+stats.rt.sggp.6099 <- SGGPvalstats(rt.sggp.6099, x1000, y1000[,50])
+stats.rt.sggp.6299 <- SGGPvalstats(rt.sggp.6299, x1000, y1000[,50])
 
 # SGGP with other correlation functions
 stats.rt.sggp.199.m3 <- SGGPvalstats(SGGPfit(rt.sggp.199, rt.sggp.199$Y, Xs=rt.sggp.199$Xs, Ys=rt.sggp.199$Ys, corr="m32"), x1000, y1000[,50])
@@ -63,6 +73,15 @@ stats.mlegp.75 <- valstats(pred.mlegp.75$fit, pred.mlegp.75$se, y1000[,50])
 mod.mlegp.100 <- mlegp::mlegp(x100, y100[,50])
 pred.mlegp.100 <- predict(mod.mlegp.100, x1000, se=T)
 stats.mlegp.100 <- valstats(pred.mlegp.100$fit, pred.mlegp.100$se, y1000[,50])
+mod.mlegp.200 <- mlegp::mlegp(x1000_2[1:200,], y1000_2[1:200,50])
+pred.mlegp.200 <- predict(mod.mlegp.200, x1000, se=T)
+stats.mlegp.200 <- valstats(pred.mlegp.200$fit, pred.mlegp.200$se, y1000[,50])
+mod.mlegp.300 <- mlegp::mlegp(x1000_2[1:300,], y1000_2[1:300,50])
+pred.mlegp.300 <- predict(mod.mlegp.300, x1000, se=T)
+stats.mlegp.300 <- valstats(pred.mlegp.300$fit, pred.mlegp.300$se, y1000[,50])
+mod.mlegp.400 <- mlegp::mlegp(x1000_2[1:400,], y1000_2[1:400,50])
+pred.mlegp.400 <- predict(mod.mlegp.400, x1000, se=T)
+stats.mlegp.400 <- valstats(pred.mlegp.400$fit, pred.mlegp.400$se, y1000[,50])
 
 # Run with DK
 mod.DK.100 <- DiceKriging::km(design=x100, response=y100[,50])
@@ -87,6 +106,10 @@ stats50 <- list(
   ,data.frame("SGGP", 100, 2099, 0.01097685, -8.078817, 0.005756391,    0.964, 0.9999579, 0.9999155, "CauchySQ")
   ,data.frame("SGGP", 100, 2499, 0.0100807,  -8.237784, 0.005289297,    0.966, 0.9999644, 0.9999287, "CauchySQ")
   ,data.frame("SGGP", 100, 3099, 0.008719812, -8.298772, 0.004743257,   0.981, 0.9999734, 0.9999467, "CauchySQ")
+  ,data.frame("SGGP", 100, 4099, 0.006635083, -8.847274, 0.003542177,    0.985, 0.9999846, 0.9999691, "CauchySQ")
+  ,data.frame("SGGP", 100, 5099, 0.005979838, -9.149594, 0.003096542,    0.976, 0.9999875, 0.9999749, "CauchySQ")
+  ,data.frame("SGGP", 100, 6099, 0.004925651, -9.422376, 0.002610824,    0.983, 0.9999915, 0.999983, "CauchySQ")
+  ,data.frame("SGGP", 100, 6299, 0.004897624, -9.426733, 0.002620672,    0.986, 0.9999916, 0.9999832, "CauchySQ")
   
   
   # Refit with other correlation functions
@@ -107,6 +130,8 @@ stats50 <- list(
   ,data.frame("mlegp", 50, 0, 0.2270544, -1.913619, 0.1250952,    0.999, 0.9831718, 0.9638425, "gauss")
   ,data.frame("mlegp", 75, 0, 0.10766, -2.792874, 0.07135557,        1, 0.996209, 0.9918708, "gauss")
   ,data.frame("mlegp", 100, 0, 0.06409675, -3.36158, 0.05061328,        1, 0.9985716, 0.9971186, "gauss")
+  ,data.frame("mlegp", 200, 0, 0.06407573, 157685457, 0.03691848,    0.986, 0.9985597, 0.9971204, "gauss")
+  ,data.frame("mlegp", 300, 0, 0.05759601, 1169074, 0.03370455,    0.998, 0.9988548, 0.9976734, "gauss")
   # ,data.frame("mlegp", 0, 100, )
   # ,data.frame("mlegp", 0, 100, )
   ,data.frame("DK", 100, 0, 0.1124202, -2.070725, 0.09362545,        1, 0.9958498, 0.9911361, "m52")
