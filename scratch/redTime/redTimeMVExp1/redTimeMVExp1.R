@@ -9,18 +9,18 @@ evfunc <- function(N, use_PCA, separateoutputparameterdimensions) {
     x1000 <- unname(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n1000_s0303_all_input.csv")[,-1]))
     y1000 <- log(unname(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n1000_s0303_all_output.csv")[,-1])))
     sg.base <- readRDS(paste0("~/scratch/redTime_v0.1/SGGPruns/redTimeTestSup2o50/output_files/out_S2o50_SGGP-", N, ".rds"))
-    
-    
+    Y.8099 <- unname(log(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/redTimeTestSup2o50_all_SGGP_output-8099.csv")[,-1])))
   } else if (version$os == "mingw32") {
     x1000 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_input.csv")[,-1]))
     y1000 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_output.csv")[,-1])))
     sg.base <- readRDS(paste0("./scratch/redTime/redTimeData/out_S2o50_SGGP-", N, ".rds"))
+    Y.8099 <- unname(log(as.matrix(read.csv("./scratch/redTime/redTimeData/redTimeTestSup2o50_all_SGGP_output-6889.csv")[,-1])))
   } else {
     stop("version$os doesn't match any")
   }
   
   
-  sg <- SGGPfit(sg.base, Y=Y.6889[1:N,], use_PCA = use_PCA,
+  sg <- SGGPfit(sg.base, Y=Y.8099[1:N,], use_PCA = use_PCA,
                 separateoutputparameterdimensions = separateoutputparameterdimensions)
   
   SGGPvalstats(sg, x1000, y1000)

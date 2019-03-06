@@ -76,7 +76,9 @@ extract_redTime_from_SGGP_run <- function(prefix, Nmax) {
   dfall3 <- dfall2[order(dfall2$iii),]
   rm(dfall2)
   # Want to only keep those under or at Nmax
-  dfall3 <- dfall3[dfall3$iii<=Nmax,]
+  if (!missing(Nmax)) {
+    dfall3 <- dfall3[dfall3$iii<=Nmax,]
+  }
   if (max(dfall3$iii) != nrow(dfall3)) {stop("Not all rows here???")}
   
   Ynew <- matrix(NaN, nrow(dfall3), 100)
