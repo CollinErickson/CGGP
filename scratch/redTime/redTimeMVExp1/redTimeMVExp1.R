@@ -1,5 +1,6 @@
 # Running an experiment to test redTime with all 100 outputs.
 # we have 2x2 options.
+# Using SGGP data from run that only fit to dimension 50.
 
 evfunc <- function(N, use_PCA, separateoutputparameterdimensions) {
   if (version$os=="linux-gnu") {
@@ -10,8 +11,8 @@ evfunc <- function(N, use_PCA, separateoutputparameterdimensions) {
     
   } else if (version$os == "mingw32") {
     x1000 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_input.csv")[,-1]))
-    y1000 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_output.csv")[,-1])))
-    sg.base <- readRDS(paste0("./scratch/redTime/redTimeData/redTimeData/out_S2o50_SGGP-", N, ".rds"))
+    y1000 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_output.csv")[,-1])))
+    sg.base <- readRDS(paste0("./scratch/redTime/redTimeData/out_S2o50_SGGP-", N, ".rds"))
   } else {
     stop("version$os doesn't match any")
   }
@@ -29,7 +30,9 @@ e1 <- comparer::ffexp$new(
   use_PCA = c(T,F),
   separateoutputparameterdimensions = c(T,F),
   eval_func = evfunc,
-  folder_path = if (version$os=="linux-gnu") {"/home/collin/scratch/SGGP/scratch/redTime/redTimeMVExp1/Exp1"} else if (version$os=="mingw32") {"./scratch/InternalComparison/redTimeMVout_from_S2o50"} else {stop("bad folderpath")}
+  folder_path = if (version$os=="linux-gnu") {"/home/collin/scratch/SGGP/scratch/redTime/redTimeMVExp1/Exp1"}
+  else if (version$os=="mingw32") {"./scratch/redTime/redTimeMVExp1/Exp1"}
+  else {stop("bad folderpath")},
   # folder_path = "./scratch/InternalComparison/redTimeMVout_from_S2o50",
   parallel=T,
   parallel_cores=10
