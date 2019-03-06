@@ -1,10 +1,3 @@
-rt.sggp.6889 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-6889.rds")
-Y.6889 <- unname(log(as.matrix(read.csv("../../../Desktop/redTimeData/redTimeTestSup2o50_all_SGGP_output-6889.csv")[,-1])))
-
-
-s.6889.0.TT <- SGGPfit(rt.sggp.6889, Y=Y.6889, separateoutputparameterdimensions=F, use_PCA=T)
-
-stats.s.6889.0.TT <- SGGPvalstats(s.6889.0.TT, x1000, y1000, bydim = F)
 
 
 evfunc <- function(N, use_PCA, separateoutputparameterdimensions) {
