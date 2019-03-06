@@ -5,8 +5,9 @@
 \title{Create sparse grid GP}
 \usage{
 SGGPcreate(d, batchsize, corr = "CauchySQ", ..., grid_sizes = c(1, 2,
-  4, 4, 8, 12, 32), Xs = NULL, Ys = NULL,
-  HandlingSuppData = "Ignore", supp_args = list())
+  4, 4, 8, 12, 32), Xs = NULL, Ys = NULL, HandlingSuppData = if
+  (is.null(Xs)) {     "Ignore" } else {     "Correct" },
+  supp_args = list())
 }
 \arguments{
 \item{d}{Input dimension}

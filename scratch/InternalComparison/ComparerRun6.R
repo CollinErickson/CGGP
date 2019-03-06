@@ -125,8 +125,8 @@ e2 <- ffexp$new(
   parallel=T,
   parallel_cores = 20,
   replicate=1:3,
-  # folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun6/" #"./scratch/sggpout"
-  folder_path="./scratch/InternalComparison/ComparerRun6/"
+  folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun6/" #"./scratch/sggpout"
+  # folder_path="./scratch/InternalComparison/ComparerRun6/"
 )
 
 e2$rungrid
