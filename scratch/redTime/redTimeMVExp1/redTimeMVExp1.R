@@ -1,4 +1,5 @@
-
+# Running an experiment to test redTime with all 100 outputs.
+# we have 2x2 options.
 
 evfunc <- function(N, use_PCA, separateoutputparameterdimensions) {
   if (version$os=="linux-gnu") {
@@ -28,8 +29,8 @@ e1 <- comparer::ffexp$new(
   use_PCA = c(T,F),
   separateoutputparameterdimensions = c(T,F),
   eval_func = evfunc,
-  # folder_path = if (version$os=="linux-gnu") {} else if (version$os=="mingw32") {"./scratch/InternalComparison/redTimeMVout_from_S2o50"} else {stop("bad folderpath")}
-  folder_path = "./scratch/InternalComparison/redTimeMVout_from_S2o50",
+  folder_path = if (version$os=="linux-gnu") {"/home/collin/scratch/SGGP/scratch/redTime/redTimeMVExp1/Exp1"} else if (version$os=="mingw32") {"./scratch/InternalComparison/redTimeMVout_from_S2o50"} else {stop("bad folderpath")}
+  # folder_path = "./scratch/InternalComparison/redTimeMVout_from_S2o50",
   parallel=T,
   parallel_cores=10
 )
