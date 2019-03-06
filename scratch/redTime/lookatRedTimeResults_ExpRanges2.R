@@ -29,6 +29,8 @@ rt.sggp.5099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-5099.rds")
 rt.sggp.6099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-6099.rds")
 rt.sggp.6299 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-6299.rds")
 rt.sggp.6889 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-6889.rds")
+rt.sggp.7099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-7099.rds")
+rt.sggp.8099 <- readRDS("../../../Desktop/redTimeData/out_S2o50_SGGP-8099.rds")
 stats.rt.sggp.199 <- SGGPvalstats(rt.sggp.199, x1000, y1000[,50])
 stats.rt.sggp.299 <- SGGPvalstats(rt.sggp.299, x1000, y1000[,50])
 stats.rt.sggp.399 <- SGGPvalstats(rt.sggp.399, x1000, y1000[,50])
@@ -49,6 +51,8 @@ stats.rt.sggp.5099 <- SGGPvalstats(rt.sggp.5099, x1000, y1000[,50])
 stats.rt.sggp.6099 <- SGGPvalstats(rt.sggp.6099, x1000, y1000[,50])
 stats.rt.sggp.6299 <- SGGPvalstats(rt.sggp.6299, x1000, y1000[,50])
 stats.rt.sggp.6899 <- SGGPvalstats(rt.sggp.6899, x1000, y1000[,50])
+stats.rt.sggp.7099 <- SGGPvalstats(rt.sggp.7099, x1000, y1000[,50])
+stats.rt.sggp.8099 <- SGGPvalstats(rt.sggp.8099, x1000, y1000[,50])
 
 # SGGP with other correlation functions
 stats.rt.sggp.199.m3 <- SGGPvalstats(SGGPfit(rt.sggp.199, rt.sggp.199$Y, Xs=rt.sggp.199$Xs, Ys=rt.sggp.199$Ys, corr="m32"), x1000, y1000[,50])
@@ -149,6 +153,8 @@ stats50 <- list(
   ,data.frame("SGGP", 100, 6099, 0.004925651, -9.422376, 0.002610824,    0.983, 0.9999915, 0.999983, "CauchySQ")
   ,data.frame("SGGP", 100, 6299, 0.004897624, -9.426733, 0.002620672,    0.986, 0.9999916, 0.9999832, "CauchySQ")
   ,data.frame("SGGP", 100, 6889, 0.004145463, -9.55806, 0.002485635,    0.982, 0.999994, 0.9999879, "CauchySQ")
+  ,data.frame("SGGP", 100, 7099, 0.004176226, -9.597928, 0.002454114,    0.982, 0.9999939, 0.9999878, "CauchySQ")
+  ,data.frame("SGGP", 100, 8099, 0.003917667, -9.773086, 0.002275711,    0.982, 0.9999946, 0.9999892, "CauchySQ")
   
   
   # Refit with other correlation functions
