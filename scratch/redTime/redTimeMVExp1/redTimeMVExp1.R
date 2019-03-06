@@ -3,6 +3,8 @@
 # Using SGGP data from run that only fit to dimension 50.
 
 evfunc <- function(N, use_PCA, separateoutputparameterdimensions) {
+  require("SGGP")
+  
   if (version$os=="linux-gnu") {
     x1000 <- unname(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n1000_s0303_all_input.csv")[,-1]))
     y1000 <- log(unname(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n1000_s0303_all_output.csv")[,-1])))
