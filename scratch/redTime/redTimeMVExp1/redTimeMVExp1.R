@@ -45,7 +45,20 @@ e1$run_all(delete_parallel_temp_save_after = F, parallel_temp_save = T, write_st
 
 e1$save_self()
 
-edf <- e1$outcleandf
-edf$outdim <- rep(1:100, 32)
-
-ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim,shape=interaction(use_PCA, separateoutputparameterdimensions))) + geom_point()
+if (F) {
+  e1 <- readRDS("C:/Users/cbe117/Documents/GitHub/SGGP/scratch/redTime/redTimeMVExp1/redTimeMVExp1_completed.rds")
+  edf <- e1$outcleandf
+  edf$outdim <- rep(1:100, 44)
+  edf$use_PCAchar <- c("noPCA","PCA")[edf$use_PCA+1]
+  edf$sopdchar <- c("1opd", "sopd")[edf$separateoutputparameterdimensions+1]
+  
+  ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim,shape=interaction(use_PCAchar, sopdchar))) + geom_point()
+  ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar)
+  ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10() + scale_y_log10()
+  ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=interaction(use_PCA, separateoutputparameterdimensions))) + geom_point()
+  
+  ggplot(data=edf, mapping=aes(x=N, y=runtime, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10() + scale_y_log10()
+  
+  ggplot(data=edf, mapping=aes(x=N, y=score, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10()
+  
+}

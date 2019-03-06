@@ -244,6 +244,8 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
         upper = upper,
         y = y.thisloop,
         SGGP = SGGP,
+        HandlingSuppData="Ignore", # Never supp data here, so set to Ignore
+                                   #  regardless of user setting
         control = list(rel.tol = 1e-8,iter.max = 500)
       )
       

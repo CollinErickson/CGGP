@@ -40,13 +40,13 @@ SGGP_internal_neglogpost <- function(theta,SGGP,y,...,ys=NULL,Xs=NULL,HandlingSu
     if(!(is.null(ys) || length(ys)==0) && (is.null(y) || length(y)==0)){
       # Message user if actually changing it
       if (HandlingSuppData != "Only") {
-        if (runif(1)<.001) message("Changing HandlingSuppData to Only")
+        if (runif(1)<.01) message(paste("Changing HandlingSuppData to Only from", HandlingSuppData))
       }
       HandlingSuppData = "Only"
     }else if((is.null(ys) || length(ys)==0) && !(is.null(y) || length(y)==0)){
       # If making change, message user
       if (HandlingSuppData != "Ignore") {
-        if (runif(1)<.001) message("Changing HandlingSuppData to Ignore")
+        if (runif(1)<.01) message(paste("Changing HandlingSuppData to Ignore from", HandlingSuppData))
       }
       HandlingSuppData = "Ignore"
     }else if((is.null(ys) || length(ys)==0) && (is.null(y) || length(y)==0)){

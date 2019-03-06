@@ -34,7 +34,7 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
                        ...,
                        grid_sizes=c(1,2,4,4,8,12,32),
                        Xs=NULL, Ys=NULL,
-                       HandlingSuppData="Ignore",
+                       HandlingSuppData=if (is.null(Xs)) {"Ignore"} else {"Correct"},
                        supp_args=list()
 ) {
   if (d <= 1) {stop("d must be at least 2")}

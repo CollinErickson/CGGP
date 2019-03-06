@@ -1,6 +1,9 @@
 ### ComparerRun6
 
 # Run with supp data, different supp methods
+# First time I ran this 2/28/19 I might have been having fit override the
+#  given HandlingSuppData option and always doing Correct.
+# Going to run again to check it.
 
 sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
                          supppd, sup.method, Nsupppd,
@@ -49,6 +52,8 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
   }
   nallotted <- batchsize0
   
+  if (sg$HandlingSuppData != sup.method) {stop(paste("HandlingSuppData is wrong"))}
+  
   sg.stats <- NULL
   
   while(nallotted < 1024) {
@@ -56,6 +61,7 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
     y <- apply(sg$design, 1, f)
     sg <- SGGPfit(sg, Y=y, laplaceapprox=use_laplaceapprox,
                   Xs=Xs, Ys=Ys, HandlingSuppData=sup.method)
+    if (sg$HandlingSuppData != sup.method) {stop(paste("HandlingSuppData is wrong"))}
     nallotted <- nallotted + batchsize
     if (nallotted >= 256 && is_power_of_2(nallotted)) {
       newstats <- SGGPvalstats(sg, Xval = Xval, Yval = Yval, fullBayesian=pred.fullBayes)
@@ -75,6 +81,7 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
     y <- apply(sg$design, 1, f)
     sg <- SGGPfit(sg, Y=y, laplaceapprox=use_laplaceapprox,
                   Xs=Xs, Ys=Ys, HandlingSuppData=sup.method)
+    if (sg$HandlingSuppData != sup.method) {stop(paste("HandlingSuppData is wrong"))}
     nallotted <- nallotted + batchsize2
     if (nallotted >= batchsize2 && is_power_of_2(nallotted)) {
       newstats <- SGGPvalstats(sg, Xval = Xval, Yval = Yval, fullBayesian=pred.fullBayes)
@@ -94,6 +101,13 @@ sggpexp_func <- function(corr, sel.method, f, d, batchsize, pred.fullBayes,
 
 require("comparer")
 
+# The supp options when it is 0 are a waste, they are same as ignore
+
+sup.df <- data.frame(sup.method=rep(
+  c("Ignore", "Only", "Correct","Mixture", "MarginalValidation","FullValidation"), 4),
+  Nsupppd=rep(c(0,5,10,20), each=6), stringsAsFactors=F)
+sup.df <- sup.df[!(sup.df$Nsupppd==0 & sup.df$sup.method!="Ignore"),]
+
 e2 <- ffexp$new(
   eval_func = sggpexp_func,
   corr = c("cauchysq", "powerexp")[1], #"cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
@@ -102,16 +116,17 @@ e2 <- ffexp$new(
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
   batchsize=c(64),
   append.rimseperpoint=c(TRUE), #, FALSE),
-  sup.method=c("Ignore", "Only", "Correct","Mixture", "MarginalValidation","FullValidation"),
-  Nsupppd=c(0,5,10,20),
+  # sup.method=c("Ignore", "Only", "Correct","Mixture", "MarginalValidation","FullValidation"),
+  # Nsupppd=c(0,5,10,20),
+  sup.df=sup.df,
   use_laplaceapprox=c(TRUE), # No MCMC, too slow
   pred.fullBayes=c(FALSE), # No full Bayes prediction, too slow
   grid_size=c("medium"), #"fast", "slow"),
-  parallel=TRUE,
-  parallel_cores = 12,
+  parallel=T,
+  parallel_cores = 20,
   replicate=1:3,
-  folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun6/" #"./scratch/sggpout"
-  # folder_path="./scratch/InternalComparison/ComparerRun6/"
+  # folder_path= "/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun6/" #"./scratch/sggpout"
+  folder_path="./scratch/InternalComparison/ComparerRun6/"
 )
 
 e2$rungrid
@@ -119,6 +134,8 @@ e2$rungrid
 try(e2$recover_parallel_temp_save(delete_after = FALSE))
 e2$save_self()
 # if (F) {
+# e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
+#            write_start_files=!TRUE, write_error_files=!T, run_order = "random")
 e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
            write_start_files=TRUE, write_error_files=T)
 # }
