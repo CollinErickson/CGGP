@@ -62,3 +62,42 @@ if (F) {
   ggplot(data=edf, mapping=aes(x=N, y=score, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10()
   
 }
+
+if (F) {
+  # Run mlegp to combine results
+  mlegp_evalfunc <- function(N, use_PCA, separateoutputparameterdimensions) {
+    
+    
+    if (version$os=="linux-gnu") {
+      x1000 <- unname(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n1000_s0303_all_input.csv")[,-1]))
+      y1000 <- log(unname(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n1000_s0303_all_output.csv")[,-1])))
+      x1000_2 <- unname(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n1000_s0304_all_input.csv")[,-1]))
+      y1000_2 <- log(unname(as.matrix(read.csv("~/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n1000_s0304_all_output.csv")[,-1])))
+    } else if (version$os == "mingw32") {
+      x1000 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_input.csv")[,-1]))
+      y1000 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_output.csv")[,-1])))
+      x1000_2 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0304_all_input.csv")[,-1]))
+      y1000_2 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0304_all_output.csv")[,-1])))
+    } else {
+      stop("version$os doesn't match any")
+    }
+    inds <- sample(1:1000, N, replace=F)
+    X <- x1000_2[inds,]
+    Y <- y1000_2[inds,]
+    if (use_PCA) {
+      mod.mlegp.pca.300 <- mlegp::mlegp(X=X, Z=t(Y),
+                                        PC.percent = 99.999)
+    } else {
+      mod.mlegp.300 <- mlegp::mlegp(X=X, Z=Y)
+    }
+    
+    SGGP::valstats(pred, x1000, y1000)
+  }
+  mlegp.exp <- comparer::ffexp$new(
+    N=c(100, 200, 300, 500),
+    use_PCA=c(T, F),
+    separateoutputparameterdimensions=c(T),
+    eval_func=mlegp_evalfunc,
+    parallel=F
+  )
+}

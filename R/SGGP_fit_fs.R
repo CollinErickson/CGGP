@@ -232,7 +232,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
         ys = ys.thisloop,
         Xs = Xs,
         HandlingSuppData=HandlingSuppData,
-        control = list(rel.tol = 1e-8,iter.max = 500)
+        control = list(rel.tol = 1e-4,iter.max = 500)
       )
     } else { # Double opt
       # Only grid data b/c it's fast
@@ -246,7 +246,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
         SGGP = SGGP,
         HandlingSuppData="Ignore", # Never supp data here, so set to Ignore
                                    #  regardless of user setting
-        control = list(rel.tol = 1e-8,iter.max = 500)
+        control = list(rel.tol = 1e-2,iter.max = 500)
       )
       
       # Then use best point as initial point with supp data
@@ -261,7 +261,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
         Xs = Xs,
         SGGP = SGGP,
         HandlingSuppData = HandlingSuppData,
-        control = list(rel.tol = 1e-8,iter.max = 500)
+        control = list(rel.tol = 1e-4,iter.max = 500)
       )
       
     }
