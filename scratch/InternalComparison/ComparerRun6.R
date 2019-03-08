@@ -145,14 +145,17 @@ e2$save_self()
 print("Completed all runs in ComparerRun6.R")
 
 if (F) {
-  e2 <- readRDS("./scratch/InternalComparison/ComparerRun6_object_328_of_360.rds")
+  # e2 <- readRDS("./scratch/InternalComparison/ComparerRun6_object_328_of_360.rds")
+  e2 <- readRDS("C:/Users/cbe117/Documents/GitHub/SGGP/scratch/redTime/redTimeData/ComparerRun6_completed.rds")
   e2$completed_runs %>% table
   e2dfcomp <- e2$outcleandf[e2$completed_runs,]
   e2df <- e2dfcomp[!is.na(e2dfcomp$RMSE),]
   colnames(e2df)[1] <- "corr.func"
   e2df$sup.method[e2df$nsupp==0] <- "Ignore"
   
+  library(ggplot2)
   ggplot(data=e2df, mapping=aes(nallotted, RMSE, color=as.factor(Nsupppd))) + geom_point(size=4) + facet_grid(f ~ sup.method, scales="free_y") + scale_y_log10()
+  ggplot(data=e2df, mapping=aes(nallotted, RMSE, color=as.factor(Nsupppd))) + geom_point(size=4) + facet_grid(f ~ sup.method, scales="free_y") + scale_y_log10() + scale_x_log10()
   ggplot(data=e2df, mapping=aes(nallotted, score, color=as.factor(Nsupppd))) + geom_point(size=4) + facet_grid(f ~ sup.method, scales="free_y")
   ggplot(data=e2df, mapping=aes(nallotted, CRPscore, color=as.factor(Nsupppd))) + geom_point(size=4) + facet_grid(f ~ sup.method, scales="free_y") + scale_y_log10()
   ggplot(data=e2df, mapping=aes(nallotted, elapsedtime, color=as.factor(Nsupppd))) + geom_point(size=4) + facet_grid(f ~ sup.method, scales="free_y") + scale_y_log10()

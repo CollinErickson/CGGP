@@ -85,19 +85,41 @@ if (F) {
     X <- x1000_2[inds,]
     Y <- y1000_2[inds,]
     if (use_PCA) {
-      mod.mlegp.pca.300 <- mlegp::mlegp(X=X, Z=t(Y),
+      mod.mlegp.pca <- mlegp::mlegp(X=X, Z=t(Y),
                                         PC.percent = 99.999)
+      
+      pred.mlegp.pca.pretrans <- lapply(1:mod.mlegp.pca$numGPs,
+                                        function(i)predict(mod.mlegp.pca[[i]], x1000, se.fit=T))
+      pred.mlegp.pca.pretrans.means <- do.call(cbind, lapply(pred.mlegp.pca.pretrans, function(x) x$fit))
+      pred.mlegp.pca.pretrans.ses <- do.call(cbind, lapply(pred.mlegp.pca.pretrans, function(x) x$se))
+      pred.mlegp <- list(
+        mean = t(mod.mlegp.pca$UD %*% t(pred.mlegp.pca.pretrans.means)),
+        var = (t(mod.mlegp.pca$UD %*% t(pred.mlegp.pca.pretrans.ses)))^2)
+      
     } else {
-      mod.mlegp.300 <- mlegp::mlegp(X=X, Z=Y)
+      # browser()
+      mod.mlegp <- mlegp::mlegp(X=X, Z=Y)
+      pred.mlegp.raw <- lapply(1:mod.mlegp$numGPs,
+                               function(i)predict(mod.mlegp[[i]], x1000, se.fit=T))
+      pred.mlegp <- list(
+        mean = do.call(cbind, lapply(pred.mlegp.raw, function(x) x$fit)),
+        var = do.call(cbind, lapply(pred.mlegp.raw, function(x) x$se^2)))
     }
-    
-    SGGP::valstats(pred, x1000, y1000)
+    # browser()
+    SGGP::valstats(pred.mlegp$mean, pred.mlegp$var, y1000)
   }
   mlegp.exp <- comparer::ffexp$new(
     N=c(100, 200, 300, 500),
     use_PCA=c(T, F),
     separateoutputparameterdimensions=c(T),
-    eval_func=mlegp_evalfunc,
-    parallel=F
+    eval_func=function(...)mlegp_evalfunc(...),
+    parallel=F,
+    folder_path = "./scratch/redTime/redTimeMVExp1/Exp1_mlegp"
   )
+  mlegp.exp$rungrid
+  # mlegp.exp$run_one(5)
+  mlegp.exp$run_all()
+  if (F) {
+    mlegp.exp <- 
+  }
 }
