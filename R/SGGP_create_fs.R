@@ -249,13 +249,8 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   # This is all to create design from uo.
   # If only supp data is given, don't run it.
   if (SGGP$uoCOUNT > 0) {
-    SGGP$gridsizes = matrix(SGGP$sizes[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
-    SGGP$gridsizest = matrix(SGGP$sizest[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
-    SGGP$gridsize = apply(SGGP$gridsizes, 1, prod)
-    SGGP$gridsizet = apply(SGGP$gridsizest, 1, prod)
-    SGGP$di = matrix(0, nrow = SGGP$uoCOUNT, ncol = max(SGGP$gridsize))
-    SGGP$dit = matrix(0, nrow = SGGP$uoCOUNT, ncol = sum((SGGP$gridsize)))
     
+    # Get design from uo and other data
     SGGP <- SGGP_internal_getdesignfromSGGP(SGGP)
     
     SGGP$design_unevaluated <- SGGP$design

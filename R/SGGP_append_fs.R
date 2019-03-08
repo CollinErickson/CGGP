@@ -551,25 +551,11 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
           } else if (selectionmethod %in% c("Oldest", "Random", "Lowest")) {
             # nothing needed
           } else {stop("Not possible #9235058")}
-          # Removing below and adding it as part of UCB above
-          # if(selectionmethod=="TS"){
-          #   for(samplelcv in 1:SGGP$numPostSamples){
-          #     IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
-          #                                                                        MSE_PostSamples[,,samplelcv])
-          #   }
-          # }
         }
       }
     }
   }
   
-  SGGP$gridsizes = matrix(SGGP$sizes[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
-  SGGP$gridsizest = matrix(SGGP$sizest[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
-  SGGP$gridsize = apply(SGGP$gridsizes, 1, prod)
-  SGGP$gridsizet = apply(SGGP$gridsizest, 1, prod)
-  
-  SGGP$di = matrix(0, nrow = SGGP$uoCOUNT, ncol = max(SGGP$gridsize))
-  SGGP$dit = matrix(0, nrow = SGGP$uoCOUNT, ncol = sum((SGGP$gridsize)))
   
   # THIS OVERWRITES AND RECALCULATES design EVERY TIME, WHY NOT JUST DO FOR NEW ROWS?
   SGGP <- SGGP_internal_getdesignfromSGGP(SGGP)

@@ -71,6 +71,15 @@ SGGP_internal_addrows <- function(SGGP, numrowstoadd=20) {
 
 SGGP_internal_getdesignfromSGGP <- function(SGGP) {
   
+  
+  SGGP$gridsizes = matrix(SGGP$sizes[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
+  SGGP$gridsizest = matrix(SGGP$sizest[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
+  SGGP$gridsize = apply(SGGP$gridsizes, 1, prod)
+  SGGP$gridsizet = apply(SGGP$gridsizest, 1, prod)
+  SGGP$di = matrix(0, nrow = SGGP$uoCOUNT, ncol = max(SGGP$gridsize))
+  SGGP$dit = matrix(0, nrow = SGGP$uoCOUNT, ncol = sum((SGGP$gridsize)))
+  
+  
   SGGP$design = matrix(0, nrow = sum(SGGP$gridsize), ncol = SGGP$d)
   SGGP$designindex = matrix(0, nrow = sum(SGGP$gridsize), ncol = SGGP$d)
   tv = 0
