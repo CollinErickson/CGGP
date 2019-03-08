@@ -120,6 +120,25 @@ if (F) {
   # mlegp.exp$run_one(5)
   mlegp.exp$run_all()
   if (F) {
-    mlegp.exp <- 
+    mlegp.exp <- readRDS("./scratch/redTime/redTimeMVExp1/Exp1_mlegp/Exp1_mlegp_completed.rds")
+    mdf <- mlegp.exp$outcleandf
+    mdf$outdim <- rep(1:100, 8)
+    mdf$use_PCAchar <- c("noPCA","PCA")[mdf$use_PCA+1]
+    mdf$sopdchar <- c("1opd", "sopd")[mdf$separateoutputparameterdimensions+1]
+    
+    # Combine the two
+    adf <- rbind(cbind(edf,package="SGGP"), cbind(mdf, package="mlegp"))
+    
+    library(ggplot2)
+    ggplot(data=adf, mapping=aes(x=N, y=RMSE, color=outdim,shape=interaction(package, use_PCAchar, sopdchar))) + geom_point()
+    ggplot(data=adf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(package ~ use_PCAchar + sopdchar)
+    ggplot(data=adf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(package ~ use_PCAchar + sopdchar) + scale_x_log10() + scale_y_log10()
+    ggplot(data=adf, mapping=aes(x=N, y=CRPscore, color=outdim)) + geom_point(size=2) + facet_grid(package ~ use_PCAchar + sopdchar) + scale_x_log10() + scale_y_log10()
+    ggplot(data=adf, mapping=aes(x=N, y=RMSE, color=interaction(use_PCA, separateoutputparameterdimensions, package))) + geom_point()
+    
+    ggplot(data=adf, mapping=aes(x=N, y=runtime, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10() + scale_y_log10()
+    
+    ggplot(data=adf, mapping=aes(x=N, y=score, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10()
+    
   }
 }
