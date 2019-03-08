@@ -277,8 +277,9 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
           # mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
           # var=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M)))
         }else{
+          leftvar <- if (is.null(SGGP$leftover_variance)) {0} else {SGGP$leftover_variance}
           mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
-          var=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M)))
+          var=as.vector(ME_t)%*%t(leftvar+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M)))
         }
       }
       
