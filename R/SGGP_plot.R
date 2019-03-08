@@ -176,7 +176,6 @@ SGGPblockplot <- function(SGGP, singleplot=TRUE) {
 #' @param predmean Predicted mean
 #' @param predvar Predicted variance
 #' @param Yval Y validation data
-#' @param plot_with Should the plot be made with "base" or "ggplot2"?
 #' @param d If output is multivariate, which column to use. Will do all if
 #' left as NULL.
 #'
@@ -196,7 +195,7 @@ SGGPblockplot <- function(SGGP, singleplot=TRUE) {
 #' # Compare to true results
 #' Yval <- apply(Xval, 1, f1)
 #' valplot(mod.pred$fit, mod.pred$se.fit^2, Yval=Yval)
-valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
+valplot <- function(predmean, predvar, Yval, d=NULL) {
   
   if (!is.null(d)) {
     predmean <- predmean[,d]
@@ -204,48 +203,43 @@ valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
     Yval <- Yval[,d]
   }
   errmax <- max(sqrt(predvar), abs(predmean - Yval))
-  if (plot_with == "base") {
-    plot(predmean-Yval, sqrt(predvar), xlim=errmax*c(-1,1), ylim=c(0,errmax))#;abline(a=0,b=1,col=2)
-    polygon(1.1*errmax*c(0,-2,2),1.1*errmax*c(0,1,1), col=3, density=10, angle=135)
-    polygon(1.1*errmax*c(0,-1,1),1.1*errmax*c(0,1,1), col=2, density=30)
-    points(predmean-Yval, sqrt(predvar), xlim=errmax*c(-1,1), ylim=c(0,errmax))
-  } else {
-    errs <- unname(predmean-Yval)
-    psds <- unname(sqrt(predvar))
-    if (!is.matrix(errs) || ncol(errs)==1) { # vector, single output
-      tdf <- data.frame(err=errs, psd=psds)
-    } else { # multiple outputs, need to melt
-      tdf <- cbind(reshape2::melt(errs), reshape2::melt(psds))[,c(3,6,2)]
-      tdf <- data.frame(tdf)
-      names(tdf) <- c("err", "psd", "outputdim")
-    }
-    # ggplot(tdf, aes(x=err, y=psd)) + geom_point()
-    values <- data.frame(id=factor(c(2,1)), Error=factor(c('68%','95%')))
-    positions <- data.frame(id=rep(values$id, each=3),
-                            x=1.1*c(0,errmax*2,-errmax*2, 0,errmax,-errmax),
-                            y=1.1*c(0,errmax,errmax,0,errmax,errmax))
-    # Currently we need to manually merge the two together
-    datapoly <- merge(values, positions, by = c("id"))
-    
-    # ggplot(datapoly, aes(x = x, y = y)) +
-    # geom_polygon(aes(fill = value, group = id))
-    # ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), 
-    #              datapoly, alpha=.2) + geom_point() +
-    # xlab("Predicted - Actual") + ylab("Predicted error") + 
-    #   coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
-    p <- ggplot2::ggplot(tdf, ggplot2::aes_string(x='err', y='psd')) + 
-      ggplot2::geom_polygon(ggplot2::aes_string(fill = 'Error', group = 'id', x='x', y='y'),
-                            datapoly[datapoly$id==2,], alpha=.2) + # Separate these so it does the right order
-      ggplot2::geom_polygon(ggplot2::aes_string(fill = 'Error', group = 'id', x='x', y='y'),
-                            datapoly[datapoly$id==1,], alpha=.2) + 
-      ggplot2::geom_point() +
-      ggplot2::xlab("Predicted - Actual") + ggplot2::ylab("Predicted error") + 
-      ggplot2::coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,max(psds))) #errmax))
-    if (is.matrix(errs) && ncol(errs) > 1) {
-      p <- p + ggplot2::facet_wrap("outputdim")
-    }
-    p
+  
+  errs <- unname(predmean-Yval)
+  psds <- unname(sqrt(predvar))
+  if (!is.matrix(errs) || ncol(errs)==1) { # vector, single output
+    tdf <- data.frame(err=errs, psd=psds)
+  } else { # multiple outputs, need to melt
+    tdf <- cbind(reshape2::melt(errs), reshape2::melt(psds))[,c(3,6,2)]
+    tdf <- data.frame(tdf)
+    names(tdf) <- c("err", "psd", "outputdim")
   }
+  # ggplot(tdf, aes(x=err, y=psd)) + geom_point()
+  values <- data.frame(id=factor(c(2,1)), Error=factor(c('68%','95%')))
+  positions <- data.frame(id=rep(values$id, each=3),
+                          x=1.1*c(0,errmax*2,-errmax*2, 0,errmax,-errmax),
+                          y=1.1*c(0,errmax,errmax,0,errmax,errmax))
+  # Currently we need to manually merge the two together
+  datapoly <- merge(values, positions, by = c("id"))
+  
+  # ggplot(datapoly, aes(x = x, y = y)) +
+  # geom_polygon(aes(fill = value, group = id))
+  # ggplot(tdf, aes(x=err, y=psd)) + geom_polygon(aes(fill = value, group = id, x=x, y=y), 
+  #              datapoly, alpha=.2) + geom_point() +
+  # xlab("Predicted - Actual") + ylab("Predicted error") + 
+  #   coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,errmax))
+  p <- ggplot2::ggplot(tdf, ggplot2::aes_string(x='err', y='psd')) + 
+    ggplot2::geom_polygon(ggplot2::aes_string(fill = 'Error', group = 'id', x='x', y='y'),
+                          datapoly[datapoly$id==2,], alpha=.2) + # Separate these so it does the right order
+    ggplot2::geom_polygon(ggplot2::aes_string(fill = 'Error', group = 'id', x='x', y='y'),
+                          datapoly[datapoly$id==1,], alpha=.2) + 
+    ggplot2::geom_point() +
+    ggplot2::xlab("Predicted - Actual") + ggplot2::ylab("Predicted error") + 
+    ggplot2::coord_cartesian(xlim=c(-errmax,errmax), ylim=c(0,max(psds))) #errmax))
+  if (is.matrix(errs) && ncol(errs) > 1) {
+    p <- p + ggplot2::facet_wrap("outputdim")
+  }
+  p
+  
 }
 
 
@@ -255,7 +249,6 @@ valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
 #' @param SGGP SGGP object that has been fitted
 #' @param Xval X validation data
 #' @param Yval Y validation data
-#' @param plot_with Should the plot be made with "base" or "ggplot2"?
 #' @param d If output is multivariate, which column to use. Will do all if
 #' left as NULL.
 #'
@@ -271,9 +264,9 @@ valplot <- function(predmean, predvar, Yval, plot_with="ggplot2", d=NULL) {
 #' Xval <- matrix(runif(3*100), ncol=3)
 #' Yval <- apply(Xval, 1, f1)
 #' SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
-SGGPvalplot <- function(SGGP, Xval, Yval, plot_with="ggplot2", d=NULL) {
+SGGPvalplot <- function(SGGP, Xval, Yval, d=NULL) {
   ypred <- SGGPpred(SGGP=SGGP, xp=Xval)
-  valplot(ypred$mean, ypred$var, Yval, plot_with=plot_with, d=d)
+  valplot(ypred$mean, ypred$var, Yval, d=d)
 }
 
 
@@ -347,7 +340,7 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE,
   if (score) out$score <- mean((Yval-predmean)^2/predvar+log(predvar))
   if (CRPscore) out$CRPscore <- - mean(s * (1/sqrt(pi) - 2*dnorm(z) - z * (2*pnorm(z) - 1)))
   if (coverage) out$coverage <- mean((Yval<= predmean+1.96*sqrt(predvar)) & 
-                     (Yval>= predmean-1.96*sqrt(predvar)))
+                                       (Yval>= predmean-1.96*sqrt(predvar)))
   if (corr) out$corr <- cor(c(predmean), c(Yval))
   if (R2) out$R2 <- 1 - (sum((Yval - predmean)^2) / sum((Yval - mean(Yval))^2))
   if (MAE) out$MAE <- mean(abs(predmean - Yval))
@@ -435,7 +428,6 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE, ...) 
 #' the max a posteriori theta.
 #' @param theta Parameters for Corr
 #' @param numlines Number of sample paths to draw
-#' @param plot_with Should "base" or "ggplot2" be used to make the plot?
 #' @param zero Should the sample paths start at y=0?
 #' @param outdims Which output dimensions should be used?
 #'
@@ -455,7 +447,7 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE, ...) 
 #' SGGPcorrplot(SG)
 #' }
 SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
-                         numlines=20, plot_with="ggplot",
+                         numlines=20,
                          outdims=NULL,
                          zero=TRUE) {
   # Points along x axis
@@ -499,45 +491,25 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
         samplepathsplot <- sweep(samplepaths, 1, samplepaths[,1])
       }
       
-      if (plot_with == "base") {
-        # Put plots in column if more than one
-        if (indim==1 && outdim==1 && numindims+numoutdims>2) {
-          orig.mfrow <- par()$mfrow
-          par(mfrow=c(numindims, numoutdims))
-        }
-        plot(xl, samplepathsplot[1,], type='l',
-             ylim=c(min(samplepathsplot), max(samplepathsplot)),
-             ylab="Sample path", xlab="x")
-        for (numline in 2:numlines) {
-          points(xl, samplepathsplot[numline,], type='l', col=numline)
-        }
-      } else { # Use ggplot2
-        # ggplot2::ggplot(cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
-        #                       x=rep(xl, numlines)), 
-        #                 ggplot2::aes_string(x="x", y="value", color="variable")) + 
-        #   ggplot2::geom_line() + ggplot2::theme(legend.position="none")
-        newdf <- cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
-                       x=rep(xl, numlines), d=paste0("X",indim), outdim=paste0("Y",outdim))
-        if (is.null(ggdf)) {ggdf <- newdf}
-        else {ggdf <- rbind(ggdf, newdf)}
-      }
+      # Make data correct shape and add
+      newdf <- cbind(reshape2::melt(data.frame(t(samplepathsplot)), id.vars=c()),
+                     x=rep(xl, numlines), d=paste0("X",indim), outdim=paste0("Y",outdim))
+      if (is.null(ggdf)) {ggdf <- newdf}
+      else {ggdf <- rbind(ggdf, newdf)}
+      
     }
   }
-  if (plot_with == "base") {
-    # Reset graphical parameters
-    par(mfrow=orig.mfrow)
-  } else { # Use ggplot2
-    # Return plot
-    p <- ggplot2::ggplot(ggdf, 
-                         ggplot2::aes_string(x="x", y="value", color="variable")) + 
-      ggplot2::geom_line() + ggplot2::theme(legend.position="none")
-    if (numindims > 1 && numoutdims==1) {
-      p <- p + ggplot2::facet_grid(d ~ .)
-    } else if (numindims > 1 && numoutdims > 1) {
-      p <- p + ggplot2::facet_grid(d ~ outdim)
-    }
-    p
+  
+  # Return plot
+  p <- ggplot2::ggplot(ggdf, 
+                       ggplot2::aes_string(x="x", y="value", color="variable")) + 
+    ggplot2::geom_line() + ggplot2::theme(legend.position="none")
+  if (numindims > 1 && numoutdims==1) {
+    p <- p + ggplot2::facet_grid(d ~ .)
+  } else if (numindims > 1 && numoutdims > 1) {
+    p <- p + ggplot2::facet_grid(d ~ outdim)
   }
+  p
 }
 
 
@@ -721,9 +693,9 @@ SGGPplottheta <- function(SGGP) {
     tmap <- NULL
     for (i in 1:dim(SGGP$thetaPostSamples)[3]) {
       tsamp <- rbind(tsamp,
-                  reshape2::melt(SGGP$thetaPostSamples[,,i]), pdim=i)
+                     reshape2::melt(SGGP$thetaPostSamples[,,i]), pdim=i)
       tmap <- rbind(tmap,
-                  data.frame(value=SGGP$thetaMAP[,i], Var1=1:nrow(SGGP$thetaMAP), pdim=i))
+                    data.frame(value=SGGP$thetaMAP[,i], Var1=1:nrow(SGGP$thetaMAP), pdim=i))
     }
   } else { # single output
     tsamp <- reshape2::melt(SGGP$thetaPostSamples)

@@ -4,7 +4,7 @@
 \alias{valplot}
 \title{Plot validation prediction errors}
 \usage{
-valplot(predmean, predvar, Yval, plot_with = "ggplot2", d = NULL)
+valplot(predmean, predvar, Yval, d = NULL)
 }
 \arguments{
 \item{predmean}{Predicted mean}
@@ -12,8 +12,6 @@ valplot(predmean, predvar, Yval, plot_with = "ggplot2", d = NULL)
 \item{predvar}{Predicted variance}
 
 \item{Yval}{Y validation data}
-
-\item{plot_with}{Should the plot be made with "base" or "ggplot2"?}
 
 \item{d}{If output is multivariate, which column to use. Will do all if
 left as NULL.}

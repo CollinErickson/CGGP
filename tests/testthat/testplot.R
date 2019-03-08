@@ -35,7 +35,6 @@ test_that("Plots work", {
   pval <- SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval)
   expect_is(pval, "gg")
   expect_is(pval, "ggplot")
-  expect_error(SGGPvalplot(SGGP=SG, Xval=Xval, Yval=Yval, plot_with = 'base'), NA)
   
   # Val stats
   expect_error(vstats <- valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9)), NA)
@@ -99,7 +98,6 @@ test_that("Plots work", {
   expect_is(p, "ggplot")
   expect_error(p <- SGGPcorrplot(SG2sep, outdims = 2), NA)
   expect_is(p, "ggplot")
-  expect_error(SGGPcorrplot(SG, plot_with = "base"), NA)
   rm(p)
   
   # Projection plot

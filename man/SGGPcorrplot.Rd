@@ -5,7 +5,7 @@
 \title{Plot correlation samples}
 \usage{
 SGGPcorrplot(Corr = SGGP_internal_CorrMatGaussian, theta = NULL,
-  numlines = 20, plot_with = "ggplot", outdims = NULL, zero = TRUE)
+  numlines = 20, outdims = NULL, zero = TRUE)
 }
 \arguments{
 \item{Corr}{Correlation function or SGGP object.
@@ -15,8 +15,6 @@ the max a posteriori theta.}
 \item{theta}{Parameters for Corr}
 
 \item{numlines}{Number of sample paths to draw}
-
-\item{plot_with}{Should "base" or "ggplot2" be used to make the plot?}
 
 \item{outdims}{Which output dimensions should be used?}
 
