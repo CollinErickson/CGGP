@@ -132,14 +132,16 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     stop("multioutputdim_weights not acceptable")
   }
   
+  if (!is.null(SGGP$design_unevaluated)) {
+    stop("Can't append if SGGP has unevaluated design points.")
+  }
   
   n_before <- if (is.null(SGGP[["design"]]) || length(SGGP$design)==0) {0} else {nrow(SGGP$design)}
-  # browser()
   max_polevels = apply(SGGP$po[1:SGGP$poCOUNT, ,drop=FALSE], 2, max)
   
   separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
-  # nnn is numberofoutputparameterdimensions
-  nnn <- if (separateoutputparameterdimensions) {
+  # nopd is numberofoutputparameterdimensions
+  nopd <- if (separateoutputparameterdimensions) {
     if (length(SGGP$y)>0) {ncol(SGGP$y)} else {ncol(SGGP$ys)}
   } else {
     1
@@ -148,12 +150,12 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
   if(selectionmethod=="Greedy"){
     # Set up blank matrix to store MSE values
     # MSE_MAP = matrix(0, SGGP$d, SGGP$maxlevel)
-    # Now use an array for nnn
-    MSE_MAP = array(0, dim=c(SGGP$d, SGGP$maxlevel,nnn))
+    # Now use an array for nopd
+    MSE_MAP = array(0, dim=c(SGGP$d, SGGP$maxlevel,nopd))
     
     # Loop over dimensions and design refinements
-    for (opdlcv in 1:nnn) {
-      thetaMAP.thisloop <- if (nnn==1) SGGP$thetaMAP else SGGP$thetaMAP[, opdlcv]
+    for (opdlcv in 1:nopd) {
+      thetaMAP.thisloop <- if (nopd==1) SGGP$thetaMAP else SGGP$thetaMAP[, opdlcv]
       for (dimlcv in 1:SGGP$d) {
         for (levellcv in 1:max_polevels[dimlcv]) {
           # Calculate some sort of MSE from above, not sure what it's doing
@@ -173,7 +175,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     
     # For all possible blocks, calculate MSE_MAP? Is that all that MSE_de does?
     # IMES_MAP[1:SGGP$poCOUNT] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ], MSE_MAP)
-    # Need to apply it over nnn
+    # Need to apply it over nopd
     IMES_MAP_beforemean = (apply(MSE_MAP, 3, function(x) SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT, ,drop=F], x)))
     if (SGGP$poCOUNT==1) {
       IMES_MAP_beforemean <- matrix(IMES_MAP_beforemean, nrow=1)
@@ -185,20 +187,20 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     # Need to include sigma2MAP here because weird things can happen if just using correlation.
     # IMES_MAP[1:SGGP$poCOUNT] = rowMeans(sweep(IMES_MAP_beforemean, 2, SGGP$sigma2MAP * multioutputdim_weights, "*"))
     # If multiple output but single opd, need to take mean
-    sigma2MAP.thisloop <- if (nnn==1) {mean(SGGP$sigma2MAP)} else {SGGP$sigma2MAP}
+    sigma2MAP.thisloop <- if (nopd==1) {mean(SGGP$sigma2MAP)} else {SGGP$sigma2MAP}
     IMES_MAP[1:SGGP$poCOUNT] = rowMeans(sweep(IMES_MAP_beforemean, 2, sigma2MAP.thisloop * multioutputdim_weights, "*"))
     
     # Clean up to avoid silly errors
     rm(opdlcv, thetaMAP.thisloop, sigma2MAP.thisloop)
   } else if (selectionmethod %in% c("UCB", "TS")) { # selectionmethod is UCB or TS
     # MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples))
-    # Array needs another dimension for nnn
-    MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples, nnn))
+    # Array needs another dimension for nopd
+    MSE_PostSamples = array(0, c(SGGP$d, SGGP$maxlevel,SGGP$numPostSamples, nopd))
     #  MSE_UCB = matrix(0, SGGP$d, SGGP$maxlevel)
     # Dimensions can be considered independently
     # Loop over dimensions and design refinements
-    for (opdlcv in 1:nnn) { # Loop over output parameter dimensions
-      thetaPostSamples.thisloop <- if (nnn==1) SGGP$thetaPostSamples else SGGP$thetaPostSamples[, , opdlcv]
+    for (opdlcv in 1:nopd) { # Loop over output parameter dimensions
+      thetaPostSamples.thisloop <- if (nopd==1) SGGP$thetaPostSamples else SGGP$thetaPostSamples[, , opdlcv]
       for (dimlcv in 1:SGGP$d) {
         for (levellcv in 1:max_polevels[dimlcv]) {
           for(samplelcv in 1:SGGP$numPostSamples){
@@ -231,7 +233,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
         # Not sure this is right
         matrix(SGGP$sigma2MAP, byrow=T, nrow=SGGP$numPostSamples, ncol=length(SGGP$sigma2MAP))
         
-      } else if (nnn == 1 && length(SGGP$sigma2MAP)==1) { # 1 opd and 1 od
+      } else if (nopd == 1 && length(SGGP$sigma2MAP)==1) { # 1 opd and 1 od
       as.matrix(
         apply(SGGP$thetaPostSamples, 2,
               function(th) {
@@ -242,7 +244,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
               }
         )
       )
-    } else if (nnn == 1) { # 1 opd but 2+ od
+    } else if (nopd == 1) { # 1 opd but 2+ od
       t(
         apply(SGGP$thetaPostSamples, 2,
               function(th) {
@@ -254,11 +256,11 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
         )
       )
     } else { # 2+ opd, so must be 2+ od
-      outer(1:SGGP$numPostSamples, 1:nnn,
+      outer(1:SGGP$numPostSamples, 1:nopd,
                   Vectorize(function(samplenum, outputdim) {
                     SGGP_internal_calcsigma2(SGGP,
-                                             if (nnn==1) {SGGP$y} else {SGGP$y[,outputdim]},
-                                             if (nnn==1) {SGGP$thetaPostSamples[,samplenum]
+                                             if (nopd==1) {SGGP$y} else {SGGP$y[,outputdim]},
+                                             if (nopd==1) {SGGP$thetaPostSamples[,samplenum]
                                              } else {SGGP$thetaPostSamples[,samplenum,outputdim]}
                     )$sigma2
                   })
@@ -267,7 +269,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     for(samplelcv in 1:SGGP$numPostSamples){
       # IMES_PostSamples[1:SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(SGGP$po[1:SGGP$poCOUNT,], MSE_PostSamples[,,samplelcv])
       # It's an array, need to average over opdlcv. Over 3rd dim since samplelcv removes 3rd dim of array.
-      if (nnn == 1) { # Will be a matrix
+      if (nopd == 1) { # Will be a matrix
         # Multiply by sigma2. If multiple output dimensions with shared parameters, take mean,
         #  Needed because each thetasample will have a different sigma2.
         sigma2.thistime <- mean(sigma2.allsamples.alloutputs[samplelcv,])
@@ -468,8 +470,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
           max_polevels = apply(SGGP$po[1:SGGP$poCOUNT, ,drop=F], 2, max)
           
           if(selectionmethod=="Greedy"){
-            for (opdlcv in 1:nnn) { # Loop over output parameter dimensions
-              thetaMAP.thisloop <- if (nnn==1) SGGP$thetaMAP else SGGP$thetaMAP[, opdlcv]
+            for (opdlcv in 1:nopd) { # Loop over output parameter dimensions
+              thetaMAP.thisloop <- if (nopd==1) SGGP$thetaMAP else SGGP$thetaMAP[, opdlcv]
               for (dimlcv in 1:SGGP$d) {
                 if((max_polevels_old[dimlcv]+0.5)<max_polevels[dimlcv]){
                   levellcv = max_polevels[dimlcv]
@@ -486,8 +488,8 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
             # Clean up
             rm(thetaMAP.thisloop, opdlcv)
           } else if (selectionmethod %in% c("UCB", "TS")){ # selection method is UCB or TS
-            for (opdlcv in 1:nnn) {
-              thetaPostSamples.thisloop <- if (nnn==1) SGGP$thetaPostSamples else SGGP$thetaPostSamples[, , opdlcv]
+            for (opdlcv in 1:nopd) {
+              thetaPostSamples.thisloop <- if (nopd==1) SGGP$thetaPostSamples else SGGP$thetaPostSamples[, , opdlcv]
               for (dimlcv_2 in 1:SGGP$d) { # dimlcv is already used for which descendent to add
                 if((max_polevels_old[dimlcv_2]+0.5)<max_polevels[dimlcv_2]){
                   levellcv = max_polevels[dimlcv_2]
@@ -526,7 +528,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
             for(samplelcv in 1:SGGP$numPostSamples){
               # IMES_PostSamples[SGGP$poCOUNT,samplelcv] = SGGP_internal_calcMSEde(as.vector(SGGP$po[SGGP$poCOUNT, ]),
               #                                                                    MSE_PostSamples[,,samplelcv])
-              if (nnn == 1) { # is a matrix
+              if (nopd == 1) { # is a matrix
                 # Each sample has different sigma2, so use. If multiple output
                 #  parameter dimensions, take mean over sigma2.
                 sigma2.thistime <- mean(sigma2.allsamples.alloutputs[samplelcv,])

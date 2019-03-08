@@ -72,32 +72,32 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
   
   
   separateoutputparameterdimensions <- is.matrix(SGGP$thetaMAP)
-  # nnn is numberofoutputparameterdimensions
-  nnn <- if (separateoutputparameterdimensions) {
+  # nopd is numberofoutputparameterdimensions
+  nopd <- if (separateoutputparameterdimensions) {
     ncol(SGGP$y)
   } else {
     1
   }
-  if (nnn > 1) {
-    # meanall <- matrix(NaN, nrow(xp), ncol=nnn)
+  if (nopd > 1) {
+    # meanall <- matrix(NaN, nrow(xp), ncol=nopd)
     meanall2 <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y))
     # varall <- matrix(NaN, nrow(xp), ncol=ncol(SGGP$Y))
     tempvarall <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y))
   }
   
-  if (!is.null(outdims) && (nnn==1 || any(abs(SGGP$M-diag(1,nrow(SGGP$M),ncol(SGGP$M))) > 1e-10))) {
+  if (!is.null(outdims) && (nopd==1 || any(abs(SGGP$M-diag(1,nrow(SGGP$M),ncol(SGGP$M))) > 1e-10))) {
     stop("outdims can only be given when multiple outputs, no PCA, and separate correlation parameters")
   }
-  opd_values <- if (is.null(outdims)) {1:nnn} else {outdims}
-  for (opdlcv in opd_values) {# 1:nnn) {
-    thetaMAP.thisloop <- if (nnn==1) thetaMAP else thetaMAP[, opdlcv]
+  opd_values <- if (is.null(outdims)) {1:nopd} else {outdims}
+  for (opdlcv in opd_values) {# 1:nopd) {
+    thetaMAP.thisloop <- if (nopd==1) thetaMAP else thetaMAP[, opdlcv]
     if (!recalculate_pw) { # use already calculated
-      pw.thisloop <- if (nnn==1) SGGP$pw else SGGP$pw[,opdlcv]
-      # sigma2MAP.thisloop <- if (nnn==1) SGGP$sigma2MAP else SGGP$sigma2MAP[opdlcv]
+      pw.thisloop <- if (nopd==1) SGGP$pw else SGGP$pw[,opdlcv]
+      # sigma2MAP.thisloop <- if (nopd==1) SGGP$sigma2MAP else SGGP$sigma2MAP[opdlcv]
       sigma2MAP.thisloop <- SGGP$sigma2MAP # Need this, not above, bc of PCA?
-      cholS.thisloop <- if (nnn==1) SGGP$cholSs else SGGP$cholSs[[opdlcv]]
+      cholS.thisloop <- if (nopd==1) SGGP$cholSs else SGGP$cholSs[[opdlcv]]
     } else { # recalculate pw and sigma2MAP
-      y.thisloop <- if (nnn==1) SGGP$y else SGGP$y[,opdlcv]
+      y.thisloop <- if (nopd==1) SGGP$y else SGGP$y[,opdlcv]
       
       lik_stuff <- SGGP_internal_faststuff1(SGGP=SGGP, y=y.thisloop,theta=thetaMAP.thisloop)
       cholS.thisloop = lik_stuff$cholS
@@ -109,7 +109,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       sigma2MAP.thisloop <- as.vector(sigma2MAP.thisloop)
       rm(y.thisloop)
     }
-    mu.thisloop <- if (nnn==1) SGGP$mu else SGGP$mu[opdlcv] # Not used for PCA, added back at end
+    mu.thisloop <- if (nopd==1) SGGP$mu else SGGP$mu[opdlcv] # Not used for PCA, added back at end
     
     
     # Cp is sigma(x_0) in paper, correlation vector between design points and xp
@@ -158,13 +158,13 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       
       # Return list with mean and var predictions
       if(is.vector(pw.thisloop)){
-        if (nnn == 1) {
+        if (nopd == 1) {
           mean = (mu.thisloop+Cp%*%pw.thisloop)
           var=sigma2MAP.thisloop*ME_t
         }
         
         # With sepparout and PCA (or not), do this
-        if (nnn > 1) {
+        if (nopd > 1) {
           meanall2 <- meanall2 + outer(c(Cp%*%pw.thisloop), SGGP$M[opdlcv, ])
           
           # This variance calculation was wrong when using PCA with separate theta for each output dim.
@@ -196,9 +196,9 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       }
     } else { # SGGP$supplemented is TRUE
       if (!recalculate_pw) {
-        pw_uppad.thisloop <- if (nnn==1) SGGP$pw_uppad else SGGP$pw_uppad[,opdlcv]
-        supppw.thisloop <- if (nnn==1) SGGP$supppw else SGGP$supppw[,opdlcv]
-        Sti.thisloop <- if (nnn==1) SGGP$Sti else SGGP$Sti[,,opdlcv]
+        pw_uppad.thisloop <- if (nopd==1) SGGP$pw_uppad else SGGP$pw_uppad[,opdlcv]
+        supppw.thisloop <- if (nopd==1) SGGP$supppw else SGGP$supppw[,opdlcv]
+        Sti.thisloop <- if (nopd==1) SGGP$Sti else SGGP$Sti[,,opdlcv]
       } else {
         stop("Give theta in not implemented in SGGPpred. Need to fix sigma2MAP here too!")
       }
@@ -250,7 +250,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       ME_t = ME_t-ME_adj
       # Return list with mean and var predictions
       if(is.vector(pw.thisloop)){
-        if (nnn == 1) {
+        if (nopd == 1) {
           mean = (SGGP$mu+ yhatp)
           if (length(SGGP$sigma2MAP)>1) {warning("If this happens, you should fix var here")}
           # Should this be sigma2MAP.thisloop?
@@ -258,7 +258,7 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
         }
         
         # With sepparout and PCA (or not), do this
-        if (nnn > 1) {
+        if (nopd > 1) {
           meanall2 <- meanall2 + outer(c(yhatp), SGGP$M[opdlcv,])
           leftvar <- if (is.null(SGGP$leftover_variance)) {0} else {SGGP$leftover_variance}
           # var <- (as.vector(ME_t)%*%t(leftvar+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))[,opdlcv]
@@ -286,15 +286,15 @@ SGGPpred <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
       
     }
     rm(Cp,ME_t, MSE_v, V) # Just to make sure nothing is carrying through
-    # if (nnn > 1) {meanall[,opdlcv] <- mean}
-    # if (nnn > 1) {varall[,opdlcv] <- var}
-    if (nnn > 1) {tempvarall <- tempvarall + tempvar}
+    # if (nopd > 1) {meanall[,opdlcv] <- mean}
+    # if (nopd > 1) {varall[,opdlcv] <- var}
+    if (nopd > 1) {tempvarall <- tempvarall + tempvar}
   }
   # If PCA values were calculated separately, need to do transformation on both before mu is added, then add mu back
-  # if (nnn > 1) {meanall <- sweep(sweep(meanall,2,SGGP$mu) %*% SGGP$M,2,SGGP$mu, `+`)}
-  if (nnn > 1) {meanall2 <- sweep(meanall2, 2, SGGP$mu, `+`)}
+  # if (nopd > 1) {meanall <- sweep(sweep(meanall,2,SGGP$mu) %*% SGGP$M,2,SGGP$mu, `+`)}
+  if (nopd > 1) {meanall2 <- sweep(meanall2, 2, SGGP$mu, `+`)}
   
-  if (nnn > 1) {
+  if (nopd > 1) {
     GP <- list(mean=meanall2, var=tempvarall)
   } else {
     GP <- list(mean=mean, var=var)

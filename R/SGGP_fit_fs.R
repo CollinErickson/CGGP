@@ -187,37 +187,37 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
     SGGP$ys = ys
   }
   
-  # nnn is numberofoutputparameterdimensions
-  nnn <- if (separateoutputparameterdimensions && is.matrix(y)) {
+  # nopd is numberofoutputparameterdimensions
+  nopd <- if (separateoutputparameterdimensions && is.matrix(y)) {
     ncol(y)
   } else {
     1
   }
   
   # Fix theta0
-  if (nnn > 1) {
+  if (nopd > 1) {
     if (is.vector(theta0)) {
-      theta0 <- matrix(theta0, nrow=length(theta0), ncol=nnn, byrow=F)
+      theta0 <- matrix(theta0, nrow=length(theta0), ncol=nopd, byrow=F)
     }
   }
   
   # Can get an error for theta0 if number of PCA dimensions has changed
-  if (is.matrix(theta0) && (ncol(theta0) != nnn)) {
-    if (ncol(theta0) > nnn) {
-      theta0 <- theta0[,1:nnn]
+  if (is.matrix(theta0) && (ncol(theta0) != nopd)) {
+    if (ncol(theta0) > nopd) {
+      theta0 <- theta0[,1:nopd]
     } else {
-      theta0 <- cbind(theta0, matrix(0,nrow(theta0), nnn-ncol(theta0)))
+      theta0 <- cbind(theta0, matrix(0,nrow(theta0), nopd-ncol(theta0)))
     }
   }
   
   
   if (is.matrix(Y) && !SGGP$use_PCA) {SGGP$M <- diag(ncol(y))} # Use identity transformation instead of PCA
-  for (opdlcv in 1:nnn) { # output parameter dimension
+  for (opdlcv in 1:nopd) { # output parameter dimension
     
-    y.thisloop <- if (nnn==1) {y} else {y[,opdlcv]} # All of y or single column
-    if (!is.null(Ys)) {ys.thisloop <- if (nnn==1) {ys} else {ys[,opdlcv]}} # All of y or single column
+    y.thisloop <- if (nopd==1) {y} else {y[,opdlcv]} # All of y or single column
+    if (!is.null(Ys)) {ys.thisloop <- if (nopd==1) {ys} else {ys[,opdlcv]}} # All of y or single column
     else {ys.thisloop <- NULL}
-    theta0.thisloop <- if (nnn==1) {theta0} else {theta0[,opdlcv]}
+    theta0.thisloop <- if (nopd==1) {theta0} else {theta0[,opdlcv]}
     
     double_optimize = TRUE
     if (!double_optimize){
@@ -440,7 +440,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
     
     
     # Add all new variables to SGGP that are needed
-    if (nnn==1) { # Only 1 output parameter dim, so just set them
+    if (nopd==1) { # Only 1 output parameter dim, so just set them
       SGGP$thetaMAP <- thetaMAP
       SGGP$sigma2MAP <- sigma2MAP
       SGGP$pw <- pw
@@ -455,16 +455,16 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
     } else { # More than 1 opd, so need to set as columns of matrix
       if (opdlcv==1) { # First time, initialize matrix/array for all
         
-        SGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nnn)
+        SGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nopd)
         if (length(sigma2MAP) != 1) {
           stop("ERROR HERE, sigma2map can be matrix??? It is always a 1x1 matrix from what I've seen before.")
         }
-        SGGP$sigma2MAP <- numeric(nnn)
-        SGGP$pw <- matrix(NaN, length(pw), nnn) 
+        SGGP$sigma2MAP <- numeric(nopd)
+        SGGP$pw <- matrix(NaN, length(pw), nopd) 
         # thetaPostSamples is matrix, so this is 3dim array below
-        SGGP$thetaPostSamples <- array(data = NaN, dim=c(dim(thetaPostSamples), nnn))
-        # SGGP$cholSs <- array(data = NaN, dim=c(dim(cholSs), nnn))
-        SGGP$cholSs <- vector("list", nnn) #array(data = NaN, dim=c(dim(cholSs), nnn))
+        SGGP$thetaPostSamples <- array(data = NaN, dim=c(dim(thetaPostSamples), nopd))
+        # SGGP$cholSs <- array(data = NaN, dim=c(dim(cholSs), nopd))
+        SGGP$cholSs <- vector("list", nopd) #array(data = NaN, dim=c(dim(cholSs), nopd))
       }
       SGGP$thetaMAP[,opdlcv] <- thetaMAP
       SGGP$sigma2MAP[opdlcv] <- sigma2MAP
@@ -477,9 +477,9 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
       if (SGGP$supplemented) {
         if (opdlcv==1) { # First time initialize all
           
-          SGGP$pw_uppadj <- matrix(NaN, nrow(pw_uppadj), nnn)
-          SGGP$supppw <- matrix(NaN, nrow(supppw), nnn)
-          SGGP$Sti = array(NaN, dim=c(dim(Sti), nnn)) # Sti is matrix, so this is 3 dim array
+          SGGP$pw_uppadj <- matrix(NaN, nrow(pw_uppadj), nopd)
+          SGGP$supppw <- matrix(NaN, nrow(supppw), nopd)
+          SGGP$Sti = array(NaN, dim=c(dim(Sti), nopd)) # Sti is matrix, so this is 3 dim array
         }
         SGGP$pw_uppadj[,opdlcv] <- pw_uppadj
         SGGP$supppw[,opdlcv] <- supppw
