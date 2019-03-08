@@ -54,8 +54,6 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   
   # If supplemental data is given, fit it here
   if (!is.null(Xs) && !is.null(Ys)) {
-    # browser()
-    # SGGP <- SGGP_internal_fitwithonlysupp(SGGP, Xs, Ys)
     if (!is.null(supp_args) && length(supp_args) > 0 && is.null(names(supp_args))) {stop("Give names for supp_args")}
     supp_args$SGGP <- SGGP
     supp_args$Xs <- Xs
@@ -66,28 +64,17 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   # Levels are blocks. Level is like eta from paper.
   SGGP$ML = min(choose(SGGP$d + 6, SGGP$d), 10000) #max levels
   
-  # What is levelpoint? The current point? This is not used again in this file!
-  # Not used ever, so I am removing it.
-  # SGGP$levelpoint = rep(0, SGGP$ML)
-  
   # Track evaluated blocks, aka used levels
-  SGGP$uo = matrix(0, nrow = SGGP$ML, ncol = SGGP$d) #used levels tracker
-  # First observation is always (1,1,...,1)
-  ###SGGP$uo[1, ] = rep(1, SGGP$d) #first observation in middle of space
-  SGGP$uoCOUNT = 0###1 #number of used levels
+  SGGP$uo = matrix(0, nrow = SGGP$ML, ncol = SGGP$d) # blocks that have been selected
+  SGGP$uoCOUNT = 0 # number of selected blocks
   
   # Track the blocks that are allowed to be evaluated
   SGGP$po = matrix(0, nrow = 4 * SGGP$ML, ncol = SGGP$d) #proposed levels tracker
-  # Now possible blocks are (2,1,1,1,1), (1,2,1,1,1), (1,1,2,1,1), etc
-  ###SGGP$po[1:SGGP$d, ] = matrix(1, nrow = SGGP$d, ncol = SGGP$d) + diag(SGGP$d) #one at a time
-  ###SGGP$poCOUNT = SGGP$d #number of proposed levels
+  # Only option at first is initial block (1,1,...,1)
   SGGP$po[1, ] <- rep(1, SGGP$d)
   SGGP$poCOUNT <- 1
   
-  # What are ancestors? Why are we doing this?
-  # Are ancestors support blocks? Is this for calculating coefficient?
-  # How any of its ancestors be proposed? They should all be used already?
-  # Might be transposed??? Is this right?
+  # Ancestors are blocks one level down in any dimension.
   SGGP$maxgridsize = 400
   SGGP$pila = matrix(0, nrow = SGGP$ML, ncol =SGGP$maxgridsize ) #proposed immediate level ancestors
   SGGP$pala = matrix(0, nrow = SGGP$ML, ncol =SGGP$maxgridsize ) #proposedal all level ancestors
@@ -96,41 +83,35 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
   SGGP$palaCOUNT = rep(0, SGGP$ML) #count of number of pala
   SGGP$ualaCOUNT = rep(0, SGGP$ML) #count of number of uala
   
-  ###SGGP$pilaCOUNT[1:SGGP$d] = 1
-  ###SGGP$pila[1:SGGP$d, 1] = 1
+  # Initial block (1,1,...,1) has no ancestors
   SGGP$pilaCOUNT[1] <- 0
   SGGP$pila[1, 1] <- 0
-  # browser()
   
-  # SGGP$bss = batchsize#1+4*SGGP$d  #must be at least 3*d
   # SGGP$sizes = c(1,2,4,4,8,12,32) # Num of points added to 1D design as you go further in any dimension
   SGGP$sizes <- grid_sizes
   SGGP$maxlevel = length(SGGP$sizes)
-  # Proposed grid size? More points further along the blocks?
+  # Proposed grid size
   SGGP$pogsize = rep(0, 4 * SGGP$ML)
   SGGP$pogsize[1:SGGP$poCOUNT] = apply(matrix(SGGP$sizes[SGGP$po[1:SGGP$poCOUNT, ]], SGGP$poCOUNT, SGGP$d), 1, prod)
-  # Selected sample size?
-  SGGP$ss = 0 ###1
+  # Selected sample size
+  SGGP$ss = 0
   
   
   SGGP$w = rep(0, SGGP$ML) #keep track of + and - for prediction
-  ###SGGP$w[1] = 1 #keep track of + and - for prediction
   SGGP$uoCOUNT = 0 ###1 # Number of used levels
   # While number selected + min sample size <= batch size, i.e., still have enough spots for a block
-  while (batchsize > (SGGP$ss + min(SGGP$pogsize[1:SGGP$poCOUNT]) - 0.5)) { # Replaced bss w/ batchsize
-    # browser()
+  while (batchsize > (SGGP$ss + min(SGGP$pogsize[1:SGGP$poCOUNT]) - 0.5)) {
     SGGP$uoCOUNT = SGGP$uoCOUNT + 1 #increment used count
     
     if (SGGP$uoCOUNT < 1.5) { # Nothing picked yet, so take base block (1,1,...,1)
       pstar <- 1
     } else if (SGGP$uoCOUNT < (SGGP$d + 1.5)) {
       # Next d iterations pick the (2,1,1,1,1),(1,2,1,1,1) blocks b/c we need info on each dimension before going adaptive
-      pstar = 1 #pick a proposed to add
-    } else{ # The next d iterations randomly pick from the boxes with minimal number of points, not sure this makes sense
+      pstar = 1
+    } else{ # The next d iterations randomly pick from the boxes with minimal number of points
       if (SGGP$uoCOUNT < (2 * SGGP$d + 1.5)) {
         pstar = sample(which(SGGP$pogsize[1:SGGP$poCOUNT] <= 0.5 + min(SGGP$pogsize[1:SGGP$poCOUNT])), 1)
       } else{ # After that randomly select from blocks that still fit
-        # Replaced bss w/ batchsize
         pstar = sample(which(SGGP$pogsize[1:SGGP$poCOUNT] < min(batchsize - SGGP$ss + 0.5,SGGP$maxgridsize)), 1)
       }
     }
@@ -138,32 +119,17 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
     l0 =  SGGP$po[pstar, ] # Selected block e.g. (2,1,1,2)
     # Need to make sure there is still an open row in uo to set with new values
     if (SGGP$uoCOUNT > nrow(SGGP$uo)) {
-      numrowstoadd <- 20
-      SGGP$uo <- rbind(SGGP$uo, numrowstoadd)
-      SGGP$ML <- nrow(SGGP$uo)
-      
-      # Need to get everything else upsized too
-      SGGP$po = rbind(SGGP$po, matrix(0, nrow = 4 * numrowstoadd, ncol = ncol(SGGP$po))) #proposed levels tracker
-      SGGP$pila = rbind(SGGP$pila, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pila))) #proposed immediate level ancestors
-      SGGP$pala = rbind(SGGP$pala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pala))) #proposedal all level ancestors
-      SGGP$uala = rbind(SGGP$uala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$uala))) #used all level ancestors
-      SGGP$pilaCOUNT = c(SGGP$pilaCOUNT, rep(0, numrowstoadd)) #count of number of pila
-      SGGP$palaCOUNT = c(SGGP$palaCOUNT, rep(0, numrowstoadd)) #count of number of pala
-      SGGP$ualaCOUNT = c(SGGP$ualaCOUNT, rep(0, numrowstoadd)) #count of number of uala
-      SGGP$pogsize = c(SGGP$pogsize, rep(0, 4 * numrowstoadd))
-      SGGP$w = c(SGGP$w, rep(0, numrowstoadd))
+      SGGP <- SGGP_internal_addrows(SGGP)
     }
     SGGP$uo[SGGP$uoCOUNT, ] = l0 # Store new block
     SGGP$ss =  SGGP$ss + SGGP$pogsize[pstar] # Update selected sample size
     
-    # New ancestors?
-    # new_an = SGGP$pila[pstar, 1:SGGP$pilaCOUNT[pstar]]
+    # Ancestors of block just selected
     # Need to give possibility for initial block, has no ancestors, and 1:0 is bad
-    # browser()
     new_an = SGGP$pila[pstar, if (SGGP$pilaCOUNT[pstar]>.5) {1:SGGP$pilaCOUNT[pstar]} else {numeric(0)}]
     total_an = new_an
     
-    # Loop over ancestors???
+    # Loop over ancestors of block just selected
     if (length(total_an) > .5) { # Initial block has no total_an , need this to avoid 1:0
       for (anlcv in 1:length(total_an)) {
         # If more than one ancestor, update with unique ones.
@@ -188,28 +154,6 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
     }
     SGGP$w[SGGP$uoCOUNT] = SGGP$w[SGGP$uoCOUNT] + 1
     
-    # Update block tracking
-    # if (pstar < 1.5) { # If you picked the first block, update like this 
-    #   SGGP$po[1:(SGGP$poCOUNT - 1), ] = SGGP$po[2:SGGP$poCOUNT, ]
-    #   SGGP$pila[1:(SGGP$poCOUNT - 1), ] = SGGP$pila[2:SGGP$poCOUNT, ]
-    #   SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[2:SGGP$poCOUNT]
-    #   SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[2:SGGP$poCOUNT]
-    # }
-    # if (pstar > (SGGP$poCOUNT - 0.5)) { # If you picked the last block, do this
-    #   SGGP$po[1:(SGGP$poCOUNT - 1), ] = SGGP$po[1:(pstar - 1), ]
-    #   SGGP$pila[1:(SGGP$poCOUNT - 1), ] = SGGP$pila[1:(pstar - 1), ]
-    #   SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[1:(pstar - 1)]
-    #   SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[1:(pstar - 1)]
-    # }
-    # if (pstar < (SGGP$poCOUNT - 0.5) && pstar > 1.5) { # If in between, do this
-    #   SGGP$po[1:(SGGP$poCOUNT - 1), ] = SGGP$po[c(1:(pstar - 1), (pstar + 1):SGGP$poCOUNT), ]
-    #   SGGP$pila[1:(SGGP$poCOUNT - 1), ] = SGGP$pila[c(1:(pstar - 1), (pstar +
-    #                                                                     1):SGGP$poCOUNT), ]
-    #   SGGP$pilaCOUNT[1:(SGGP$poCOUNT - 1)] = SGGP$pilaCOUNT[c(1:(pstar - 1), (pstar +
-    #                                                                             1):SGGP$poCOUNT)]
-    #   SGGP$pogsize[1:(SGGP$poCOUNT - 1)] = SGGP$pogsize[c(1:(pstar - 1), (pstar +
-    #                                                                         1):SGGP$poCOUNT)]
-    # }
     SGGP$po[pstar,] <- 0 # Clear just used row
     if (SGGP$poCOUNT > 1.5) { # Move up other options if there are others left
       po_rows_to_move <- (1:SGGP$poCOUNT)[-pstar] # Moving all po rows except selected
@@ -222,19 +166,19 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
     # One less option now
     SGGP$poCOUNT = SGGP$poCOUNT - 1
     
-    # Loop over dimensions WHY???
+    # Loop over dimensions to add new possible blocks
     for (dimlcv in 1:SGGP$d) {
       # The block e.g. (1,2,1,1,3) just selected
       lp = l0
       
-      lp[dimlcv] = lp[dimlcv] + 1 # Increase THIS dim by 1. This is a new possibility, are we adding it?
+      lp[dimlcv] = lp[dimlcv] + 1 # Increase single dimension by 1, will see if it is possible
       
       # Check if within some bounds??
       if (max(lp) <= SGGP$maxlevel && SGGP$poCOUNT < 4*SGGP$ML) {
         # Dimensions which are past first design level
         kvals = which(lp > 1.5)
         
-        canuse = 1 # ????
+        canuse = 1 # Can this block be used? Will be set to 0 below if not.
         ap = rep(0, SGGP$d) # ????
         nap = 0 # ?????
         
@@ -309,7 +253,6 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
     SGGP$gridsizest = matrix(SGGP$sizest[SGGP$uo[1:SGGP$uoCOUNT, ]], SGGP$uoCOUNT, SGGP$d)
     SGGP$gridsize = apply(SGGP$gridsizes, 1, prod)
     SGGP$gridsizet = apply(SGGP$gridsizest, 1, prod)
-    # browser()
     SGGP$di = matrix(0, nrow = SGGP$uoCOUNT, ncol = max(SGGP$gridsize))
     SGGP$dit = matrix(0, nrow = SGGP$uoCOUNT, ncol = sum((SGGP$gridsize)))
     
@@ -339,10 +282,10 @@ SGGPcreate <- function(d, batchsize, corr="CauchySQ",
                                                                                       SGGP$gridsizes[blocklcv, dimlcv])
           }
           if (dimlcv < (SGGP$d - 0.5)  && dimlcv > 1.5) {
-            SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, "each" =
-                                                                                     prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -1)]))
-            SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, "each" =
-                                                                                          prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv -1)]))
+            SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, each =
+                                                                                     prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)]))
+            SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, each =
+                                                                                          prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)]))
           }
         }
       }

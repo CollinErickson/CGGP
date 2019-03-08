@@ -366,20 +366,7 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     l0 =  SGGP$po[pstar,] # Selected block
     # Need to make sure there is still an open row in uo to set with new values
     if (SGGP$uoCOUNT > nrow(SGGP$uo)) {
-      numrowstoadd <- 20
-      SGGP$uo <- rbind(SGGP$uo, matrix(0,numrowstoadd,ncol(SGGP$uo)))
-      SGGP$ML <- nrow(SGGP$uo)
-      
-      # Need to get everything else upsized too
-      SGGP$po = rbind(SGGP$po, matrix(0, nrow = 4 * numrowstoadd, ncol = ncol(SGGP$po))) #proposed levels tracker
-      SGGP$pila = rbind(SGGP$pila, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pila))) #proposed immediate level ancestors
-      SGGP$pala = rbind(SGGP$pala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pala))) #proposedal all level ancestors
-      SGGP$uala = rbind(SGGP$uala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$uala))) #used all level ancestors
-      SGGP$pilaCOUNT = c(SGGP$pilaCOUNT, rep(0, numrowstoadd)) #count of number of pila
-      SGGP$palaCOUNT = c(SGGP$palaCOUNT, rep(0, numrowstoadd)) #count of number of pala
-      SGGP$ualaCOUNT = c(SGGP$ualaCOUNT, rep(0, numrowstoadd)) #count of number of uala
-      SGGP$pogsize = c(SGGP$pogsize, rep(0, 4 * numrowstoadd))
-      SGGP$w = c(SGGP$w, rep(0, numrowstoadd))
+      SGGP <- SGGP_internal_addrows(SGGP)
     }
     # print(list(dim(SGGP$uo), SGGP$uoCOUNT, SGGP$uo[SGGP$uoCOUNT,], l0))
     SGGP$uo[SGGP$uoCOUNT,] = l0 # Save selected block
@@ -611,20 +598,10 @@ SGGPappend <- function(SGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
                                                                                     SGGP$gridsizes[blocklcv, dimlcv])
         }
         if (dimlcv < (SGGP$d - 0.5)  && dimlcv > 1.5) {
-          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] =
-            rep(
-              rep(x0,
-                  each=prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])
-              ),
-              prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)])
-            )
-          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] =
-            rep(
-              rep(xi0,
-                  each=prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])
-              ),
-              prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)])
-            )
+          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, each =
+                                                                                   prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)]))
+          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, each =
+                                                                                        prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)]))
         }
       }
     }

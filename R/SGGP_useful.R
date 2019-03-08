@@ -49,3 +49,22 @@ SGGP_internal_set_corr <- function(SGGP, corr) {
                                    ncol=SGGP$numPostSamples )
   SGGP
 }
+
+SGGP_internal_addrows <- function(SGGP, numrowstoadd=20) {
+  
+  SGGP$uo <- rbind(SGGP$uo, matrix(0,numrowstoadd,ncol(SGGP$uo)))
+  SGGP$ML <- nrow(SGGP$uo)
+  
+  # Need to get everything else upsized too
+  SGGP$po = rbind(SGGP$po, matrix(0, nrow = 4 * numrowstoadd, ncol = ncol(SGGP$po))) #proposed levels tracker
+  SGGP$pila = rbind(SGGP$pila, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pila))) #proposed immediate level ancestors
+  SGGP$pala = rbind(SGGP$pala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$pala))) #proposedal all level ancestors
+  SGGP$uala = rbind(SGGP$uala, matrix(0, nrow = numrowstoadd, ncol=ncol(SGGP$uala))) #used all level ancestors
+  SGGP$pilaCOUNT = c(SGGP$pilaCOUNT, rep(0, numrowstoadd)) #count of number of pila
+  SGGP$palaCOUNT = c(SGGP$palaCOUNT, rep(0, numrowstoadd)) #count of number of pala
+  SGGP$ualaCOUNT = c(SGGP$ualaCOUNT, rep(0, numrowstoadd)) #count of number of uala
+  SGGP$pogsize = c(SGGP$pogsize, rep(0, 4 * numrowstoadd))
+  SGGP$w = c(SGGP$w, rep(0, numrowstoadd))
+  
+  SGGP
+}
