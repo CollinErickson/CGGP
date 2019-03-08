@@ -68,3 +68,58 @@ SGGP_internal_addrows <- function(SGGP, numrowstoadd=20) {
   
   SGGP
 }
+
+SGGP_internal_getdesignfromSGGP <- function(SGGP) {
+  
+  SGGP$design = matrix(0, nrow = sum(SGGP$gridsize), ncol = SGGP$d)
+  SGGP$designindex = matrix(0, nrow = sum(SGGP$gridsize), ncol = SGGP$d)
+  tv = 0
+  for (blocklcv in 1:SGGP$uoCOUNT) {
+    SGGP$di[blocklcv, 1:SGGP$gridsize[blocklcv]] = (tv + 1):(tv + SGGP$gridsize[blocklcv])
+    for (dimlcv in 1:SGGP$d) {
+      levelnow = SGGP$uo[blocklcv, dimlcv]
+      if (levelnow < 1.5) {
+        SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(SGGP$xb[1], SGGP$gridsize[blocklcv])
+        SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(SGGP$xindex[1], SGGP$gridsize[blocklcv])
+      } else{
+        x0 = SGGP$xb[(SGGP$sizest[levelnow - 1] + 1):SGGP$sizest[levelnow]]
+        xi0 = SGGP$xindex[(SGGP$sizest[levelnow - 1] + 1):SGGP$sizest[levelnow]]
+        if (dimlcv < 1.5) {
+          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(x0, "each" = SGGP$gridsize[blocklcv] /
+                                                                               SGGP$gridsizes[blocklcv, dimlcv])
+          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, "each" = SGGP$gridsize[blocklcv] /
+                                                                                    SGGP$gridsizes[blocklcv, dimlcv])
+        }
+        if (dimlcv > (SGGP$d - 0.5)) {
+          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(x0, SGGP$gridsize[blocklcv] /
+                                                                               SGGP$gridsizes[blocklcv, dimlcv])
+          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, SGGP$gridsize[blocklcv] /
+                                                                                    SGGP$gridsizes[blocklcv, dimlcv])
+        }
+        if (dimlcv < (SGGP$d - 0.5)  && dimlcv > 1.5) {
+          SGGP$design[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, each =
+                                                                                   prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)]))
+          SGGP$designindex[(tv + 1):(tv + SGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, each =
+                                                                                        prod(SGGP$gridsizes[blocklcv, (dimlcv + 1):SGGP$d])), prod(SGGP$gridsizes[blocklcv, 1:(dimlcv - 1)]))
+        }
+      }
+    }
+    
+    tvv = 0
+    if (blocklcv > 1.5) {
+      for (ances in SGGP$uala[blocklcv, 1:SGGP$ualaCOUNT[blocklcv]]) {
+        SGGP$dit[blocklcv, (tvv + 1):(tvv + SGGP$gridsize[ances])] = SGGP$di[ances, 1:SGGP$gridsize[ances]]
+        tvv = tvv + SGGP$gridsize[ances]
+      }
+      SGGP$dit[blocklcv, (tvv + 1):(tvv + SGGP$gridsize[blocklcv])] = SGGP$di[blocklcv, 1:SGGP$gridsize[blocklcv]]
+      Xset = SGGP$design[SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]], ]
+      reorder = do.call(order, lapply(1:NCOL(Xset), function(kvt) Xset[, kvt]))
+      SGGP$dit[blocklcv, 1:SGGP$gridsizet[blocklcv]] = SGGP$dit[blocklcv, reorder]
+    } else{
+      SGGP$dit[blocklcv, 1:SGGP$gridsize[blocklcv]] = SGGP$di[blocklcv, 1:SGGP$gridsize[blocklcv]]
+    }
+    
+    tv = tv + SGGP$gridsize[blocklcv]
+  }
+  SGGP
+}
