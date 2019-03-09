@@ -62,19 +62,55 @@ e1$run_all(run_order="random", delete_parallel_temp_save_after = F, parallel_tem
 e1$save_self()
 
 if (F) {
-  # e1 <- readRDS("C:/Users/cbe117/Documents/GitHub/SGGP/scratch/redTime/redTimeMVExp1/redTimeMVExp1_completed.rds")
+  e1 <- readRDS("C:/Users/cbe117/Documents/GitHub/SGGP/scratch/redTime/redTimeMVExp2/Exp2_167_of_176.rds")
   edf <- e1$outcleandf
-  edf$outdim <- rep(1:100, 44)
+  edf$outdim <- rep(1:100, 176)
+  edf <- edf[!is.na(edf$RMSE),]
   edf$use_PCAchar <- c("noPCA","PCA")[edf$use_PCA+1]
   edf$sopdchar <- c("1opd", "sopd")[edf$separateoutputparameterdimensions+1]
+  edf$N <- edf$Ngrid + edf$Nsup
   
-  ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim,shape=interaction(use_PCAchar, sopdchar))) + geom_point()
-  ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar)
+  ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim,shape=interaction(use_PCAchar, sopdchar))) + geom_point() + facet_grid(. ~ as.factor(Nsup)) + scale_y_log10()
+  ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(Nsup ~ use_PCAchar + sopdchar) + scale_y_log10() + scale_x_log10()
   ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10() + scale_y_log10()
   ggplot(data=edf, mapping=aes(x=N, y=RMSE, color=interaction(use_PCA, separateoutputparameterdimensions))) + geom_point()
   
   ggplot(data=edf, mapping=aes(x=N, y=runtime, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10() + scale_y_log10()
   
   ggplot(data=edf, mapping=aes(x=N, y=score, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10()
+  
+}
+
+# Compare to mlegp
+
+if (F) {
+  mlegp.exp <- readRDS("./scratch/redTime/redTimeMVExp1/Exp1_mlegp/Exp1_mlegp_completed.rds")
+  mdf <- mlegp.exp$outcleandf
+  mdf$outdim <- rep(1:100, 8)
+  mdf$use_PCAchar <- c("noPCA","PCA")[mdf$use_PCA+1]
+  mdf$sopdchar <- c("1opd", "sopd")[mdf$separateoutputparameterdimensions+1]
+  mdf$Ngrid <- mdf$N
+  mdf$Nsup <- 0
+  
+  # Combine the two
+  adf <- rbind(cbind(edf,package="SGGP"), cbind(mdf, package="mlegp"))
+  
+  library(ggplot2)
+  ggplot(data=adf, mapping=aes(x=N, y=RMSE, color=outdim,shape=interaction(package, use_PCAchar, sopdchar))) + geom_point()
+  ggplot(data=adf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(package ~ use_PCAchar + sopdchar)
+  ggplot(data=adf, mapping=aes(x=N, y=RMSE, color=outdim)) + geom_point(size=2) + facet_grid(package ~ use_PCAchar + sopdchar) + scale_x_log10() + scale_y_log10()
+  ggplot(data=adf, mapping=aes(x=N, y=CRPscore, color=outdim)) + geom_point(size=2) + facet_grid(package ~ use_PCAchar + sopdchar) + scale_x_log10() + scale_y_log10()
+  ggplot(data=adf, mapping=aes(x=N, y=RMSE, color=interaction(use_PCA, separateoutputparameterdimensions, package))) + geom_point()
+  
+  ggplot(data=adf, mapping=aes(x=N, y=runtime, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10() + scale_y_log10()
+  
+  ggplot(data=adf, mapping=aes(x=N, y=score, color=outdim)) + geom_point(size=2) + facet_grid(use_PCAchar ~ sopdchar) + scale_x_log10()
+  
+  # Too many variables, cut down 100 outdim to single
+  adf2 <- plyr::ddply(adf, c("package", "N", "Ngrid", "Nsup", "use_PCAchar", "sopdchar"),
+                      function(x) {colMeans(x[,c("RMSE","score","CRPscore","coverage","corr","R2","runtime")])})
+  ggplot(data=adf2, mapping=aes(x=N, y=RMSE, color=as.factor(Nsup),shape=interaction(package, use_PCAchar, sopdchar))) + geom_point(size=3)
+  ggplot(data=adf2, mapping=aes(x=N, y=RMSE, color=as.factor(Nsup))) + geom_point(size=3) + facet_grid(package ~ use_PCAchar + sopdchar) + scale_x_log10() + scale_y_log10()
+  ggplot(data=adf2, mapping=aes(x=N, y=CRPscore, color=as.factor(Nsup))) + geom_point(size=3) + facet_grid(package ~ use_PCAchar + sopdchar) + scale_x_log10() + scale_y_log10()
   
 }
