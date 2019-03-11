@@ -36,7 +36,7 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   if (d <= 1) {stop("d must be at least 2")}
   if (length(list(...))>0) {stop("Unnamed arguments given to CGGPcreate")}
   # This is list representing our GP object
-  CGGP = list()
+  CGGP <- list()
   class(CGGP) <- c("CGGP", "list") # Give it class CGGP
   
   CGGP$d <- d

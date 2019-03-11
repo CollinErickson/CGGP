@@ -5,7 +5,7 @@
 \title{Add points to CGGP}
 \usage{
 CGGPappend(CGGP, batchsize, selectionmethod = "UCB",
-  RIMSEperpoint = TRUE, multioutputdim_weights = 1)
+  multioutputdim_weights = 1)
 }
 \arguments{
 \item{CGGP}{Sparse grid object}
@@ -14,8 +14,6 @@ CGGPappend(CGGP, batchsize, selectionmethod = "UCB",
 
 \item{selectionmethod}{How points will be selected: one of `UCB`, `TS`,
 `Greedy`, `Oldest`, `Random`, or `Lowest`}
-
-\item{RIMSEperpoint}{Should RIMSE per point be used?}
 
 \item{multioutputdim_weights}{Weights for each output dimension.}
 }

@@ -98,7 +98,6 @@ CGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' @param batchsize Number of points to add
 #' @param selectionmethod How points will be selected: one of `UCB`, `TS`,
 #' `Greedy`, `Oldest`, `Random`, or `Lowest`
-#' @param RIMSEperpoint Should RIMSE per point be used?
 #' @param multioutputdim_weights Weights for each output dimension.
 #' @importFrom stats quantile sd var
 #'
@@ -112,8 +111,9 @@ CGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' SG <- CGGPfit(SG, Y=y)
 #' SG <- CGGPappend(CGGP=SG, batchsize=20)
 #' # UCB,TS,Greedy
-CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TRUE,
+CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
                        multioutputdim_weights=1){
+  # ===== Check inputs =====
   if (!(selectionmethod %in% c("UCB", "TS", "Greedy", "Oldest", "Random", "Lowest"))) {
     stop("selectionmethod in CGGPappend must be one of UCB, TS, Greedy, Oldest, Random, or Lowest")
   }
@@ -136,7 +136,12 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     stop("Can't append if CGGP has unevaluated design points.")
   }
   
-  n_before <- if (is.null(CGGP[["design"]]) || length(CGGP$design)==0) {0} else {nrow(CGGP$design)}
+  # Track how many design points there currently are in $design
+  n_before <- if (is.null(CGGP[["design"]]) || length(CGGP$design)==0) {
+    0
+  } else {
+    nrow(CGGP$design)
+  }
   max_polevels = apply(CGGP$po[1:CGGP$poCOUNT, ,drop=FALSE], 2, max)
   
   separateoutputparameterdimensions <- is.matrix(CGGP$thetaMAP)
@@ -147,10 +152,11 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     1
   }
   
+  # ==========================================================================
+  # Calculate integrated mean squared error (IMSE) values for the given method
+  # ==========================================================================
   if(selectionmethod=="Greedy"){
-    # Set up blank matrix to store MSE values
-    # MSE_MAP = matrix(0, CGGP$d, CGGP$maxlevel)
-    # Now use an array for nopd
+    # Set up blank array to store MSE values
     MSE_MAP = array(0, dim=c(CGGP$d, CGGP$maxlevel,nopd))
     
     # Loop over dimensions and design refinements
@@ -159,49 +165,64 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
       for (dimlcv in 1:CGGP$d) {
         for (levellcv in 1:max_polevels[dimlcv]) {
           # Calculate some sort of MSE from above, not sure what it's doing
-          MSE_MAP[dimlcv, levellcv, opdlcv] = max(0, 
-                                                  abs(CGGP_internal_calcMSE(CGGP$xb[1:CGGP$sizest[levellcv]],
-                                                                            thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],
-                                                                            CGGP$CorrMat)))
-          if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-            MSE_MAP[dimlcv, levellcv, opdlcv] = min(MSE_MAP[dimlcv, levellcv, opdlcv], MSE_MAP[dimlcv, levellcv - 1, opdlcv])
+          MSE_MAP[dimlcv, levellcv, opdlcv] = 
+            max(0, 
+                abs(
+                  CGGP_internal_calcMSE(
+                    CGGP$xb[1:CGGP$sizest[levellcv]],
+                    thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],
+                    CGGP$CorrMat
+                  )
+                )
+            )
+          if (levellcv > 1.5) { # If past 1st level, it is as good as one below
+            MSE_MAP[dimlcv, levellcv, opdlcv] = 
+              min(MSE_MAP[dimlcv, levellcv, opdlcv], MSE_MAP[dimlcv, levellcv - 1, opdlcv])
           }
         }
       }
     }
     
-    # What is this? Integrate MSE
+    # Integrated MSE
     IMES_MAP = rep(0, CGGP$ML)
     
-    # For all possible blocks, calculate MSE_MAP? Is that all that MSE_de does?
-    # IMES_MAP[1:CGGP$poCOUNT] = CGGP_internal_calcMSEde(CGGP$po[1:CGGP$poCOUNT, ], MSE_MAP)
-    # Need to apply it over nopd
-    IMES_MAP_beforemean = (apply(MSE_MAP, 3, function(x) CGGP_internal_calcMSEde(CGGP$po[1:CGGP$poCOUNT, ,drop=F], x)))
+    # For all possible blocks, calculate MSE_MAP, need to apply it over nopd
+    IMES_MAP_beforemean = apply(MSE_MAP, 3,
+                                function(x) {
+                                  CGGP_internal_calcMSEde(
+                                    CGGP$po[1:CGGP$poCOUNT, , drop=F],
+                                    x)
+                                })
     if (CGGP$poCOUNT==1) {
       IMES_MAP_beforemean <- matrix(IMES_MAP_beforemean, nrow=1)
     }
     if (!is.matrix(IMES_MAP_beforemean)) {stop("Need a matrix here 0923859")}
-    # Need as.matrix in case of single value, i.e. when only supp data and only po is initial point
-    # IMES_MAP_apply has a column for each opdlcv, so take rowMeans
-    # IMES_MAP[1:CGGP$poCOUNT] = rowMeans(IMES_MAP_beforemean)
-    # Need to include sigma2MAP here because weird things can happen if just using correlation.
-    # IMES_MAP[1:CGGP$poCOUNT] = rowMeans(sweep(IMES_MAP_beforemean, 2, CGGP$sigma2MAP * multioutputdim_weights, "*"))
+    # Need as.matrix in case of single value
+    #   i.e. when only supp data and only po is initial point
     # If multiple output but single opd, need to take mean
-    sigma2MAP.thisloop <- if (nopd==1) {mean(CGGP$sigma2MAP)} else {CGGP$sigma2MAP}
-    IMES_MAP[1:CGGP$poCOUNT] = rowMeans(sweep(IMES_MAP_beforemean, 2, sigma2MAP.thisloop * multioutputdim_weights, "*"))
+    sigma2MAP.thisloop <- if (nopd==1) {
+      mean(CGGP$sigma2MAP)
+    } else {
+      CGGP$sigma2MAP
+    }
+    IMES_MAP[1:CGGP$poCOUNT] = rowMeans(
+      sweep(IMES_MAP_beforemean, 2,
+            sigma2MAP.thisloop * multioutputdim_weights, "*")
+    )
     
     # Clean up to avoid silly errors
     rm(opdlcv, thetaMAP.thisloop, sigma2MAP.thisloop)
   } else if (selectionmethod %in% c("UCB", "TS")) { # selectionmethod is UCB or TS
-    # MSE_PostSamples = array(0, c(CGGP$d, CGGP$maxlevel,CGGP$numPostSamples))
-    # Array needs another dimension for nopd
     MSE_PostSamples = array(0, c(CGGP$d, CGGP$maxlevel,CGGP$numPostSamples, nopd))
-    #  MSE_UCB = matrix(0, CGGP$d, CGGP$maxlevel)
     # Dimensions can be considered independently
     # Loop over dimensions and design refinements
     for (opdlcv in 1:nopd) { # Loop over output parameter dimensions
-      thetaPostSamples.thisloop <- if (nopd==1) CGGP$thetaPostSamples else CGGP$thetaPostSamples[, , opdlcv]
-      for (dimlcv in 1:CGGP$d) {
+      thetaPostSamples.thisloop <- if (nopd==1) {
+        CGGP$thetaPostSamples
+      } else {
+        CGGP$thetaPostSamples[ , , opdlcv]
+      }
+      for (dimlcv in 1:CGGP$d) { # Loop over each input dimension
         for (levellcv in 1:max_polevels[dimlcv]) {
           for(samplelcv in 1:CGGP$numPostSamples){
             # Calculate some sort of MSE from above, not sure what it's doing
@@ -210,17 +231,18 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
                   abs(
                     CGGP_internal_calcMSE(
                       CGGP$xb[1:CGGP$sizest[levellcv]],
-                      thetaPostSamples.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara,
+                      thetaPostSamples.thisloop[(dimlcv-1)*CGGP$numpara +
+                                                  1:CGGP$numpara,
                                                 samplelcv],
                       CGGP$CorrMat)
                   )
               )
-            if (levellcv > 1.5) { # If past first level, it is as good as one below it. Why isn't this a result of calculation?
-              MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv] = min(MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv],
-                                                                        MSE_PostSamples[dimlcv, levellcv - 1,samplelcv, opdlcv])
+            if (levellcv > 1.5) { # If past first level, it is as good as one below it
+              MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv] = 
+                min(MSE_PostSamples[dimlcv, levellcv,samplelcv, opdlcv],
+                    MSE_PostSamples[dimlcv, levellcv - 1,samplelcv, opdlcv])
             }
           }
-          #  done below MSE_UCB[dimlcv, levellcv] = quantile(MSE_PostSamples[dimlcv, levellcv,],0.99)
         }
       }
     }
@@ -231,86 +253,88 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     sigma2.allsamples.alloutputs <- 
       if (is.null(CGGP[["y"]]) || length(CGGP$y)==0) { # Only supp data
         # Not sure this is right
-        matrix(CGGP$sigma2MAP, byrow=T, nrow=CGGP$numPostSamples, ncol=length(CGGP$sigma2MAP))
+        matrix(CGGP$sigma2MAP, byrow=T,
+               nrow=CGGP$numPostSamples, ncol=length(CGGP$sigma2MAP))
         
       } else if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
-      as.matrix(
-        apply(CGGP$thetaPostSamples, 2,
-              function(th) {
-                CGGP_internal_calcsigma2(CGGP,
-                                         CGGP$y,
-                                         th
-                )$sigma2
-              }
+        as.matrix(
+          apply(CGGP$thetaPostSamples, 2,
+                function(th) {
+                  CGGP_internal_calcsigma2(CGGP,
+                                           CGGP$y,
+                                           th
+                  )$sigma2
+                }
+          )
         )
-      )
-    } else if (nopd == 1) { # 1 opd but 2+ od
-      t(
-        apply(CGGP$thetaPostSamples, 2,
-              function(th) {
-                CGGP_internal_calcsigma2(CGGP,
-                                         CGGP$y,
-                                         th
-                )$sigma2
-              }
+      } else if (nopd == 1) { # 1 opd but 2+ od
+        t(
+          apply(CGGP$thetaPostSamples, 2,
+                function(th) {
+                  CGGP_internal_calcsigma2(CGGP,
+                                           CGGP$y,
+                                           th
+                  )$sigma2
+                }
+          )
         )
-      )
-    } else { # 2+ opd, so must be 2+ od
-      outer(1:CGGP$numPostSamples, 1:nopd,
-                  Vectorize(function(samplenum, outputdim) {
-                    CGGP_internal_calcsigma2(CGGP,
-                                             if (nopd==1) {CGGP$y} else {CGGP$y[,outputdim]},
-                                             if (nopd==1) {CGGP$thetaPostSamples[,samplenum]
-                                             } else {CGGP$thetaPostSamples[,samplenum,outputdim]}
-                    )$sigma2
-                  })
-    )}
+      } else { # 2+ opd, so must be 2+ od
+        outer(1:CGGP$numPostSamples, 1:nopd,
+              Vectorize(function(samplenum, outputdim) {
+                CGGP_internal_calcsigma2(
+                  CGGP,
+                  if (nopd==1) {CGGP$y} else {CGGP$y[,outputdim]},
+                  if (nopd==1) {CGGP$thetaPostSamples[,samplenum]
+                  } else {CGGP$thetaPostSamples[,samplenum,outputdim]}
+                )$sigma2
+              })
+        )}
     
     for(samplelcv in 1:CGGP$numPostSamples){
-      # IMES_PostSamples[1:CGGP$poCOUNT,samplelcv] = CGGP_internal_calcMSEde(CGGP$po[1:CGGP$poCOUNT,], MSE_PostSamples[,,samplelcv])
-      # It's an array, need to average over opdlcv. Over 3rd dim since samplelcv removes 3rd dim of array.
       if (nopd == 1) { # Will be a matrix
-        # Multiply by sigma2. If multiple output dimensions with shared parameters, take mean,
+        # Multiply by sigma2. If multiple output dimensions with
+        #  shared parameters, take mean.
         #  Needed because each thetasample will have a different sigma2.
         sigma2.thistime <- mean(sigma2.allsamples.alloutputs[samplelcv,])
         IMES_PostSamples[1:CGGP$poCOUNT,samplelcv] = sigma2.thistime *
-          CGGP_internal_calcMSEde(CGGP$po[1:CGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
-        rm(sigma2.thistime)
-        # IMES_PostSamples[1:CGGP$poCOUNT,samplelcv] = CGGP_internal_calcMSEde(CGGP$po[1:CGGP$poCOUNT,], MSE_PostSamples[,,samplelcv,])
+          CGGP_internal_calcMSEde(CGGP$po[1:CGGP$poCOUNT,],
+                                  MSE_PostSamples[,,samplelcv,])
+        rm(sigma2.thistime) # Avoid mistakes
       } else { # Is a 3d array, need to use an apply and then apply again with mean
-        IMES_PostSamples_beforemean <- apply(MSE_PostSamples[,,samplelcv,], 3,
-                                             function(x){CGGP_internal_calcMSEde(CGGP$po[1:CGGP$poCOUNT,,drop=F], x)})
-        if (!is.matrix(IMES_PostSamples_beforemean)) { # Happens when CGGP$poCOUNT is 1, when only initial block avail
-          if (CGGP$poCOUNT!=1) {stop("Something is wrong here")}
+        IMES_PostSamples_beforemean <- 
+          apply(MSE_PostSamples[,,samplelcv,], 3,
+                function(x){
+                  CGGP_internal_calcMSEde(CGGP$po[1:CGGP$poCOUNT,,drop=F], x)
+                })
+        if (!is.matrix(IMES_PostSamples_beforemean)) {
+          # Happens when CGGP$poCOUNT is 1, when only initial block avail
+          if (CGGP$poCOUNT!=1) {stop("Something is wrong here #279287522")}
           IMES_PostSamples_beforemean <- matrix(IMES_PostSamples_beforemean, nrow=1)
         }
         # Need sigma2 for this theta sample, already calculated in sigma2.allsamples.alloutputs
-        IMES_PostSamples[1:CGGP$poCOUNT,samplelcv] <- apply(IMES_PostSamples_beforemean, 1,
-                                                            function(x) {
-                                                              # mean(multioutputdim_weights*x)
-                                                              # Now weight by sigma2 samples
-                                                              mean(sigma2.allsamples.alloutputs[samplelcv,] *
-                                                                     multioutputdim_weights*x)
-                                                            })
+        IMES_PostSamples[1:CGGP$poCOUNT,samplelcv] <-
+          apply(IMES_PostSamples_beforemean, 1,
+                function(x) {
+                  # Weight by sigma2 samples
+                  mean(sigma2.allsamples.alloutputs[samplelcv,] *
+                         multioutputdim_weights*x)
+                })
       }
     }; rm(samplelcv)
-    # IMES_UCB = matrix(0, CGGP$ML) # Why was this matrix but other vector?
+    # Get UCB IMES using 90% upper conf bound
     IMES_UCB = numeric(CGGP$ML)
-    # browser()
     IMES_UCB[1:CGGP$poCOUNT] = apply(IMES_PostSamples[1:CGGP$poCOUNT,, drop=F],1,quantile, probs=0.9)
   } else {
     # Can be Oldest or Random or Lowest
   }
   
   
-  # Removing bss entirely, was wrong and redundant.
-  # Increase count of points evaluated. Do we check this if not reached exactly???
-  # CGGP$bss = CGGP$bss + batchsize
-  max_design_points = CGGP$ss + batchsize
   
-  # Keep adding points until reaching bss
-  while (max_design_points > (CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - 0.5)) {
-    
+  # ====================================================================
+  # Append points to design until limit until reaching max_design_points
+  # ====================================================================
+  max_design_points = CGGP$ss + batchsize
+  while (max_design_points > CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - .5) {
     if(selectionmethod=="Greedy"){
       IMES = IMES_MAP
     } else if(selectionmethod=="UCB"){
@@ -336,25 +360,15 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     }
     CGGP$uoCOUNT = CGGP$uoCOUNT + 1 #increment used count
     
-    # Old way, no RIMSEperpoint option
-    # # Find the best one that still fits
-    # M_comp = max(IMES[which(CGGP$pogsize[1:CGGP$poCOUNT] < (CGGP$bss - CGGP$ss + 0.5))])
-    # # Find which ones are close to M_comp and
-    # possibleO =which((IMES[1:CGGP$poCOUNT] >= 0.99*M_comp)&(CGGP$pogsize[1:CGGP$poCOUNT] < (CGGP$bss - CGGP$ss + 0.5)))
+    # Find which blocks are still valid for selecting
+    stillpossible <- which(CGGP$pogsize[1:CGGP$poCOUNT] < 
+                             (max_design_points - CGGP$ss + 0.5))
     
-    # New way, now you can pick best IMES per point in the block, more efficient
-    stillpossible <- which(CGGP$pogsize[1:CGGP$poCOUNT] < (max_design_points - CGGP$ss + 0.5))
-    
-    # Either pick block with max IMES or with max IMES per point in the block.
-    if (RIMSEperpoint) {
-      metric <- IMES[1:CGGP$poCOUNT] / CGGP$pogsize[1:CGGP$poCOUNT]
-    } else {
-      metric <- IMES[1:CGGP$poCOUNT]
-    }
+    # Pick block with max IMES per point in the block
+    metric <- IMES[1:CGGP$poCOUNT] / CGGP$pogsize[1:CGGP$poCOUNT]
     # Find the best one that still fits
     M_comp = max(metric[stillpossible])
-    # Find which ones are close to M_comp and
-    # possibleO =which((IMES[stillpossible] >= 0.99*M_comp)&(CGGP$pogsize[1:CGGP$poCOUNT] < (CGGP$bss - CGGP$ss + 0.5)))
+    # Find which ones are close to M_comp and pick randomly among them
     possibleO = stillpossible[metric[stillpossible] >= 0.99*M_comp]
     
     
@@ -365,32 +379,32 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
       pstar = possibleO
     }
     
-    l0 =  CGGP$po[pstar,] # Selected block
+    l0 =  CGGP$po[pstar, ] # Selected block
     # Need to make sure there is still an open row in uo to set with new values
     if (CGGP$uoCOUNT > nrow(CGGP$uo)) {
       CGGP <- CGGP_internal_addrows(CGGP)
     }
-    # print(list(dim(CGGP$uo), CGGP$uoCOUNT, CGGP$uo[CGGP$uoCOUNT,], l0))
     CGGP$uo[CGGP$uoCOUNT,] = l0 # Save selected block
     CGGP$ss =  CGGP$ss + CGGP$pogsize[pstar] # Update selected size
     
-    # New ancestors???
+    # Update ancestors
     # Protect against initial block which has no ancestors
-    # browser()
     if (CGGP$pilaCOUNT[pstar] > 0) { # Protect for initial block
-      # new_an = if (CGGP$pilaCOUNT[pstar]>0 ){CGGP$pila[pstar, 1:CGGP$pilaCOUNT[pstar]]} else{numeric(0)}
       new_an = CGGP$pila[pstar, 1:CGGP$pilaCOUNT[pstar]]
       total_an = new_an
       for (anlcv in 1:length(total_an)) { # Loop over ancestors
-        if (total_an[anlcv] > 1.5) { # If there's more than 1, do ???
-          total_an = unique(c(total_an, CGGP$uala[total_an[anlcv], 1:CGGP$ualaCOUNT[total_an[anlcv]]]))
+        if (total_an[anlcv] > 1.5) { # If there's more than 1, do this
+          total_an = unique(
+            c(total_an,
+              CGGP$uala[total_an[anlcv], 1:CGGP$ualaCOUNT[total_an[anlcv]]])
+            )
         }
       }
       
       CGGP$ualaCOUNT[CGGP$uoCOUNT]  = length(total_an)
       CGGP$uala[CGGP$uoCOUNT, 1:length(total_an)] = total_an
       
-      # Loop over all ancestors, why???
+      # Loop over all ancestors, update weight
       for (anlcv in 1:length(total_an)) {
         lo = CGGP$uo[total_an[anlcv],]
         if (max(abs(lo - l0)) < 1.5) {
@@ -404,17 +418,17 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
     # Update data. Remove selected item, move rest up.
     # First get correct indices to change. Protect when selecting initial point
     new_indices <- if (CGGP$poCOUNT>1) {1:(CGGP$poCOUNT - 1)} else {numeric(0)}
-    if (CGGP$poCOUNT < 1.5) { # Only option is first block, nothing else to move
-      old_indices <- numeric(0)
-    } else if (pstar < 1.5) {
-      old_indices <- 2:CGGP$poCOUNT
-    } else if (pstar > (CGGP$poCOUNT - 0.5)) {
-      old_indices <- 1:(pstar - 1)
-    } else if (pstar < (CGGP$poCOUNT - 0.5) && pstar > 1.5) {
-      old_indices <- c(1:(pstar - 1), (pstar + 1):CGGP$poCOUNT)
-    } else {stop("Not possible #729588")}
+    # if (CGGP$poCOUNT < 1.5) { # Only option is first block, nothing else to move
+    #   old_indices <- numeric(0)
+    # } else if (pstar < 1.5) {
+    #   old_indices <- 2:CGGP$poCOUNT
+    # } else if (pstar > (CGGP$poCOUNT - 0.5)) {
+    #   old_indices <- 1:(pstar - 1)
+    # } else if (pstar < (CGGP$poCOUNT - 0.5) && pstar > 1.5) {
+    #   old_indices <- c(1:(pstar - 1), (pstar + 1):CGGP$poCOUNT)
+    # } else {stop("Not possible #729588")}
+    old_indices <- setdiff(seq.int(1, CGGP$poCOUNT, 1), pstar)
     # Then change the data
-    # browser()
     CGGP$po[new_indices,] = CGGP$po[old_indices,]
     CGGP$pila[new_indices,] = CGGP$pila[old_indices,]
     CGGP$pilaCOUNT[new_indices] = CGGP$pilaCOUNT[old_indices]
@@ -449,7 +463,8 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB", RIMSEperpoint=TR
           
           ismem = rep(1, CGGP$uoCOUNT)
           for (dimdimlcv in 1:CGGP$d) {
-            ismem  = ismem * (CGGP$uo[1:CGGP$uoCOUNT, dimdimlcv] == lpp[dimdimlcv])
+            ismem  = ismem *
+              (CGGP$uo[1:CGGP$uoCOUNT, dimdimlcv] == lpp[dimdimlcv])
           }
           
           if (max(ismem) > 0.5) {

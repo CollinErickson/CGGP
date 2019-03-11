@@ -29,7 +29,7 @@ test_that("CGGPappend works with large number", {
   
   # Adding 2000 will force it to increase ML and add rows to uo, pila, pala, etc.
   # But it doesn't show as working on codecov? Try 4000
-  expect_error(SG <- CGGPappend(CGGP=SG, batchsize=2*2000, RIMSEperpoint=FALSE), NA)
+  expect_error(SG <- CGGPappend(CGGP=SG, batchsize=2*2000), NA)
   expect_is(SG, "CGGP")
   expect_gt(nrow(SG$design), lastN)
   # y <- apply(SG$design, 1, f)
