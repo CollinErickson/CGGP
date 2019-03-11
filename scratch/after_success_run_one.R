@@ -1,33 +1,33 @@
-run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=T, plotwith="base") {
+run_one_CGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=T, plotwith="base") {
   Xp <- matrix(runif(Npred*d), Npred, d)
   Yp = testf(Xp)
   
   timestart <- Sys.time()
   
-  require("SGGP")
-  SG = SGGPcreate(d=d, batchsize=201)
+  require("CGGP")
+  SG = CGGPcreate(d=d, batchsize=201)
   Y = testf(SG$design)
-  SG = SGGPfit(SG,Y)
+  SG = CGGPfit(SG,Y)
   
   
   
   for(c in 1:ceiling((Nfinal-N0)/batchsize)){
     cat(c, " ")
-    SG=SGGPappend(SG,batchsize) #add 200 points to the design based on thetahat
+    SG=CGGPappend(SG,batchsize) #add 200 points to the design based on thetahat
     Y = testf(SG$design)
     if(c < 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
-      SG = SGGPfit(SG,Y) #estimate the parameter (SG structure is important)
+      SG = CGGPfit(SG,Y) #estimate the parameter (SG structure is important)
     }
   }
   cat("\n")
   Y = testf(SG$design)
   timelastlogthetaMLEstart <- Sys.time()
-  SG = SGGPfit(SG, Y) #do one final parameter estimation
+  SG = CGGPfit(SG, Y) #do one final parameter estimation
 
   timelastlogthetaMLEend <- Sys.time()
   
   timepredstart <- Sys.time()
-  GP = SGGPpred(xp=Xp,SGGP=SG) #build a full emulator
+  GP = CGGPpred(xp=Xp,CGGP=SG) #build a full emulator
   timepredend <- Sys.time()
   
   RMSE <- sqrt(mean(((Yp-GP$mean)^2)))  #prediction should be much better
@@ -48,7 +48,7 @@ run_one_SGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=
     if (plotwith=="base") {
       
       di <- sample(1:nrow(SG$design), 100)
-      Y0pred <- SGGPpred(xp=SG$design[di,],SGGP=SG) #,Y,logtheta=logthetaest)
+      Y0pred <- CGGPpred(xp=SG$design[di,],CGGP=SG) #,Y,logtheta=logthetaest)
       plot(Yp, GP$mean, ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m))); points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
       # Now plot with bars
       #plot(Yp, GP$mean , ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m)),pch=19)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
