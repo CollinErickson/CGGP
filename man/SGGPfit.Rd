@@ -7,7 +7,6 @@
 SGGPfit(SGGP, Y, ..., Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
   HandlingSuppData = SGGP$HandlingSuppData, lower = rep(-1,
   SGGP$numpara * SGGP$d), upper = rep(1, SGGP$numpara * SGGP$d),
-  use_PCA = SGGP$use_PCA,
   separateoutputparameterdimensions = is.matrix(SGGP$thetaMAP),
   use_progress_bar = TRUE, corr, Ynew)
 }
@@ -35,8 +34,6 @@ SGGPfit(SGGP, Y, ..., Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
 \item{lower}{Lower bound for parameter optimization}
 
 \item{upper}{Upper bound for parameter optimization}
-
-\item{use_PCA}{Should PCA be used if output is multivariate?}
 
 \item{separateoutputparameterdimensions}{If multiple output dimensions,
 should separate parameters be fit to each dimension?}

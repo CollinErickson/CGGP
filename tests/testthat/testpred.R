@@ -185,7 +185,7 @@ test_that("predMV works", {
   # Check outdims
   # Get error if not suitable
   expect_error(SGGPpred(SG$design, SGGP=SG, outdims = 2))
-  SGsep <- SGGPfit(SG, SG$Y, use_PCA = F, separateoutputparameterdimensions = T)
+  SGsep <- SGGPfit(SG, SG$Y, separateoutputparameterdimensions = T)
   yMVpred_o2 <- SGGPpred(SG$design, SGGP=SGsep, outdims = 2)$mean
   # Second dim should match, first should not.
   expect_equal(yMVpred_o2[,2], y2, 1e-4)

@@ -80,7 +80,7 @@ test_that("Append with different weights on different outputs works", {
   y <- cbind(y1, y2)
   
   set.seed(2)
-  SG <- SGGPfit(SG, Ynew=y, use_PCA = FALSE, separateoutputparameterdimensions = TRUE)
+  SG <- SGGPfit(SG, Ynew=y, separateoutputparameterdimensions = TRUE)
   
   # Now if I append with equal weights by using "/var" (default), it should have equal in both dimensions
   expect_error(SG2 <- SGGPappend(SG, 26, selectionmethod = "Greedy", multioutputdim_weights = "/sigma2MAP"), NA)

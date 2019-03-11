@@ -65,7 +65,7 @@ test_that("Plots work", {
   y2 <- apply(SG2$design, 1, f2)#+rnorm(1,0,.01)
   y <- cbind(y1, y2)
   SG2 <- SGGPfit(SG2, Y=y)
-  SG2sep <- SGGPfit(SG2, Y=y, use_PCA = F, separateoutputparameterdimensions = T)
+  SG2sep <- SGGPfit(SG2, Y=y, separateoutputparameterdimensions = T)
   Xval2 <- matrix(runif(3*100), ncol=3)
   Yval2 <- cbind(apply(Xval2, 1, f1),
                 apply(Xval2, 1, f2))
