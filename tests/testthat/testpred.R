@@ -281,8 +281,8 @@ test_that("pred with theta works", {
   expect_false(isTRUE(all.equal(p1$me, p3$me)))
   
   # Check full Bayesian. Not easy, just check if it's close to MAP prediction
-  expect_error(SGGPpred(xp=xpred, sg, fullBayesian = T, theta = sg$thetaPostSamples[1,]))
-  pb <- SGGPpred(xp=xpred, sg, fullBayesian = T)
+  expect_error(SGGPpred(xp=xpred, sg, theta = sg$thetaPostSamples[1,]))
+  pb <- SGGPpred(xp=xpred, sg)
   expect_is(pb, "list")
   expect_equal(p1$me, p3$mean, tol=1e-2)
   # expect_equal(c(p1$me /p3$mean), rep(1,10), tol=1e-2)

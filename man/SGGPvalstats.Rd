@@ -4,7 +4,7 @@
 \alias{SGGPvalstats}
 \title{Calculate stats for SGGP prediction on validation data}
 \usage{
-SGGPvalstats(SGGP, Xval, Yval, bydim = TRUE, fullBayesian = FALSE, ...)
+SGGPvalstats(SGGP, Xval, Yval, bydim = TRUE, ...)
 }
 \arguments{
 \item{SGGP}{SGGP object}
@@ -14,9 +14,6 @@ SGGPvalstats(SGGP, Xval, Yval, bydim = TRUE, fullBayesian = FALSE, ...)
 \item{Yval}{Y validation data}
 
 \item{bydim}{If multiple outputs, should it be done separately by dimension?}
-
-\item{fullBayesian}{Should prediction be done fully Bayesian? Much slower.
-Averages over theta samples instead of using thetaMAP.}
 
 \item{...}{Passed to valstats, such as which stats to calculate.}
 }
@@ -35,7 +32,6 @@ SG <- SGGPfit(SG, y)
 Xval <- matrix(runif(3*100), ncol=3)
 Yval <- apply(Xval, 1, f1)
 SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval)
-SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval, fullBayesian=TRUE)
 
 # Multiple outputs
 SG <- SGGPcreate(d=3, batchsize=100)

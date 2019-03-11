@@ -125,42 +125,6 @@ test_that("SGGPfit works with Ynew - vector output", {
   
 })
 
-test_that("Using MCMC approx works", {
-  f1 <- function(x){x[1]+x[2]^2}
-  f2 <- function(x){x[2]^1.3+sin(2*pi*x[3])}
-  
-  # First 1D output
-  SG <- SGGPcreate(d=3, batchsize=20)
-  y1 <- apply(SG$design, 1, f1)
-  SG$numPostSamples <- 5
-  
-  expect_error(SG <- SGGPfit(SG, Ynew=y1, laplaceapprox = F), NA)
-  expect_equal(dim(SG$thetaPostSamples), c(3*SG$numpara,5))
-  
-  # All loglikelihoods should be finite for samples
-  expect_true(all(is.finite(apply(SG$thetaPostSamples, 2, SGGP_internal_neglogpost, SG=SG, y=SG$y))))
-  
-  # Now with multiple output
-  SG <- SGGPcreate(d=3, batchsize=20)
-  y1 <- apply(SG$design, 1, f1)
-  y2 <- apply(SG$design, 1, f2)
-  y <- cbind(y1, y2)
-  
-  # speed up test by reducing number of thetaPostSamples
-  SG$numPostSamples <- 3
-  
-  SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F)
-  SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T)
-  expect_equal(dim(SG1$thetaPostSamples), dim(SG2$thetaPostSamples))
-  
-  SG1 <- SGGPfit(SG, Ynew=y, laplaceapprox = F, separateoutputparameterdimensions = T)
-  SG2 <- SGGPfit(SG, Ynew=y, laplaceapprox = T, separateoutputparameterdimensions = T)
-  expect_equal(dim(SG1$thetaPostSamples), dim(SG2$thetaPostSamples))
-  if (F) {
-    boxplot(SG1$thetaPostSamples[1,,1], SG2$thetaPostSamples[1,,1])
-  }
-})
-
 test_that("postvarmatcalc", {
   # These don't work unless x1 and x2 have same length.
   # Maybe only makes sense when x1 == x2?

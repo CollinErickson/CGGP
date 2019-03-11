@@ -1,4 +1,4 @@
-SGGP_internal_predwithonlysupp <- function(SGGP, xp, fullBayesian=FALSE, theta=NULL, outdims=NULL) {
+SGGP_internal_predwithonlysupp <- function(SGGP, xp, theta=NULL, outdims=NULL) {
   if (!inherits(SGGP, "SGGP")) {
     stop("First argument to SGGP must be an SGGP object")
   }
@@ -11,25 +11,7 @@ SGGP_internal_predwithonlysupp <- function(SGGP, xp, fullBayesian=FALSE, theta=N
   }
   # We could check for design_unevaluated, maybe give warning?
   
-  # Full Bayesian
-  if (fullBayesian) {
-    if (!is.null(theta)) {stop("Don't give in theta for fullBayesian")}
-    preds <- lapply(1:SGGP$numPostSamples, 
-                    function(i) {SGGP_internal_predwithonlysupp(SGGP, xp, theta=SGGP$thetaPostSamples[,i])})
-    means <- sapply(preds, function(x) {x$mean})
-    mn <- as.matrix(apply(means, 1, mean))
-    vars <- sapply(preds, function(x) {x$var})
-    # This is for normal mixture, need t mixture?
-    vr <- apply(vars, 1, mean) + apply(means^2, 1, mean) - apply(means, 1, mean)^2
-    GP <- list(mean=mn, var=vr)
-    # p <- SGGPpred(xp, SGGP)
-    # stripchart(data.frame(t(vars)))
-    # stripchart(data.frame(t(p$var)), add=T, col=2, pch=4)
-    # print(cbind(p$var, vr, vr / p$var))
-    return(GP)
-  }
-  
-  # If theta is given (for full Bayesian prediction), need to recalculate pw
+  # If theta is given, need to recalculate pw
   if (!is.null(theta) && length(theta)!=length(SGGP$thetaMAP)) {stop("Theta is wrong length")}
   if (!is.null(theta) && theta==SGGP$thetaMAP) {
     # If you give in theta=thetaMAP, set it to NULL to avoid recalculating.

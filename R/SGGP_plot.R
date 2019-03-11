@@ -378,8 +378,6 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE,
 #' @param Xval X validation matrix
 #' @param Yval Y validation data
 #' @param bydim If multiple outputs, should it be done separately by dimension?
-#' @param fullBayesian Should prediction be done fully Bayesian? Much slower.
-#' Averages over theta samples instead of using thetaMAP.
 #' @param ... Passed to valstats, such as which stats to calculate.
 #'
 #' @return data frame
@@ -394,7 +392,6 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE,
 #' Xval <- matrix(runif(3*100), ncol=3)
 #' Yval <- apply(Xval, 1, f1)
 #' SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval)
-#' SGGPvalstats(SGGP=SG, Xval=Xval, Yval=Yval, fullBayesian=TRUE)
 #' 
 #' # Multiple outputs
 #' SG <- SGGPcreate(d=3, batchsize=100)
@@ -410,9 +407,9 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE,
 #' SGGPvalstats(SG, Xval, Yval)
 #' SGGPvalstats(SG, Xval, Yval, bydim=FALSE)
 #' }
-SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, fullBayesian=FALSE, ...) {
+SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, ...) {
   # Make predictions
-  ypred <- SGGPpred(SGGP=SGGP, xp=Xval, fullBayesian=fullBayesian)
+  ypred <- SGGPpred(SGGP=SGGP, xp=Xval)
   # Use valstats to get df with values
   valstats(ypred$mean, ypred$var, Yval=Yval, bydim=bydim, ...)
 }

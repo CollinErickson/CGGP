@@ -7,20 +7,16 @@
 \usage{
 \method{predict}{SGGP}(object, xp, ...)
 
-SGGPpred(SGGP, xp, fullBayesian = FALSE, theta = NULL,
-  outdims = NULL)
+SGGPpred(SGGP, xp, theta = NULL, outdims = NULL)
 }
 \arguments{
 \item{object}{SGGP object}
 
 \item{xp}{x value to predict at}
 
-\item{...}{Required for S3 consistency}
+\item{...}{Other arguments passed to `SGGPpred`}
 
 \item{SGGP}{SG object}
-
-\item{fullBayesian}{Should prediction be done fully Bayesian? Much slower.
-Averages over theta samples instead of using thetaMAP.}
 
 \item{theta}{Leave as NULL unless you want to use a value other than thetaMAP.
 Much slower.}

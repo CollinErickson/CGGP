@@ -7,7 +7,6 @@
 #' @param Xs Supplemental X matrix
 #' @param Ys Supplemental Y values
 #' @param theta0 Initial theta
-#' @param laplaceapprox Should Laplace approximation be used?
 #' @param lower Lower bound for parameter optimization
 #' @param upper Upper bound for parameter optimization
 #' @param Ynew Values of `SGGP$design_unevaluated`
@@ -44,7 +43,6 @@
 #' SG <- SGGPfit(SG=SG, Y=y)
 SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
                     theta0 = SGGP$thetaMAP, #rep(0,SGGP$numpara*SGGP$d),
-                    laplaceapprox = TRUE,
                     HandlingSuppData=SGGP$HandlingSuppData,
                     lower=rep(-1,SGGP$numpara*SGGP$d),upper=rep(1,SGGP$numpara*SGGP$d),
                     use_PCA=SGGP$use_PCA,
@@ -245,7 +243,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
         y = y.thisloop,
         SGGP = SGGP,
         HandlingSuppData="Ignore", # Never supp data here, so set to Ignore
-                                   #  regardless of user setting
+        #  regardless of user setting
         control = list(rel.tol = 1e-2,iter.max = 500)
       )
       
@@ -307,90 +305,12 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
     cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
     #print( cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP)))
     
-    # Get posterior samples
-    if(laplaceapprox){
-      PST= log((1+thetaMAP)/(1-thetaMAP)) +
-        cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),
-                     nrow=length(thetaMAP))
-      thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
-    }else{ # MCMC Metropolis-Hastings
-      U <- function(re){
-        PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%as.vector(re)
-        thetav = (exp(PSTn)-1)/(exp(PSTn)+1)
-        return(SGGP_internal_neglogpost(thetav,SGGP,y.thisloop,
-                                        Xs=Xs, ys=ys.thisloop,
-                                        HandlingSuppData=HandlingSuppData))
-      }
-      q = rep(0,totnumpara) # Initial point is 0, this is thetaMAP after transform
-      Uo = U(q)
-      if (is.infinite(Uo)) {warning("starting Uo is Inf, this is bad")}
-      scalev = 0.5
-      # This is just burn in period, find good scalev
-      # MCMCtracker is for debugging
-      if (use_progress_bar) {
-        progress_bar <- progress::progress_bar$new(
-          total=100*SGGP$numPostSamples*2,
-          format = " MCMC [:bar] :percent eta: :eta"
-        )
-      }
-      for(i in 1:(100*SGGP$numPostSamples)){
-        p = rnorm(length(q),0,1)*scalev
-        qp = q + p
-        
-        Up = U(qp)
-        # print(Up)
-        # MCMCtracker[i,13] <<- Up
-        # MCMCtracker[i,1:12] <<- qp
-        # MCMCtracker[i,14] <<- Uo
-        
-        # Sometimes Uo and Up equal Inf, so exp(Uo-Up)=NaN,
-        #  and it gives an error: 
-        #  Error in if (runif(1) < exp(Uo - Up)) { :
-        #   missing value where TRUE/FALSE needed
-        # Will just set Uo-Up to 0 when this happens
-        exp_Uo_minus_Up <- exp(Uo-Up)
-        if (is.nan(exp_Uo_minus_Up)) {
-          warning("Uo and Up are both Inf, this shouldn't happen #82039")
-          exp_Uo_minus_Up <- exp(0)
-        }
-        
-        # if(runif(1) < exp(Uo-Up)){
-        if(runif(1) < exp_Uo_minus_Up){ # accept the sample
-          # MCMCtracker[i,15] <<- 1
-          q=qp;Uo=Up;scalev=exp(log(scalev)+0.9/sqrt(i+4))
-          if (is.infinite(Up)) {warning("Up is Inf, this shouldn't happen")}
-        }else{ # Reject sample, update scalev
-          # MCMCtracker[i,15] <<- 0
-          scalev=exp(log(scalev)-0.1/sqrt(i+4))
-          scalev = max(scalev,1/sqrt(length(q)))
-        }
-        if (use_progress_bar) {progress_bar$tick()}
-      }
-      
-      Uo = U(q)
-      Bs = matrix(0,nrow=totnumpara,ncol=SGGP$numPostSamples)
-      
-      for(i in 1:(100*SGGP$numPostSamples)){
-        p = rnorm(length(q),0,1)*scalev
-        qp = q + p # Next candidate is random normal step from q
-        
-        Up = U(qp)
-        # Again need to avoid NaN problem
-        exp_Uo_minus_Up <- exp(Uo-Up)
-        if (is.nan(exp_Uo_minus_Up)) {
-          warning("Uo and Up are both Inf, this shouldn't happen #42920")
-          exp_Uo_minus_Up <- exp(0)
-        }
-        # if(runif(1) < exp(Uo-Up)){q=qp;Uo=Up;}
-        if(runif(1) < exp_Uo_minus_Up){q=qp;Uo=Up;}
-        # Only save every 100 samples for good mixing
-        if((i%%100)==0){Bs[,i/100]=q;}
-        if (use_progress_bar) {progress_bar$tick()}
-      }
-      if (use_progress_bar) {rm(progress_bar)}
-      PSTn = log((1+thetaMAP)/(1-thetaMAP))+cHa%*%Bs
-      thetaPostSamples = (exp(PSTn)-1)/(exp(PSTn)+1)
-    }
+    # Get posterior samples using Laplace approximation
+    PST= log((1+thetaMAP)/(1-thetaMAP)) +
+      cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),
+                   nrow=length(thetaMAP))
+    thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
+    
     
     if(SGGP$supplemented){
       Cs = matrix(1,dim(SGGP$Xs)[1],SGGP$ss)

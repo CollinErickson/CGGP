@@ -39,12 +39,12 @@ print.SGGP <- function(x, ...) {
 #' Passes to SGGPpred
 #' 
 #' @param object SGGP object
-#' @param ... Required for S3 consistency
+#' @param ... Other arguments passed to `SGGPpred`
 #'
 #' @rdname SGGPpred
 #' @export
 predict.SGGP <- function(object, xp, ...) {
-  SGGPpred(SGGP=object, xp=xp)
+  SGGPpred(SGGP=object, xp=xp, ...)
 }
 
 #' S3 plot method for SGGP
