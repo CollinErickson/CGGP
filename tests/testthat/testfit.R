@@ -47,7 +47,7 @@ test_that("SGGPfit works with Laplace approx", {
   # Check neglogpost grad matches gneglogpost for all HandlingSuppData options
   theta <- SG$thetaMAP / 2 # Don't want values near -1 or +1
   epsval <- 1e-4
-  for (handling in c("Correct", "Only", "Ignore", "Mixture", "MarginalValidation", "FullValidation")) {
+  for (handling in c("Correct", "Only", "Ignore")) {
     thetagrad <- SGGP_internal_gneglogpost(theta, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)
     numgrad <- rep(0, length(SG$thetaMAP))
     for (i in 1:length(SG$thetaMAP)) {
