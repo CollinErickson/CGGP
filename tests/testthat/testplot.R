@@ -7,26 +7,26 @@ test_that("Plots work", {
   expect_error(SG <- SGGPfit(SG, Y=y), NA)
   
   # Heat map
-  pheat <- SGGPheat(SG)
+  pheat <- SGGPplotheat(SG)
   expect_is(pheat, "gg")
   expect_is(pheat, "ggplot")
   
   # Histogram
-  phist <- SGGPhist(SG)
+  phist <- SGGPplothist(SG)
   expect_is(phist, "gg")
   expect_is(phist, "ggplot")
   # # Don't actually want warning for log scale, but getting it, so expect it
   # expect_warning(print(phist))
   
   # Blockplot
-  expect_error(bp <- SGGPblockplot(SG), NA)
+  expect_error(bp <- SGGPplotblocks(SG), NA)
   expect_is(bp, "ggplot")
   # Blockplot from matrix
   mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=TRUE)
-  expect_error(bp <- SGGPblockplot(mat), NA)
+  expect_error(bp <- SGGPplotblocks(mat), NA)
   expect_is(bp, "ggplot")
   # Error if not SGGP object or matrix
-  expect_error(bp <- SGGPblockplot(c(0,1,2)))
+  expect_error(bp <- SGGPplotblocks(c(0,1,2)))
   # Single plot with 2D matrix
   
   # Validation plot
@@ -86,57 +86,57 @@ test_that("Plots work", {
   expect_is(pval2, "ggplot")
   
   # Corr plot
-  expect_error(p <- SGGPcorrplot(), NA)
+  expect_error(p <- SGGPplotcorr(), NA)
   expect_is(p, "ggplot")
-  expect_error(p <- SGGPcorrplot(SGGP_internal_CorrMatCauchySQ, theta=c(-.9,.8,.7,-.8)), NA)
+  expect_error(p <- SGGPplotcorr(SGGP_internal_CorrMatCauchySQ, theta=c(-.9,.8,.7,-.8)), NA)
   expect_is(p, "ggplot")
-  expect_error(p <- SGGPcorrplot(SG), NA)
+  expect_error(p <- SGGPplotcorr(SG), NA)
   expect_is(p, "ggplot")
-  expect_error(p <- SGGPcorrplot(SG2), NA)
+  expect_error(p <- SGGPplotcorr(SG2), NA)
   expect_is(p, "ggplot")
-  expect_error(p <- SGGPcorrplot(SG2sep), NA)
+  expect_error(p <- SGGPplotcorr(SG2sep), NA)
   expect_is(p, "ggplot")
-  expect_error(p <- SGGPcorrplot(SG2sep, outdims = 2), NA)
+  expect_error(p <- SGGPplotcorr(SG2sep, outdims = 2), NA)
   expect_is(p, "ggplot")
   rm(p)
   
   # Projection plot
   # These should work fine, return ggplot
-  expect_error(pp1 <- SGGPprojectionplot(SG), NA)
+  expect_error(pp1 <- SGGPplotprojection(SG), NA)
   expect_is(pp1, "ggplot")
-  expect_error(pp1 <- SGGPprojectionplot(SG2), NA)
+  expect_error(pp1 <- SGGPplotprojection(SG2), NA)
   expect_is(pp1, "ggplot")
-  expect_error(pp1 <- SGGPprojectionplot(SG2, outdims = 2))
+  expect_error(pp1 <- SGGPplotprojection(SG2, outdims = 2))
   expect_is(pp1, "ggplot")
-  expect_error(pp2 <- SGGPprojectionplot(SG, proj = c(0)), NA)
+  expect_error(pp2 <- SGGPplotprojection(SG, proj = c(0)), NA)
   expect_is(pp2, "ggplot")
   # Error if proj is not 1 or d dim
-  expect_error(SGGPprojectionplot(SG, proj=c(1,1)))
-  expect_error(SGGPprojectionplot(SG, proj=c(1,1,1,1)))
+  expect_error(SGGPplotprojection(SG, proj=c(1,1)))
+  expect_error(SGGPplotprojection(SG, proj=c(1,1,1,1)))
   # Error if not all evaluated
-  expect_error(SGGPprojectionplot(SGGPappend(SG, 16)))
+  expect_error(SGGPplotprojection(SGGPappend(SG, 16)))
   rm(pp1, pp2)
   
   # Variogram plot
-  expect_error(vario <- SGGPvariogram(SG), NA)
+  expect_error(vario <- SGGPplotvariogram(SG), NA)
   expect_is(vario, "ggplot")
   rm(vario)
-  expect_error(vario <- SGGPvariogram(SG2, facet = 1), NA)
+  expect_error(vario <- SGGPplotvariogram(SG2, facet = 1), NA)
   expect_is(vario, "ggplot")
   rm(vario)
-  expect_error(vario <- SGGPvariogram(SG2, facet = 2), NA)
+  expect_error(vario <- SGGPplotvariogram(SG2, facet = 2), NA)
   expect_is(vario, "ggplot")
   rm(vario)
-  expect_error(vario <- SGGPvariogram(SG2, facet = 3), NA)
+  expect_error(vario <- SGGPplotvariogram(SG2, facet = 3), NA)
   expect_is(vario, "ggplot")
   rm(vario)
-  expect_error(vario <- SGGPvariogram(SG2sep, facet = 1), NA)
+  expect_error(vario <- SGGPplotvariogram(SG2sep, facet = 1), NA)
   expect_is(vario, "ggplot")
   rm(vario)
-  expect_error(vario <- SGGPvariogram(SG2sep, facet = 1, outdims = 2), NA)
+  expect_error(vario <- SGGPplotvariogram(SG2sep, facet = 1, outdims = 2), NA)
   expect_is(vario, "ggplot")
   rm(vario)
-  expect_error(SGGPvariogram(SG2, facet = "not valid facet"))
+  expect_error(SGGPplotvariogram(SG2, facet = "not valid facet"))
   
   # Theta plot
   expect_error(tp <- SGGPplottheta(SG), NA)

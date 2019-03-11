@@ -29,10 +29,7 @@ for now only on predictions}
 \item{HandlingSuppData}{How should supplementary data be handled?
 * Correct: full likelihood with grid and supplemental data
 * Only: only use supplemental data
-* Ignore: ignore supplemental data
-* Mixture: sum of grid LLH and supplemental LLH, not statistically valid
-* MarginalValidation: a validation shortcut
-* FullValidation: a validation shortcut}
+* Ignore: ignore supplemental data}
 
 \item{supp_args}{Arguments used to fit if Xs and Ys are given}
 }

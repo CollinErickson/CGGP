@@ -17,9 +17,6 @@
 #' * Correct: full likelihood with grid and supplemental data
 #' * Only: only use supplemental data
 #' * Ignore: ignore supplemental data
-#' * Mixture: sum of grid LLH and supplemental LLH, not statistically valid
-#' * MarginalValidation: a validation shortcut
-#' * FullValidation: a validation shortcut
 #' 
 #' @importFrom stats rbeta
 #'

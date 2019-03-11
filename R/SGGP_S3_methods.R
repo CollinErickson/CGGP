@@ -65,5 +65,5 @@ predict.SGGP <- function(object, xp, ...) {
 #' SG = SGGPcreate(3,100)
 #' plot(SG)
 plot.SGGP <- function(x, y, ...) {
-  SGGPblockplot(x, ...)
+  SGGPplotblocks(x, ...)
 }

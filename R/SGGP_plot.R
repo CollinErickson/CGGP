@@ -27,18 +27,15 @@
 #'   SG <- SGGPappend(SGGP=SG, batchsize=200)
 #' }
 #' # SG <- SGGPfit(SG, Y=apply(SG$design, 1, f))
-#' SGGPheat(SG)
+#' SGGPplotheat(SG)
 #' }
-SGGPheat <- function(SGGP) {
-  # heatmatrix <- matrix(NaN, SG$d, SG$d)
+SGGPplotheat <- function(SGGP) {
   skinny <- NULL
   for (i in 1:SGGP$d) {
-    # heatmatrix[i,i] <- max(SG$designindex[,i])
     skinny <- rbind(skinny, c(i, i, max(SGGP$uo[,i])))
   }
   for (i in 1:(SGGP$d-1)) {
     for (j in (i+1):SGGP$d) {
-      # heatmatrix[i,j] <- heatmatrix[j,i] <- max(apply(SG$designindex[,c(i,j)], 1, min))
       skinny <- rbind(skinny,
                       c(i, j, max(apply(SGGP$uo[,c(i,j)], 1, min))),
                       c(j, i, max(apply(SGGP$uo[,c(i,j)], 1, min)))
@@ -73,26 +70,17 @@ SGGPheat <- function(SGGP) {
 #' # All dimensions should look similar
 #' d <- 8
 #' SG = SGGPcreate(d,201)
-#' SGGPhist(SG)
-#' SGGPhist(SG, ylog=FALSE)
+#' SGGPplothist(SG)
+#' SGGPplothist(SG, ylog=FALSE)
 #' 
 #' # The first dimension is more active and will have greater depth
 #' SG <- SGGPcreate(d=5, batchsize=10)
 #' SG <- SGGPappend(SGGP=SG, batchsize=100)
-#' SGGPhist(SG)
+#' SGGPplothist(SG)
 #' }
-SGGPhist <- function(SGGP, ylog=TRUE) {
+SGGPplothist <- function(SGGP, ylog=TRUE) {
   p <- ggplot2::ggplot(reshape2::melt(data.frame(SGGP$uo), id.vars=NULL),
                        ggplot2::aes_string(x='value'))
-  # Tried a power transformation, but I can't get breaks to work as expected
-  # p <- p + ggplot2::coord_trans(y=scales::trans_new(name="test", 
-  #                                                   transform=function(x) x^.1,
-  #                                                   inverse=function(x) x^10,
-  #                                                   breaks=function(...) c(0,.3,.5,1),
-  #                                                   minor_breaks=c(0,1,2)
-  #                                                   )
-  #                               )
-  # p <- p + ggplot2::coord_trans(y=scales::boxcox_trans(p=.2)  )
   p <- p +ggplot2::geom_histogram(binwidth = 1) + ggplot2::facet_grid(variable ~ .)
   if (ylog) {
     p <- p + ggplot2::scale_y_log10() #limits=c(.9999, NA))
@@ -120,12 +108,12 @@ SGGPhist <- function(SGGP, ylog=TRUE) {
 #' f <- function(x) {cos(2*pi*x[1]*3) + x[3]*exp(4*x[4])}
 #' ss <- SGGPfit(ss, Y=apply(ss$design, 1, f))
 #' ss <- SGGPappend(SGGP=ss, batchsize=100)
-#' SGGPblockplot(ss)
+#' SGGPplotblocks(ss)
 #' 
 #' mat <- matrix(c(1,1,1,2,2,1,2,2,1,3), ncol=2, byrow=TRUE)
-#' SGGPblockplot(mat)
+#' SGGPplotblocks(mat)
 #' }
-SGGPblockplot <- function(SGGP, singleplot=TRUE) {
+SGGPplotblocks <- function(SGGP, singleplot=TRUE) {
   
   if (inherits(SGGP, "SGGP")) {
     d <- SGGP$d
@@ -434,16 +422,16 @@ SGGPvalstats <- function(SGGP, Xval, Yval, bydim=TRUE, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' SGGPcorrplot()
-#' SGGPcorrplot(theta=c(-2,-1,0,1))
+#' SGGPplotcorr()
+#' SGGPplotcorr(theta=c(-2,-1,0,1))
 #' 
 #' SG <- SGGPcreate(d=3, batchsize=100)
 #' f <- function(x){x[1]^1.2+sin(2*pi*x[2]*3)}
 #' y <- apply(SG$design, 1, f)
 #' SG <- SGGPfit(SG, Y=y)
-#' SGGPcorrplot(SG)
+#' SGGPplotcorr(SG)
 #' }
-SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
+SGGPplotcorr <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
                          numlines=20,
                          outdims=NULL,
                          zero=TRUE) {
@@ -469,7 +457,6 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
   
   thetadims <- if (is.matrix(theta)) {ncol(theta)} else {1}
   
-  # ncorr <- length(theta) / nparam
   numindims <- length(theta) / nparam / numoutdims
   indims <- 1:numindims
   ggdf <- NULL
@@ -533,11 +520,11 @@ SGGPcorrplot <- function(Corr=SGGP_internal_CorrMatGaussian, theta=NULL,
 #' s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
 #' #s1 <- SGGPappend(s1, 200)
 #' #s1 <- SGGPfit(s1, apply(s1$design, 1, f1))
-#' SGGPprojectionplot(s1)
-#' SGGPprojectionplot(s1, 0.)
-#' SGGPprojectionplot(s1, s1$design[nrow(s1$design),])
+#' SGGPplotprojection(s1)
+#' SGGPplotprojection(s1, 0.)
+#' SGGPplotprojection(s1, s1$design[nrow(s1$design),])
 #' }
-SGGPprojectionplot <- function(SGGP, proj=.5, np=300, color="pink", outdims) {
+SGGPplotprojection <- function(SGGP, proj=.5, np=300, color="pink", outdims) {
   if (!is.null(SGGP$design_unevaluated)) {stop("SGGP must be updated with all data")}
   if (length(proj) == 1) {proj <- rep(proj, SGGP$d)}
   if (length(proj) != SGGP$d) {stop("proj should be of length SGGP$d or 1")}
@@ -635,8 +622,8 @@ SGGPprojectionplot <- function(SGGP, proj=.5, np=300, color="pink", outdims) {
 #' f <- function(x){x[1]^1.2+x[3]^.4*sin(2*pi*x[2]^2*3) + .1*exp(3*x[3])}
 #' y <- apply(SG$design, 1, f)
 #' SG <- SGGPfit(SG, Y=y)
-#' SGGPvariogram(SG)
-SGGPvariogram <- function(SGGP, facet=1, outdims=NULL) {
+#' SGGPplotvariogram(SG)
+SGGPplotvariogram <- function(SGGP, facet=1, outdims=NULL) {
   vdf <- NULL
   xl <- seq(0,1,l=101)
   if (is.null(outdims)) {
