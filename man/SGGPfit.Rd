@@ -26,10 +26,7 @@ SGGPfit(SGGP, Y, ..., Xs = NULL, Ys = NULL, theta0 = SGGP$thetaMAP,
 \item{HandlingSuppData}{How should supplementary data be handled?
 * Correct: full likelihood with grid and supplemental data
 * Only: only use supplemental data
-* Ignore: ignore supplemental data
-* Mixture: sum of grid LLH and supplemental LLH, not statistically valid
-* MarginalValidation: a validation shortcut
-* FullValidation: a validation shortcut}
+* Ignore: ignore supplemental data}
 
 \item{lower}{Lower bound for parameter optimization}
 

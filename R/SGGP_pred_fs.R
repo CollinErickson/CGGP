@@ -65,8 +65,8 @@ SGGPpred <- function(SGGP, xp, theta=NULL, outdims=NULL) {
     tempvarall <- matrix(0, nrow(xp), ncol=ncol(SGGP$Y))
   }
   
-  if (!is.null(outdims) && (nopd==1 || any(abs(SGGP$M-diag(1,nrow(SGGP$M),ncol(SGGP$M))) > 1e-10))) {
-    stop("outdims can only be given when multiple outputs, no PCA, and separate correlation parameters")
+  if (!is.null(outdims) && nopd==1) {
+    stop("outdims can only be given when multiple outputs and separate correlation parameters")
   }
   opd_values <- if (is.null(outdims)) {1:nopd} else {outdims}
   for (opdlcv in opd_values) {# 1:nopd) {
@@ -145,33 +145,24 @@ SGGPpred <- function(SGGP, xp, theta=NULL, outdims=NULL) {
         
         # With sepparout and PCA (or not), do this
         if (nopd > 1) {
-          meanall2 <- meanall2 + outer(c(Cp%*%pw.thisloop), SGGP$M[opdlcv, ])
-          
-          # This variance calculation was wrong when using PCA with separate theta for each output dim.
-          # var <- (as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(sigma2MAP.thisloop)%*%(SGGP$M))))[,opdlcv]
-          # print("DEFINITELY WRONG! Need to do something with var and M here. Did something, maybe this is right, maybe not?")
+          # meanall2 <- meanall2 + outer(c(Cp%*%pw.thisloop), SGGP$M[opdlcv, ])
+          meanall2[,opdlcv] <- c(Cp%*%pw.thisloop)
           
           # This should be correct variance. Needs to be tested better.
           # Pick out the current dimension, set other values to zero
-          tempM <- SGGP$M
+          tempM <- diag(nopd) #SGGP$M
           tempM[-opdlcv,] <- 0
           tempsigma2.thisloop <- sigma2MAP.thisloop
           tempsigma2.thisloop[-opdlcv] <- 0
-          # browser()
           tempvar <- (as.vector(ME_t)%*%t(diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM))))
-          # print((as.vector(ME_t)%*%t(diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM)))) %>% c %>% summary)
         }
-      }else{ # y was a matrix, so PCA
+      }else{ # y was a matrix
         if(length(sigma2MAP.thisloop)==1){
           stop("When is it a matrix but sigma2MAP a scalar???")
-          # mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+
-          #            (Cp%*%pw.thisloop)%*%(SGGP$M))
-          # var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%(sigma2MAP.thisloop)%*%(SGGP$M)))
-          
         }else{
-          mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+
-                     (Cp%*%pw.thisloop)%*%(SGGP$M))
-          var=as.vector(ME_t)%*%t(diag(t(SGGP$M)%*%diag(sigma2MAP.thisloop)%*%(SGGP$M)))
+          mean = (matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=ncol(SGGP$Y), byrow=FALSE) +
+                     (Cp%*%pw.thisloop))
+          var=as.vector(ME_t)%*%t(sigma2MAP.thisloop)
         }
       }
     } else { # SGGP$supplemented is TRUE
@@ -239,12 +230,10 @@ SGGPpred <- function(SGGP, xp, theta=NULL, outdims=NULL) {
         
         # With sepparout and PCA (or not), do this
         if (nopd > 1) {
-          meanall2 <- meanall2 + outer(c(yhatp), SGGP$M[opdlcv,])
+          # meanall2 <- meanall2 + outer(c(yhatp), SGGP$M[opdlcv,])
+          meanall2[,opdlcv] <- yhatp
           leftvar <- if (is.null(SGGP$leftover_variance)) {0} else {SGGP$leftover_variance}
-          # var <- (as.vector(ME_t)%*%t(leftvar+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M))))[,opdlcv]
-          # print("Need to do something with var and M here. Did something, maybe this is right, maybe not?")
-          # Same fix as above
-          tempM <- SGGP$M
+          tempM <- diag(nopd) #SGGP$M
           tempM[-opdlcv,] <- 0
           tempsigma2.thisloop <- sigma2MAP.thisloop
           tempsigma2.thisloop[-opdlcv] <- 0
@@ -253,21 +242,17 @@ SGGPpred <- function(SGGP, xp, theta=NULL, outdims=NULL) {
         
       }else{
         if(length(SGGP$sigma2MAP)==1){
-          stop("Does this ever happen? #952570")
-          # mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
-          # var=as.vector(ME_t)%*%t(SGGP$leftover_variance+diag(t(SGGP$M)%*%(SGGP$sigma2MAP)%*%(SGGP$M)))
+          stop("This should never happen #952570")
         }else{
           leftvar <- if (is.null(SGGP$leftover_variance)) {0} else {SGGP$leftover_variance}
-          mean = ( matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=dim(SGGP$M)[2], byrow=FALSE)+ yhatp%*%(SGGP$M))
-          var=as.vector(ME_t)%*%t(leftvar+diag(t(SGGP$M)%*%diag(SGGP$sigma2MAP)%*%(SGGP$M)))
+          mean = matrix(rep(SGGP$mu,each=dim(xp)[1]), ncol=ncol(SGGP$Y), byrow=FALSE)+ yhatp
+          var=as.vector(ME_t)%*%t(leftvar+SGGP$sigma2MAP)
         }
       }
       
       
     }
     rm(Cp,ME_t, MSE_v, V) # Just to make sure nothing is carrying through
-    # if (nopd > 1) {meanall[,opdlcv] <- mean}
-    # if (nopd > 1) {varall[,opdlcv] <- var}
     if (nopd > 1) {tempvarall <- tempvarall + tempvar}
   }
   # If PCA values were calculated separately, need to do transformation on both before mu is added, then add mu back

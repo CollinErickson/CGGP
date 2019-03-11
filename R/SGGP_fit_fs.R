@@ -23,9 +23,6 @@
 #' * Correct: full likelihood with grid and supplemental data
 #' * Only: only use supplemental data
 #' * Ignore: ignore supplemental data
-#' * Mixture: sum of grid LLH and supplemental LLH, not statistically valid
-#' * MarginalValidation: a validation shortcut
-#' * FullValidation: a validation shortcut
 #' @param corr Will update correlation function, if left missing it will be
 #' same as last time.
 #' @param ... Forces you to name arguments.
@@ -146,7 +143,6 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
   }
   
   
-  if (is.matrix(Y)) {SGGP$M <- diag(ncol(y))} # Use identity transformation instead of PCA
   for (opdlcv in 1:nopd) { # output parameter dimension
     
     y.thisloop <- if (nopd==1) {y} else {y[,opdlcv]} # All of y or single column
@@ -154,8 +150,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
     else {ys.thisloop <- NULL}
     theta0.thisloop <- if (nopd==1) {theta0} else {theta0[,opdlcv]}
     
-    double_optimize = TRUE
-    if (!double_optimize){
+    if (is.null(SGGP$Xs)){ # No supp data, just optimize
       opt.out = nlminb(
         theta0.thisloop,
         objective = SGGP_internal_neglogpost,
@@ -169,7 +164,7 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
         HandlingSuppData=HandlingSuppData,
         control = list(rel.tol = 1e-4,iter.max = 500)
       )
-    } else { # Double opt
+    } else { # W/ supp data, optimize on grid first, then with both
       # Only grid data b/c it's fast
       opt.out = nlminb(
         theta0.thisloop,
@@ -236,12 +231,9 @@ SGGPfit <- function(SGGP, Y, ..., Xs=NULL,Ys=NULL,
                  (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)
     }
     Hmat = H/2+t(H)/2
-    # print(Hmat)
-    # print(sqrt(diag(solve(Hmat))))
     A = eigen(Hmat)
     cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
-    #print( cHa%*%matrix(rnorm(100*length(SGGP$thetaMAP),0,1),nrow=length(SGGP$thetaMAP)))
-    
+
     # Get posterior samples using Laplace approximation
     PST= log((1+thetaMAP)/(1-thetaMAP)) +
       cHa%*%matrix(rnorm(SGGP$numPostSamples*length(thetaMAP),0,1),
