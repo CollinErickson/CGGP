@@ -1,11 +1,11 @@
-# SGGPfit is used in many other tests, so not as many here
+# CGGPfit is used in many other tests, so not as many here
 
-test_that("SGGPfit works with Laplace approx", {
+test_that("CGGPfit works with Laplace approx", {
   d <- 3
-  SG <- SGGPcreate(d=d, batchsize=30)
+  SG <- CGGPcreate(d=d, batchsize=30)
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
-  SG <- SGGPfit(SG, Y=y)
+  SG <- CGGPfit(SG, Y=y)
   
   # Check that samples from Laplace are near max
   if (F) {
@@ -14,12 +14,12 @@ test_that("SGGPfit works with Laplace approx", {
   }
   expect_true(all(abs(rowMeans(SG$thetaPostSamples)- SG$thetaMAP) < apply(SG$thetaPostSamples, 1, sd)))
   
-  neglogpost <- SGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y)
+  neglogpost <- CGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y)
   expect_is(neglogpost, "matrix")
   expect_length(neglogpost, length(SG$thetaMAP))
   
   
-  neglogpost2 <- SGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y, return_lik = T)
+  neglogpost2 <- CGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y, return_lik = T)
   expect_is(neglogpost2, "list")
   expect_length(neglogpost2[[1]], 1)
   expect_length(neglogpost2[[2]], length(SG$thetaMAP))
@@ -27,12 +27,12 @@ test_that("SGGPfit works with Laplace approx", {
   # Check neglogpost grad matches gneglogpost
   theta <- SG$thetaMAP / 2 # Don't want values near -1 or +1
   epsval <- 1e-4
-  thetagrad <- SGGP_internal_gneglogpost(theta, SG, SG$y)
+  thetagrad <- CGGP_internal_gneglogpost(theta, SG, SG$y)
   for (i in 1:length(SG$thetaMAP)) {
     eps <- rep(0, length(SG$thetaMAP))
     eps[i] = eps[i] + epsval
-    numgrad <- (SGGP_internal_neglogpost(theta + eps, SG, SG$y) - 
-                  SGGP_internal_neglogpost(theta - eps, SG, SG$y)) / (2*epsval)
+    numgrad <- (CGGP_internal_neglogpost(theta + eps, SG, SG$y) - 
+                  CGGP_internal_neglogpost(theta - eps, SG, SG$y)) / (2*epsval)
     expect_equal(thetagrad[i], numgrad, tol=1e-4)
   }
   
@@ -40,87 +40,87 @@ test_that("SGGPfit works with Laplace approx", {
   nsup <- 30
   xsup <- matrix(runif(nsup*3), nsup, 3)
   ysup <- apply(xsup, 1, f)
-  SG <- SGGPappend(SG, 20)
+  SG <- CGGPappend(SG, 20)
   ynew <- apply(SG$design_unevaluated, 1, f)
-  expect_error(SG <- SGGPfit(SG, Ynew=ynew, Xs=xsup, Ys=ysup), NA)
+  expect_error(SG <- CGGPfit(SG, Ynew=ynew, Xs=xsup, Ys=ysup), NA)
   
   # Check neglogpost grad matches gneglogpost for all HandlingSuppData options
   theta <- SG$thetaMAP / 2 # Don't want values near -1 or +1
   epsval <- 1e-4
   for (handling in c("Correct", "Only", "Ignore")) {
-    thetagrad <- SGGP_internal_gneglogpost(theta, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)
+    thetagrad <- CGGP_internal_gneglogpost(theta, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)
     numgrad <- rep(0, length(SG$thetaMAP))
     for (i in 1:length(SG$thetaMAP)) {
       eps <- rep(0, length(SG$thetaMAP))
       eps[i] = eps[i] + epsval
-      # numgrad <- (SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
-      #               SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (2*epsval)
-      numgrad[i] <- (-SGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
-                    8*SGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
-                    8*SGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
-                    SGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
+      # numgrad <- (CGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
+      #               CGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (2*epsval)
+      numgrad[i] <- (-CGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+                    8*CGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
+                    8*CGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+                    CGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
       # 
       # print(numgrad)
     }
     expect_equal(c(thetagrad), numgrad, tol=1e-2, info = handling)
   }
-  # numDeriv::grad(function(th) {SGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
+  # numDeriv::grad(function(th) {CGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
 })
 
-test_that("SGGPfit works with Ynew - scalar output", {
+test_that("CGGPfit works with Ynew - scalar output", {
   
   
-  SG <- SGGPcreate(d=3, batchsize=20)
+  SG <- CGGPcreate(d=3, batchsize=20)
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
   # Can't give in Y and Ynew
-  expect_error(SG <- SGGPfit(SG, Y=y, Ynew=y))
+  expect_error(SG <- CGGPfit(SG, Y=y, Ynew=y))
   # Works with just Ynew
-  SG <- SGGPfit(SG, Ynew=y)
+  SG <- CGGPfit(SG, Ynew=y)
   expect_true(all(!is.na(SG$thetaPostSamples)))
   
   # After append, only give in Ynew
-  SG <- SGGPappend(SG, 50)
+  SG <- CGGPappend(SG, 50)
   ynew <- apply(SG$design_unevaluated, 1, f)
   # Again error if give in Y and Ynew
-  expect_error(SGGPfit(SG, Y=c(y, ynew), Ynew=ynew))
+  expect_error(CGGPfit(SG, Y=c(y, ynew), Ynew=ynew))
   # Get error when Ynew is wrong size
-  expect_error(SGGPfit(SG, Ynew=ynew[1:(length(ynew)-1)]))
+  expect_error(CGGPfit(SG, Ynew=ynew[1:(length(ynew)-1)]))
   # Works fine
-  expect_is(SG <- SGGPfit(SG, Ynew = ynew), "SGGP")
+  expect_is(SG <- CGGPfit(SG, Ynew = ynew), "CGGP")
 })
 
-test_that("SGGPfit works with Ynew - vector output", {
+test_that("CGGPfit works with Ynew - vector output", {
   
   
-  SG <- SGGPcreate(d=3, batchsize=20)
+  SG <- CGGPcreate(d=3, batchsize=20)
   f1 <- function(x){x[1]+x[2]^2}
   f2 <- function(x){x[2]^1.3+sin(2*pi*x[3])}
   y1 <- apply(SG$design, 1, f1)
   y2 <- apply(SG$design, 1, f2)
   y <- cbind(y1, y2)
   # Can't give in Y and Ynew
-  expect_error(SG <- SGGPfit(SG, Y=y, Ynew=y))
+  expect_error(SG <- CGGPfit(SG, Y=y, Ynew=y))
   # Other errors when giving ynew and wrong number of rows
-  expect_error(SGGPfit(SG, Ynew=y[1:5,]))
-  expect_error(SGGPfit(SG, Ynew=y1[1:5]))
+  expect_error(CGGPfit(SG, Ynew=y[1:5,]))
+  expect_error(CGGPfit(SG, Ynew=y1[1:5]))
   
   # Works with just Ynew
-  SG <- SGGPfit(SG, Ynew=y)
+  SG <- CGGPfit(SG, Ynew=y)
   
   # After append, only give in Ynew
-  SG <- SGGPappend(SG, 50)
+  SG <- CGGPappend(SG, 50)
   ynew1 <- apply(SG$design_unevaluated, 1, f1)
   ynew2 <- apply(SG$design_unevaluated, 1, f2)
   ynew <- cbind(ynew1, ynew2)
   # Again error if give in Y and Ynew
-  expect_error(SGGPfit(SG, Y=rbind(y, ynew), Ynew=ynew))
+  expect_error(CGGPfit(SG, Y=rbind(y, ynew), Ynew=ynew))
   # Get error when Ynew is wrong size
-  expect_error(SGGPfit(SG, Ynew=ynew[1:(nrow(ynew)-1),]))
+  expect_error(CGGPfit(SG, Ynew=ynew[1:(nrow(ynew)-1),]))
   # Get error if you give in vector
-  expect_error(SGGPfit(SG, Ynew=ynew1))
+  expect_error(CGGPfit(SG, Ynew=ynew1))
   # Works fine
-  expect_is(SG <- SGGPfit(SG, Ynew = ynew), "SGGP")
+  expect_is(SG <- CGGPfit(SG, Ynew = ynew), "CGGP")
   
   
 })
@@ -130,21 +130,21 @@ test_that("postvarmatcalc", {
   # Maybe only makes sense when x1 == x2?
   x1 <- runif(5)
   x2 <- x1
-  o1 <- SGGP_internal_postvarmatcalc(x1, x2,
+  o1 <- CGGP_internal_postvarmatcalc(x1, x2,
                                xo=c(.11), theta=c(.1,.2,.3),
-                               CorrMat=SGGP_internal_CorrMatCauchySQT,
+                               CorrMat=CGGP_internal_CorrMatCauchySQT,
                                returndPVMC=F, returndiagonly=F)
-  o2 <- SGGP_internal_postvarmatcalc(x1, x2,
+  o2 <- CGGP_internal_postvarmatcalc(x1, x2,
                                      xo=c(.11), theta=c(.1,.2,.3),
-                                     CorrMat=SGGP_internal_CorrMatCauchySQT,
+                                     CorrMat=CGGP_internal_CorrMatCauchySQT,
                                      returndPVMC=F, returndiagonly=T)
-  o3 <- SGGP_internal_postvarmatcalc(x1, x2,
+  o3 <- CGGP_internal_postvarmatcalc(x1, x2,
                                      xo=c(.11), theta=c(.1,.2,.3),
-                                     CorrMat=SGGP_internal_CorrMatCauchySQT,
+                                     CorrMat=CGGP_internal_CorrMatCauchySQT,
                                      returndPVMC=T, returndiagonly=F)
-  o4 <- SGGP_internal_postvarmatcalc(x1, x2,
+  o4 <- CGGP_internal_postvarmatcalc(x1, x2,
                                      xo=c(.11), theta=c(.1,.2,.3),
-                                     CorrMat=SGGP_internal_CorrMatCauchySQT,
+                                     CorrMat=CGGP_internal_CorrMatCauchySQT,
                                      returndPVMC=T, returndiagonly=T)
   expect_equal(o1, o3$Sigma_mat)
   expect_equal(diag(o1), o2)

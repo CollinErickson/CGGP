@@ -32,26 +32,26 @@ test_that("2. MV output, NO PCA, 1opd", {
   
   
   # First check MV with PCA
-  SG <- SGGPcreate(d=d, batchsize=30)
-  expect_is(SG, "SGGP")
+  SG <- CGGPcreate(d=d, batchsize=30)
+  expect_is(SG, "CGGP")
   y <- f(SG$design)
-  expect_error(SG <- SGGPfit(SG, Y=y), NA) # No error
+  expect_error(SG <- CGGPfit(SG, Y=y), NA) # No error
   expect_length(SG$thetaMAP, d*SG$numpara)
   expect_true(!is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$Y) == outd)
   expect_true(ncol(SG$y) == outd)
-  yMVpred <- SGGPpred(SG, SG$design)$mean
+  yMVpred <- CGGPpred(SG, SG$design)$mean
   expect_equal(yMVpred, y, 1e-4)
   expect_equal(dim(yMVpred), c(nrow(SG$design), outd))
   
   # Check that append works without error, don't save it
   for (sel.method in c("UCB", "TS", "Greedy")) {
-    expect_error(SGGPappend(SG, 30, sel.method, NA))
+    expect_error(CGGPappend(SG, 30, sel.method, NA))
   }
   
   # Add supplemental data
-  expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
-  ysuppred <- SGGPpred(SG, xsup)$me
+  expect_error(SG <- CGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
+  ysuppred <- CGGPpred(SG, xsup)$me
   expect_equal(ysuppred, ysup, eps.sup)
 })
 
@@ -60,22 +60,22 @@ test_that("4. MV output, NO PCA, separate opd", {
   
   
   # First check MV with PCA
-  SG <- SGGPcreate(d=3, batchsize=30)
-  expect_is(SG, "SGGP")
+  SG <- CGGPcreate(d=3, batchsize=30)
+  expect_is(SG, "CGGP")
   y <- f(SG$design)
   
   # Fit a model to only each individual output, will compare thetaMAP later
   seed <- sample(1:10000, 1)
   set.seed(seed)
-  SG1 <- SGGPfit(SG, Y=y[,1])
-  SG2 <- SGGPfit(SG, Y=y[,2])
-  SG3 <- SGGPfit(SG, Y=y[,3])
-  SG4 <- SGGPfit(SG, Y=y[,4])
-  SG5 <- SGGPfit(SG, Y=y[,5])
+  SG1 <- CGGPfit(SG, Y=y[,1])
+  SG2 <- CGGPfit(SG, Y=y[,2])
+  SG3 <- CGGPfit(SG, Y=y[,3])
+  SG4 <- CGGPfit(SG, Y=y[,4])
+  SG5 <- CGGPfit(SG, Y=y[,5])
   
   # Now fit all
   set.seed(seed)
-  expect_error(SG <- SGGPfit(SG, Y=y, separateoutputparameterdimensions = T), NA) # No error
+  expect_error(SG <- CGGPfit(SG, Y=y, separateoutputparameterdimensions = T), NA) # No error
   expect_length(SG$thetaMAP, d*SG$numpara*outd)
   expect_true(is.matrix(SG$thetaMAP))
   expect_true(ncol(SG$thetaMAP) == outd)
@@ -89,25 +89,25 @@ test_that("4. MV output, NO PCA, separate opd", {
   expect_equal(SG$thetaMAP[,4], SG4$thetaMAP)
   expect_equal(SG$thetaMAP[,5], SG5$thetaMAP)
   # Check that predictions on these match
-  expect_equal(c(SGGPpred(SG, xtest)$me[,1]), c(SGGPpred(SG1, xtest)$me))
-  expect_equal(c(SGGPpred(SG, xtest)$me[,2]), c(SGGPpred(SG2, xtest)$me))
-  expect_equal(c(SGGPpred(SG, xtest)$me[,3]), c(SGGPpred(SG3, xtest)$me))
-  expect_equal(c(SGGPpred(SG, xtest)$me[,4]), c(SGGPpred(SG4, xtest)$me))
-  expect_equal(c(SGGPpred(SG, xtest)$me[,5]), c(SGGPpred(SG5, xtest)$me))
+  expect_equal(c(CGGPpred(SG, xtest)$me[,1]), c(CGGPpred(SG1, xtest)$me))
+  expect_equal(c(CGGPpred(SG, xtest)$me[,2]), c(CGGPpred(SG2, xtest)$me))
+  expect_equal(c(CGGPpred(SG, xtest)$me[,3]), c(CGGPpred(SG3, xtest)$me))
+  expect_equal(c(CGGPpred(SG, xtest)$me[,4]), c(CGGPpred(SG4, xtest)$me))
+  expect_equal(c(CGGPpred(SG, xtest)$me[,5]), c(CGGPpred(SG5, xtest)$me))
   
   # Now check predictions
-  yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
+  yMVpred <- CGGPpred(SG$design, CGGP=SG)$mean
   expect_equal(yMVpred, y, 1e-4)
   expect_equal(dim(yMVpred), c(nrow(SG$design), outd))
   
   # Check that append works without error, don't save it
   for (sel.method in c("UCB", "TS", "Greedy")) {
-    expect_error(SGGPappend(SG, 30, sel.method), NA)
+    expect_error(CGGPappend(SG, 30, sel.method), NA)
   }
   
   # Add supplemental data
-  expect_error(SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
-  ysuppred <- SGGPpred(SG, xsup)$me
+  expect_error(SG <- CGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
+  ysuppred <- CGGPpred(SG, xsup)$me
   expect_equal(ysuppred, ysup, eps.sup)
 })
 

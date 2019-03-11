@@ -5,13 +5,13 @@ test_that("Correlation CorrMatCauchy works", {
   th <- runif(3,-1,1)
 
   # First check return_numpara is right
-  expect_equal(SGGP_internal_CorrMatCauchy(return_numpara=TRUE), 3)
+  expect_equal(CGGP_internal_CorrMatCauchy(return_numpara=TRUE), 3)
   
   # Get error when you give in theta of wrong size
-  expect_error(SGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta = c(.1,.1)))
+  expect_error(CGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta = c(.1,.1)))
 
   # Now check correlation
-  cauchy1 <- SGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th)
+  cauchy1 <- CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th)
   expect_is(cauchy1, "matrix")
   expect_equal(dim(cauchy1), c(5,4))
 
@@ -32,17 +32,17 @@ test_that("Correlation CorrMatCauchy works", {
   expect_equal(cauchy1, cauchy2)
 
   # Now check that dC is actually grad of C
-  cauchy_C_dC <- SGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  cauchy_C_dC <- CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
   eps <- 1e-6
   for (i in 1:3) {
     thd <- c(0,0,0)
     thd[i] <- eps
-    numdC <- (SGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th+thd) -
-              SGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
-    # numdC <- (-SGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th+2*thd) +
-    #           8*  SGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th+thd) +
-    #           -8*  SGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th-thd) +
-    #             SGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th-2*thd)) / (12*eps)
+    numdC <- (CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th+thd) -
+              CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    # numdC <- (-CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th+2*thd) +
+    #           8*  CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th+thd) +
+    #           -8*  CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th-thd) +
+    #             CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th-2*thd)) / (12*eps)
     # Should be more accurate but was exactly the same
     expect_equal(numdC, cauchy_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
@@ -55,13 +55,13 @@ test_that("Correlation CorrMatCauchySQT works", {
   th <- runif(3,-1,1)
   
   # First check return_numpara is right
-  expect_equal(SGGP_internal_CorrMatCauchySQT(return_numpara=TRUE), 3)
+  expect_equal(CGGP_internal_CorrMatCauchySQT(return_numpara=TRUE), 3)
   
   # Get error when you give in theta of wrong size
-  expect_error(SGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta = c(.1,.1)))
+  expect_error(CGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta = c(.1,.1)))
   
   # Now check correlation
-  cauchy1 <- SGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th)
+  cauchy1 <- CGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th)
   expect_is(cauchy1, "matrix")
   expect_equal(dim(cauchy1), c(5,4))
   
@@ -90,13 +90,13 @@ test_that("Correlation CorrMatCauchySQT works", {
   expect_equal(cauchy1, cauchy2)
   
   # Now check that dC is actually grad of C
-  cauchy_C_dC <- SGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  cauchy_C_dC <- CGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
   eps <- 1e-6
   for (i in 1:3) {
     thd <- c(0,0,0)
     thd[i] <- eps
-    numdC <- (SGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th+thd) -
-                SGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    numdC <- (CGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th+thd) -
+                CGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
     # Should be more accurate but was exactly the same
     expect_equal(numdC, cauchy_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
@@ -110,13 +110,13 @@ test_that("Correlation CorrMatCauchySQ works", {
   th <- runif(2,-1,1)
   
   # First check return_numpara is right
-  expect_equal(SGGP_internal_CorrMatCauchySQ(return_numpara=TRUE), 2)
+  expect_equal(CGGP_internal_CorrMatCauchySQ(return_numpara=TRUE), 2)
   
   # Get error when you give in theta of wrong size
-  expect_error(SGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta = c(.1,.1,.4)))
+  expect_error(CGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta = c(.1,.1,.4)))
   
   # Now check correlation
-  cauchy1 <- SGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th)
+  cauchy1 <- CGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th)
   expect_is(cauchy1, "matrix")
   expect_equal(dim(cauchy1), c(5,4))
   
@@ -139,13 +139,13 @@ test_that("Correlation CorrMatCauchySQ works", {
   expect_equal(cauchy1, cauchy2)
   
   # Now check that dC is actually grad of C
-  cauchy_C_dC <- SGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  cauchy_C_dC <- CGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
   eps <- 1e-6
   for (i in 1:2) {
     thd <- c(0,0)
     thd[i] <- eps
-    numdC <- (SGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th+thd) -
-                SGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    numdC <- (CGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th+thd) -
+                CGGP_internal_CorrMatCauchySQ(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
     # Should be more accurate but was exactly the same
     expect_equal(numdC, cauchy_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
@@ -158,13 +158,13 @@ test_that("Correlation CorrMatGaussian works", {
   th <- runif(1,-1,1)
   
   # First check return_numpara is right
-  expect_equal(SGGP_internal_CorrMatGaussian(return_numpara=TRUE), 1)
+  expect_equal(CGGP_internal_CorrMatGaussian(return_numpara=TRUE), 1)
   
   # Get error when you give in theta of wrong size
-  expect_error(SGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta = c(.1,.1)))
+  expect_error(CGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta = c(.1,.1)))
   
   # Now check correlation
-  corr1 <- SGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta=th)
+  corr1 <- CGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta=th)
   expect_is(corr1, "matrix")
   expect_equal(dim(corr1), c(5,4))
   
@@ -183,13 +183,13 @@ test_that("Correlation CorrMatGaussian works", {
   expect_equal(corr1, corr2)
   
   # Now check that dC is actually grad of C
-  corr_C_dC <- SGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  corr_C_dC <- CGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
   eps <- 1e-6
   for (i in 1:1) {
     thd <- c(0)
     thd[i] <- eps
-    numdC <- (SGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta=th+thd) -
-                SGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    numdC <- (CGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta=th+thd) -
+                CGGP_internal_CorrMatGaussian(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
     # Should be more accurate but was exactly the same
     expect_equal(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
@@ -202,13 +202,13 @@ test_that("Correlation CorrMatMatern32 works", {
   th <- runif(1,-1,1)
   
   # First check return_numpara is right
-  expect_equal(SGGP_internal_CorrMatMatern32(return_numpara=TRUE), 1)
+  expect_equal(CGGP_internal_CorrMatMatern32(return_numpara=TRUE), 1)
   
   # Get error when you give in theta of wrong size
-  expect_error(SGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta = c(.1,.1)))
+  expect_error(CGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta = c(.1,.1)))
   
   # Now check correlation
-  corr1 <- SGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta=th)
+  corr1 <- CGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta=th)
   expect_is(corr1, "matrix")
   expect_equal(dim(corr1), c(5,4))
   
@@ -226,13 +226,13 @@ test_that("Correlation CorrMatMatern32 works", {
   expect_equal(corr1, corr2)
   
   # Now check that dC is actually grad of C
-  corr_C_dC <- SGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  corr_C_dC <- CGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
   eps <- 1e-6
   for (i in 1:1) {
     thd <- c(0)
     thd[i] <- eps
-    numdC <- (SGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta=th+thd) -
-                SGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    numdC <- (CGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta=th+thd) -
+                CGGP_internal_CorrMatMatern32(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
     # Should be more accurate but was exactly the same
     expect_equal(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
@@ -246,13 +246,13 @@ test_that("Correlation CorrMatMatern52 works", {
   th <- runif(1,-1,1)
   
   # First check return_numpara is right
-  expect_equal(SGGP_internal_CorrMatMatern52(return_numpara=TRUE), 1)
+  expect_equal(CGGP_internal_CorrMatMatern52(return_numpara=TRUE), 1)
   
   # Get error when you give in theta of wrong size
-  expect_error(SGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta = c(.1,.1)))
+  expect_error(CGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta = c(.1,.1)))
   
   # Now check correlation
-  corr1 <- SGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta=th)
+  corr1 <- CGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta=th)
   expect_is(corr1, "matrix")
   expect_equal(dim(corr1), c(5,4))
   
@@ -270,13 +270,13 @@ test_that("Correlation CorrMatMatern52 works", {
   expect_equal(corr1, corr2)
   
   # Now check that dC is actually grad of C
-  corr_C_dC <- SGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  corr_C_dC <- CGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
   eps <- 1e-6
   for (i in 1:1) {
     thd <- c(0)
     thd[i] <- eps
-    numdC <- (SGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta=th+thd) -
-                SGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    numdC <- (CGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta=th+thd) -
+                CGGP_internal_CorrMatMatern52(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
     # Should be more accurate but was exactly the same
     expect_equal(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
@@ -290,14 +290,14 @@ test_that("Correlation CorrMatPowerExp works", {
   th <- runif(nparam,-1,1)
   
   # First check return_numpara is right
-  expect_equal(SGGP_internal_CorrMatPowerExp(return_numpara=TRUE), nparam)
+  expect_equal(CGGP_internal_CorrMatPowerExp(return_numpara=TRUE), nparam)
   
   # Get error when you give in theta of wrong size
-  expect_error(SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta = rep(0, nparam-1)))
-  expect_error(SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta = rep(0, nparam+1)))
+  expect_error(CGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta = rep(0, nparam-1)))
+  expect_error(CGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta = rep(0, nparam+1)))
   
   # Now check correlation
-  corr1 <- SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th)
+  corr1 <- CGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th)
   expect_is(corr1, "matrix")
   expect_equal(dim(corr1), c(5,4))
   
@@ -318,23 +318,23 @@ test_that("Correlation CorrMatPowerExp works", {
   expect_equal(corr1, corr2)
   
   # Now check that dC is actually grad of C
-  corr_C_dC <- SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  corr_C_dC <- CGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
   eps <- 1e-6
   for (i in 1:nparam) {
     thd <- rep(0, nparam)
     thd[i] <- eps
-    numdC <- (SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th+thd) -
-                SGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    numdC <- (CGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th+thd) -
+                CGGP_internal_CorrMatPowerExp(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
     # Should be more accurate but was exactly the same
     expect_equal(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
   }
 })
 
 test_that("Logs work for all", {
-  corrs <- list(SGGP_internal_CorrMatCauchySQ, SGGP_internal_CorrMatCauchySQT,
-             SGGP_internal_CorrMatCauchy, SGGP_internal_CorrMatGaussian,
-             SGGP_internal_CorrMatMatern32, SGGP_internal_CorrMatMatern52,
-             SGGP_internal_CorrMatPowerExp
+  corrs <- list(CGGP_internal_CorrMatCauchySQ, CGGP_internal_CorrMatCauchySQT,
+             CGGP_internal_CorrMatCauchy, CGGP_internal_CorrMatGaussian,
+             CGGP_internal_CorrMatMatern32, CGGP_internal_CorrMatMatern52,
+             CGGP_internal_CorrMatPowerExp
   )
   n1 <- 5
   n2 <- 6

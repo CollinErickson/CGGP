@@ -10,7 +10,7 @@
 #' @export
 #' @import Rcpp
 rcpp_kronDBS <- function(A, B, p) {
-    invisible(.Call('_SGGP_rcpp_kronDBS', PACKAGE = 'SGGP', A, B, p))
+    invisible(.Call('_CGGP_rcpp_kronDBS', PACKAGE = 'CGGP', A, B, p))
 }
 
 #' rcpp_kronDBS
@@ -24,7 +24,7 @@ rcpp_kronDBS <- function(A, B, p) {
 #' @examples
 #' rcpp_gkronDBS(c(1,1), c(0,0), c(.75), c(1,1))
 rcpp_gkronDBS <- function(A, dA, B, p) {
-    .Call('_SGGP_rcpp_gkronDBS', PACKAGE = 'SGGP', A, dA, B, p)
+    .Call('_CGGP_rcpp_gkronDBS', PACKAGE = 'CGGP', A, dA, B, p)
 }
 
 #' rcpp_fastmatclcr
@@ -37,7 +37,7 @@ rcpp_gkronDBS <- function(A, dA, B, p) {
 #' @return Nothing, void
 #' @export
 rcpp_fastmatclcr <- function(I, w, MSEmat, S, maxlevel) {
-    invisible(.Call('_SGGP_rcpp_fastmatclcr', PACKAGE = 'SGGP', I, w, MSEmat, S, maxlevel))
+    invisible(.Call('_CGGP_rcpp_fastmatclcr', PACKAGE = 'CGGP', I, w, MSEmat, S, maxlevel))
 }
 
 #' rcpp_fastmatclcranddclcr
@@ -53,6 +53,6 @@ rcpp_fastmatclcr <- function(I, w, MSEmat, S, maxlevel) {
 #' @return Nothing, void
 #' @export
 rcpp_fastmatclcranddclcr <- function(I, w, MSEmat, dMSEmat, S, dS, maxlevel, numpara) {
-    invisible(.Call('_SGGP_rcpp_fastmatclcranddclcr', PACKAGE = 'SGGP', I, w, MSEmat, dMSEmat, S, dS, maxlevel, numpara))
+    invisible(.Call('_CGGP_rcpp_fastmatclcranddclcr', PACKAGE = 'CGGP', I, w, MSEmat, dMSEmat, S, dS, maxlevel, numpara))
 }
 

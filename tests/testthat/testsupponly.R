@@ -12,7 +12,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   ytest <- apply(xtest, 1, f)
   
   # Create with only supp
-  expect_error(s1 <- SGGPcreate(d, 0, Xs=xsup, Ys=ysup, corr="CauchySQ"), NA)
+  expect_error(s1 <- CGGPcreate(d, 0, Xs=xsup, Ys=ysup, corr="CauchySQ"), NA)
   expect_true(is.null(s1[["design"]]))
   expect_equal(s1$uoCOUNT, 0)
   expect_equal(s1$poCOUNT, 1)
@@ -21,12 +21,12 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   expect_true(all(s1$po[-1,]==0))
   
   # Predict with only supp on supp points
-  expect_error(p1sup <- SGGPpred(s1, xsup), NA)
+  expect_error(p1sup <- CGGPpred(s1, xsup), NA)
   expect_equal(c(p1sup$mean), ysup, tol=1e-6)
   expect_true(all(p1sup$var < 1e-8))
   
   # Predict with only supp on test points
-  expect_error(p1test <- SGGPpred(s1, xtest), NA)
+  expect_error(p1test <- CGGPpred(s1, xtest), NA)
   expect_true(cor(c(p1test$mean), ytest) > .8)
   expect_true(all(p1test$var > 1e-8))
   expect_true(all(p1test$var < var(ytest)))
@@ -34,7 +34,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   # Append points, all three methods
   set.seed(0) # Fails on test, but never in console
   for (sel.method in c("Greedy", "UCB", "TS")) {
-    expect_error(s1.app <- SGGPappend(s1, 100, sel.method), NA)
+    expect_error(s1.app <- CGGPappend(s1, 100, sel.method), NA)
     expect_true(nrow(s1.app$design) > 90)
     expect_true(nrow(s1.app$design) < 100) # Can't get 100 since first block is size 1
     expect_equal(s1.app$design, s1.app$design_unevaluated)
@@ -50,7 +50,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   rm(s1, s1.app, s1.app.colMeans)
   
   # Again create with only supp, but use MCMC
-  expect_error(s1 <- SGGPcreate(d, 0, Xs=xsup, Ys=ysup,
+  expect_error(s1 <- CGGPcreate(d, 0, Xs=xsup, Ys=ysup,
                                 supp_args=list(laplaceapprox=FALSE,
                                                numPostSamples=7)), NA)
   expect_true(is.null(s1[["design"]]))
@@ -86,7 +86,7 @@ test_that("3. Create, append, predict with only supp, MVout, no PCA, yes sepOPD"
   ytest <- f(xtest)
   
   # Create with only supp
-  expect_error(s1 <- SGGPcreate(d, 0, corr="Cauchy",
+  expect_error(s1 <- CGGPcreate(d, 0, corr="Cauchy",
                                 Xs=xsup, Ys=ysup, supp_args=list(separateoutputparameterdimensions=TRUE)), NA)
   expect_true(is.null(s1[["design"]]))
   expect_equal(s1$uoCOUNT, 0)
@@ -101,19 +101,19 @@ test_that("3. Create, append, predict with only supp, MVout, no PCA, yes sepOPD"
   expect_equal(ncol(s1$thetaMAP), d_out)
   
   # Predict with only supp on supp points
-  expect_error(p1sup <- SGGPpred(s1, xsup), NA)
+  expect_error(p1sup <- CGGPpred(s1, xsup), NA)
   expect_equal(p1sup$mean, ysup, tol=1e-6)
   # expect_true(all(p1sup$var < 1e-8))
   
   # Predict with only supp on test points
-  expect_error(p1test <- SGGPpred(s1, xtest), NA)
+  expect_error(p1test <- CGGPpred(s1, xtest), NA)
   expect_true(all(diag(cor(p1test$mean, ytest)) > .8))
   # expect_true(all(p1test$var > 1e-8))
   # expect_true(all(p1test$var < var(ytest)))
   
   # Append points, all three methods
   for (sel.method in c("Greedy", "UCB", "TS")) {
-    expect_error(s1.app <- SGGPappend(s1, 100, sel.method), NA)
+    expect_error(s1.app <- CGGPappend(s1, 100, sel.method), NA)
     expect_true(nrow(s1.app$design) > 90)
     expect_true(nrow(s1.app$design) < 100) # Can't get 100 since first block is size 1
     expect_equal(s1.app$design, s1.app$design_unevaluated)
@@ -150,7 +150,7 @@ test_that("5. Create, append, predict with only supp, MVout, no PCA, no sepOPD",
   ytest <- f(xtest)
   
   # Create with only supp
-  expect_error(s1 <- SGGPcreate(d, 0, corr="PowerExp",
+  expect_error(s1 <- CGGPcreate(d, 0, corr="PowerExp",
                                 Xs=xsup, Ys=ysup, supp_args=list(separateoutputparameterdimensions=FALSE)), NA)
   expect_true(is.null(s1[["design"]]))
   expect_equal(s1$uoCOUNT, 0)
@@ -165,19 +165,19 @@ test_that("5. Create, append, predict with only supp, MVout, no PCA, no sepOPD",
   expect_is(s1$thetaMAP, "numeric")
   
   # Predict with only supp on supp points
-  expect_error(p1sup <- SGGPpred(s1, xsup), NA)
+  expect_error(p1sup <- CGGPpred(s1, xsup), NA)
   expect_equal(p1sup$mean, ysup, tol=1e-6)
   # expect_true(all(p1sup$var < 1e-8))
   
   # Predict with only supp on test points
-  expect_error(p1test <- SGGPpred(s1, xtest), NA)
+  expect_error(p1test <- CGGPpred(s1, xtest), NA)
   expect_true(all(diag(cor(p1test$mean, ytest)) > .6)) # corr can go below .8
   # expect_true(all(p1test$var > 1e-8))
   # expect_true(all(p1test$var < var(ytest)))
   
   # Append points, all three methods
   for (sel.method in c("Greedy", "UCB", "TS")) {
-    expect_error(s1.app <- SGGPappend(s1, 100, sel.method), NA)
+    expect_error(s1.app <- CGGPappend(s1, 100, sel.method), NA)
     expect_true(nrow(s1.app$design) > 90)
     expect_true(nrow(s1.app$design) < 100) # Can't get 100 since first block is size 1
     expect_equal(s1.app$design, s1.app$design_unevaluated)

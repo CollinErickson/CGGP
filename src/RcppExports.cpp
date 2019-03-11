@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // rcpp_kronDBS
 void rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p);
-RcppExport SEXP _SGGP_rcpp_kronDBS(SEXP ASEXP, SEXP BSEXP, SEXP pSEXP) {
+RcppExport SEXP _CGGP_rcpp_kronDBS(SEXP ASEXP, SEXP BSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type A(ASEXP);
@@ -20,7 +20,7 @@ END_RCPP
 }
 // rcpp_gkronDBS
 NumericMatrix rcpp_gkronDBS(NumericVector A, NumericVector dA, NumericVector B, NumericVector p);
-RcppExport SEXP _SGGP_rcpp_gkronDBS(SEXP ASEXP, SEXP dASEXP, SEXP BSEXP, SEXP pSEXP) {
+RcppExport SEXP _CGGP_rcpp_gkronDBS(SEXP ASEXP, SEXP dASEXP, SEXP BSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,7 +34,7 @@ END_RCPP
 }
 // rcpp_fastmatclcr
 void rcpp_fastmatclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat, NumericVector S, int maxlevel);
-RcppExport SEXP _SGGP_rcpp_fastmatclcr(SEXP ISEXP, SEXP wSEXP, SEXP MSEmatSEXP, SEXP SSEXP, SEXP maxlevelSEXP) {
+RcppExport SEXP _CGGP_rcpp_fastmatclcr(SEXP ISEXP, SEXP wSEXP, SEXP MSEmatSEXP, SEXP SSEXP, SEXP maxlevelSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type I(ISEXP);
@@ -48,7 +48,7 @@ END_RCPP
 }
 // rcpp_fastmatclcranddclcr
 void rcpp_fastmatclcranddclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat, NumericMatrix dMSEmat, NumericVector S, NumericMatrix dS, int maxlevel, int numpara);
-RcppExport SEXP _SGGP_rcpp_fastmatclcranddclcr(SEXP ISEXP, SEXP wSEXP, SEXP MSEmatSEXP, SEXP dMSEmatSEXP, SEXP SSEXP, SEXP dSSEXP, SEXP maxlevelSEXP, SEXP numparaSEXP) {
+RcppExport SEXP _CGGP_rcpp_fastmatclcranddclcr(SEXP ISEXP, SEXP wSEXP, SEXP MSEmatSEXP, SEXP dMSEmatSEXP, SEXP SSEXP, SEXP dSSEXP, SEXP maxlevelSEXP, SEXP numparaSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type I(ISEXP);
@@ -65,14 +65,14 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_SGGP_rcpp_kronDBS", (DL_FUNC) &_SGGP_rcpp_kronDBS, 3},
-    {"_SGGP_rcpp_gkronDBS", (DL_FUNC) &_SGGP_rcpp_gkronDBS, 4},
-    {"_SGGP_rcpp_fastmatclcr", (DL_FUNC) &_SGGP_rcpp_fastmatclcr, 5},
-    {"_SGGP_rcpp_fastmatclcranddclcr", (DL_FUNC) &_SGGP_rcpp_fastmatclcranddclcr, 8},
+    {"_CGGP_rcpp_kronDBS", (DL_FUNC) &_CGGP_rcpp_kronDBS, 3},
+    {"_CGGP_rcpp_gkronDBS", (DL_FUNC) &_CGGP_rcpp_gkronDBS, 4},
+    {"_CGGP_rcpp_fastmatclcr", (DL_FUNC) &_CGGP_rcpp_fastmatclcr, 5},
+    {"_CGGP_rcpp_fastmatclcranddclcr", (DL_FUNC) &_CGGP_rcpp_fastmatclcranddclcr, 8},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_SGGP(DllInfo *dll) {
+RcppExport void R_init_CGGP(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

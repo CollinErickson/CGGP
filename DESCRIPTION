@@ -1,6 +1,6 @@
-Package: SGGP
+Package: CGGP
 Type: Package
-Title: Sparse Grid Gaussian Processes
+Title: Composite Grid Gaussian Processes
 Version: 1.0
 Date: 2018-09-27
 Authors@R:
