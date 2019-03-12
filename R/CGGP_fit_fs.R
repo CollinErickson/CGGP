@@ -10,11 +10,6 @@
 #' @param lower Lower bound for parameter optimization
 #' @param upper Upper bound for parameter optimization
 #' @param Ynew Values of `CGGP$design_unevaluated`
-# @param method Optimization method, must be "L-BFGS-B" when using lower and upper
-# @param tol Relative tolerance for optimization. Can't use absolute tolerance
-# since lik can be less than zero.
-# @param return_optim If TRUE, return output from optim().
-# If FALSE return updated SG.
 #' @param separateoutputparameterdimensions If multiple output dimensions,
 #' should separate parameters be fit to each dimension?
 #' @param use_progress_bar If using MCMC sampling, should a progress bar be
@@ -38,13 +33,17 @@
 #' y <- apply(cg$design, 1, function(x){x[1]+x[2]^2})
 #' cg <- CGGPfit(CGGP=cg, Y=y)
 CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
-                    theta0 = CGGP$thetaMAP, #rep(0,CGGP$numpara*CGGP$d),
+                    theta0 = CGGP$thetaMAP,
                     HandlingSuppData=CGGP$HandlingSuppData,
-                    lower=rep(-1,CGGP$numpara*CGGP$d),upper=rep(1,CGGP$numpara*CGGP$d),
+                    lower=rep(-1,CGGP$numpara*CGGP$d),
+                    upper=rep(1,CGGP$numpara*CGGP$d),
                     separateoutputparameterdimensions=is.matrix(CGGP$thetaMAP),
                     use_progress_bar=TRUE,
                     corr,
                     Ynew) {
+  # ================================
+  # Check inputs, get Y from Ynew
+  # ================================
   if (length(list(...))>0) {stop("Unnamed arguments given to CGGPcreate")}
   
   # If different correlation function is given, update it
@@ -61,31 +60,43 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
     Ynew <- c(Ynew)
   }
   
-  # If Ynew is given, it is only the points that were added last iteration. Append it to previous Y
+  # If Ynew is given, it is only the points that were added last iteration.
+  #   Append it to previous Y
   if (!missing(Ynew)) {
     if (!missing(Y)) {stop("Don't give both Y and Ynew, only one")}
     if (is.null(CGGP$Y) || length(CGGP$Y)==0) {
-      if (is.matrix(Ynew) && nrow(Ynew) != nrow(CGGP$design_unevaluated)) {stop("nrow(Ynew) doesn't match")}
-      if (!is.matrix(Ynew) && length(Ynew) != nrow(CGGP$design_unevaluated)) {stop("length(Ynew) doesn't match")}
+      if (is.matrix(Ynew) && nrow(Ynew) != nrow(CGGP$design_unevaluated)) {
+        stop("nrow(Ynew) doesn't match")
+      }
+      if (!is.matrix(Ynew) && length(Ynew) != nrow(CGGP$design_unevaluated)) {
+        stop("length(Ynew) doesn't match")
+      }
       Y <- Ynew
     } else if (is.matrix(CGGP$Y)) {
       if (!is.matrix(Ynew)) {stop("Ynew should be a matrix")}
-      if (nrow(Ynew) != nrow(CGGP$design_unevaluated)) {stop("Ynew is wrong size")}
+      if (nrow(Ynew) != nrow(CGGP$design_unevaluated)) {
+        stop("Ynew is wrong size")
+      }
       Y <- rbind(CGGP$Y, Ynew)
     } else { # is numeric vector
-      if (length(Ynew) != nrow(CGGP$design_unevaluated)) {stop("Ynew is wrong size")}
+      if (length(Ynew) != nrow(CGGP$design_unevaluated)) {
+        stop("Ynew is wrong size")
+      }
       Y <- c(CGGP$Y, Ynew)
     }
   }
   
-  if ((is.matrix(Y) && nrow(Y) == nrow(CGGP$design)) || (length(Y) == nrow(CGGP$design))) {
+  if ((is.matrix(Y) && nrow(Y) == nrow(CGGP$design)) ||
+      (length(Y) == nrow(CGGP$design))) {
     CGGP$design_unevaluated <- NULL
   } else {
     stop("CGGP$design and Y have different length")
   }
   
-  #first do the pre-processing
-  #for cleanness: Y is always the user input, y is after transformation
+  # ====================================================================
+  # Do the pre-processing
+  # For cleanness: Y is always the user input, y is after transformation
+  # ====================================================================
   CGGP$Y = Y
   if(is.null(Xs)){ # No supplemental data
     CGGP$supplemented = FALSE
@@ -100,7 +111,7 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
     }
     CGGP$y = y
     
-  } else{ # Has supplemental data, used for prediction but not for fitting params
+  } else{ # Has supp data, used for prediction but not for fitting params
     # stop("Not working for supp")
     CGGP$supplemented = TRUE
     CGGP$Xs = Xs
@@ -111,7 +122,8 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
       y = Y-CGGP$mu
       ys = Ys-CGGP$mu
     } else{ # PCA no longer an option
-      CGGP$mu = colMeans(Ys) # Could use Y, or colMeans(rbind(Y, Ys)), or make sure Ys is big enough for this
+      CGGP$mu = colMeans(Ys) # Could use Y, or colMeans(rbind(Y, Ys)),
+      #  or make sure Ys is big enough for this
       y <- sweep(Y, 2, CGGP$mu)
       ys <- sweep(Ys, 2, CGGP$mu)
     }
@@ -143,13 +155,16 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
   }
   
   
+  # ==================================================
+  # Fit parameters for each output parameter dimension
+  # ==================================================
   for (opdlcv in 1:nopd) { # output parameter dimension
-    
     y.thisloop <- if (nopd==1) {y} else {y[,opdlcv]} # All of y or single column
-    if (!is.null(Ys)) {ys.thisloop <- if (nopd==1) {ys} else {ys[,opdlcv]}} # All of y or single column
+    if (!is.null(Ys)) {ys.thisloop <- if (nopd==1) {ys} else {ys[,opdlcv]}}
     else {ys.thisloop <- NULL}
     theta0.thisloop <- if (nopd==1) {theta0} else {theta0[,opdlcv]}
     
+    # Find MAP theta
     if (is.null(CGGP$Xs)){ # No supp data, just optimize
       opt.out = nlminb(
         theta0.thisloop,
@@ -197,10 +212,15 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
     }
     
     
+    # ===================================
+    # Update parameters and samples
+    # ===================================
     
     # Set new theta
     thetaMAP <- opt.out$par
-    sigma2MAP <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y.thisloop, theta=thetaMAP, return_lS=FALSE)$sigma2
+    sigma2MAP <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y.thisloop,
+                                                    theta=thetaMAP,
+                                                    return_lS=FALSE)$sigma2
     # If one value, it gives it as matrix. Convert it to scalar
     if (length(sigma2MAP) == 1) {sigma2MAP <- sigma2MAP[1,1]}
     
@@ -211,7 +231,7 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
     
     # H is the Hessian at thetaMAP with reverse transformation
     H = matrix(0,nrow=totnumpara,ncol=totnumpara)
-    # Transform so instead of -1 to 1 it is -Inf to Inf. Mostly in -5 to 5 though.
+    # Transform so instead of -1 to 1 it is -Inf to Inf. Mostly in -5 to 5.
     PSTn=  log((1+thetaMAP)/(1-thetaMAP))
     # Reverse transformation
     thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
@@ -233,7 +253,7 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
     Hmat = H/2+t(H)/2
     A = eigen(Hmat)
     cHa = (A$vectors)%*%diag(abs(A$values)^(-1/2))%*%t(A$vectors)
-
+    
     # Get posterior samples using Laplace approximation
     PST= log((1+thetaMAP)/(1-thetaMAP)) +
       cHa%*%matrix(rnorm(CGGP$numPostSamples*length(thetaMAP),0,1),
@@ -244,23 +264,27 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
     if(CGGP$supplemented){
       Cs = matrix(1,dim(CGGP$Xs)[1],CGGP$ss)
       for (dimlcv in 1:CGGP$d) { # Loop over dimensions
-        V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$xb, thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
+        V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$xb,
+                         thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
         Cs = Cs*V[,CGGP$designindex[,dimlcv]]
       }
       
       Sigma_t = matrix(1,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1])
       for (dimlcv in 1:CGGP$d) { # Loop over dimensions
-        V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$Xs[,dimlcv], thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
+        V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$Xs[,dimlcv],
+                         thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
         Sigma_t = Sigma_t*V
       }
       
-      MSE_s = list(matrix(0,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1]),(CGGP$d+1)*(CGGP$maxlevel+1)) 
+      MSE_s = list(matrix(0,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1]),
+                   (CGGP$d+1)*(CGGP$maxlevel+1)) 
       for (dimlcv in 1:CGGP$d) {
         for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
           MSE_s[[(dimlcv)*CGGP$maxlevel+levellcv]] =
             (-CGGP_internal_postvarmatcalc(CGGP$Xs[,dimlcv],CGGP$Xs[,dimlcv],
                                            CGGP$xb[1:CGGP$sizest[levellcv]],
-                                           thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],
+                                           thetaMAP[(dimlcv-1)*CGGP$numpara +
+                                                      1:CGGP$numpara],
                                            CorrMat=CGGP$CorrMat))
         }
       }
@@ -278,7 +302,9 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
       
       Sti_resid = solve(Sigma_t,ys.thisloop-yhats)
       Sti = solve(Sigma_t)
-      sigma2MAP = (sigma2MAP*dim(CGGP$design)[1]+colSums((ys.thisloop-yhats)*Sti_resid))/(dim(CGGP$design)[1]+dim(Xs)[1])
+      sigma2MAP = (sigma2MAP*dim(CGGP$design)[1] +
+                     colSums((ys.thisloop-yhats)*Sti_resid)) / (
+                       dim(CGGP$design)[1]+dim(Xs)[1])
       
       pw_adj_y = t(Cs)%*%Sti_resid
       pw_adj <- CGGP_internal_calcpw(CGGP=CGGP, y=pw_adj_y, theta=thetaMAP)
@@ -306,14 +332,14 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
         
         CGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nopd)
         if (length(sigma2MAP) != 1) {
-          stop("ERROR HERE, sigma2map can be matrix??? It is always a 1x1 matrix from what I've seen before.")
+          stop("Error: sigma2map should be a 1x1 matrix can be matrix.")
         }
         CGGP$sigma2MAP <- numeric(nopd)
         CGGP$pw <- matrix(NaN, length(pw), nopd) 
         # thetaPostSamples is matrix, so this is 3dim array below
-        CGGP$thetaPostSamples <- array(data = NaN, dim=c(dim(thetaPostSamples), nopd))
-        # CGGP$cholSs <- array(data = NaN, dim=c(dim(cholSs), nopd))
-        CGGP$cholSs <- vector("list", nopd) #array(data = NaN, dim=c(dim(cholSs), nopd))
+        CGGP$thetaPostSamples <- array(data = NaN,
+                                       dim=c(dim(thetaPostSamples), nopd))
+        CGGP$cholSs <- vector("list", nopd)
       }
       CGGP$thetaMAP[,opdlcv] <- thetaMAP
       CGGP$sigma2MAP[opdlcv] <- sigma2MAP
@@ -328,7 +354,8 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
           
           CGGP$pw_uppadj <- matrix(NaN, nrow(pw_uppadj), nopd)
           CGGP$supppw <- matrix(NaN, nrow(supppw), nopd)
-          CGGP$Sti = array(NaN, dim=c(dim(Sti), nopd)) # Sti is matrix, so this is 3 dim array
+          # Sti is matrix, so this is 3 dim array
+          CGGP$Sti = array(NaN, dim=c(dim(Sti), nopd))
         }
         CGGP$pw_uppadj[,opdlcv] <- pw_uppadj
         CGGP$supppw[,opdlcv] <- supppw
@@ -348,7 +375,7 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
 #' @param x2 Levels along dimension, vector???
 #' @param xo No clue what this is
 #' @param theta Correlation parameters
-#' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
+#' @param CorrMat Function that gives correlation matrix
 #' for vector of 1D points.
 #' @param ... Placeholder
 #' @param returndPVMC Should dPVMC be returned?
@@ -361,7 +388,10 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
 #' CGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
 #'              xo=c(.11), theta=c(.1,.2,.3),
 #'              CorrMat=CGGP_internal_CorrMatCauchySQT)
-CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,...,returndPVMC = FALSE,returndiagonly=FALSE) {
+CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat, ...,
+                                         returndPVMC = FALSE,
+                                         returndiagonly=FALSE) {
+  if (length(list(...))>0) {stop("Unnamed arguments given to CGGP_internal_postvarmatcalc")}
   if(!returndiagonly){
     if(!returndPVMC){
       S = CorrMat(xo, xo, theta)
@@ -394,8 +424,13 @@ CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,...,returndP
       dSigma_mat = matrix(0,dim(Sigma_mat)[1],dim(Sigma_mat)[2]*length(theta))
       for(k in 1:length(theta)){
         CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
-        dCoinvC1o = -backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
-        dCoinvC1o = dCoinvC1o + backsolve(cholS,backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]), transpose = TRUE))
+        dCoinvC1o = -backsolve(cholS,
+                               backsolve(cholS,CoinvC1oE, transpose = TRUE)
+        )
+        dCoinvC1o = dCoinvC1o + backsolve(cholS,
+                                          backsolve(cholS,
+                                                    t(dC1o[,(n*(k-1)+1):(k*n)]),
+                                                    transpose = TRUE))
         dSigma_mat[,((k-1)*dim(Sigma_mat)[2]+1):(k*dim(Sigma_mat)[2])] =
           -t(dCoinvC1o)%*%t(C2o)-t(CoinvC1o)%*%t(dC2o[,(n*(k-1)+1):(k*n)])
       }
@@ -433,9 +468,14 @@ CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,...,returndP
       dSigma_mat = matrix(0,length(Sigma_mat),length(theta))
       for(k in 1:length(theta)){
         CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
-        dCoinvC1o = -backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
-        dCoinvC1o = dCoinvC1o + backsolve(cholS,backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]), transpose = TRUE))
-        dSigma_mat[,k] =-rowSums(t(dCoinvC1o)*(C2o))-rowSums(t(CoinvC1o)*(dC2o[,(n*(k-1)+1):(k*n)]))
+        dCoinvC1o = -backsolve(cholS,
+                               backsolve(cholS,CoinvC1oE, transpose = TRUE))
+        dCoinvC1o = dCoinvC1o +
+          backsolve(cholS,
+                    backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]),
+                              transpose = TRUE))
+        dSigma_mat[,k] =-rowSums(t(dCoinvC1o)*(C2o)) -
+          rowSums(t(CoinvC1o)*(dC2o[,(n*(k-1)+1):(k*n)]))
       }
       return(list("Sigma_mat"= Sigma_mat,"dSigma_mat" = dSigma_mat))
     }

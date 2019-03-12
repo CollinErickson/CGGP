@@ -16,7 +16,7 @@ CGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat, ...,
 
 \item{theta}{Correlation parameters}
 
-\item{CorrMat}{Function that gives correlation matrix for vectors of 1D points.
+\item{CorrMat}{Function that gives correlation matrix
 for vector of 1D points.}
 
 \item{...}{Placeholder}

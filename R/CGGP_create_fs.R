@@ -245,10 +245,8 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   # This is all to create design from uo.
   # If only supp data is given, don't run it.
   if (CGGP$uoCOUNT > 0) {
-    
     # Get design from uo and other data
     CGGP <- CGGP_internal_getdesignfromCGGP(CGGP)
-    
     CGGP$design_unevaluated <- CGGP$design
   }
   return(CGGP)

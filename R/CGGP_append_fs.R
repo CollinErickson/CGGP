@@ -418,15 +418,6 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
     # Update data. Remove selected item, move rest up.
     # First get correct indices to change. Protect when selecting initial point
     new_indices <- if (CGGP$poCOUNT>1) {1:(CGGP$poCOUNT - 1)} else {numeric(0)}
-    # if (CGGP$poCOUNT < 1.5) { # Only option is first block, nothing else to move
-    #   old_indices <- numeric(0)
-    # } else if (pstar < 1.5) {
-    #   old_indices <- 2:CGGP$poCOUNT
-    # } else if (pstar > (CGGP$poCOUNT - 0.5)) {
-    #   old_indices <- 1:(pstar - 1)
-    # } else if (pstar < (CGGP$poCOUNT - 0.5) && pstar > 1.5) {
-    #   old_indices <- c(1:(pstar - 1), (pstar + 1):CGGP$poCOUNT)
-    # } else {stop("Not possible #729588")}
     old_indices <- setdiff(seq.int(1, CGGP$poCOUNT, 1), pstar)
     # Then change the data
     CGGP$po[new_indices,] = CGGP$po[old_indices,]
