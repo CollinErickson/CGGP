@@ -397,7 +397,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
           total_an = unique(
             c(total_an,
               CGGP$uala[total_an[anlcv], 1:CGGP$ualaCOUNT[total_an[anlcv]]])
-            )
+          )
         }
       }
       
@@ -532,8 +532,6 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
             IMES_MAP[CGGP$poCOUNT] <- mean(CGGP$sigma2MAP * IMES_MAP_beforemeannewpoint * multioutputdim_weights)
           } else if (selectionmethod=="UCB" || selectionmethod=="TS"){
             for(samplelcv in 1:CGGP$numPostSamples){
-              # IMES_PostSamples[CGGP$poCOUNT,samplelcv] = CGGP_internal_calcMSEde(as.vector(CGGP$po[CGGP$poCOUNT, ]),
-              #                                                                    MSE_PostSamples[,,samplelcv])
               if (nopd == 1) { # is a matrix
                 # Each sample has different sigma2, so use. If multiple output
                 #  parameter dimensions, take mean over sigma2.
@@ -542,8 +540,6 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
                   CGGP_internal_calcMSEde(as.vector(CGGP$po[CGGP$poCOUNT, ]),
                                           MSE_PostSamples[,,samplelcv,])
                 rm(sigma2.thistime)
-                # IMES_PostSamples[CGGP$poCOUNT,samplelcv] = CGGP_internal_calcMSEde(as.vector(CGGP$po[CGGP$poCOUNT, ]),
-                #                                                                    MSE_PostSamples[,,samplelcv,])
               } else { # is an array, need to apply
                 IMES_PostSamples_beforemeannewpoint = apply(MSE_PostSamples[,,samplelcv,],
                                                             3, # 3rd dim since samplelcv removes 3rd

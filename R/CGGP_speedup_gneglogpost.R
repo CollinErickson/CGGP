@@ -6,7 +6,7 @@
 #' @param CGGP CGGP object
 #' @param y CGGP$design measured values
 #' @param return_lik If yes, it returns a list with lik and glik
-#' @param ... Just a placeholder
+#' @param ... Forces you to name remaining arguments
 #' @param Xs Supplementary input data
 #' @param ys Supplementary output data
 #' @param HandlingSuppData How should supplementary data be handled?
@@ -26,12 +26,13 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
                                       ys=NULL,Xs=NULL,
                                       HandlingSuppData = "Correct") {
   
+  # ================================
+  # Check that inputs are acceptable
+  # ================================
   if (!(HandlingSuppData %in% c("Correct", "Only", "Ignore"))) {
     stop(paste("HandlingSuppData in CGGP_internal_neglogpost must be one of",
                "Correct, Only, Ignore"))
   }
-  
-  
   
   if(!is.null(Xs) && (is.null(y) || length(y)==0)){
     HandlingSuppData = "Only"
@@ -42,9 +43,11 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
   }
   
   
-  if(HandlingSuppData == "Only" || 
-     HandlingSuppData == "Correct"){
-    
+  # =======================
+  # Calculate gneglogpost
+  # =======================
+  
+  if(HandlingSuppData == "Only" || HandlingSuppData == "Correct"){
     Sigma_t = matrix(0,dim(Xs)[1],dim(Xs)[1])
     dSigma_to = list(Sigma_t,CGGP$d) 
     RTR = list(Sigma_t,CGGP$d) 
@@ -108,8 +111,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     
   }
   
-  if(HandlingSuppData == "Ignore" ||
-     HandlingSuppData == "Mixture" ){
+  if(HandlingSuppData == "Ignore" || HandlingSuppData == "Mixture" ){
     
     sigma2anddsigma2 <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y,
                                                            theta=theta,

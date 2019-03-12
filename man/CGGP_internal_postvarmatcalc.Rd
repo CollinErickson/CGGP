@@ -4,7 +4,7 @@
 \alias{CGGP_internal_postvarmatcalc}
 \title{Calculate posterior variance}
 \usage{
-CGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat, ...,
+CGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat,
   returndPVMC = FALSE, returndiagonly = FALSE)
 }
 \arguments{
@@ -18,8 +18,6 @@ CGGP_internal_postvarmatcalc(x1, x2, xo, theta, CorrMat, ...,
 
 \item{CorrMat}{Function that gives correlation matrix
 for vector of 1D points.}
-
-\item{...}{Placeholder}
 
 \item{returndPVMC}{Should dPVMC be returned?}
 

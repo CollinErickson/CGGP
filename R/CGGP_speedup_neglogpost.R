@@ -3,7 +3,7 @@
 #' @param theta Correlation parameters
 #' @param CGGP CGGP object
 #' @param y Measured values of CGGP$design
-#' @param ... Just a placeholder
+#' @param ... Forces you to name remaining arguments
 #' @param Xs Supplementary input data
 #' @param ys Supplementary output data
 #' @param HandlingSuppData How should supplementary data be handled?
@@ -27,7 +27,10 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
   if (max(theta) >= 1 || min(theta) <= -1) {
     return(Inf)
   }
-  if (runif(1)<.001) message(paste("HandlingSuppData is:", HandlingSuppData))
+  
+  # ================================
+  # Check that inputs are acceptable
+  # ================================
   if (!(HandlingSuppData %in% c("Correct", "Only", "Ignore"))) {
     stop(paste("HandlingSuppData in CGGP_internal_neglogpost must be one of",
                "Correct, Only, Ignore"))
@@ -42,9 +45,11 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
   }
   
   
+  # =======================
+  # Calculate neglogpost
+  # =======================
   
-  if(HandlingSuppData == "Only" || 
-     HandlingSuppData == "Correct"){
+  if(HandlingSuppData == "Only" || HandlingSuppData == "Correct"){
     Sigma_t = matrix(0,dim(Xs)[1],dim(Xs)[1])
     for (dimlcv in 1:CGGP$d) { # Loop over dimensions
       V = CGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv],
@@ -117,7 +122,6 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
   }
   
   if(HandlingSuppData == "Correct" ){
-    
     Sigma_t = matrix(0,dim(Xs)[1],dim(Xs)[1])
     for (dimlcv in 1:CGGP$d) { # Loop over dimensions
       V = CGGP$CorrMat(Xs[,dimlcv], Xs[,dimlcv],
@@ -206,5 +210,4 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
   }
   
   return(neglogpost)
-  
 }

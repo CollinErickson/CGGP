@@ -4,9 +4,8 @@
 \alias{CGGPfit}
 \title{Update CGGP model given data}
 \usage{
-CGGPfit(CGGP, Y, ..., Xs = NULL, Ys = NULL, theta0 = CGGP$thetaMAP,
-  HandlingSuppData = CGGP$HandlingSuppData, lower = rep(-1,
-  CGGP$numpara * CGGP$d), upper = rep(1, CGGP$numpara * CGGP$d),
+CGGPfit(CGGP, Y, Xs = NULL, Ys = NULL, theta0 = CGGP$thetaMAP,
+  HandlingSuppData = CGGP$HandlingSuppData,
   separateoutputparameterdimensions = is.matrix(CGGP$thetaMAP),
   use_progress_bar = TRUE, corr, Ynew)
 }
@@ -14,8 +13,6 @@ CGGPfit(CGGP, Y, ..., Xs = NULL, Ys = NULL, theta0 = CGGP$thetaMAP,
 \item{CGGP}{Sparse grid objects}
 
 \item{Y}{Output values calculated at CGGP$design}
-
-\item{...}{Forces you to name arguments.}
 
 \item{Xs}{Supplemental X matrix}
 
@@ -27,10 +24,6 @@ CGGPfit(CGGP, Y, ..., Xs = NULL, Ys = NULL, theta0 = CGGP$thetaMAP,
 * Correct: full likelihood with grid and supplemental data
 * Only: only use supplemental data
 * Ignore: ignore supplemental data}
-
-\item{lower}{Lower bound for parameter optimization}
-
-\item{upper}{Upper bound for parameter optimization}
 
 \item{separateoutputparameterdimensions}{If multiple output dimensions,
 should separate parameters be fit to each dimension?}
@@ -47,7 +40,7 @@ same as last time.}
 Updated CGGP object fit to data given
 }
 \description{
-Update CGGP model given data
+This function will update the GP parameters for a CGGP design.
 }
 \examples{
 cg <- CGGPcreate(d=3, batchsize=100)

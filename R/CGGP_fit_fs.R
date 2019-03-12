@@ -1,14 +1,14 @@
 
 
 #' Update CGGP model given data
+#' 
+#' This function will update the GP parameters for a CGGP design.
 #'
 #' @param CGGP Sparse grid objects
 #' @param Y Output values calculated at CGGP$design
 #' @param Xs Supplemental X matrix
 #' @param Ys Supplemental Y values
 #' @param theta0 Initial theta
-#' @param lower Lower bound for parameter optimization
-#' @param upper Upper bound for parameter optimization
 #' @param Ynew Values of `CGGP$design_unevaluated`
 #' @param separateoutputparameterdimensions If multiple output dimensions,
 #' should separate parameters be fit to each dimension?
@@ -20,7 +20,6 @@
 #' * Ignore: ignore supplemental data
 #' @param corr Will update correlation function, if left missing it will be
 #' same as last time.
-#' @param ... Forces you to name arguments.
 #' 
 #' @importFrom stats optim rnorm runif nlminb
 #'
@@ -32,11 +31,9 @@
 #' cg <- CGGPcreate(d=3, batchsize=100)
 #' y <- apply(cg$design, 1, function(x){x[1]+x[2]^2})
 #' cg <- CGGPfit(CGGP=cg, Y=y)
-CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
+CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
                     theta0 = CGGP$thetaMAP,
                     HandlingSuppData=CGGP$HandlingSuppData,
-                    lower=rep(-1,CGGP$numpara*CGGP$d),
-                    upper=rep(1,CGGP$numpara*CGGP$d),
                     separateoutputparameterdimensions=is.matrix(CGGP$thetaMAP),
                     use_progress_bar=TRUE,
                     corr,
@@ -44,8 +41,6 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
   # ================================
   # Check inputs, get Y from Ynew
   # ================================
-  if (length(list(...))>0) {stop("Unnamed arguments given to CGGPcreate")}
-  
   # If different correlation function is given, update it
   if (!missing(corr)) {
     message("Changing correlation function")
@@ -170,8 +165,6 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
         theta0.thisloop,
         objective = CGGP_internal_neglogpost,
         gradient = CGGP_internal_gneglogpost,
-        lower = lower, 
-        upper = upper,
         y = y.thisloop,
         CGGP = CGGP,
         ys = ys.thisloop,
@@ -185,8 +178,6 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
         theta0.thisloop,
         objective = CGGP_internal_neglogpost,
         gradient = CGGP_internal_gneglogpost,
-        lower = lower, 
-        upper = upper,
         y = y.thisloop,
         CGGP = CGGP,
         HandlingSuppData="Ignore", # Never supp data here, so set to Ignore
@@ -199,8 +190,6 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
         opt.out$par,
         objective = CGGP_internal_neglogpost,
         gradient = CGGP_internal_gneglogpost,
-        lower = lower,
-        upper = upper,
         y = y.thisloop,
         ys = ys.thisloop,
         Xs = Xs,
@@ -377,7 +366,6 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
 #' @param theta Correlation parameters
 #' @param CorrMat Function that gives correlation matrix
 #' for vector of 1D points.
-#' @param ... Placeholder
 #' @param returndPVMC Should dPVMC be returned?
 #' @param returndiagonly Should only the diagonal be returned?
 #'
@@ -388,10 +376,9 @@ CGGPfit <- function(CGGP, Y, ..., Xs=NULL,Ys=NULL,
 #' CGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
 #'              xo=c(.11), theta=c(.1,.2,.3),
 #'              CorrMat=CGGP_internal_CorrMatCauchySQT)
-CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat, ...,
+CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,
                                          returndPVMC = FALSE,
                                          returndiagonly=FALSE) {
-  if (length(list(...))>0) {stop("Unnamed arguments given to CGGP_internal_postvarmatcalc")}
   if(!returndiagonly){
     if(!returndPVMC){
       S = CorrMat(xo, xo, theta)

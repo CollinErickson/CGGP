@@ -4,9 +4,9 @@
 \alias{CGGPcreate}
 \title{Create sparse grid GP}
 \usage{
-CGGPcreate(d, batchsize, corr = "CauchySQ", ..., grid_sizes = c(1, 2,
-  4, 4, 8, 12, 32), Xs = NULL, Ys = NULL,
-  HandlingSuppData = "Correct", supp_args = list())
+CGGPcreate(d, batchsize, corr = "CauchySQ", grid_sizes = c(1, 2, 4, 4,
+  8, 12, 32), Xs = NULL, Ys = NULL, HandlingSuppData = "Correct",
+  supp_args = list())
 }
 \arguments{
 \item{d}{Input dimension}
@@ -16,8 +16,6 @@ for now only on predictions}
 
 \item{corr}{Name of correlation function to use. Must be one of "CauchySQT",
 "CauchySQ", "Cauchy", "Gaussian", "PowerExp", "Matern32", "Matern52".}
-
-\item{...}{Force named arguments}
 
 \item{grid_sizes}{Size of grid refinements.}
 

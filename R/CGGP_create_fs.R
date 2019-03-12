@@ -12,7 +12,6 @@
 #' @param Xs Supplemental X data
 #' @param Ys Supplemental Y data
 #' @param supp_args Arguments used to fit if Xs and Ys are given
-#' @param ... Force named arguments
 #' @param HandlingSuppData How should supplementary data be handled?
 #' * Correct: full likelihood with grid and supplemental data
 #' * Only: only use supplemental data
@@ -27,14 +26,12 @@
 #' @examples
 #' CGGPcreate(d=8,200)
 CGGPcreate <- function(d, batchsize, corr="CauchySQ",
-                       ...,
                        grid_sizes=c(1,2,4,4,8,12,32),
                        Xs=NULL, Ys=NULL,
                        HandlingSuppData="Correct",
                        supp_args=list()
 ) {
   if (d <= 1) {stop("d must be at least 2")}
-  if (length(list(...))>0) {stop("Unnamed arguments given to CGGPcreate")}
   
   # ===========================
   #  Create CGGP object
@@ -103,10 +100,12 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   CGGP$w = rep(0, CGGP$ML) #keep track of + and - for prediction
   CGGP$uoCOUNT = 0 ###1 # Number of used levels
   
+  
+  # =============================================================
+  #    Add Blocks
   # =============================================================
   # While number selected + min sample size <= batch size, i.e.,
   #  still have enough spots for a block, keep adding blocks
-  # =============================================================
   while (batchsize > (CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - 0.5)) {
     CGGP$uoCOUNT = CGGP$uoCOUNT + 1 #increment used count
     

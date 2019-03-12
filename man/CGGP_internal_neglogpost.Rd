@@ -14,7 +14,7 @@ CGGP_internal_neglogpost(theta, CGGP, y, ..., ys = NULL, Xs = NULL,
 
 \item{y}{Measured values of CGGP$design}
 
-\item{...}{Just a placeholder}
+\item{...}{Forces you to name remaining arguments}
 
 \item{ys}{Supplementary output data}
 

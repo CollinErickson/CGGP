@@ -14,7 +14,7 @@ CGGP_internal_gneglogpost(theta, CGGP, y, ..., return_lik = FALSE,
 
 \item{y}{CGGP$design measured values}
 
-\item{...}{Just a placeholder}
+\item{...}{Forces you to name remaining arguments}
 
 \item{return_lik}{If yes, it returns a list with lik and glik}
 
