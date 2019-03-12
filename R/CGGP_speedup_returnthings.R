@@ -1,4 +1,19 @@
-CGGP_internal_faststuff1 <- function(CGGP,y,theta) {
+#' CGGP_internal_calc_cholS_lS_sigma2_pw
+#' 
+#' Quickly calculate cholS, lS, sigma2, and pw. To be used within
+#' neglogpost.
+#'
+#' @param CGGP CGGP object 
+#' @param y Measured output values
+#' @param theta Correlation parameters
+#' 
+#' @noRd
+#'
+#' @return List with cholS, lS, sigma2, pw
+# @export
+#'
+# @examples
+CGGP_internal_calc_cholS_lS_sigma2_pw <- function(CGGP,y,theta) {
   #We need to return pw, sigma2 and cholS and lS
   
   Q  = max(CGGP$uo[1:CGGP$uoCOUNT,]) # Max value of all blocks
@@ -72,7 +87,23 @@ CGGP_internal_faststuff1 <- function(CGGP,y,theta) {
 }
 
 
-CGGP_internal_faststuff2 <- function(CGGP,y,theta) {
+#' CGGP_internal_calc_cholS_lS_dsigma2_pw_dMatdtheta
+#' 
+#' Quickly calculate cholS, lS, sigma2, dsigma2, dMatdtheta,
+#' and pw. To be used within gneglogpost.
+#'
+#' @param CGGP CGGP object
+#' @param y Measured output values
+#' @param theta Correlation parameters
+#' 
+#' @noRd
+#'
+#' @return List with cholS, lS, sigma2, dsigma2, dMatdtheta, and pw
+# @export
+#'
+# @examples
+CGGP_internal_calc_cholS_lS_dsigma2_pw_dMatdtheta <- function(CGGP,y,
+                                                                   theta) {
   #We need to return pw, sigma2, dsigma2, cholS, dMatdtheta and lS
   
   Q  = max(CGGP$uo[1:CGGP$uoCOUNT,]) # Max level of all blocks
@@ -149,7 +180,23 @@ CGGP_internal_faststuff2 <- function(CGGP,y,theta) {
 
 
 
-CGGP_internal_faststuff3 <- function(CGGP,revc,y,cholS,dMatdtheta) {
+#' CGGP_internal_calc_dvalo
+#' 
+#' Quickly calculate valo and dvalo. To be used within gneglogpost.
+#'
+#' @param CGGP CGGP object
+#' @param revc Input from a previous calculation
+#' @param y Measured output values
+#' @param cholS Cholesky factorizations
+#' @param dMatdtheta Input from a previous calculation
+#' 
+#' @noRd
+#'
+#' @return List with valo and dvalo
+# @export
+#'
+# @examples
+CGGP_internal_calc_dvalo <- function(CGGP,revc,y,cholS,dMatdtheta) {
   Q  = max(CGGP$uo[1:CGGP$uoCOUNT,]) # Max level of all blocks
   
   if(is.matrix(y)){

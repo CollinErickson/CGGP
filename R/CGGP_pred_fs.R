@@ -79,7 +79,7 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
     } else { # recalculate pw and sigma2MAP
       y.thisloop <- if (nopd==1) CGGP$y else CGGP$y[,opdlcv]
       
-      lik_stuff <- CGGP_internal_faststuff1(CGGP=CGGP, y=y.thisloop,theta=thetaMAP.thisloop)
+      lik_stuff <- CGGP_internal_calc_cholS_lS_sigma2_pw(CGGP=CGGP, y=y.thisloop,theta=thetaMAP.thisloop)
       cholS.thisloop = lik_stuff$cholS
       sigma2MAP.thisloop <-  lik_stuff$sigma2
       pw.thisloop = lik_stuff$pw

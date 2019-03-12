@@ -160,7 +160,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     }
     Cs = exp(Cs)
     
-    Cmat1 = matrix( rep(Cs, CGGP$numpara ) , nrow = nrow(Cs) , byrow = FALSE )
+    Cmat1 = matrix(rep(Cs, CGGP$numpara), nrow = nrow(Cs), byrow = FALSE)
     
     dCs = lapply(dCs, FUN = function(x) Cmat1*x)
     for (dimlcv in 1:CGGP$d) { # Loop over dimensions
@@ -169,7 +169,8 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
       dGGGG1[[dimlcv]] =Cmat2*(dGGGG1[[dimlcv]])
     }
     
-    lik_stuff <- CGGP_internal_faststuff2(CGGP=CGGP, y=y, theta=theta)
+    lik_stuff <- CGGP_internal_calc_cholS_lS_dsigma2_pw_dMatdtheta(
+      CGGP=CGGP, y=y, theta=theta)
     cholS = lik_stuff$cholS
     dSV = lik_stuff$dMatdtheta
     lS <- lik_stuff$lS
@@ -315,7 +316,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     }else{
       temp4 = t(Cs)%*%tempvec1
     }
-    dsigma2_hat_part3 =  -2*(CGGP_internal_faststuff3(CGGP,y,temp4,cholS,dSV
+    dsigma2_hat_part3 =  -2*(CGGP_internal_calc_dvalo(CGGP,y,temp4,cholS,dSV
                                                       )$dvalo)
     lDet_supp = 2*sum(log(diag(Sigma_chol)))
     sigma2_hat_supp = colSums((ys-yhats)*tempvec1)/dim(Xs)[1]

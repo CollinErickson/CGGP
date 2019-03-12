@@ -213,7 +213,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     # If one value, it gives it as matrix. Convert it to scalar
     if (length(sigma2MAP) == 1) {sigma2MAP <- sigma2MAP[1,1]}
     
-    lik_stuff <- CGGP_internal_faststuff1(CGGP=CGGP, y.thisloop, theta=thetaMAP)
+    lik_stuff <- CGGP_internal_calc_cholS_lS_sigma2_pw(CGGP=CGGP, y.thisloop, theta=thetaMAP)
     cholSs = lik_stuff$cholS
     pw <- lik_stuff$pw
     totnumpara = length(thetaMAP)
