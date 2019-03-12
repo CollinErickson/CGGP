@@ -125,31 +125,31 @@ test_that("CGGPfit works with Ynew - vector output", {
   
 })
 
-test_that("postvarmatcalc", {
-  # These don't work unless x1 and x2 have same length.
-  # Maybe only makes sense when x1 == x2?
-  x1 <- runif(5)
-  x2 <- x1
-  o1 <- CGGP_internal_postvarmatcalc(x1, x2,
-                               xo=c(.11), theta=c(.1,.2,.3),
-                               CorrMat=CGGP_internal_CorrMatCauchySQT,
-                               returndPVMC=F, returndiagonly=F)
-  o2 <- CGGP_internal_postvarmatcalc(x1, x2,
-                                     xo=c(.11), theta=c(.1,.2,.3),
-                                     CorrMat=CGGP_internal_CorrMatCauchySQT,
-                                     returndPVMC=F, returndiagonly=T)
-  o3 <- CGGP_internal_postvarmatcalc(x1, x2,
-                                     xo=c(.11), theta=c(.1,.2,.3),
-                                     CorrMat=CGGP_internal_CorrMatCauchySQT,
-                                     returndPVMC=T, returndiagonly=F)
-  o4 <- CGGP_internal_postvarmatcalc(x1, x2,
-                                     xo=c(.11), theta=c(.1,.2,.3),
-                                     CorrMat=CGGP_internal_CorrMatCauchySQT,
-                                     returndPVMC=T, returndiagonly=T)
-  expect_equal(o1, o3$Sigma_mat)
-  expect_equal(diag(o1), o2)
-  expect_equal(o4$Sigma_mat, diag(o3$Sigma_mat))
-  expect_equal(o4$dSigma_mat[,1], diag(o3$dSigma_mat[,1:5]))
-  expect_equal(o4$dSigma_mat[,2], diag(o3$dSigma_mat[,6:10]))
-  expect_equal(o4$dSigma_mat[,3], diag(o3$dSigma_mat[,11:15]))
-})
+# test_that("postvarmatcalc", {
+#   # These don't work unless x1 and x2 have same length.
+#   # Maybe only makes sense when x1 == x2?
+#   x1 <- runif(5)
+#   x2 <- x1
+#   o1 <- CGGP_internal_postvarmatcalc(x1, x2,
+#                                xo=c(.11), theta=c(.1,.2,.3),
+#                                CorrMat=CGGP_internal_CorrMatCauchySQT,
+#                                returndPVMC=F, returndiagonly=F)
+#   o2 <- CGGP_internal_postvarmatcalc(x1, x2,
+#                                      xo=c(.11), theta=c(.1,.2,.3),
+#                                      CorrMat=CGGP_internal_CorrMatCauchySQT,
+#                                      returndPVMC=F, returndiagonly=T)
+#   o3 <- CGGP_internal_postvarmatcalc(x1, x2,
+#                                      xo=c(.11), theta=c(.1,.2,.3),
+#                                      CorrMat=CGGP_internal_CorrMatCauchySQT,
+#                                      returndPVMC=T, returndiagonly=F)
+#   o4 <- CGGP_internal_postvarmatcalc(x1, x2,
+#                                      xo=c(.11), theta=c(.1,.2,.3),
+#                                      CorrMat=CGGP_internal_CorrMatCauchySQT,
+#                                      returndPVMC=T, returndiagonly=T)
+#   expect_equal(o1, o3$Sigma_mat)
+#   expect_equal(diag(o1), o2)
+#   expect_equal(o4$Sigma_mat, diag(o3$Sigma_mat))
+#   expect_equal(o4$dSigma_mat[,1], diag(o3$dSigma_mat[,1:5]))
+#   expect_equal(o4$dSigma_mat[,2], diag(o3$dSigma_mat[,6:10]))
+#   expect_equal(o4$dSigma_mat[,3], diag(o3$dSigma_mat[,11:15]))
+# })

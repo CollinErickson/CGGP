@@ -215,7 +215,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
         INDSN = 1:CGGP$sizest[levellcv]
         INDSN = INDSN[sort(CGGP$xb[1:CGGP$sizest[levellcv]],
                            index.return = TRUE)$ix]
-        REEALL = CGGP_internal_postvarmatcalcfaster(TT1,
+        REEALL = CGGP_internal_postvarmatcalc_fromGMat(TT1,
                                                     TT2,
                                                     cholS[[gg+levellcv]],
                                                     dSV[[gg+levellcv]],

@@ -370,7 +370,8 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
 #' @param returndiagonly Should only the diagonal be returned?
 #'
 #' @return Variance posterior
-#' @export
+# @export
+#' @noRd
 #'
 #' @examples
 #' CGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),

@@ -13,13 +13,9 @@
 #' @param ... Placeholder
 #'
 #' @return Variance posterior
-#' @export
-#'
-#' @examples
-#' CGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
-#'              xo=c(.11), theta=c(.1,.2,.3),
-#'              CorrMat=CGGP_internal_CorrMatCauchySQT)
-CGGP_internal_postvarmatcalcfaster <- function(GMat, dGMat,cholS,dSMat,INDSN,numpara,...,
+# @export
+#' @noRd
+CGGP_internal_postvarmatcalc_fromGMat <- function(GMat, dGMat,cholS,dSMat,INDSN,numpara,...,
                                          returnlogs=FALSE, returnderiratio =FALSE,
                                          returndG = FALSE,returndiag = FALSE) {
   # Next line was giving error with single value, so I changed it

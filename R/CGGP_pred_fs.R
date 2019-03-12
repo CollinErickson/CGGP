@@ -112,7 +112,7 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
         gg = (dimlcv-1)*Q
         INDSN = 1:CGGP$sizest[levellcv]
         INDSN = INDSN[sort(CGGP$xb[1:CGGP$sizest[levellcv]],index.return = TRUE)$ix]
-        MSE_v[[(dimlcv)*CGGP$maxlevel+levellcv]] = (CGGP_internal_postvarmatcalcfaster(GGGG[[dimlcv]],
+        MSE_v[[(dimlcv)*CGGP$maxlevel+levellcv]] = (CGGP_internal_postvarmatcalc_fromGMat(GGGG[[dimlcv]],
                                                                                        c(),
                                                                                        as.matrix(cholS.thisloop[[gg+levellcv]]),
                                                                                        c(),
@@ -201,7 +201,7 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
         for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
           INDSN = 1:CGGP$sizest[levellcv]
           INDSN = INDSN[sort(CGGP$xb[1:CGGP$sizest[levellcv]],index.return = TRUE)$ix]
-          REEALL= CGGP_internal_postvarmatcalcfasterasym6(GGGG[[dimlcv]],
+          REEALL= CGGP_internal_postvarmatcalc_fromGMat_asym(GGGG[[dimlcv]],
                                                                                               GGGG2[[dimlcv]],
                                                                                               as.matrix(cholS.thisloop[[gg+levellcv]]),
                                                                                               INDSN)
@@ -304,13 +304,9 @@ CGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
 #' @param INDSN Indices, maybe
 #'
 #' @return Variance posterior
-#' @export
-#'
-#' @examples
-#' CGGP_internal_postvarmatcalc(c(.4,.52), c(0,.25,.5,.75,1),
-#'              xo=c(.11), theta=c(.1,.2,.3),
-#'              CorrMat=CGGP_internal_CorrMatCauchySQT)
-CGGP_internal_postvarmatcalcfasterasym6 <- function(GMat1,GMat2,cholS,INDSN) {
+## @export
+#' @noRd
+CGGP_internal_postvarmatcalc_fromGMat_asym <- function(GMat1,GMat2,cholS,INDSN) {
   
   CoinvC1o = backsolve(cholS,backsolve(cholS,t(GMat1[,INDSN]), transpose = TRUE))
   Sigma_mat =  (t(CoinvC1o)%*%(t(GMat2[,INDSN])))
