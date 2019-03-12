@@ -30,18 +30,23 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
                        ...,
                        grid_sizes=c(1,2,4,4,8,12,32),
                        Xs=NULL, Ys=NULL,
-                       HandlingSuppData=if (is.null(Xs)) {"Ignore"} else {"Correct"},
+                       HandlingSuppData="Correct",
                        supp_args=list()
 ) {
   if (d <= 1) {stop("d must be at least 2")}
   if (length(list(...))>0) {stop("Unnamed arguments given to CGGPcreate")}
+  
+  # ===========================
+  #  Create CGGP object
+  # ===========================
+  
   # This is list representing our GP object
   CGGP <- list()
   class(CGGP) <- c("CGGP", "list") # Give it class CGGP
-  
   CGGP$d <- d
   CGGP$HandlingSuppData <- HandlingSuppData
   CGGP <- CGGP_internal_set_corr(CGGP, corr)
+  CGGP$nugget <- 0
   
   # Partial matching is very bad! Keep these as length 0 instead of NULL,
   #  otherwise CGGP$Y can return CGGP$Ys
@@ -93,9 +98,15 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   CGGP$ss = 0
   
   
+  
+  
   CGGP$w = rep(0, CGGP$ML) #keep track of + and - for prediction
   CGGP$uoCOUNT = 0 ###1 # Number of used levels
-  # While number selected + min sample size <= batch size, i.e., still have enough spots for a block
+  
+  # =============================================================
+  # While number selected + min sample size <= batch size, i.e.,
+  #  still have enough spots for a block, keep adding blocks
+  # =============================================================
   while (batchsize > (CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - 0.5)) {
     CGGP$uoCOUNT = CGGP$uoCOUNT + 1 #increment used count
     
@@ -216,8 +227,8 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
       1 / 2, # 0, 1
       3 / 8, # 1/8, 7/8
       1 / 4, # 1/4, 3/4
-      1 / 8,
-      15 / 32,
+      1 / 8, # 3/8, 5/8
+      15 / 32, # etc
       7 / 16,
       3 / 16,
       5 / 16,
@@ -236,10 +247,12 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   CGGP$xb = 0.5 + c(0, xb * rep(c(-1, 1), length(xb) / 2))
   CGGP$xindex = 1:length(xb) # Why not length(CGGP$xb), which is one longer than xb?
   # After this xb is
-  #  [1] 0.50000 0.12500 0.87500 0.25000 0.75000 0.37500 0.62500 0.28125 0.71875 0.31250 0.68750 0.00000 1.00000 0.18750 0.81250
-  # [16] 0.06250 0.93750 0.43750 0.56250 0.40625 0.59375 0.09375 0.90625 0.21875 0.78125 0.34375 0.65625 0.46875 0.53125 0.15625
+  #  [1] 0.50000 0.12500 0.87500 0.25000 0.75000 0.37500 0.62500 0.28125
+  #      0.71875 0.31250 0.68750 0.00000 1.00000 0.18750 0.81250
+  # [16] 0.06250 0.93750 0.43750 0.56250 0.40625 0.59375 0.09375 0.90625
+  #      0.21875 0.78125 0.34375 0.65625 0.46875 0.53125 0.15625
   # [31] 0.84375 0.03125 0.96875
-  CGGP$sizest = cumsum(CGGP$sizes) # Total number of points in 1D design as you go along axis
+  CGGP$sizest = cumsum(CGGP$sizes) # Total # of points in 1D design along axis
   
   
   # This is all to create design from uo.
@@ -249,5 +262,6 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
     CGGP <- CGGP_internal_getdesignfromCGGP(CGGP)
     CGGP$design_unevaluated <- CGGP$design
   }
+  
   return(CGGP)
 }

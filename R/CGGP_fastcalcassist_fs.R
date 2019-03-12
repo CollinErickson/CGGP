@@ -47,10 +47,10 @@ CGGP_internal_calcpw <- function(CGGP, y, theta, return_lS=FALSE) {
     gg = (1:CGGP$d-1)*Q
     for (blocklcv in 1:CGGP$uoCOUNT) {
       if(abs(CGGP$w[blocklcv])>0.5){
-      IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
-      B = y[IS]
-      rcpp_kronDBS(unlist(cholS[gg+CGGP$uo[blocklcv,]]), B, CGGP$gridsizest[blocklcv,])
-      pw[IS] = pw[IS]+CGGP$w[blocklcv] * B
+        IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
+        B = y[IS]
+        rcpp_kronDBS(unlist(cholS[gg+CGGP$uo[blocklcv,]]), B, CGGP$gridsizest[blocklcv,])
+        pw[IS] = pw[IS]+CGGP$w[blocklcv] * B
       }
     }
     if (return_lS) {
@@ -65,14 +65,14 @@ CGGP_internal_calcpw <- function(CGGP, y, theta, return_lS=FALSE) {
     gg = (1:CGGP$d-1)*Q
     for (blocklcv in 1:CGGP$uoCOUNT) {
       if(abs(CGGP$w[blocklcv])>0.5){
-      IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
-      VVV1 = unlist(cholS[gg+CGGP$uo[blocklcv,]]);
-      VVV2 = CGGP$gridsizest[blocklcv,];
-      for(outdimlcv in 1:numout){
-        B = y[IS,outdimlcv]
-        rcpp_kronDBS(VVV1, B, VVV2)
-        pw[IS,outdimlcv] = pw[IS,outdimlcv]+CGGP$w[blocklcv] * B
-      }
+        IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
+        VVV1 = unlist(cholS[gg+CGGP$uo[blocklcv,]]);
+        VVV2 = CGGP$gridsizest[blocklcv,];
+        for(outdimlcv in 1:numout){
+          B = y[IS,outdimlcv]
+          rcpp_kronDBS(VVV1, B, VVV2)
+          pw[IS,outdimlcv] = pw[IS,outdimlcv]+CGGP$w[blocklcv] * B
+        }
       }
     }
     if (return_lS) {
@@ -137,11 +137,11 @@ CGGP_internal_calcpwanddpw <- function(CGGP, y, theta, return_lS=FALSE) {
   gg = (1:CGGP$d-1)*Q
   for (blocklcv in 1:CGGP$uoCOUNT) {
     if(abs(CGGP$w[blocklcv])>0.5){
-    IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
-    B = CGGP$w[blocklcv]*y[IS]
-    dB = rcpp_gkronDBS(unlist(cholS[gg+CGGP$uo[blocklcv,]]),unlist(dMatdtheta[gg+CGGP$uo[blocklcv,]]), B, CGGP$gridsizest[blocklcv,])
-    dpw[,IS] = dpw[,IS] +dB
-    pw[IS] = pw[IS] + B
+      IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
+      B = CGGP$w[blocklcv]*y[IS]
+      dB = rcpp_gkronDBS(unlist(cholS[gg+CGGP$uo[blocklcv,]]),unlist(dMatdtheta[gg+CGGP$uo[blocklcv,]]), B, CGGP$gridsizest[blocklcv,])
+      dpw[,IS] = dpw[,IS] +dB
+      pw[IS] = pw[IS] + B
     }
   }
   dpw =t(dpw)
@@ -187,15 +187,15 @@ CGGP_internal_calcsigma2 <- function(CGGP, y, theta, return_lS=FALSE) {
     gg = (1:CGGP$d-1)*Q
     for (blocklcv in 1:CGGP$uoCOUNT) {
       if(abs(CGGP$w[blocklcv])>0.5){
-      IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
-      VVV1=unlist(cholS[gg+CGGP$uo[blocklcv,]])
-      VVV3=CGGP$gridsizest[blocklcv,]
-      for(outdimlcv in 1:numout){
-        B0 = y[IS,outdimlcv]
-        B = (CGGP$w[blocklcv]/dim(y)[1])*B0
-        rcpp_kronDBS(VVV1,B,VVV3)
-        sigma2[outdimlcv] = sigma2[outdimlcv]  + t(B0)%*%B
-      }
+        IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
+        VVV1=unlist(cholS[gg+CGGP$uo[blocklcv,]])
+        VVV3=CGGP$gridsizest[blocklcv,]
+        for(outdimlcv in 1:numout){
+          B0 = y[IS,outdimlcv]
+          B = (CGGP$w[blocklcv]/dim(y)[1])*B0
+          rcpp_kronDBS(VVV1,B,VVV3)
+          sigma2[outdimlcv] = sigma2[outdimlcv]  + t(B0)%*%B
+        }
       }
     }
     out <- list(sigma2=sigma2)
@@ -208,12 +208,12 @@ CGGP_internal_calcsigma2 <- function(CGGP, y, theta, return_lS=FALSE) {
     gg = (1:CGGP$d-1)*Q
     for (blocklcv in 1:CGGP$uoCOUNT) {
       if(abs(CGGP$w[blocklcv])>0.5){
-      IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
-      B0 = y[IS]
-      B = (CGGP$w[blocklcv]/length(y))*B0
-      rcpp_kronDBS(unlist(cholS[gg+CGGP$uo[blocklcv,]]),B, CGGP$gridsizest[blocklcv,])
-      sigma2 = sigma2 + t(B0)%*%B
-      if (any(is.na(sigma2))) {warning("sigma2 is NA in CGGP_internal_calcsigma2")}
+        IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
+        B0 = y[IS]
+        B = (CGGP$w[blocklcv]/length(y))*B0
+        rcpp_kronDBS(unlist(cholS[gg+CGGP$uo[blocklcv,]]),B, CGGP$gridsizest[blocklcv,])
+        sigma2 = sigma2 + t(B0)%*%B
+        if (any(is.na(sigma2))) {warning("sigma2 is NA in CGGP_internal_calcsigma2")}
       }
     }
     out <- list(sigma2=sigma2)
@@ -267,17 +267,17 @@ CGGP_internal_calcsigma2anddsigma2 <- function(CGGP, y, theta, return_lS=FALSE) 
     gg = (1:CGGP$d-1)*Q
     for (blocklcv in 1:CGGP$uoCOUNT) {
       if(abs(CGGP$w[blocklcv])>0.5){
-      IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
-      VVV1=unlist(cholS[gg+CGGP$uo[blocklcv,]])
-      VVV2=unlist(dMatdtheta[gg+CGGP$uo[blocklcv,]])
-      VVV3=CGGP$gridsizest[blocklcv,]
-      for(outdimlcv in 1:numout){
-        B0 = y[IS,outdimlcv]
-        B = (CGGP$w[blocklcv]/dim(y)[1])*B0
-        dB = rcpp_gkronDBS(VVV1,VVV2,B,VVV3)
-        dsigma2[,outdimlcv] = dsigma2[,outdimlcv] + as.vector(dB%*%B0)
-        sigma2[outdimlcv] = sigma2[outdimlcv]  + sum(B0*B)
-      }
+        IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
+        VVV1=unlist(cholS[gg+CGGP$uo[blocklcv,]])
+        VVV2=unlist(dMatdtheta[gg+CGGP$uo[blocklcv,]])
+        VVV3=CGGP$gridsizest[blocklcv,]
+        for(outdimlcv in 1:numout){
+          B0 = y[IS,outdimlcv]
+          B = (CGGP$w[blocklcv]/dim(y)[1])*B0
+          dB = rcpp_gkronDBS(VVV1,VVV2,B,VVV3)
+          dsigma2[,outdimlcv] = dsigma2[,outdimlcv] + as.vector(dB%*%B0)
+          sigma2[outdimlcv] = sigma2[outdimlcv]  + sum(B0*B)
+        }
       }
     }
     out <- list(sigma2=sigma2,
@@ -292,13 +292,13 @@ CGGP_internal_calcsigma2anddsigma2 <- function(CGGP, y, theta, return_lS=FALSE) 
     gg = (1:CGGP$d-1)*Q
     for (blocklcv in 1:CGGP$uoCOUNT) {
       if(abs(CGGP$w[blocklcv])>0.5){
-      IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
-      B0 = y[IS]
-      B = (CGGP$w[blocklcv]/length(y))*B0
-      dB = rcpp_gkronDBS(unlist(cholS[gg+CGGP$uo[blocklcv,]]),unlist(dMatdtheta[gg+CGGP$uo[blocklcv,]]), B, CGGP$gridsizest[blocklcv,])
-      
-      dsigma2 = dsigma2 +t(B0)%*%t(dB)
-      sigma2 = sigma2 + t(B0)%*%B
+        IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]];
+        B0 = y[IS]
+        B = (CGGP$w[blocklcv]/length(y))*B0
+        dB = rcpp_gkronDBS(unlist(cholS[gg+CGGP$uo[blocklcv,]]),unlist(dMatdtheta[gg+CGGP$uo[blocklcv,]]), B, CGGP$gridsizest[blocklcv,])
+        
+        dsigma2 = dsigma2 +t(B0)%*%t(dB)
+        sigma2 = sigma2 + t(B0)%*%B
       }
     }
     out <- list(sigma2=sigma2,
