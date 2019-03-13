@@ -218,6 +218,15 @@ test_that("Single output: check that supp only matches grid predictions", {
   plot(predict(cg_grid, xp)$va , predict(cg_supp, xp)$va); abline(a=0,b=1, col=2)
   expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
   expect_equal(c(predict(cg_grid, xp)$va), predict(cg_supp, xp)$va, tol=.1)
+  
+  
+  # Check likelihood matches. Won't actually match because of missing constants,
+  #  but differences should match
+  expect_equal(CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) - 
+                 CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
+               CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) - 
+                 CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
+  )
 })
 
 
@@ -249,6 +258,15 @@ test_that("MV, shared params, check that supp only matches grid predictions", {
   plot(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va)
   expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
   expect_equal(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va, tol=1e-2)
+  
+  # Check likelihood matches. Won't actually match because of missing constants,
+  #  but differences should match
+  print("Bring back this test in testsupponly")
+  # expect_equal(CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) - 
+  #                CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
+  #              CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) - 
+  #                CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
+  # )
 })
 
 
@@ -280,4 +298,14 @@ test_that("MV, separate params, check that supp only matches grid predictions", 
   plot(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va)
   expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
   expect_equal(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va, tol=1e-2)
+  
+  # Check likelihood matches. Won't actually match because of missing constants,
+  #  but differences should match
+  print("Bring back this test in testsupponly")
+  # expect_equal(CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) - 
+  #                CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
+  #              CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) - 
+  #                CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
+  # )
+  
 })
