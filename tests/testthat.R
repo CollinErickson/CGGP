@@ -1,4 +1,4 @@
 library(testthat)
-library(SGGP)
+library(CGGP)
 
-test_check("SGGP")
+test_check("CGGP")

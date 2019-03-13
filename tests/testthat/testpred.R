@@ -1,3 +1,5 @@
+context("testpred")
+
 test_that("Prediction matches exact on small samples", {
   
   # Use borehole
@@ -52,21 +54,21 @@ test_that("Prediction matches exact on small samples", {
     outer(1:nrow(X), 1:nrow(U), Vectorize(function(i,j) {CorrMatCauchySQTVecs(X[i,],U[j,],theta)}))
   }
   
-  SG = SGGPcreate(d=d,31, corr="CauchySQT") # Need size to be small to avoid computationally singular in solve
+  SG = CGGPcreate(d=d,31, corr="CauchySQT") # Need size to be small to avoid computationally singular in solve
   Y = testf(SG$design) #the design is $design, simple enough, right?
   
   n <- 50
   xp <- matrix(runif(d*n),n,d)
   
   # Get error if not fit yet
-  expect_error(SGGPpred(SG, xp))
+  expect_error(CGGPpred(SG, xp))
   
   # Then fit
-  SG <- SGGPfit(SG=SG, Y=Y)
+  SG <- CGGPfit(CGGP=SG, Y=Y)
   # Now it should work
-  expect_error(SGpred <- SGGPpred(xp=xp, SGGP=SG), NA)
+  expect_error(SGpred <- CGGPpred(xp=xp, CGGP=SG), NA)
   # Get error if wrong order of args
-  expect_error(SGGPpred(xp, SG))
+  expect_error(CGGPpred(xp, SG))
   
   my <- mean(Y)
   dy <- Y - my
@@ -98,9 +100,9 @@ test_that("Prediction matches exact on small samples", {
   ns <- 10
   Xs <- matrix(runif(ns*d), ns, d)
   Ys <- testf(Xs)
-  SGs <- SGGPfit(SG, SG$Y, Xs=Xs, Ys=Ys, HandlingSuppData="Correct")
+  SGs <- CGGPfit(SG, SG$Y, Xs=Xs, Ys=Ys, HandlingSuppData="Correct")
   rm(SG)
-  SGpred <- SGGPpred(xp=xp, SGGP=SGs)
+  SGpred <- CGGPpred(xp=xp, CGGP=SGs)
 
   Xall <- rbind(SGs$design, Xs)
   Yall <- c(SGs$Y, Ys)
@@ -136,7 +138,7 @@ test_that("Prediction matches exact on small samples", {
   # ----------------------------
   # Pred with only supp is exact
   # ----------------------------
-  sg <- SGGPcreate(d, 0, Xs=Xs, Ys=Ys, corr="CauchySQT")
+  sg <- CGGPcreate(d, 0, Xs=Xs, Ys=Ys, corr="CauchySQT")
   SGpred <- predict(sg, xp)
   my <- mean(Ys)
   dy <- Ys - my
@@ -166,14 +168,14 @@ test_that("Prediction matches exact on small samples", {
 })
 
 test_that("predMV works", {
-  SG <- SGGPcreate(d=3, batchsize=100)
+  SG <- CGGPcreate(d=3, batchsize=100)
   f1 <- function(x){x[1]+x[2]^2}
   f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
   y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
   y2 <- apply(SG$design, 1, f2)#+rnorm(1,0,.01)
   y <- cbind(y1, y2)
-  SG <- SGGPfit(SG, Y=y)
-  yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
+  SG <- CGGPfit(SG, Y=y)
+  yMVpred <- CGGPpred(SG$design, CGGP=SG)$mean
   expect_equal(yMVpred[,1], y1, 1e-4)
   expect_equal(yMVpred[,2], y2, 1e-4)
   
@@ -184,9 +186,9 @@ test_that("predMV works", {
   
   # Check outdims
   # Get error if not suitable
-  expect_error(SGGPpred(SG$design, SGGP=SG, outdims = 2))
-  SGsep <- SGGPfit(SG, SG$Y, use_PCA = F, separateoutputparameterdimensions = T)
-  yMVpred_o2 <- SGGPpred(SG$design, SGGP=SGsep, outdims = 2)$mean
+  expect_error(CGGPpred(SG$design, CGGP=SG, outdims = 2))
+  SGsep <- CGGPfit(SG, SG$Y, separateoutputparameterdimensions = T)
+  yMVpred_o2 <- CGGPpred(SG$design, CGGP=SGsep, outdims = 2)$mean
   # Second dim should match, first should not.
   expect_equal(yMVpred_o2[,2], y2, 1e-4)
   # expect_true(all(abs(yMVpred_o2[,1] - y1)> 1e-4)) # This was failing on Travis
@@ -196,21 +198,21 @@ test_that("predMV works", {
   
   # Doesn't work since there's no way to update Y without updating parameters too.
   # xpred <- matrix(runif(100*3),100,3)
-  # SG1 <- SGGPfit(SG, Y=y1)
-  # SG2 <- SGGPfit(SG, Y=y2)
-  # y1pred <- SGGPpred(xpred, SG=SG1)$mean
-  # y2pred <- SGGPpred(xpred, SG=SG2)$mean
-  # yMVpred <- SGGPpred(xpred, SG=SG)$mean
+  # SG1 <- CGGPfit(SG, Y=y1)
+  # SG2 <- CGGPfit(SG, Y=y2)
+  # y1pred <- CGGPpred(xpred, SG=SG1)$mean
+  # y2pred <- CGGPpred(xpred, SG=SG2)$mean
+  # yMVpred <- CGGPpred(xpred, SG=SG)$mean
   # expect_equal(yMVpred[,1], c(y1pred), tol=1e-2)
   # expect_equal(yMVpred[,2], c(y2pred), tol=1e-2)
 })
 
 test_that("Supplemented works", {
   d <- 3
-  SG <- SGGPcreate(d=d, batchsize=100)
+  SG <- CGGPcreate(d=d, batchsize=100)
   f1 <- function(x){x[1]+sin(2*pi*x[1]) + x[2]^2}
   y1 <- apply(SG$design, 1, f1)
-  SG <- SGGPfit(SG, Y=y1)
+  SG <- CGGPfit(SG, Y=y1)
   
   # Add supplemental data
   nsup <- 20
@@ -221,23 +223,23 @@ test_that("Supplemented works", {
   # SG$Ys <- ysup
   
   # # Get error when not fit
-  # expect_error(SGGPpred(xp=xsup, SG=SG))
+  # expect_error(CGGPpred(xp=xsup, SG=SG))
   
   # Should work after fitting
-  SG <- SGGPfit(SG, Y=y1, Xs=xsup, Ys=ysup)
+  SG <- CGGPfit(SG, Y=y1, Xs=xsup, Ys=ysup)
   
   # Predictions should match values at supplemented points
-  expect_equal(c(SGGPpred(xp=xsup, SGGP=SG)$me), ysup, tol=1e-4)
+  expect_equal(c(CGGPpred(xp=xsup, CGGP=SG)$me), ysup, tol=1e-4)
   
   # # Predict at points
   # n <- 50
   # xp <- matrix(runif(d*10),n,d)
-  # SGpred <- SGGPpred(xp=xp, SG=SG)
+  # SGpred <- CGGPpred(xp=xp, SG=SG)
 })
 
 test_that("supplemental with MV output works", {
   
-  SG <- SGGPcreate(d=3, batchsize=100)
+  SG <- CGGPcreate(d=3, batchsize=100)
   f1 <- function(x){x[1]+x[2]^2}
   f2 <- function(x){x[1]^1.3+.4*sin(6*x[2])+10}
   y1 <- apply(SG$design, 1, f1)#+rnorm(1,0,.01)
@@ -249,40 +251,40 @@ test_that("supplemental with MV output works", {
   ysup2 <- apply(xsup, 1, f2)
   ysup <- cbind(ysup1, ysup2)
   
-  SG <- SGGPfit(SG, Y=y, Xs=xsup, Ys=ysup)
-  yMVpred <- SGGPpred(SG$design, SGGP=SG)$mean
+  SG <- CGGPfit(SG, Y=y, Xs=xsup, Ys=ysup)
+  yMVpred <- CGGPpred(SG$design, CGGP=SG)$mean
   # Making tol as big as 1e-3 since 1e-4 gives errors on Travis
   expect_equal(yMVpred[,1], y1, 1e-3)
   expect_equal(yMVpred[,2], y2, 1e-3)
-  ysuppred <- SGGPpred(xsup, SGGP=SG)$mean
+  ysuppred <- CGGPpred(xsup, CGGP=SG)$mean
   expect_equal(ysuppred[,1], ysup1, 1e-3)
   expect_equal(ysuppred[,2], ysup2, 1e-3)
   
   # Doesn't work when giving in theta
-  expect_error(SGGPpred(SG, xsup, theta=SG$thetaPostSamples[,1]))
+  expect_error(CGGPpred(SG, xsup, theta=SG$thetaPostSamples[,1]))
   
 })
 
 test_that("pred with theta works", {
   d <- 5
-  sg <- SGGPcreate(d=d, batchsize=1500)
-  expect_error(SGGPpred(sg$design, sg))
+  sg <- CGGPcreate(d=d, batchsize=1500)
+  expect_error(CGGPpred(sg$design, sg))
   f <- function(x){x[1]^1.3+.4*sin(6*x[2])+4*exp(x[3])}
   y <- apply(sg$design, 1, f)
-  sg <- SGGPfit(sg, y)
+  sg <- CGGPfit(sg, y)
   
   npred <- 10
   xpred <- matrix(runif(d*npred), npred)
-  p1 <- SGGPpred(xpred, SGGP=sg)
-  p2 <- SGGPpred(xpred, SGGP=sg, theta=sg$thetaMAP)
-  expect_error(SGGPpred(xpred, SGGP=sg, theta=sg$thetaPostSamples[1:8,1]))
-  p3 <- SGGPpred(xpred, SGGP=sg, theta=sg$thetaPostSamples[,1])
+  p1 <- CGGPpred(xpred, CGGP=sg)
+  p2 <- CGGPpred(xpred, CGGP=sg, theta=sg$thetaMAP)
+  expect_error(CGGPpred(xpred, CGGP=sg, theta=sg$thetaPostSamples[1:8,1]))
+  p3 <- CGGPpred(xpred, CGGP=sg, theta=sg$thetaPostSamples[,1])
   expect_equal(p1$me, p2$me)
   expect_false(isTRUE(all.equal(p1$me, p3$me)))
   
   # Check full Bayesian. Not easy, just check if it's close to MAP prediction
-  expect_error(SGGPpred(xp=xpred, sg, fullBayesian = T, theta = sg$thetaPostSamples[1,]))
-  pb <- SGGPpred(xp=xpred, sg, fullBayesian = T)
+  expect_error(CGGPpred(xp=xpred, sg, theta = sg$thetaPostSamples[1,]))
+  pb <- CGGPpred(xp=xpred, sg)
   expect_is(pb, "list")
   expect_equal(p1$me, p3$mean, tol=1e-2)
   # expect_equal(c(p1$me /p3$mean), rep(1,10), tol=1e-2)

@@ -28,31 +28,31 @@ Npred <- 1000
 Xp <- matrix(runif(Npred*d), Npred, d)
 Yp = testf(Xp)
 
-require("SGGP")
-SG = SGGPcreate(d=d, batchsize=201)
+require("CGGP")
+SG = CGGPcreate(d=d, batchsize=201)
 Y = testf(SG$design)
-SG = SGGPfit(SG, Y)
+SG = CGGPfit(SG, Y)
 cat("Now doing Bayesian\n")
 
 # Changing this so it doesn't call fit 40 times with no param updates
 for (ic in (1:round((N-201)/200))[1:9]) {
   cat(ic, " ")
-  SG=SGGPappend(SG,200) #add 200 points to the design based on thetahat
+  SG=CGGPappend(SG,200) #add 200 points to the design based on thetahat
   Y = testf(SG$design)
   if( ic< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
-    SG = SGGPfit(SG,Y) #estimate the parameter (SG structure is important)
+    SG = CGGPfit(SG,Y) #estimate the parameter (SG structure is important)
   }
 }
-SG=SGGPappend(SG, 200*length((1:round((N-201)/200))[-(1:9)]))
+SG=CGGPappend(SG, 200*length((1:round((N-201)/200))[-(1:9)]))
 
 cat("\n")
 Y = testf(SG$design)
 timelastlogthetaMLEstart <- Sys.time()
-SG = SGGPfit(SG, Y) #do one final parameter estimation
+SG = CGGPfit(SG, Y) #do one final parameter estimation
 timelastlogthetaMLEend <- Sys.time()
 
 timepredstart <- Sys.time()
-GP = SGGPpred(xp=Xp,SGGP=SG) #build a full emulator
+GP = CGGPpred(xp=Xp,CGGP=SG) #build a full emulator
 timepredend <- Sys.time()
 
 RMSE <- sqrt(mean(((Yp-GP$mean)^2)))  #prediction should be much better
@@ -71,7 +71,7 @@ cat("logthetaMLE time is:", capture.output(timelastlogthetaMLEend - timelastlogt
 
 if (T) { # Can Travis just skip this?
   di <- sample(1:nrow(SG$design), 100)
-  Y0pred <- SGGPpred(SG$design[di,],SGGP=SG) #,Y,logtheta=logthetaest)
+  Y0pred <- CGGPpred(SG$design[di,],CGGP=SG) #,Y,logtheta=logthetaest)
   plot(Yp, GP$mean, ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m))); points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
   # Now plot with bars
   #plot(Yp, GP$mean , ylim=c(min(GP$mean, Y0pred$m),max(GP$mean, Y0pred$m)),pch=19)#; points(Y[di], Y0pred$m,col=3,pch=2); abline(a=0,b=1,col=2)
@@ -93,4 +93,4 @@ timestamp()
 cat("Running second example: wingweight\n")
 print(getwd())
 source("./scratch/after_success_run_one.R")
-run_one_SGGP_example(TestFunctions::wingweight, 10, 1000, 6000, 1000, 1000, plotwith = 'ggplot2')
+run_one_CGGP_example(TestFunctions::wingweight, 10, 1000, 6000, 1000, 1000, plotwith = 'ggplot2')
