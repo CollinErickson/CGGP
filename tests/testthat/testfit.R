@@ -1,5 +1,7 @@
 # CGGPfit is used in many other tests, so not as many here
 
+context("testfit")
+
 test_that("CGGPfit works with Laplace approx", {
   d <- 3
   SG <- CGGPcreate(d=d, batchsize=30)

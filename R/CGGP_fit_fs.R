@@ -12,8 +12,7 @@
 #' @param Ynew Values of `CGGP$design_unevaluated`
 #' @param separateoutputparameterdimensions If multiple output dimensions,
 #' should separate parameters be fit to each dimension?
-#' @param use_progress_bar If using MCMC sampling, should a progress bar be
-#' displayed?
+#' @param set_thetaMAP_to Value for thetaMAP to be set to
 #' @param HandlingSuppData How should supplementary data be handled?
 #' * Correct: full likelihood with grid and supplemental data
 #' * Only: only use supplemental data
@@ -35,7 +34,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
                     theta0 = CGGP$thetaMAP,
                     HandlingSuppData=CGGP$HandlingSuppData,
                     separateoutputparameterdimensions=is.matrix(CGGP$thetaMAP),
-                    use_progress_bar=TRUE,
+                    set_thetaMAP_to,
                     corr,
                     Ynew) {
   # ================================
@@ -160,7 +159,9 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     theta0.thisloop <- if (nopd==1) {theta0} else {theta0[,opdlcv]}
     
     # Find MAP theta
-    if (is.null(CGGP$Xs)){ # No supp data, just optimize
+    if (!missing(set_thetaMAP_to) && !is.null(set_thetaMAP_to)) {
+      opt.out <- list(par = if (nopd>1) {set_thetaMAP_to[,opdlcv]} else {set_thetaMAP_to})
+    } else if (is.null(CGGP$Xs)){ # No supp data, just optimize
       opt.out = nlminb(
         theta0.thisloop,
         objective = CGGP_internal_neglogpost,

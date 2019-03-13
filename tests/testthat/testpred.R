@@ -1,3 +1,5 @@
+context("testpred")
+
 test_that("Prediction matches exact on small samples", {
   
   # Use borehole

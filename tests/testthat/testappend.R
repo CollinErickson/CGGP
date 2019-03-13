@@ -1,3 +1,5 @@
+context("testappend")
+
 test_that("CGGPappend works", {
   SG <- CGGPcreate(d=3, batchsize=100, corr='GAUSS')
   f <- function(x){x[1]+x[2]^2}

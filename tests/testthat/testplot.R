@@ -1,3 +1,5 @@
+context("testplot")
+
 test_that("Plots work", {
   
   SG <- CGGPcreate(d=3, batchsize=20, corr="m52")

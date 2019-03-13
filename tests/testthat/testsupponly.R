@@ -1,3 +1,5 @@
+context("testsupponly")
+
 test_that("1. Create, append, predict with only supp, scalar out", {
   d <- 3
   # f <- function(x){1*(cos(x[3]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + log(x[3]+.2))}
@@ -22,7 +24,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   
   # Predict with only supp on supp points
   expect_error(p1sup <- CGGPpred(s1, xsup), NA)
-  expect_equal(c(p1sup$mean), ysup, tol=1e-6)
+  expect_equal(c(p1sup$mean), ysup)
   expect_true(all(p1sup$var < 1e-8))
   
   # Predict with only supp on test points
@@ -51,8 +53,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   
   # Again create with only supp, but use MCMC
   expect_error(s1 <- CGGPcreate(d, 0, Xs=xsup, Ys=ysup,
-                                supp_args=list(laplaceapprox=FALSE,
-                                               numPostSamples=7)), NA)
+                                supp_args=list(numPostSamples=7)), NA)
   expect_true(is.null(s1[["design"]]))
   expect_equal(s1$uoCOUNT, 0)
   expect_equal(s1$poCOUNT, 1)
@@ -65,7 +66,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
 
 
 
-test_that("3. Create, append, predict with only supp, MVout, no PCA, yes sepOPD", {
+test_that("2. Create, append, predict with only supp, MVout, no PCA, yes sepOPD", {
   d <- 5
   # f <- function(x){1*(cos(x[3]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + log(x[3]+.2))}
   f1 <- function(x){1*(cos(x[1]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + (1+x[2])*log(x[1]+.2))}
@@ -128,7 +129,7 @@ test_that("3. Create, append, predict with only supp, MVout, no PCA, yes sepOPD"
 })
 
 
-test_that("5. Create, append, predict with only supp, MVout, no PCA, no sepOPD", {
+test_that("3. Create, append, predict with only supp, MVout, no PCA, no sepOPD", {
   d <- 5
   # f <- function(x){1*(cos(x[3]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + log(x[3]+.2))}
   f1 <- function(x){1*(cos(x[1]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + (1+x[2])*log(x[1]+.2))}
@@ -189,4 +190,94 @@ test_that("5. Create, append, predict with only supp, MVout, no PCA, no sepOPD",
     expect_true(s1.app.colMeans[2]+.3 > s1.app.colMeans[3])
   }
   
+})
+
+test_that("Single output: check that supp only matches grid predictions", {
+  d <- 5
+  f1 <- function(x){1*(cos(x[1]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + (1+x[2])*log(x[1]+.2))}
+  # f2 <- function(x){x[1]*log(.8+x[4]) + x[4]^.3*sin(2*pi*x[2])}
+  # f3 <- function(x) {.3*f1(x) + 1.7*f2(x)}
+  f <- function(x){
+    if (is.matrix(x)) {apply(x, 1, f1)}
+    else {f1(x)}
+  }
+  d_out <- 3
+  
+  cg_grid <- CGGPcreate(d=d, 30)
+  cg_grid <- CGGPfit(cg_grid, f(cg_grid$design))
+  cg_supp <- CGGPcreate(d, 0, Xs=cg_grid$design, Ys=cg_grid$Y,
+                        supp_args = list(set_thetaMAP_to=cg_grid$thetaMAP))
+  expect_equal(cg_grid$thetaMAP, cg_supp$thetaMAP)
+  
+  xp <- matrix(runif(25*d), ncol=d)
+  yp <- f(xp)
+  cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+  cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
+  predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
+  plot(predict(cg_grid, xp)$me , predict(cg_supp, xp)$me); abline(a=0,b=1, col=2)
+  plot(predict(cg_grid, xp)$va , predict(cg_supp, xp)$va); abline(a=0,b=1, col=2)
+  expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+  expect_equal(c(predict(cg_grid, xp)$va), predict(cg_supp, xp)$va, tol=.1)
+})
+
+
+test_that("MV, shared params, check that supp only matches grid predictions", {
+  d <- 5
+  f1 <- function(x){1*(cos(x[1]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + (1+x[2])*log(x[1]+.2))}
+  f2 <- function(x){x[1]*log(.8+x[4]) + x[4]^.3*sin(2*pi*x[2])}
+  f3 <- function(x) {.3*f1(x) + 1.7*f2(x)}
+  f <- function(x){
+    if (is.matrix(x)) {cbind(apply(x, 1, f1), apply(x, 1, f2), apply(x, 1, f3))}
+    else {c(f1(x), f2(x), f3(x))}
+  }
+  d_out <- 3
+  
+  cg_grid <- CGGPcreate(d=d, 30)
+  cg_grid <- CGGPfit(cg_grid, f(cg_grid$design), separateoutputparameterdimensions=F)
+  cg_supp <- CGGPcreate(d, 0, Xs=cg_grid$design, Ys=cg_grid$Y,
+                        supp_args = list(set_thetaMAP_to=cg_grid$thetaMAP,
+                                         separateoutputparameterdimensions=F)
+  )
+  expect_equal(cg_grid$thetaMAP, cg_supp$thetaMAP)
+  
+  xp <- matrix(runif(25*d), ncol=d)
+  yp <- f(xp)
+  cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+  cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
+  predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
+  plot(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+  plot(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va)
+  expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+  expect_equal(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va, tol=1e-2)
+})
+
+
+test_that("MV, separate params, check that supp only matches grid predictions", {
+  d <- 5
+  f1 <- function(x){1*(cos(x[1]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + (1+x[2])*log(x[1]+.2))}
+  f2 <- function(x){x[1]*log(.8+x[4]) + x[4]^.3*sin(2*pi*x[2])}
+  f3 <- function(x) {.3*f1(x) + 1.7*f2(x)}
+  f <- function(x){
+    if (is.matrix(x)) {cbind(apply(x, 1, f1), apply(x, 1, f2), apply(x, 1, f3))}
+    else {c(f1(x), f2(x), f3(x))}
+  }
+  d_out <- 3
+  
+  cg_grid <- CGGPcreate(d=d, 30)
+  cg_grid <- CGGPfit(cg_grid, f(cg_grid$design), separateoutputparameterdimensions = T)
+  cg_supp <- CGGPcreate(d, 0, Xs=cg_grid$design, Ys=cg_grid$Y,
+                        supp_args = list(set_thetaMAP_to=cg_grid$thetaMAP,
+                                         separateoutputparameterdimensions=T)
+  )
+  expect_equal(cg_grid$thetaMAP, cg_supp$thetaMAP)
+  
+  xp <- matrix(runif(25*d), ncol=d)
+  yp <- f(xp)
+  cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+  cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
+  predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
+  plot(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+  plot(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va)
+  expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+  expect_equal(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va, tol=1e-2)
 })

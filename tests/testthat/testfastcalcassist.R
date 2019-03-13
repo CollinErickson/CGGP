@@ -1,3 +1,5 @@
+context("testfastcalcassist")
+
 test_that("calcpw", {
   SG <- CGGPcreate(d=3, batchsize=100, corr = "CauchySQT")
   y <- apply(SG$design, 1, function(x){x[1]+x[2]^2+rnorm(1,0,.01)})

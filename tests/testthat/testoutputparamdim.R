@@ -1,3 +1,5 @@
+context("testoutputparamdim")
+
 # -----------------------------------------------
 # Test different output parameter dimensions
 # -----------------------------------------------

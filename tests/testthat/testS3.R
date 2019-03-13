@@ -1,3 +1,5 @@
+context("testS3")
+
 test_that("print and predict work", {
   
   # Check print

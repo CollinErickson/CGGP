@@ -48,32 +48,32 @@ CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
   
   
   separateoutputparameterdimensions <- is.matrix(CGGP$thetaMAP)
-  # nnn is numberofoutputparameterdimensions
-  nnn <- if (separateoutputparameterdimensions) {
+  # nopd is numberofoutputparameterdimensions
+  nopd <- if (separateoutputparameterdimensions) {
     ncol(CGGP$ys)
   } else {
     1
   }
-  if (nnn > 1) {
-    # meanall <- matrix(NaN, nrow(xp), ncol=nnn)
+  if (nopd > 1) {
+    # meanall <- matrix(NaN, nrow(xp), ncol=nopd)
     meanall2 <- matrix(0, nrow(xp), ncol=ncol(CGGP$Ys))
     # varall <- matrix(NaN, nrow(xp), ncol=ncol(CGGP$Ys))
     tempvarall <- matrix(0, nrow(xp), ncol=ncol(CGGP$Ys))
   }
   
-  if (!is.null(outdims) && (nnn==1 || any(abs(CGGP$M-diag(1,nrow(CGGP$M),ncol(CGGP$M))) > 1e-10))) {
-    stop("outdims can only be given when multiple outputs, no PCA, and separate correlation parameters")
+  if (!is.null(outdims) && nopd==1) {
+    stop("outdims can only be given when multiple outputs and separate correlation parameters")
   }
-  opd_values <- if (is.null(outdims)) {1:nnn} else {outdims}
-  for (opdlcv in opd_values) {# 1:nnn) {
-    thetaMAP.thisloop <- if (nnn==1) thetaMAP else thetaMAP[, opdlcv]
+  opd_values <- if (is.null(outdims)) {1:nopd} else {outdims}
+  for (opdlcv in opd_values) {# 1:nopd) {
+    thetaMAP.thisloop <- if (nopd==1) thetaMAP else thetaMAP[, opdlcv]
     if (!recalculate_pw) { # use already calculated
-      # pw.thisloop <- if (nnn==1) CGGP$pw else CGGP$pw[,opdlcv]
-      # sigma2MAP.thisloop <- if (nnn==1) CGGP$sigma2MAP else CGGP$sigma2MAP[opdlcv]
+      # pw.thisloop <- if (nopd==1) CGGP$pw else CGGP$pw[,opdlcv]
+      # sigma2MAP.thisloop <- if (nopd==1) CGGP$sigma2MAP else CGGP$sigma2MAP[opdlcv]
       sigma2MAP.thisloop <- CGGP$sigma2MAP
     } else { # recalculate pw and sigma2MAP
       stop("not imp 3209842")
-      y.thisloop <- if (nnn==1) CGGP$y else CGGP$y[,opdlcv]
+      y.thisloop <- if (nopd==1) CGGP$y else CGGP$y[,opdlcv]
       pw.thisloop <- CGGP_internal_calcpw(CGGP, y.thisloop, theta=thetaMAP.thisloop)
       sigma2MAP.thisloop <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y.thisloop,
                                                                theta=thetaMAP.thisloop,
@@ -84,7 +84,7 @@ CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
       sigma2MAP.thisloop <- as.vector(sigma2MAP.thisloop)
       rm(y.thisloop)
     }
-    mu.thisloop <- if (nnn==1) CGGP$mu else CGGP$mu[opdlcv] # Not used for PCA, added back at end
+    mu.thisloop <- if (nopd==1) CGGP$mu else CGGP$mu[opdlcv] # Not used for PCA, added back at end
     
     # Cp is sigma(x_0) in paper, correlation vector between design points and xp
     # Cp = matrix(1,dim(xp)[1],CGGP$ss)
@@ -121,8 +121,8 @@ CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
       stop("Error in predwithonlysupp, there is no supp data #0293582")
     } else { # CGGP$supplemented is TRUE
       if (!recalculate_pw) {
-        supppw.thisloop <- if (nnn==1) CGGP$supppw else CGGP$supppw[,opdlcv]
-        Sti.thisloop <- if (nnn==1) CGGP$Sti else CGGP$Sti[,,opdlcv]
+        supppw.thisloop <- if (nopd==1) CGGP$supppw else CGGP$supppw[,opdlcv]
+        Sti.thisloop <- if (nopd==1) CGGP$Sti else CGGP$Sti[,,opdlcv]
       } else {
         stop("Give theta in not implemented in CGGPpred. Need to fix sigma2MAP here too!")
       }
@@ -138,50 +138,54 @@ CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
 
       # Return list with mean and var predictions
       if(is.vector(supppw.thisloop)){
-        if (nnn == 1) {
+        if (nopd == 1) {
           mean = (CGGP$mu + yhatp)
           var=CGGP$sigma2MAP[1]* (1-diag(Cps %*% CGGP$Sti %*% t(Cps)))  # ME_t
           # could return cov mat here
         }
         
         # With sepparout and PCA (or not), do this
-        if (nnn > 1) {
-          warning("This won't work...")
-          meanall2 <- meanall2 + outer(c(yhatp), CGGP$M[opdlcv,])
-          leftvar <- if (is.null(CGGP$leftover_variance)) {0} else {CGGP$leftover_variance}
-          tempM <- CGGP$M
-          tempM[-opdlcv,] <- 0
-          tempsigma2.thisloop <- sigma2MAP.thisloop
-          tempsigma2.thisloop[-opdlcv] <- 0
+        if (nopd > 1) {
+          # warning("This won't work...")
+          # browser()
+          # meanall2 <- meanall2 + outer(c(yhatp), CGGP$M[opdlcv,])
+          meanall2[,opdlcv] <- yhatp
+          # leftvar <- if (is.null(CGGP$leftover_variance)) {0} else {CGGP$leftover_variance}
+          # tempM <- diag(nopd)
+          # tempM[-opdlcv,] <- 0
+          # tempsigma2.thisloop <- sigma2MAP.thisloop
+          # tempsigma2.thisloop[-opdlcv] <- 0
           # tempvar <- (as.vector(ME_t)%*%t(leftvar+diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM))))
-          tempvar <- NaN
+          # tempvar <- NaN
+          tempvar <- matrix(0, nrow(xp), nopd)
+          tempvar[,opdlcv] <- CGGP$sigma2MAP[opdlcv]* (1-diag(Cps %*% CGGP$Sti[,,opdlcv] %*% t(Cps)))
         }
         
       }else{ # supppw is matrix, so predicting multiple columns at once
-        warning("This won't work either 2350729")
         if(length(CGGP$sigma2MAP)==1){
-          stop("Does this ever happen? #952570")
+          stop("This should never happen #952570")
           # mean = ( matrix(rep(CGGP$mu,each=dim(xp)[1]), ncol=dim(CGGP$M)[2], byrow=FALSE)+ yhatp%*%(CGGP$M))
           # var=as.vector(ME_t)%*%t(CGGP$leftover_variance+diag(t(CGGP$M)%*%(CGGP$sigma2MAP)%*%(CGGP$M)))
         }else{
-          mean = ( matrix(rep(CGGP$mu,each=dim(xp)[1]), ncol=dim(CGGP$M)[2], byrow=FALSE)+ yhatp%*%(CGGP$M))
+          # browser()
+          mean <- matrix(rep(CGGP$mu,each=dim(xp)[1]), ncol=ncol(CGGP$Ys), byrow=FALSE) + yhatp
           # var=as.vector(ME_t)%*%t(CGGP$leftover_variance+diag(t(CGGP$M)%*%diag(CGGP$sigma2MAP)%*%(CGGP$M)))
-          var <- NaN
+          var <- sweep(matrix((1-diag(Cps %*% CGGP$Sti %*% t(Cps))), nrow(xp), ncol(CGGP$Ys), byrow = F), 2, CGGP$sigma2MAP, `*`)
         }
       }
       
       
     }
     # rm(Cp,ME_t, MSE_v, V) # Just to make sure nothing is carrying through
-    # if (nnn > 1) {meanall[,opdlcv] <- mean}
-    # if (nnn > 1) {varall[,opdlcv] <- var}
-    if (nnn > 1) {tempvarall <- tempvarall + tempvar}
+    # if (nopd > 1) {meanall[,opdlcv] <- mean}
+    # if (nopd > 1) {varall[,opdlcv] <- var}
+    if (nopd > 1) {tempvarall <- tempvarall + tempvar}
   }
   # If PCA values were calculated separately, need to do transformation on both before mu is added, then add mu back
-  # if (nnn > 1) {meanall <- sweep(sweep(meanall,2,CGGP$mu) %*% CGGP$M,2,CGGP$mu, `+`)}
-  if (nnn > 1) {meanall2 <- sweep(meanall2, 2, CGGP$mu, `+`)}
+  # if (nopd > 1) {meanall <- sweep(sweep(meanall,2,CGGP$mu) %*% CGGP$M,2,CGGP$mu, `+`)}
+  if (nopd > 1) {meanall2 <- sweep(meanall2, 2, CGGP$mu, `+`)}
   
-  if (nnn > 1) {
+  if (nopd > 1) {
     GP <- list(mean=meanall2, var=tempvarall)
   } else {
     GP <- list(mean=mean, var=var)

@@ -50,6 +50,17 @@ CGGP_internal_set_corr <- function(CGGP, corr) {
   CGGP
 }
 
+
+#' Add more rows to CGGP object
+#' 
+#' After a lot of blocks have been added, the storage
+#'
+#' @param CGGP 
+#' @param numrowstoadd 
+#'
+#' @return CGGP object
+## @export
+#' @noRd
 CGGP_internal_addrows <- function(CGGP, numrowstoadd=20) {
   
   CGGP$uo <- rbind(CGGP$uo, matrix(0,numrowstoadd,ncol(CGGP$uo)))

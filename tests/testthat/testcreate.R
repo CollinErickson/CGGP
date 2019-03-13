@@ -1,3 +1,5 @@
+context("testcreate")
+
 test_that("CGGPcreate works", {
   expect_error(SG <- CGGPcreate())
   expect_error(SG <- CGGPcreate(d=3))

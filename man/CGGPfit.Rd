@@ -7,7 +7,7 @@
 CGGPfit(CGGP, Y, Xs = NULL, Ys = NULL, theta0 = CGGP$thetaMAP,
   HandlingSuppData = CGGP$HandlingSuppData,
   separateoutputparameterdimensions = is.matrix(CGGP$thetaMAP),
-  use_progress_bar = TRUE, corr, Ynew)
+  set_thetaMAP_to, corr, Ynew)
 }
 \arguments{
 \item{CGGP}{Sparse grid objects}
@@ -28,8 +28,7 @@ CGGPfit(CGGP, Y, Xs = NULL, Ys = NULL, theta0 = CGGP$thetaMAP,
 \item{separateoutputparameterdimensions}{If multiple output dimensions,
 should separate parameters be fit to each dimension?}
 
-\item{use_progress_bar}{If using MCMC sampling, should a progress bar be
-displayed?}
+\item{set_thetaMAP_to}{Value for thetaMAP to be set to}
 
 \item{corr}{Will update correlation function, if left missing it will be
 same as last time.}

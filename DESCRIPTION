@@ -19,7 +19,6 @@ Suggests: testthat,
     reshape2,
     plyr,
     MASS,
-    progress,
     lhs
 URL: https://github.com/CollinErickson/SGGP
 BugReports: https://github.com/CollinErickson/SGGP/issues

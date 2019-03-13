@@ -1,3 +1,5 @@
+context("testcorr")
+
 test_that("Correlation CorrMatCauchy works", {
   x1 <- runif(5)
   x2 <- runif(4)
