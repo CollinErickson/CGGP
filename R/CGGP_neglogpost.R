@@ -35,7 +35,6 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
     stop(paste("HandlingSuppData in CGGP_internal_neglogpost must be one of",
                "Correct, Only, Ignore"))
   }
-  
   if(!(is.null(ys) || length(ys)==0) && (is.null(y) || length(y)==0)){
     HandlingSuppData = "Only"
   }else if((is.null(ys) || length(ys)==0) && !(is.null(y) || length(y)==0)){
@@ -183,7 +182,7 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
   }
   
   if(HandlingSuppData == "Only"){
-    if(!is.matrix(y)){
+    if(!is.matrix(ys)){
       neglogpost = neglogpost+1/2*(
         (length(ys))*log(sigma2_hat_supp[1]) - 
           0.500*sum(log(1-theta)+log(theta+1))+lDet_supp)
