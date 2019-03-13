@@ -1,3 +1,22 @@
+#' Predict with only supplemental data
+#'
+#' @param CGGP CGGP object with supplemental data
+#' @param xp Matrix of points to predict at
+#' @param theta Correlation parameters
+#' @param outdims Output dimensions to predict for
+#'
+#' @return Predictions
+# @export
+#' @noRd
+#'
+#' @examples
+#' d <- 3
+#' n <- 30
+#' Xs <- matrix(runif(d*n), n, d)
+#' Ys <- apply(Xs, 1, function(x){x[1]/(x[3]+.2)+exp(x[3])*cos(x[2]^2)})
+#' cg <- CGGPcreate(d, Xs=Xs, Ys=Ys, batchsize=0)
+#' xp <- matrix(runif(d*10), ncol=d)
+#' predict(cg, xp)
 CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
   if (!inherits(CGGP, "CGGP")) {
     stop("First argument to CGGP must be an CGGP object")
@@ -99,47 +118,9 @@ CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
     
     
     if (!CGGP$supplemented) {  
-      stop("Can't be here 0293582")
-      # # Return list with mean and var predictions
-      # if(is.vector(pw.thisloop)){
-      #   if (nnn == 1) {
-      #     mean = (mu.thisloop+Cp%*%pw.thisloop)
-      #     var=sigma2MAP.thisloop*ME_t
-      #   }
-      #   
-      #   # With sepparout and PCA (or not), do this
-      #   if (nnn > 1) {
-      #     meanall2 <- meanall2 + outer(c(Cp%*%pw.thisloop), CGGP$M[opdlcv, ])
-      #     
-      #     # This variance calculation was wrong when using PCA with separate theta for each output dim.
-      #     # var <- (as.vector(ME_t)%*%t(diag(t(CGGP$M)%*%diag(sigma2MAP.thisloop)%*%(CGGP$M))))[,opdlcv]
-      #     # print("DEFINITELY WRONG! Need to do something with var and M here. Did something, maybe this is right, maybe not?")
-      #     
-      #     # This should be correct variance. Needs to be tested better.
-      #     # Pick out the current dimension, set other values to zero
-      #     tempM <- CGGP$M
-      #     tempM[-opdlcv,] <- 0
-      #     tempsigma2.thisloop <- sigma2MAP.thisloop
-      #     tempsigma2.thisloop[-opdlcv] <- 0
-      #     tempvar <- (as.vector(ME_t)%*%t(diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM))))
-      #     # print((as.vector(ME_t)%*%t(diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM)))) %>% c %>% summary)
-      #   }
-      # }else{ # y was a matrix, so PCA
-      #   if(length(sigma2MAP.thisloop)==1){
-      #     stop("When is it a matrix but sigma2MAP a scalar???")
-      #     # mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(CGGP$M)[2], byrow=FALSE)+
-      #     #            (Cp%*%pw.thisloop)%*%(CGGP$M))
-      #     # var=as.vector(ME_t)%*%t(diag(t(CGGP$M)%*%(sigma2MAP.thisloop)%*%(CGGP$M)))
-      #     
-      #   }else{
-      #     mean = ( matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=dim(CGGP$M)[2], byrow=FALSE)+
-      #                (Cp%*%pw.thisloop)%*%(CGGP$M))
-      #     var=as.vector(ME_t)%*%t(diag(t(CGGP$M)%*%diag(sigma2MAP.thisloop)%*%(CGGP$M)))
-      #   }
-      # }
+      stop("Error in predwithonlysupp, there is no supp data #0293582")
     } else { # CGGP$supplemented is TRUE
       if (!recalculate_pw) {
-        # pw_uppad.thisloop <- if (nnn==1) CGGP$pw_uppad else CGGP$pw_uppad[,opdlcv]
         supppw.thisloop <- if (nnn==1) CGGP$supppw else CGGP$supppw[,opdlcv]
         Sti.thisloop <- if (nnn==1) CGGP$Sti else CGGP$Sti[,,opdlcv]
       } else {
@@ -153,39 +134,12 @@ CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
         Cps = Cps*V
       }
       
-      # yhatp = Cp%*%pw_uppad.thisloop + Cps%*%supppw.thisloop
       yhatp = Cps%*%supppw.thisloop
-      
-      # MSE_ps = list(matrix(0,dim(xp)[1],dim(CGGP$Xs)[1]),(CGGP$d+1)*(CGGP$maxlevel+1)) 
-      # for (dimlcv in 1:CGGP$d) {
-      #   for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
-      #     MSE_ps[[(dimlcv)*CGGP$maxlevel+levellcv]] =(
-      #       -CGGP_internal_postvarmatcalc(xp[,dimlcv],
-      #                                     CGGP$Xs[,dimlcv],
-      #                                     CGGP$xb[1:CGGP$sizest[levellcv]],
-      #                                     thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],
-      #                                     CorrMat=CGGP$CorrMat))
-      #   }
-      # }
-      
-      # for (blocklcv in 1:CGGP$uoCOUNT) {
-      #   ME_ps = matrix(1,nrow=dim(xp)[1],ncol=dim(CGGP$Xs)[1])
-      #   for (dimlcv in 1:CGGP$d) {
-      #     levelnow = CGGP$uo[blocklcv,dimlcv]
-      #     ME_ps = ME_ps*MSE_ps[[(dimlcv)*CGGP$maxlevel+levelnow]]
-      #   }
-      #   Cps = Cps-CGGP$w[blocklcv]*(ME_ps)
-      # }
-      # ME_adj = rowSums((Cps%*%Sti.thisloop)*Cps)
-      
-      
-      # ME_t = ME_t-ME_adj
+
       # Return list with mean and var predictions
       if(is.vector(supppw.thisloop)){
         if (nnn == 1) {
           mean = (CGGP$mu + yhatp)
-          # print("You didn't fix var here")
-          # browser()
           var=CGGP$sigma2MAP[1]* (1-diag(Cps %*% CGGP$Sti %*% t(Cps)))  # ME_t
           # could return cov mat here
         }
@@ -195,9 +149,6 @@ CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
           warning("This won't work...")
           meanall2 <- meanall2 + outer(c(yhatp), CGGP$M[opdlcv,])
           leftvar <- if (is.null(CGGP$leftover_variance)) {0} else {CGGP$leftover_variance}
-          # var <- (as.vector(ME_t)%*%t(leftvar+diag(t(CGGP$M)%*%diag(CGGP$sigma2MAP)%*%(CGGP$M))))[,opdlcv]
-          # print("Need to do something with var and M here. Did something, maybe this is right, maybe not?")
-          # Same fix as above
           tempM <- CGGP$M
           tempM[-opdlcv,] <- 0
           tempsigma2.thisloop <- sigma2MAP.thisloop
