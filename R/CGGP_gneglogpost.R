@@ -356,7 +356,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     dlDet = dlDet_grid
     lDet = lDet_grid
     
-    if(!is.matrix(ys)){
+    if(!is.matrix(y)){
       neglogpost = neglogpost+1/2*(dim(CGGP$design)[1]*log(sigma2_hat[1]) -
                                      0.500*sum(log(1-theta)+log(theta+1))+lDet)
       gneglogpost = gneglogpost+0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet +

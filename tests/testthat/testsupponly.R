@@ -201,7 +201,6 @@ test_that("11. Single output: check that supp only matches grid predictions", {
     if (is.matrix(x)) {apply(x, 1, f1)}
     else {f1(x)}
   }
-  d_out <- 3
   
   cg_grid <- CGGPcreate(d=d, 30)
   cg_grid <- CGGPfit(cg_grid, f(cg_grid$design))
@@ -211,11 +210,13 @@ test_that("11. Single output: check that supp only matches grid predictions", {
   
   xp <- matrix(runif(25*d), ncol=d)
   yp <- f(xp)
-  cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
-  cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
-  predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
-  plot(predict(cg_grid, xp)$me , predict(cg_supp, xp)$me); abline(a=0,b=1, col=2)
-  plot(predict(cg_grid, xp)$va , predict(cg_supp, xp)$va); abline(a=0,b=1, col=2)
+  if (F) {
+    cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+    cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
+    predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
+    plot(predict(cg_grid, xp)$me , predict(cg_supp, xp)$me); abline(a=0,b=1, col=2)
+    plot(predict(cg_grid, xp)$va , predict(cg_supp, xp)$va); abline(a=0,b=1, col=2)
+  }
   expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
   expect_equal(c(predict(cg_grid, xp)$va), predict(cg_supp, xp)$va, tol=.1)
   
@@ -244,7 +245,6 @@ test_that("12. MV, shared params, check that supp only matches grid predictions"
     if (is.matrix(x)) {cbind(apply(x, 1, f1), apply(x, 1, f2), apply(x, 1, f3))}
     else {c(f1(x), f2(x), f3(x))}
   }
-  d_out <- 3
   
   cg_grid <- CGGPcreate(d=d, 30)
   cg_grid <- CGGPfit(cg_grid, f(cg_grid$design), separateoutputparameterdimensions=F)
@@ -256,35 +256,29 @@ test_that("12. MV, shared params, check that supp only matches grid predictions"
   
   xp <- matrix(runif(25*d), ncol=d)
   yp <- f(xp)
-  cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
-  cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
-  predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
-  plot(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
-  plot(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va)
+  if (F) {
+    cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+    cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
+    predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
+    plot(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me); abline(a=0,b=1,col=2)
+    plot(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va); abline(a=0,b=1,col=2)
+  }
   expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
   expect_equal(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va, tol=1e-1)
   
   # Check likelihood matches. Won't actually match because of missing constants,
   #  but differences should match
-  print("Bring back this test in testsupponly")
-  if (F) {
-    expect_equal(CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) -
-                   CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
-                 CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) -
-                   CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
-    )
-    
-    c(CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) -
-        CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
-      CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) -
-        CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
-    )
-    expect_equal(CGGP_internal_gneglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) -
-                   CGGP_internal_gneglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
-                 CGGP_internal_gneglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) -
-                   CGGP_internal_gneglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
-    )
-  }
+  expect_equal(CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) -
+                 CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
+               CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) -
+                 CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
+  )
+  
+  expect_equal(CGGP_internal_gneglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) -
+                 CGGP_internal_gneglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
+               CGGP_internal_gneglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) -
+                 CGGP_internal_gneglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
+  )
 })
 
 
@@ -297,7 +291,6 @@ test_that("13. MV, separate params, check that supp only matches grid prediction
     if (is.matrix(x)) {cbind(apply(x, 1, f1), apply(x, 1, f2), apply(x, 1, f3))}
     else {c(f1(x), f2(x), f3(x))}
   }
-  d_out <- 3
   
   cg_grid <- CGGPcreate(d=d, 30)
   cg_grid <- CGGPfit(cg_grid, f(cg_grid$design), separateoutputparameterdimensions = T)
@@ -309,22 +302,22 @@ test_that("13. MV, separate params, check that supp only matches grid prediction
   
   xp <- matrix(runif(25*d), ncol=d)
   yp <- f(xp)
-  cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
-  cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
-  predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
-  plot(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
-  plot(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va)
+  if (F) {
+    cbind(yp, predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
+    cbind(yp, predict(cg_grid, xp)$var, predict(cg_supp, xp)$var)
+    predict(cg_grid, xp)$me - predict(cg_supp, xp)$me
+    plot(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me); abline(a=0,b=1,col=2)
+    plot(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va); abline(a=0,b=1,col=2)
+  }
   expect_equal(predict(cg_grid, xp)$me, predict(cg_supp, xp)$me)
   expect_equal(predict(cg_grid, xp)$va, predict(cg_supp, xp)$va, tol=1e-1)
   
   # Check likelihood matches. Won't actually match because of missing constants,
   #  but differences should match
-  print("Bring back this test in testsupponly")
-  if (F) {
-    expect_equal(CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) -
-                   CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
-                 CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) -
-                   CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3)
-    )
-  }
+  expect_equal(CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=cg_supp$ys, y=NULL) -
+                 CGGP_internal_neglogpost(cg_supp$thetaMAP, cg_supp, Xs=cg_supp$Xs, ys=.5*cg_supp$ys^3, y=NULL),
+               CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, cg_grid$y) -
+                 CGGP_internal_neglogpost(cg_grid$thetaMAP, cg_grid, .5*cg_grid$y^3),
+               tol=1e-4
+  )
 })
