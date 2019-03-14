@@ -32,6 +32,16 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   expect_true(cor(c(p1test$mean), ytest) > .8)
   expect_true(all(p1test$var > 1e-8))
   expect_true(all(p1test$var < var(ytest)))
+  # Check errors
+  expect_error(CGGPpred(s1, xtest, theta = c(1,s1$thetaMAP))) # wrong theta length
+  expect_equal(CGGPpred(s1, xtest, theta = s1$thetaMAP),
+              CGGPpred(s1, xtest)) # Giving in MAP is same as normal pred
+  expect_error(CGGPpred(s1, xtest, outdims=2)) # Can't give in outdims for 1od
+  # Same preds for tiny change in theta (have to recalculate supppw and Sti)
+  expect_equal(CGGPpred(s1, xtest, theta=s1$thetaMAP*.99999999)$m,
+               CGGPpred(s1, xtest)$m, tol=1e-6)
+  expect_equal(CGGPpred(s1, xtest, theta=s1$thetaMAP*.99999999)$v,
+               CGGPpred(s1, xtest)$v, tol=1e-6)
   
   # Append points, all three methods
   set.seed(0) # Fails on test, but never in console

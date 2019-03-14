@@ -16,12 +16,19 @@ test_that("CGGPfit works with Laplace approx", {
   }
   expect_true(all(abs(rowMeans(SG$thetaPostSamples)- SG$thetaMAP) < apply(SG$thetaPostSamples, 1, sd)))
   
-  neglogpost <- CGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y)
+  # Check errors in neglogpost
+  expect_error(CGGP_internal_neglogpost(rep(.5,length(SG$thetaMAP)), SG, y, HandlingSuppData="notanoption"))
+  expect_error(CGGP_internal_neglogpost(rep(.5,length(SG$thetaMAP)), SG))
+  expect_error(CGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y, HandlingSuppData="notanoption"))
+  expect_error(CGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG))
+  
+  
+  expect_error(neglogpost <- CGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y), NA)
   expect_is(neglogpost, "matrix")
   expect_length(neglogpost, length(SG$thetaMAP))
   
   
-  neglogpost2 <- CGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y, return_lik = T)
+  expect_error(neglogpost2 <- CGGP_internal_gneglogpost(rep(.5,length(SG$thetaMAP)), SG, y, return_lik = T), NA)
   expect_is(neglogpost2, "list")
   expect_length(neglogpost2[[1]], 1)
   expect_length(neglogpost2[[2]], length(SG$thetaMAP))
@@ -155,3 +162,7 @@ test_that("CGGPfit works with Ynew - vector output", {
 #   expect_equal(o4$dSigma_mat[,2], diag(o3$dSigma_mat[,6:10]))
 #   expect_equal(o4$dSigma_mat[,3], diag(o3$dSigma_mat[,11:15]))
 # })
+
+test_that("", {
+  
+})

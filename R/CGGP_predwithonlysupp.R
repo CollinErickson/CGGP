@@ -67,68 +67,70 @@ CGGP_internal_predwithonlysupp <- function(CGGP, xp, theta=NULL, outdims=NULL) {
     thetaMAP.thisloop <- if (nopd==1) thetaMAP else thetaMAP[, opdlcv]
     if (!recalculate_pw) { # use already calculated
       sigma2MAP.thisloop <- CGGP$sigma2MAP
+      supppw.thisloop <- if (nopd==1) CGGP$supppw else CGGP$supppw[,opdlcv]
+      Sti.thisloop <- if (nopd==1) CGGP$Sti else CGGP$Sti[,,opdlcv]
     } else { # recalculate pw and sigma2MAP
-      stop("not imp 3209842")
-      y.thisloop <- if (nopd==1) CGGP$y else CGGP$y[,opdlcv]
-      pw.thisloop <- CGGP_internal_calcpw(CGGP, y.thisloop, theta=thetaMAP.thisloop)
-      sigma2MAP.thisloop <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y.thisloop,
-                                                               theta=thetaMAP.thisloop,
-                                                               return_lS=FALSE)$sigma2
-      # It can be vector when there is multiple output
-      sigma2MAP.thisloop <- as.vector(sigma2MAP.thisloop)
-      rm(y.thisloop)
+      ys.thisloop <- if (nopd==1) CGGP$ys else CGGP$ys[,opdlcv]
+      
+      Sigma_t = matrix(1,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1])
+      for (dimlcv in 1:CGGP$d) { # Loop over dimensions
+        V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$Xs[,dimlcv], thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
+        Sigma_t = Sigma_t*V
+      }
+      
+      Sti_chol <- chol(Sigma_t + diag(CGGP$nugget, nrow(Sigma_t), ncol(Sigma_t)))
+      Sti.thisloop <- chol2inv(Sti_chol)
+      
+      
+      supppw.thisloop <- backsolve(Sti_chol, backsolve(Sti_chol, ys.thisloop, transpose = T))
+      if (is.matrix(supppw.thisloop) && ncol(supppw.thisloop)==1) {
+        supppw.thisloop <- as.vector(supppw.thisloop)
+      }
+      
+      
+      sigma2MAP.thisloop <- (t(ys.thisloop) %*% supppw.thisloop) / nrow(CGGP$Xs)
+      if (is.matrix(sigma2MAP.thisloop)) {sigma2MAP.thisloop <- diag(sigma2MAP.thisloop)}
+      
+      rm(Sigma_t, V, Sti_chol, ys.thisloop)
     }
     mu.thisloop <- if (nopd==1) CGGP$mu else CGGP$mu[opdlcv] # Not used for PCA, added back at end
     
-    
-    
-    if (!CGGP$supplemented) {  
-      stop("Error in predwithonlysupp, there is no supp data #0293582")
-    } else { # CGGP$supplemented is TRUE
-      if (!recalculate_pw) {
-        supppw.thisloop <- if (nopd==1) CGGP$supppw else CGGP$supppw[,opdlcv]
-        Sti.thisloop <- if (nopd==1) CGGP$Sti else CGGP$Sti[,,opdlcv]
-      } else {
-        stop("Give theta in not implemented in CGGPpred. Need to fix sigma2MAP here too!")
-      }
-      
-      
-      Cps = matrix(1,dim(xp)[1],dim(CGGP$Xs)[1])
-      for (dimlcv in 1:CGGP$d) { # Loop over dimensions
-        V = CGGP$CorrMat(xp[,dimlcv], CGGP$Xs[,dimlcv], thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
-        Cps = Cps*V
-      }
-      
-      yhatp = Cps%*%supppw.thisloop
-
-      # Return list with mean and var predictions
-      if(is.vector(supppw.thisloop)){
-        if (nopd == 1) {
-          mean = (CGGP$mu + yhatp)
-          var=CGGP$sigma2MAP[1]* (1-diag(Cps %*% CGGP$Sti %*% t(Cps)))  # ME_t
-          # could return cov mat here
-        }
-        
-        # With sepparout and PCA (or not), do this
-        if (nopd > 1) {
-          meanall2[,opdlcv] <- yhatp
-          tempvar <- matrix(0, nrow(xp), nopd)
-          tempvar[,opdlcv] <- CGGP$sigma2MAP[opdlcv]* (1-diag(Cps %*% CGGP$Sti[,,opdlcv] %*% t(Cps)))
-        }
-        
-      }else{ # supppw is matrix, so predicting multiple columns at once
-        if(length(CGGP$sigma2MAP)==1){
-          stop("This should never happen #952570")
-        }else{
-          mean <- matrix(rep(CGGP$mu,each=dim(xp)[1]), ncol=ncol(CGGP$Ys), byrow=FALSE) + yhatp
-          var <- sweep(matrix((1-diag(Cps %*% CGGP$Sti %*% t(Cps))), nrow(xp),
-                              ncol(CGGP$Ys), byrow = F),
-                       2, CGGP$sigma2MAP, `*`)
-        }
-      }
-      
-      
+    Cps = matrix(1,dim(xp)[1],dim(CGGP$Xs)[1])
+    for (dimlcv in 1:CGGP$d) { # Loop over dimensions
+      V = CGGP$CorrMat(xp[,dimlcv], CGGP$Xs[,dimlcv], thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
+      Cps = Cps*V
     }
+    
+    yhatp = Cps%*%supppw.thisloop
+    
+    # Return list with mean and var predictions
+    if(is.vector(supppw.thisloop)){
+      if (nopd == 1) {
+        mean = (CGGP$mu + yhatp)
+        var=CGGP$sigma2MAP[1]* (1-diag(Cps %*% CGGP$Sti %*% t(Cps)))  # ME_t
+        # could return cov mat here
+      }
+      
+      # With sepparout and PCA (or not), do this
+      if (nopd > 1) {
+        meanall2[,opdlcv] <- yhatp
+        tempvar <- matrix(0, nrow(xp), nopd)
+        tempvar[,opdlcv] <- CGGP$sigma2MAP[opdlcv]* (1-diag(Cps %*% CGGP$Sti[,,opdlcv] %*% t(Cps)))
+      }
+      
+    }else{ # supppw is matrix, so predicting multiple columns at once
+      if(length(CGGP$sigma2MAP)==1){
+        stop("This should never happen #952570")
+      }else{
+        mean <- matrix(rep(CGGP$mu,each=dim(xp)[1]), ncol=ncol(CGGP$Ys), byrow=FALSE) + yhatp
+        var <- sweep(matrix((1-diag(Cps %*% CGGP$Sti %*% t(Cps))), nrow(xp),
+                            ncol(CGGP$Ys), byrow = F),
+                     2, CGGP$sigma2MAP, `*`)
+      }
+    }
+    
+    
+    
     # rm(Cp,ME_t, MSE_v, V) # Just to make sure nothing is carrying through
     if (nopd > 1) {tempvarall <- tempvarall + tempvar}
   }
