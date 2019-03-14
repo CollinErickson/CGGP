@@ -31,33 +31,44 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
                        HandlingSuppData="Correct",
                        supp_args=list()
 ) {
-  if (d <= 1) {stop("d must be at least 2")}
+  if (d < 2) {stop("d must be at least 2")}
   
-  # ===========================
-  #  Create CGGP object
-  # ===========================
+  # ==================================.
+  # ====    Create CGGP object    ====
+  # ==================================.
   
   # This is list representing our GP object
   CGGP <- list()
   class(CGGP) <- c("CGGP", "list") # Give it class CGGP
   CGGP$d <- d
+  CGGP$numPostSamples <- 100
   CGGP$HandlingSuppData <- HandlingSuppData
   CGGP <- CGGP_internal_set_corr(CGGP, corr)
   CGGP$nugget <- 0
+  
   
   # Partial matching is very bad! Keep these as length 0 instead of NULL,
   #  otherwise CGGP$Y can return CGGP$Ys
   CGGP$Y <- numeric(0)
   CGGP$y <- numeric(0)
   
-  # If supplemental data is given, fit it here
+  # ====================================================.
+  # ==== If supplemental data is given, fit it here ====
+  # ====================================================.
   if (!is.null(Xs) && !is.null(Ys)) {
-    if (!is.null(supp_args) && length(supp_args) > 0 && is.null(names(supp_args))) {stop("Give names for supp_args")}
+    if (!is.null(supp_args) && length(supp_args) > 0 &&
+        is.null(names(supp_args))) {
+      stop("Give names for supp_args")
+    }
     supp_args$CGGP <- CGGP
     supp_args$Xs <- Xs
     supp_args$Ys <- Ys
     CGGP <- do.call(CGGP_internal_fitwithonlysupp, supp_args)
   }
+  
+  # ===========================================.
+  # ====    Start setting up CGGP stuff    ====
+  # ===========================================.
   
   # Levels are blocks. Level is like eta from paper.
   CGGP$ML = min(choose(CGGP$d + 6, CGGP$d), 10000) #max levels
@@ -94,16 +105,14 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   # Selected sample size
   CGGP$ss = 0
   
-  
-  
-  
   CGGP$w = rep(0, CGGP$ML) #keep track of + and - for prediction
   CGGP$uoCOUNT = 0 ###1 # Number of used levels
   
   
-  # =============================================================
-  #    Add Blocks
-  # =============================================================
+  # =========================.
+  # ====   Add Blocks    ====
+  # =========================.
+  
   # While number selected + min sample size <= batch size, i.e.,
   #  still have enough spots for a block, keep adding blocks
   while (batchsize > (CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - 0.5)) {
@@ -112,13 +121,16 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
     if (CGGP$uoCOUNT < 1.5) { # Nothing picked yet, so take base block (1,1,...,1)
       pstar <- 1
     } else if (CGGP$uoCOUNT < (CGGP$d + 1.5)) {
-      # Next d iterations pick the (2,1,1,1,1),(1,2,1,1,1) blocks b/c we need info on each dimension before going adaptive
+      # Next d iterations pick the (2,1,1,1,1),(1,2,1,1,1) blocks b/c we need
+      #  info on each dimension before going adaptive
       pstar = 1
-    } else{ # The next d iterations randomly pick from the boxes with minimal number of points
+    } else{ # Next d iterations randomly pick from boxes w/ min # of pts
       if (CGGP$uoCOUNT < (2 * CGGP$d + 1.5)) {
-        pstar = sample(which(CGGP$pogsize[1:CGGP$poCOUNT] <= 0.5 + min(CGGP$pogsize[1:CGGP$poCOUNT])), 1)
+        pstar = sample(which(CGGP$pogsize[1:CGGP$poCOUNT] <=
+                               0.5 + min(CGGP$pogsize[1:CGGP$poCOUNT])), 1)
       } else{ # After that randomly select from blocks that still fit
-        pstar = sample(which(CGGP$pogsize[1:CGGP$poCOUNT] < min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)), 1)
+        pstar = sample(which(CGGP$pogsize[1:CGGP$poCOUNT] <
+                               min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)), 1)
       }
     }
     
@@ -132,7 +144,9 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
     
     # Ancestors of block just selected
     # Need to give possibility for initial block, has no ancestors, and 1:0 is bad
-    new_an = CGGP$pila[pstar, if (CGGP$pilaCOUNT[pstar]>.5) {1:CGGP$pilaCOUNT[pstar]} else {numeric(0)}]
+    new_an = CGGP$pila[pstar,
+                       if (CGGP$pilaCOUNT[pstar]>.5) {1:CGGP$pilaCOUNT[pstar]}
+                       else {numeric(0)}]
     total_an = new_an
     
     # Loop over ancestors of block just selected
@@ -140,7 +154,9 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
       for (anlcv in 1:length(total_an)) {
         # If more than one ancestor, update with unique ones.
         if (total_an[anlcv] > 1.5) {
-          total_an = unique(c(total_an, CGGP$uala[total_an[anlcv], 1:CGGP$ualaCOUNT[total_an[anlcv]]]))
+          total_an = unique(c(total_an,
+                              CGGP$uala[total_an[anlcv],
+                                        1:CGGP$ualaCOUNT[total_an[anlcv]]]))
         }
       }
       # Update storage of ancestors
@@ -176,27 +192,29 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
     for (dimlcv in 1:CGGP$d) {
       # The block e.g. (1,2,1,1,3) just selected
       lp = l0
+      # Increase single dimension by 1, will see if it is possible
+      lp[dimlcv] = lp[dimlcv] + 1
       
-      lp[dimlcv] = lp[dimlcv] + 1 # Increase single dimension by 1, will see if it is possible
-      
-      # Check if within some bounds??
+      # Check if within bounds
       if (max(lp) <= CGGP$maxlevel && CGGP$poCOUNT < 4*CGGP$ML) {
         # Dimensions which are past first design level
         kvals = which(lp > 1.5)
         
         canuse = 1 # Can this block be used? Will be set to 0 below if not.
-        ap = rep(0, CGGP$d) # ????
-        nap = 0 # ?????
+        ap = rep(0, CGGP$d) # Ancestors
+        nap = 0 # Number ancestors
         
-        # Loop over dims at 2+ and do what?
+        # Loop over dims at 2+
         for (activedimlcv in 1:length(kvals)) {
           lpp = lp # The block selected with 1 dim incremented
-          lpp[kvals[activedimlcv]] = lpp[kvals[activedimlcv]] - 1 # ????
+          lpp[kvals[activedimlcv]] = lpp[kvals[activedimlcv]] - 1
           
-          ismem = rep(1, CGGP$uoCOUNT) # Boolean???
+          ismem = rep(1, CGGP$uoCOUNT) # Boolean
           # Loop over dimensions
-          for (dimdimlcv in 1:CGGP$d) { # Set to 0 or 1 if all points already selected have same value???????
-            ismem  = ismem * (CGGP$uo[1:CGGP$uoCOUNT, dimdimlcv] == lpp[dimdimlcv])
+          for (dimdimlcv in 1:CGGP$d) {
+            # Set to 0 or 1 if all points already selected have same value
+            ismem  = ismem * (CGGP$uo[1:CGGP$uoCOUNT,
+                                      dimdimlcv] == lpp[dimdimlcv])
           }
           # If any are still 1,
           if (max(ismem) > 0.5) {
@@ -213,7 +231,6 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
           CGGP$pogsize[CGGP$poCOUNT] = prod(CGGP$sizes[lp])
           CGGP$pila[CGGP$poCOUNT, 1:nap] = ap[1:nap]
           CGGP$pilaCOUNT[CGGP$poCOUNT] = nap
-          
         }
       }
     }
@@ -254,6 +271,9 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   CGGP$sizest = cumsum(CGGP$sizes) # Total # of points in 1D design along axis
   
   
+  # ======================================.
+  # ==== Get design and return object ====
+  # ======================================.
   # This is all to create design from uo.
   # If only supp data is given, don't run it.
   if (CGGP$uoCOUNT > 0) {

@@ -43,7 +43,6 @@ CGGP_internal_set_corr <- function(CGGP, corr) {
   # Fix related parameters stored with CGGP
   CGGP$numpara <- CGGP$CorrMat(return_numpara=TRUE)
   CGGP$thetaMAP <- rep(0,CGGP$d*CGGP$numpara)
-  CGGP$numPostSamples <- 100
   CGGP$thetaPostSamples  <- matrix(2*rbeta(CGGP$d*CGGP$numpara*CGGP$numPostSamples,
                                            0.5, 0.5)-1,
                                    ncol=CGGP$numPostSamples )
