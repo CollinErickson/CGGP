@@ -37,9 +37,9 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
                     set_thetaMAP_to,
                     corr,
                     Ynew) {
-  # ================================
-  # Check inputs, get Y from Ynew
-  # ================================
+  # ========================================.
+  # ==== Check inputs, get Y from Ynew  ====
+  # ========================================.
   # If different correlation function is given, update it
   if (!missing(corr)) {
     message("Changing correlation function")
@@ -87,10 +87,10 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     stop("CGGP$design and Y have different length")
   }
   
-  # ====================================================================
-  # Do the pre-processing
+  # ====================================================================.
+  # Do the pre-processing                                           ====
   # For cleanness: Y is always the user input, y is after transformation
-  # ====================================================================
+  # ====================================================================.
   CGGP$Y = Y
   if(is.null(Xs)){ # No supplemental data
     CGGP$supplemented = FALSE
@@ -149,9 +149,9 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
   }
   
   
-  # ==================================================
-  # Fit parameters for each output parameter dimension
-  # ==================================================
+  # =======================================================.
+  # Fit parameters for each output parameter dimension ====
+  # =======================================================.
   for (opdlcv in 1:nopd) { # output parameter dimension
     y.thisloop <- if (nopd==1) {y} else {y[,opdlcv]} # All of y or single column
     if (!is.null(Ys)) {ys.thisloop <- if (nopd==1) {ys} else {ys[,opdlcv]}}
@@ -202,9 +202,9 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     }
     
     
-    # ===================================
-    # Update parameters and samples
-    # ===================================
+    # ===================================.
+    #  Update parameters and samples ====
+    # ===================================.
     
     # Set new theta
     thetaMAP <- opt.out$par
@@ -334,7 +334,6 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
       CGGP$thetaMAP[,opdlcv] <- thetaMAP
       CGGP$sigma2MAP[opdlcv] <- sigma2MAP
       
-      # browser()
       CGGP$pw[,opdlcv] <- pw
       CGGP$thetaPostSamples[,,opdlcv] <- thetaPostSamples
       # CGGP$cholSs[,,opdlcv] <- cholSs
@@ -381,94 +380,21 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
 CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,
                                          returndPVMC = FALSE,
                                          returndiagonly=FALSE) {
-  if(!returndiagonly){
-    if(!returndPVMC){
-      S = CorrMat(xo, xo, theta)
-      n = length(xo)
-      cholS = chol(S)
-      
-      C1o = CorrMat(x1, xo, theta)
-      CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
-      C2o = CorrMat(x2, xo, theta)
-      Sigma_mat = - t(CoinvC1o)%*%t(C2o)  
-      return(Sigma_mat)
-    }else{
-      Sall = CorrMat(xo, xo, theta, return_dCdtheta = TRUE)
-      S = Sall$C
-      dS = Sall$dCdtheta
-      n = length(xo)
-      cholS = chol(S)
-      
-      
-      Sall = CorrMat(x1, xo, theta, return_dCdtheta = TRUE)
-      C1o = Sall$C
-      dC1o = Sall$dCdtheta
-      
-      Sall = CorrMat(x2, xo, theta, return_dCdtheta = TRUE)
-      C2o = Sall$C
-      dC2o = Sall$dCdtheta
-      
-      CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
-      Sigma_mat = - t(CoinvC1o)%*%t(C2o)
-      dSigma_mat = matrix(0,dim(Sigma_mat)[1],dim(Sigma_mat)[2]*length(theta))
-      for(k in 1:length(theta)){
-        CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
-        dCoinvC1o = -backsolve(cholS,
-                               backsolve(cholS,CoinvC1oE, transpose = TRUE)
-        )
-        dCoinvC1o = dCoinvC1o + backsolve(cholS,
-                                          backsolve(cholS,
-                                                    t(dC1o[,(n*(k-1)+1):(k*n)]),
-                                                    transpose = TRUE))
-        dSigma_mat[,((k-1)*dim(Sigma_mat)[2]+1):(k*dim(Sigma_mat)[2])] =
-          -t(dCoinvC1o)%*%t(C2o)-t(CoinvC1o)%*%t(dC2o[,(n*(k-1)+1):(k*n)])
-      }
-      return(list("Sigma_mat"= Sigma_mat,"dSigma_mat" = dSigma_mat))
-    }
-  }else {
-    if(!returndPVMC){
-      S = CorrMat(xo, xo, theta)
-      n = length(xo)
-      cholS = chol(S)
-      
-      C1o = CorrMat(x1, xo, theta)
-      CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
-      C2o = CorrMat(x2, xo, theta)
-      Sigma_mat = -rowSums(t(CoinvC1o)*(C2o))
-      return(Sigma_mat)
-    }else{
-      Sall = CorrMat(xo, xo, theta, return_dCdtheta = TRUE)
-      S = Sall$C
-      dS = Sall$dCdtheta
-      n = length(xo)
-      cholS = chol(S)
-      
-      Sall = CorrMat(x1, xo, theta, return_dCdtheta = TRUE)
-      C1o = Sall$C
-      dC1o = Sall$dCdtheta
-      
-      Sall = CorrMat(x2, xo, theta, return_dCdtheta = TRUE)
-      C2o = Sall$C
-      dC2o = Sall$dCdtheta
-      
-      CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
-      Sigma_mat = -rowSums(t(CoinvC1o)*(C2o))
-      
-      dSigma_mat = matrix(0,length(Sigma_mat),length(theta))
-      for(k in 1:length(theta)){
-        CoinvC1oE = as.matrix(dS[,(n*(k-1)+1):(k*n)])%*%CoinvC1o
-        dCoinvC1o = -backsolve(cholS,
-                               backsolve(cholS,CoinvC1oE, transpose = TRUE))
-        dCoinvC1o = dCoinvC1o +
-          backsolve(cholS,
-                    backsolve(cholS,t(dC1o[,(n*(k-1)+1):(k*n)]),
-                              transpose = TRUE))
-        dSigma_mat[,k] =-rowSums(t(dCoinvC1o)*(C2o)) -
-          rowSums(t(CoinvC1o)*(dC2o[,(n*(k-1)+1):(k*n)]))
-      }
-      return(list("Sigma_mat"= Sigma_mat,"dSigma_mat" = dSigma_mat))
-    }
+  if(!returndiagonly && !returndPVMC){
+    S = CorrMat(xo, xo, theta)
+    n = length(xo)
+    cholS = chol(S)
+    
+    C1o = CorrMat(x1, xo, theta)
+    CoinvC1o = backsolve(cholS,backsolve(cholS,t(C1o), transpose = TRUE))
+    C2o = CorrMat(x2, xo, theta)
+    Sigma_mat = - t(CoinvC1o)%*%t(C2o)  
+    return(Sigma_mat)
+  } else {
+    stop("Full postvarmatcalc function was removed #25082")
+    # Only the chunk above was ever used in our code,
+    # the full version where the other options can be used
+    # was moved to scratch/scratch_postvarmatcalc_fullversion.R
   }
-  
 }
 
