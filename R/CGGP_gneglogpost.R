@@ -61,7 +61,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     Sigma_t = exp(Sigma_t)
     
     Cmat1 = matrix(rep(Sigma_t, CGGP$numpara), nrow = nrow(Sigma_t),
-                    byrow = FALSE )
+                   byrow = FALSE )
     for (dimlcv in 1:CGGP$d) { # Loop over dimensions
       dSigma_to[[dimlcv]] =Cmat1*dSigma_to[[dimlcv]]
     }
@@ -88,7 +88,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
       for(paralcv in 1:CGGP$numpara){
         dSigma_supp = as.matrix((
           dSigma_to[[dimlcv]])[ ,((paralcv-1)*dim(Sigma_chol)[2]+1
-                                  ):(paralcv*dim(Sigma_chol)[2])])
+          ):(paralcv*dim(Sigma_chol)[2])])
         tempvec2= dSigma_supp%*%tempvec1
         if(is.matrix(dsigma2_hat_supp )){
           if(dim(dsigma2_hat_supp)[1]>1.5){
@@ -136,7 +136,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
         IS = (dimlcv-1)*CGGP$numpara+1:CGGP$numpara
         dlDet_grid[IS] = dlDet_grid[IS] + (dlS[uonow[dimlcv], IS] -
                                              dlS[uonow[dimlcv]-1, IS]
-                                           )*nv[dimlcv]
+        )*nv[dimlcv]
       }
     }
   }
@@ -195,7 +195,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
         IS = (dimlcv-1)*CGGP$numpara+1:CGGP$numpara
         dlDet_grid[IS] = dlDet_grid[IS] + (dlS[uonow[dimlcv], IS] -
                                              dlS[uonow[dimlcv]-1, IS]
-                                           )*nv[dimlcv]
+        )*nv[dimlcv]
       }
     }
   }
@@ -216,13 +216,13 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
         INDSN = INDSN[sort(CGGP$xb[1:CGGP$sizest[levellcv]],
                            index.return = TRUE)$ix]
         REEALL = CGGP_internal_postvarmatcalc_fromGMat(TT1,
-                                                    TT2,
-                                                    cholS[[gg+levellcv]],
-                                                    dSV[[gg+levellcv]],
-                                                    INDSN,
-                                                    CGGP$numpara,
-                                                    returndG = TRUE,
-                                                    returnderiratio =TRUE)
+                                                       TT2,
+                                                       cholS[[gg+levellcv]],
+                                                       dSV[[gg+levellcv]],
+                                                       INDSN,
+                                                       CGGP$numpara,
+                                                       returndG = TRUE,
+                                                       returnderiratio =TRUE)
         MSE_s[,(dimlcv-1)*CGGP$maxlevel+levellcv] = as.vector(REEALL$Sigma_mat)
         for(paralcv in 1:CGGP$numpara){
           dMSE_s[ , CGGP$numpara*(dimlcv-1)*CGGP$maxlevel +
@@ -245,21 +245,21 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
       for(paralcv in 1:CGGP$numpara){
         dSigma_to2[,CGGP$numpara*(dimlcv-1)+paralcv] =
           as.vector(t((dSigma_to[[dimlcv]])[,((dim(Xs)[1]*(paralcv-1)+1
-                                               ):(dim(Xs)[1]*paralcv))]))
+          ):(dim(Xs)[1]*paralcv))]))
       }
     }
     
-   rcpp_fastmatclcranddclcr(CGGP$uo[1:CGGP$uoCOUNT,], CGGP$w[1:CGGP$uoCOUNT],
-                            MSE_s, dMSE_s, Sigma_t2, dSigma_to2,
-                            CGGP$maxlevel, CGGP$numpara)
+    rcpp_fastmatclcranddclcr(CGGP$uo[1:CGGP$uoCOUNT,], CGGP$w[1:CGGP$uoCOUNT],
+                             MSE_s, dMSE_s, Sigma_t2, dSigma_to2,
+                             CGGP$maxlevel, CGGP$numpara)
     
-   for (dimlcv in 1:CGGP$d) {
-     dSigma_to[[dimlcv]] = matrix(dSigma_to2[,CGGP$numpara*(dimlcv-1) +
-                                               (1:CGGP$numpara)],
-                                  nrow=dim(Xs)[1] , byrow = FALSE)
-   }
-   Sigma_t = matrix(Sigma_t2,nrow=dim(Xs)[1] , byrow = FALSE)
-   
+    for (dimlcv in 1:CGGP$d) {
+      dSigma_to[[dimlcv]] = matrix(dSigma_to2[,CGGP$numpara*(dimlcv-1) +
+                                                (1:CGGP$numpara)],
+                                   nrow=dim(Xs)[1] , byrow = FALSE)
+    }
+    Sigma_t = matrix(Sigma_t2,nrow=dim(Xs)[1] , byrow = FALSE)
+    
     Sigma_t = (1-CGGP$nugget)*Sigma_t+diag(dim(Sigma_t)[1])*CGGP$nugget
     for (dimlcv in 1:CGGP$d) {
       dSigma_to[[dimlcv]] = (1-CGGP$nugget)*dSigma_to[[dimlcv]]
@@ -272,7 +272,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     for (dimlcv in 1:CGGP$d) {
       for(paralcv in 1:CGGP$numpara){
         dCpn = as.matrix((dCs[[dimlcv]])[,((paralcv-1)*dim(Cs)[2]+1
-                                           ):(paralcv*dim(Cs)[2])])
+        ):(paralcv*dim(Cs)[2])])
         if(is.matrix(dsigma2_hat_part2)){
           if(dim(dsigma2_hat_part2)[1]>1.5){
             dsigma2_hat_part2[(dimlcv-1)*CGGP$numpara+paralcv,] =
@@ -289,7 +289,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
         
         dSigma_now = as.matrix((
           dSigma_to[[dimlcv]]
-          )[,((paralcv-1)*dim(Sigma_chol)[2]+1):(paralcv*dim(Sigma_chol)[2])])
+        )[,((paralcv-1)*dim(Sigma_chol)[2]+1):(paralcv*dim(Sigma_chol)[2])])
         tempvec2= dSigma_now%*%tempvec1
         if(is.matrix(dsigma2_hat_part2)){
           if(dim(dsigma2_hat_part2)[1]>1.5){
@@ -317,7 +317,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
       temp4 = t(Cs)%*%tempvec1
     }
     dsigma2_hat_part3 =  -2*(CGGP_internal_calc_dvalo(CGGP,y,temp4,cholS,dSV
-                                                      )$dvalo)
+    )$dvalo)
     lDet_supp = 2*sum(log(diag(Sigma_chol)))
     sigma2_hat_supp = colSums((ys-yhats)*tempvec1)/dim(Xs)[1]
     dsigma2_hat_supp = (dsigma2_hat_part1+dsigma2_hat_part2 +
@@ -341,7 +341,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     }else{
       neglogpost = neglogpost+1/2*(dim(Xs)[1]*sum(log(c(sigma2_hat))) -
                                      0.5*sum(log(1-theta)+log(theta+1)
-                                             )+dim(ys)[2]*lDet)
+                                     )+dim(ys)[2]*lDet)
       gneglogpostn = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
       for(i in 1:dim(ys)[2]){
         gneglogpostn = gneglogpostn + dim(Xs)[1]*dsigma2_hat[,i] / sigma2_hat[i]
@@ -364,7 +364,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     }else{
       neglogpost = neglogpost+1/2*(dim(CGGP$design)[1]*sum(log(c(sigma2_hat))) -
                                      0.5*sum(log(1-theta)+log(theta+1)
-                                             )+dim(y)[2]*lDet)
+                                     )+dim(y)[2]*lDet)
       gneglogpostn = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
       for(i in 1:dim(y)[2]){
         gneglogpostn = gneglogpostn + dim(CGGP$design)[1]*dsigma2_hat[,i] /
@@ -391,8 +391,8 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
         1/2*(length(y)+length(ys))*dsigma2_hat / sigma2_hat[1]
     }else{
       neglogpost = 1/2*((dim(CGGP$design)[1]+dim(Xs)[1])*sum(log(c(sigma2_hat))
-                                                             ) -
-                          0.5*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+      ) -
+        0.5*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
       gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
       for(i in 1:dim(y)[2]){
         gneglogpost = gneglogpost +
@@ -401,6 +401,14 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
       gneglogpost =  gneglogpost/2
     }
   }
+  
+  n_outdim <- if (is.null(y) || length(y)==0) {
+    if (is.matrix(ys)) ncol(ys) else 1
+  } else {
+    if (is.matrix(y))  ncol(y)  else 1
+  }
+  neglogpost <- neglogpost / n_outdim
+  gneglogpost <- gneglogpost / n_outdim
   
   if(return_lik){
     return(list(neglogpost=neglogpost,gneglogpost=gneglogpost))

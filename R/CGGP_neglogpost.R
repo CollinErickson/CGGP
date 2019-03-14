@@ -89,7 +89,7 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
   
   if(HandlingSuppData == "Correct"){
     lik_stuff <- CGGP_internal_calc_cholS_lS_sigma2_pw(CGGP=CGGP, y=y,
-                                                            theta=theta)
+                                                       theta=theta)
     cholS = lik_stuff$cholS
     lS <- lik_stuff$lS
     sigma2_hat_grid = lik_stuff$sigma2
@@ -208,6 +208,13 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
                           0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
     }
   }
+  
+  n_outdim <- if (is.null(y) || length(y)==0) {
+    if (is.matrix(ys)) ncol(ys) else 1
+  } else {
+    if (is.matrix(y))  ncol(y)  else 1
+  }
+  neglogpost <- neglogpost / n_outdim
   
   return(neglogpost)
 }
