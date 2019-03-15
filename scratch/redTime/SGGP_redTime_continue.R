@@ -52,6 +52,10 @@ cat("All other jobs done, moving on\n")
 SG <- readRDS(SGGP_after_append_RDS_path)
 cat("Read back in RDS successfully\n")
 
+# Get number of points from last time
+N_completedpreviously <- nrow(SG$design)
+cat("Number previously completed is", N_completedpreviously, "\n")
+
 # Read in all new output values
 # print(getwd())
 source(paste0(sourcefilepath, "extract_redTime.R"))
@@ -82,8 +86,7 @@ saveRDS(object = SG, file = paste0(SGGP_after_fit_RDS_path))
 cat("Saved SG successfully\n")
 
 # Save if reached save_after number of points 
-# This shouldn't actually be batchsize2 in next line, should generalize
-if (any(SG$ss >= save_after & SG$ss < save_after+batchsize2)) {
+if (any(SG$ss >= save_after & N_completedpreviously < save_after)) {
   saveRDS(object = SG, file = paste0(SGGP_save_after_fit_RDS_path, "-", SG$ss, ".rds"))
   cat("Also saving because of save_after, ", SG$ss, "\n")
 }

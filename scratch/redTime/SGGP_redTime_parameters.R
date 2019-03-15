@@ -6,11 +6,12 @@
 # T4 was same as T3 but with adding sigma2hat in append, so it should focus more on bad spots
 # Sup1 is with supplementary data
 # Sup2 is with supp data, but on expandedranges2
-groupID <- "redTimeTestSup2o50"
-groupID_short <- "S2o50"#"O90_1k"
+# Big1 is all output dimensions, no pca, shared params. Meant to be for paper.
+groupID <- "redTimeTestBig1"
+groupID_short <- "Big1"#"O90_1k"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
-number_cores <- 100
+number_cores <- 125
 
 # Input dimensions
 d <- 9
@@ -31,7 +32,8 @@ Nfinal <- 25000
 
 # Grid size to use. This option wasn't included in Test1
 # grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
-grid_sizes <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 8, 12)
+# grid_sizes <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 8, 12)
+grid_sizes <- c(1,2,4,4,8,12,32) # This is default, was "fast" in our internal comparisons
 
 # PCA no longer an option
 # # use_PCA, 100 outputs, PCA can reduce to 37 I think.
@@ -51,8 +53,8 @@ if (FALSE) {
 } else {
   # Xall <- unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_Xmatrix.csv")[,-1]))
   # Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_all_output.csv")[,-1])))
-  Xall <-     unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n100_s0228_all_input.csv")[,-1]))
-  Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n100_s0228_all_output.csv")[,-1])))
+  Xall <-     unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n90_s0315_all_input.csv")[,-1]))
+  Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n90_s0315_all_output.csv")[,-1])))
   # set.seed(100) # Set seed for reproducibility
   # SupRows <- sample(1:nrow(Xall), 100, replace=FALSE)
   SupRows <- 1:nrow(Xall)
@@ -69,7 +71,8 @@ use_log_redTime <- TRUE
 
 # When should the object be saved
 # save_after <- c(200, 400, 1000, 2000, 4000, 8000)
-save_after <- c(100, 200, 300, 500, 700, 900, 1100,1500,1900,2400,3000,4000,5000,6000,7000,8000)
+save_after <- c(100, 200, 300, 500, 700, 900, 1100,1500,1900,2400,3000,4000,5000,6000,7000,8000,10000,
+                12000,15000,18000,21000,23000,25000,30000,35000,40000)
 # save_after <- c(50,150,250,350,450,550)
 
 sourcefilepath <- "/home/collin/scratch/SGGP/scratch/redTime/"

@@ -28,7 +28,7 @@
 
 #### Run time limit
 #  Specify maximum CPU time after which job is to be killed (format HH:MM:SS).
-#$ -l h_rt=99:00:00    # in this example, we set 10 minutes
+#$ -l h_rt=199:00:00    # in this example, we set 10 minutes
 
 #$ -l h=crunch.local
 
