@@ -9,11 +9,12 @@ source('write_sh_files.R')
 
 # create_LHS_and_submit(n=8039, prefix='LHS1L_n8039_s1226_', holdnum=80, seed=1226)
 # Running with expanded parameter ranges
-# create_LHS_and_submit(n=1000, prefix='ExpandedRanges_LHS1L_n1000_s0227_', holdnum=40, seed=0227)
+# create_LHS_and_submit(n=1000, prefix='ExpandedRanges_LHS1L_n1000_s0227_',  holdnum=40, seed=0227)
 # create_LHS_and_submit(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0227_', holdnum=40, seed=0227)
-# create_LHS_and_submit(n=100, prefix='ExpandedRanges2_LHS1L_n100_s0228_', holdnum=50, seed=0228)
+# create_LHS_and_submit(n=100,  prefix='ExpandedRanges2_LHS1L_n100_s0228_',  holdnum=50, seed=0228)
 # create_LHS_and_submit(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0303_', holdnum=50, seed=0303)
-create_LHS_and_submit(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0304_', holdnum=50, seed=0304)
+# create_LHS_and_submit(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0304_', holdnum=50, seed=0304)
+create_LHS_and_submit(n=90,   prefix='ExpandedRanges2_LHS1L_n90_s0315_',   holdnum=50, seed=0315)
 
 
 # After done, run

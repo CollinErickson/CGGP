@@ -36,10 +36,10 @@ grid_sizes <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 8, 12)
 use_PCA <- FALSE
 
 # Much slower to fit parameters separately
-separateoutputparameterdimensions <- TRUE
+separateoutputparameterdimensions <- FALSE
 
 # outdims: output dimensions to use. Default should be 1:100.
-outdims <- 50
+outdims <- 1:100
 
 # To use supplementary data
 if (FALSE) {
