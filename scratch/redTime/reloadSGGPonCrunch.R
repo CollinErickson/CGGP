@@ -1,6 +1,6 @@
 devtools::build()
 
-install.packages(repos=NULL, pkgs="/home/collin/scratch/SGGP_1.0.tar.gz")
+install.packages(repos=NULL, pkgs="/home/collin/scratch/CGGP_1.0.tar.gz")
 
 
 

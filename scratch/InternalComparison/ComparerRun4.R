@@ -113,3 +113,19 @@ e2$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE)
 e2$save_self()
 
 print("Completed all runs in ComparerRun4.R")
+
+if (F) {
+  # First one was 5 corr funcs, second was with last two corr funcs: m32 and m52
+  r4 <- readRDS("~/GitHub/CGGP/scratch/InternalComparison/ComparerRun4_completed_SQTfixed.rds")
+  ggplot(data=r4$outcleandf, mapping=aes(y=RMSE, x=nused)) + geom_point() + facet_grid(. ~grid_size)
+  
+  
+  r4b <- readRDS("~/GitHub/CGGP/scratch/InternalComparison/ComparerRun4b_completed.rds")
+  ggplot(data=r4b$outcleandf, mapping=aes(y=RMSE, x=nused)) + geom_point() + facet_grid(. ~grid_size)
+  
+  rdf <- rbind(r4$outcleandf, r4b$outcleandf)
+  ggplot(data=rdf, mapping=aes(y=RMSE, x=nused)) + geom_point() + facet_grid(. ~grid_size) + scale_x_log10() + scale_y_log10()
+  ggplot(data=rdf, mapping=aes(y=RMSE, x=nused, color=corr)) + geom_point() + facet_grid(d ~grid_size, scales="free_y") + scale_x_log10() + scale_y_log10()
+  ggplot(data=rdf, mapping=aes(y=CRPscore, x=nused, color=corr)) + geom_point() + facet_grid(d ~grid_size, scales="free_y") + scale_x_log10() + scale_y_log10()
+  ggplot(data=rdf, mapping=aes(y=runtime, x=nused, color=corr)) + geom_point() + facet_grid(d ~grid_size, scales="free_y") + scale_x_log10() + scale_y_log10()
+}

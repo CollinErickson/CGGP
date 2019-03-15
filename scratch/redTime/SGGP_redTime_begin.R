@@ -16,7 +16,7 @@ cat("Loading SGGP_redTime_parameters.R successfully\n")
 devtools::build()
 cat("devtools::build() ran successfully\n")
 
-install.packages(repos=NULL, pkgs="/home/collin/scratch/SGGP_1.0.tar.gz")
+install.packages(repos=NULL, pkgs="/home/collin/scratch/CGGP_1.0.tar.gz")
 cat("SGGP installed correctly\n")
 
 library('SGGP')
@@ -24,12 +24,12 @@ cat("SGGP loaded successfully\n")
 
 # Create SGGP object
 if (!is.null(Xsup)) { # If supp, create/fit with that, then append N0
-  SG <- SGGPcreate(d=d, batchsize=0,
+  SG <- CGGPcreate(d=d, batchsize=0,
                    Xs=Xsup, Ys=Ysup[,outdims],
                    corr=corr, grid_sizes=grid_sizes)
-  SG <- SGGPappend(SG, batchsize=batchsize1)
+  SG <- CGGPappend(SG, batchsize=batchsize1)
 } else { # No sup, do as regular
-  SG <- SGGPcreate(d=d, batchsize=N0, corr=corr, grid_sizes=grid_sizes)
+  SG <- CGGPcreate(d=d, batchsize=N0, corr=corr, grid_sizes=grid_sizes)
 }
 print(SG)
 cat("SGGPcreate successful\n")

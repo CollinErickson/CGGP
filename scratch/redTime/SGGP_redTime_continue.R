@@ -70,12 +70,12 @@ cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew), "\n")
 
 # Update params with new data
 library("SGGP")
-SG <- SGGPfit(SG, Ynew=Ynew[,outdims], use_PCA=use_PCA,
+SG <- CGGPfit(SG, Ynew=Ynew[,outdims], #use_PCA=use_PCA,
               Xs=Xsup, Ys=Ysup[,outdims],
               separateoutputparameterdimensions=separateoutputparameterdimensions,
               HandlingSuppData = "Correct"
               )
-cat("SGGPfit successful\n")
+cat("CGGPfit successful\n")
 
 # Save SGGP object
 saveRDS(object = SG, file = paste0(SGGP_after_fit_RDS_path))
@@ -98,9 +98,9 @@ if (SG$ss >= Nfinal) {
 set.seed(SG$ss)
 
 # Append new values
-batchsize <- if (SG$ss<1000) {batchsize1} else {batchsize2}
-SG <- SGGPappend(SG, batchsize)
-cat("SGGPappend successful\n")
+batchsize <- if (SG$ss<1000) {batchsize1} else if (SG$ss<10000) {batchsize2} else {batchsize3}
+SG <- CGGPappend(SG, batchsize)
+cat("CGGPappend successful\n")
 
 # Save version with appended design
 saveRDS(object = SG, file = paste0(SGGP_after_append_RDS_path))

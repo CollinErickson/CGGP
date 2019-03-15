@@ -10,7 +10,7 @@ groupID <- "redTimeTestSup2o50"
 groupID_short <- "S2o50"#"O90_1k"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
-number_cores <- 50
+number_cores <- 100
 
 # Input dimensions
 d <- 9
@@ -19,21 +19,23 @@ d <- 9
 N0 <- NA #100
 # Number of points to add in each batch
 # batchsize <- 100 #100
-batchsize1 <- 100
-batchsize2 <- 200
+batchsize1 <- 200
+batchsize2 <- 500
+batchsize3 <- 2000
 
 # Correlation function
 corr <- "CauchySQ"
 
 # Number of points after which to stop (will go up to batchsize-1 over)
-Nfinal <- 8000
+Nfinal <- 25000
 
 # Grid size to use. This option wasn't included in Test1
 # grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
 grid_sizes <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 8, 12)
 
-# use_PCA, 100 outputs, PCA can reduce to 37 I think.
-use_PCA <- FALSE
+# PCA no longer an option
+# # use_PCA, 100 outputs, PCA can reduce to 37 I think.
+# use_PCA <- FALSE
 
 # Much slower to fit parameters separately
 separateoutputparameterdimensions <- FALSE
