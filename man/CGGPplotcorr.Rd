@@ -40,3 +40,13 @@ SG <- CGGPfit(SG, Y=y)
 CGGPplotcorr(SG)
 }
 }
+\seealso{
+Other CGGP plot functions: \code{\link{CGGPplotblocks}},
+  \code{\link{CGGPplotheat}}, \code{\link{CGGPplothist}},
+  \code{\link{CGGPplotprojection}},
+  \code{\link{CGGPplotsamplesneglogpost}},
+  \code{\link{CGGPplottheta}},
+  \code{\link{CGGPplotvariogram}},
+  \code{\link{CGGPvalplot}}
+}
+\concept{CGGP plot functions}

@@ -10,6 +10,7 @@
 #'
 #' @return A heat map made from ggplot2
 #' @export
+#' @family CGGP plot functions
 #' @references https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
 #'
 #' @examples
@@ -64,6 +65,7 @@ CGGPplotheat <- function(CGGP) {
 #'
 #' @return Histogram plot made using ggplot2
 #' @export
+#' @family CGGP plot functions
 #'
 #' @examples
 #' \dontrun{
@@ -100,6 +102,7 @@ CGGPplothist <- function(CGGP, ylog=TRUE) {
 #'
 #' @return ggplot2 plot
 #' @export
+#' @family CGGP plot functions
 #'
 #' @examples
 #' \dontrun{
@@ -242,6 +245,7 @@ valplot <- function(predmean, predvar, Yval, d=NULL) {
 #'
 #' @return None, makes a plot
 #' @export
+#' @family CGGP plot functions
 #' @importFrom graphics plot points polygon
 #'
 #' @examples
@@ -418,6 +422,7 @@ CGGPvalstats <- function(CGGP, Xval, Yval, bydim=TRUE, ...) {
 #'
 #' @return Plot
 #' @export
+#' @family CGGP plot functions
 #' @importFrom graphics par
 #'
 #' @examples
@@ -511,6 +516,7 @@ CGGPplotcorr <- function(Corr=CGGP_internal_CorrMatGaussian, theta=NULL,
 #'
 #' @return ggplot2 object
 #' @export
+#' @family CGGP plot functions
 #'
 #' @examples
 #' \dontrun{
@@ -616,6 +622,7 @@ CGGPplotprojection <- function(CGGP, proj=.5, np=300, color="pink", outdims) {
 #'
 #' @return ggplot2 object
 #' @export
+#' @family CGGP plot functions
 #'
 #' @examples 
 #' SG <- CGGPcreate(d=3, batchsize=100)
@@ -662,6 +669,7 @@ CGGPplotvariogram <- function(CGGP, facet=1, outdims=NULL) {
 #'
 #' @return ggplot2 object
 #' @export
+#' @family CGGP plot functions
 #'
 #' @examples
 #' gs <- CGGPcreate(d=3, batchsize=100)
@@ -701,6 +709,7 @@ CGGPplottheta <- function(CGGP) {
 #'
 #' @return ggplot2 object
 #' @export
+#' @family CGGP plot functions
 #'
 #' @examples
 #' gs <- CGGPcreate(d=3, batchsize=100)

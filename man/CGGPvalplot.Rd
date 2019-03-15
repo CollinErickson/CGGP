@@ -31,3 +31,13 @@ Xval <- matrix(runif(3*100), ncol=3)
 Yval <- apply(Xval, 1, f1)
 CGGPvalplot(CGGP=SG, Xval=Xval, Yval=Yval)
 }
+\seealso{
+Other CGGP plot functions: \code{\link{CGGPplotblocks}},
+  \code{\link{CGGPplotcorr}}, \code{\link{CGGPplotheat}},
+  \code{\link{CGGPplothist}},
+  \code{\link{CGGPplotprojection}},
+  \code{\link{CGGPplotsamplesneglogpost}},
+  \code{\link{CGGPplottheta}},
+  \code{\link{CGGPplotvariogram}}
+}
+\concept{CGGP plot functions}

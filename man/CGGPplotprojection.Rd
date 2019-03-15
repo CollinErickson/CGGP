@@ -39,3 +39,13 @@ CGGPplotprojection(s1, 0.)
 CGGPplotprojection(s1, s1$design[nrow(s1$design),])
 }
 }
+\seealso{
+Other CGGP plot functions: \code{\link{CGGPplotblocks}},
+  \code{\link{CGGPplotcorr}}, \code{\link{CGGPplotheat}},
+  \code{\link{CGGPplothist}},
+  \code{\link{CGGPplotsamplesneglogpost}},
+  \code{\link{CGGPplottheta}},
+  \code{\link{CGGPplotvariogram}},
+  \code{\link{CGGPvalplot}}
+}
+\concept{CGGP plot functions}

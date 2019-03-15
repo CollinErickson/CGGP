@@ -28,3 +28,12 @@ y <- apply(SG$design, 1, f)
 SG <- CGGPfit(SG, Y=y)
 CGGPplotvariogram(SG)
 }
+\seealso{
+Other CGGP plot functions: \code{\link{CGGPplotblocks}},
+  \code{\link{CGGPplotcorr}}, \code{\link{CGGPplotheat}},
+  \code{\link{CGGPplothist}},
+  \code{\link{CGGPplotprojection}},
+  \code{\link{CGGPplotsamplesneglogpost}},
+  \code{\link{CGGPplottheta}}, \code{\link{CGGPvalplot}}
+}
+\concept{CGGP plot functions}
