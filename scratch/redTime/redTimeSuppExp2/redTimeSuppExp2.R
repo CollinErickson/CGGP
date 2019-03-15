@@ -5,14 +5,14 @@
 expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
 
 # Load test data
-xlhs8039 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
+xlhs8039 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
 ylhs8039 <- log(as.matrix(
-  read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1]))
+  read.csv("./scratch/redTime/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1]))
 xtest <- xlhs8039[1:1000,]
 ytest <- ylhs8039[1:1000,]
 # Load sup data
-xsup <- as.matrix(unname(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_Xmatrix.csv")[,-1]))
-ysup <- log(unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_all_output.csv")[,-1])))
+xsup <- as.matrix(unname(read.csv("./scratch/redTime/redTimeData/LHS1L_n1000_s1225_Xmatrix.csv")[,-1]))
+ysup <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/LHS1L_n1000_s1225_all_output.csv")[,-1])))
 
 
 
@@ -21,57 +21,57 @@ run_func <- function(package, Ngrid, Nsupp, Supp, outdim) {
   # Need this first chunk inside when running parallel
   
   # Load test data
-  xlhs8039 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
+  xlhs8039 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
   ylhs8039 <- log(as.matrix(
-    read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1]))
+    read.csv("./scratch/redTime/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1]))
   xtest <- xlhs8039[1:1000,]
   ytest <- ylhs8039[1:1000,]
   # Load sup data
-  xsup <- as.matrix(unname(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_Xmatrix.csv")[,-1]))
-  ysup <- log(unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_all_output.csv")[,-1])))
+  xsup <- as.matrix(unname(read.csv("./scratch/redTime/redTimeData/LHS1L_n1000_s1225_Xmatrix.csv")[,-1]))
+  ysup <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/LHS1L_n1000_s1225_all_output.csv")[,-1])))
   
   
   
   # browser()
   # Get SGGP/grid data
   # if (Ngrid == 1319) {
-  #   sgo <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_1319.rds")
+  #   sgo <- readRDS("./scratch/redTime/redTimeData/out_redTimeTest1_SGGP_after_fit_1319.rds")
   #   Y <- log(sgo$Y)
   # } else if (Ngrid == 8039) {
-  #   sgo <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_8039.rds")
+  #   sgo <- readRDS("./scratch/redTime/redTimeData/out_redTimeTest1_SGGP_after_fit_8039.rds")
   #   Y <- log(sgo$Y)
   # } else if (Ngrid == 3119) {
-  #   sgo <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_3119.rds")
+  #   sgo <- readRDS("./scratch/redTime/redTimeData/out_redTimeTest1_SGGP_after_fit_3119.rds")
   #   Y <- log(sgo$Y)
   # } else if (Ngrid == 1319) {
-  #   sgo <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_1319.rds")
+  #   sgo <- readRDS("./scratch/redTime/redTimeData/out_redTimeTest1_SGGP_after_fit_1319.rds")
   #   Y <- log(sgo$Y)
   # } else if (Ngrid == 227) {
-  #   sgo <- readRDS("../../../Desktop/redTimeData/out_T2_SGGP-227.rds")
+  #   sgo <- readRDS("./scratch/redTime/redTimeData/out_T2_SGGP-227.rds")
   #   Y <- sgo$Y
   # } else if (Ngrid == 455) {
-  #   sgo <- readRDS("../../../Desktop/redTimeData/out_T2_SGGP-455.rds")
+  #   sgo <- readRDS("./scratch/redTime/redTimeData/out_T2_SGGP-455.rds")
   #   Y <- sgo$Y
   # } else if (Ngrid == 1063) {
-  #   sgo <- readRDS("../../../Desktop/redTimeData/out_T2_SGGP-1063.rds")
+  #   sgo <- readRDS("./scratch/redTime/redTimeData/out_T2_SGGP-1063.rds")
   #   Y <- sgo$Y
   if (Ngrid == 227) {
-    sgo <- readRDS("../../../Desktop/redTimeData/out_T4_SGGP-227.rds")
+    sgo <- readRDS("./scratch/redTime/redTimeData/out_T4_SGGP-227.rds")
     Y <- sgo$Y
   } else if (Ngrid == 455) {
-    sgo <- readRDS("../../../Desktop/redTimeData/out_T4_SGGP-455.rds")
+    sgo <- readRDS("./scratch/redTime/redTimeData/out_T4_SGGP-455.rds")
     Y <- sgo$Y
   } else if (Ngrid == 1061) {
-    sgo <- readRDS("../../../Desktop/redTimeData/out_T4_SGGP-1061.rds")
+    sgo <- readRDS("./scratch/redTime/redTimeData/out_T4_SGGP-1061.rds")
     Y <- sgo$Y
   } else if (Ngrid == 1517) {
-    sgo <- readRDS("../../../Desktop/redTimeData/out_T4_SGGP-1517.rds")
+    sgo <- readRDS("./scratch/redTime/redTimeData/out_T4_SGGP-1517.rds")
     Y <- sgo$Y
   } else if (Ngrid == 2049) {
-    sgo <- readRDS("../../../Desktop/redTimeData/out_T4_SGGP-2049.rds")
+    sgo <- readRDS("./scratch/redTime/redTimeData/out_T4_SGGP-2049.rds")
     Y <- sgo$Y
   } else if (Ngrid == 3265) {
-    sgo <- readRDS("../../../Desktop/redTimeData/out_T4_SGGP-3265.rds")
+    sgo <- readRDS("./scratch/redTime/redTimeData/out_T4_SGGP-3265.rds")
     Y <- sgo$Y
   } else if (Ngrid == 0) {
     sgo <- list(Y <- numeric(0))

@@ -1,17 +1,17 @@
 # Everything in this one will be on the log scale
-redtimefolder <- "../../../Desktop/redTimeData/"
+redtimefolder <- "./scratch/redTime/redTimeData/"
 
-lo.in <- read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_all_output.csv")
+lo.in <- read.csv("./scratch/redTime/redTimeData/LHS1L_n1000_s1225_all_output.csv")
 lo <- lo.in[,-1]
 lo <- log(as.matrix(lo))
 # set.seed(1225)
 # lx <- lhs::maximinLHS(n=1000, k=9)
-lx <- as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n1000_s1225_all_input.csv")[,-1])
+lx <- as.matrix(read.csv("./scratch/redTime/redTimeData/LHS1L_n1000_s1225_all_input.csv")[,-1])
 
 # These were fit on non-log scale
-sg8in <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_8039.rds")
-sg1in <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_1319.rds")
-sg3in <- readRDS("../../../Desktop/redTimeData/out_redTimeTest1_SGGP_after_fit_3119.rds")
+sg8in <- readRDS("./scratch/redTime/redTimeData/out_redTimeTest1_SGGP_after_fit_8039.rds")
+sg1in <- readRDS("./scratch/redTime/redTimeData/out_redTimeTest1_SGGP_after_fit_1319.rds")
+sg3in <- readRDS("./scratch/redTime/redTimeData/out_redTimeTest1_SGGP_after_fit_3119.rds")
 # SGGPvalplot(SGGP=sg8, Xval=lx, Yval=lo, d=3)
 
 # Refit on log scale, all four MV options:
@@ -87,13 +87,13 @@ sgO50_2051 <- readRDS(paste0(redtimefolder, "out_O50_SGGP-2051.rds"))
 # SGGPvalplot(sg8log, lx, lo.log, d=3)
 
 ylhs8039 <- log(as.matrix(
-  read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1]))
+  read.csv("./scratch/redTime/redTimeData/LHS1L_n8039_s1226_all_output.csv")[,-1]))
 if (F) {
   set.seed(1226)
   xlhs8039 <- lhs::maximinLHS(n=8039, k=9)
-  write.csv(xlhs8039, "../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")
+  write.csv(xlhs8039, "./scratch/redTime/redTimeData/LHS1L_n8039_s1226_matrix.csv")
 } else {
-  xlhs8039 <- unname(as.matrix(read.csv("../../../Desktop/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
+  xlhs8039 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/LHS1L_n8039_s1226_matrix.csv")[,-1]))
 }
 ylhs8039_100 <- ylhs8039[1:100,]
 xlhs8039_100 <- xlhs8039[1:100,]
@@ -103,12 +103,12 @@ xlhs1000_100 <- lx[1:100,]
 library(mlegp)
 if (F) {
   mod.mlegp <- mlegp::mlegp(X=xlhs1000_100, Z=ylhs1000_100)
-  saveRDS(mod.mlegp, "../../../Desktop/redTimeData/modmlegp100_log.rds")
+  saveRDS(mod.mlegp, "./scratch/redTime/redTimeData/modmlegp100_log.rds")
   mod.mlegp.pca <- mlegp::mlegp(X=xlhs1000_100, Z=t(ylhs1000_100), PC.percent = 99.999)
-  saveRDS(mod.mlegp.pca, "../../../Desktop/redTimeData/modmlegppca100_log.rds")
+  saveRDS(mod.mlegp.pca, "./scratch/redTime/redTimeData/modmlegppca100_log.rds")
 } else {
-  mod.mlegp <- readRDS("../../../Desktop/redTimeData/modmlegp100_log.rds")
-  mod.mlegp.pca <- readRDS("../../../Desktop/redTimeData/modmlegppca100_log.rds")
+  mod.mlegp <- readRDS("./scratch/redTime/redTimeData/modmlegp100_log.rds")
+  mod.mlegp.pca <- readRDS("./scratch/redTime/redTimeData/modmlegppca100_log.rds")
 }
 # mod.mlegp1 <- mlegp::mlegp(X=xlhs1000_100, Z=ylhs1000_100[,1])
 # Try 300 pts
@@ -116,13 +116,13 @@ ylhs1000_300 <- lo[1:300,]
 xlhs1000_300 <- lx[1:300,]
 if (F) {
   mod.mlegp.300 <- mlegp::mlegp(X=xlhs1000_300, Z=ylhs1000_300)
-  saveRDS(mod.mlegp.300, "../../../Desktop/redTimeData/modmlegp300_log.rds")
+  saveRDS(mod.mlegp.300, "./scratch/redTime/redTimeData/modmlegp300_log.rds")
   mod.mlegp.pca.300 <- mlegp::mlegp(X=xlhs1000_300, Z=t(ylhs1000_300),
                                     PC.percent = 99.999)
-  saveRDS(mod.mlegp.pca.300, "../../../Desktop/redTimeData/modmlegppca300_log.rds")
+  saveRDS(mod.mlegp.pca.300, "./scratch/redTime/redTimeData/modmlegppca300_log.rds")
 } else {
-  mod.mlegp.300 <- readRDS("../../../Desktop/redTimeData/modmlegp300_log.rds")
-  mod.mlegp.pca.300 <- readRDS("../../../Desktop/redTimeData/modmlegppca300_log.rds")
+  mod.mlegp.300 <- readRDS("./scratch/redTime/redTimeData/modmlegp300_log.rds")
+  mod.mlegp.pca.300 <- readRDS("./scratch/redTime/redTimeData/modmlegppca300_log.rds")
 }
 
 # pca.p1 <- mlegp::predict.gp(mod.mlegp.pca[[1]], lx)
