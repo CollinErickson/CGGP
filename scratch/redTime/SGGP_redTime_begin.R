@@ -27,7 +27,7 @@ if (!is.null(Xsup)) { # If supp, create/fit with that, then append N0
   SG <- CGGPcreate(d=d, batchsize=0,
                    Xs=Xsup, Ys=Ysup[,outdims],
                    corr=corr, grid_sizes=grid_sizes)
-  SG <- CGGPappend(SG, batchsize=batchsize1)
+  SG <- CGGPappend(SG, batchsize=batchsize1, selectionmethod=selectionmethod)
 } else { # No sup, do as regular
   SG <- CGGPcreate(d=d, batchsize=N0, corr=corr, grid_sizes=grid_sizes)
 }

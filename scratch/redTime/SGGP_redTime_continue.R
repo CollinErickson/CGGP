@@ -102,7 +102,7 @@ set.seed(SG$ss)
 
 # Append new values
 batchsize <- if (SG$ss<1000) {batchsize1} else if (SG$ss<10000) {batchsize2} else {batchsize3}
-SG <- CGGPappend(SG, batchsize)
+SG <- CGGPappend(SG, batchsize, selectionmethod=selectionmethod)
 cat("CGGPappend successful\n")
 
 # Save version with appended design

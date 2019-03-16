@@ -6,9 +6,10 @@
 # T4 was same as T3 but with adding sigma2hat in append, so it should focus more on bad spots
 # Sup1 is with supplementary data
 # Sup2 is with supp data, but on expandedranges2
-# Big1 is all output dimensions, no pca, shared params. Meant to be for paper.
-groupID <- "redTimeTestBig1"
-groupID_short <- "Big1"#"O90_1k"
+# Big1 is all output dimensions, no pca, shared params. Meant to be for paper. Not good b/c of UCB error
+# Big2 is same as Big1 except using Greedy in append
+groupID <- "redTimeTestBig2"
+groupID_short <- "Big2"#"O90_1k"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
 number_cores <- 125
@@ -44,6 +45,9 @@ separateoutputparameterdimensions <- FALSE
 
 # outdims: output dimensions to use. Default should be 1:100.
 outdims <- 1:100
+
+# append selectionmethod. Used to just use UCB, but UCB/TS are bad with MV out. Use Greedy instead.
+selectionmethod <- "Greedy"
 
 # To use supplementary data
 if (FALSE) {
