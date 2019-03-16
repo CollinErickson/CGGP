@@ -19,7 +19,7 @@ cat("devtools::build() ran successfully\n")
 install.packages(repos=NULL, pkgs="/home/collin/scratch/CGGP_1.0.tar.gz")
 cat("SGGP installed correctly\n")
 
-library('SGGP')
+library('CGGP')
 cat("SGGP loaded successfully\n")
 
 # Create SGGP object

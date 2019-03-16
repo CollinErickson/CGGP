@@ -73,7 +73,7 @@ cat("Extracted all values\n") #, Ynew, "\n")
 cat("Class of Ynew is ", class(Ynew), " dim of Ynew is ", dim(Ynew), "\n")
 
 # Update params with new data
-library("SGGP")
+library("CGGP")
 SG <- CGGPfit(SG, Ynew=Ynew[,outdims], #use_PCA=use_PCA,
               Xs=Xsup, Ys=Ysup[,outdims],
               separateoutputparameterdimensions=separateoutputparameterdimensions,
