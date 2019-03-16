@@ -53,7 +53,7 @@ SG <- readRDS(SGGP_after_append_RDS_path)
 cat("Read back in RDS successfully\n")
 
 # Get number of points from last time
-N_completedpreviously <- nrow(SG$design)
+N_completedpreviously <- nrow(SG$Y)
 cat("Number previously completed is", N_completedpreviously, "\n")
 
 # Read in all new output values
