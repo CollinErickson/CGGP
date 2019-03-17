@@ -152,9 +152,12 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
     1
   }
   
-  # ==========================================================================
+  
+  # ==============================.
+  # ====    Calculate IMSE    ====
+  # ==============================.
+  
   # Calculate integrated mean squared error (IMSE) values for the given method
-  # ==========================================================================
   if(selectionmethod=="Greedy"){
     # Set up blank array to store MSE values
     MSE_MAP = array(0, dim=c(CGGP$d, CGGP$maxlevel,nopd))
@@ -250,45 +253,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
     IMES_PostSamples = matrix(0, CGGP$ML,CGGP$numPostSamples)
     
     # Calculate sigma2 for all samples if needed
-    sigma2.allsamples.alloutputs <- 
-      if (is.null(CGGP[["y"]]) || length(CGGP$y)==0) { # Only supp data
-        # Not sure this is right
-        matrix(CGGP$sigma2MAP, byrow=T,
-               nrow=CGGP$numPostSamples, ncol=length(CGGP$sigma2MAP))
-        
-      } else if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
-        as.matrix(
-          apply(CGGP$thetaPostSamples, 2,
-                function(th) {
-                  CGGP_internal_calcsigma2(CGGP,
-                                           CGGP$y,
-                                           th
-                  )$sigma2
-                }
-          )
-        )
-      } else if (nopd == 1) { # 1 opd but 2+ od
-        t(
-          apply(CGGP$thetaPostSamples, 2,
-                function(th) {
-                  CGGP_internal_calcsigma2(CGGP,
-                                           CGGP$y,
-                                           th
-                  )$sigma2
-                }
-          )
-        )
-      } else { # 2+ opd, so must be 2+ od
-        outer(1:CGGP$numPostSamples, 1:nopd,
-              Vectorize(function(samplenum, outputdim) {
-                CGGP_internal_calcsigma2(
-                  CGGP,
-                  if (nopd==1) {CGGP$y} else {CGGP$y[,outputdim]},
-                  if (nopd==1) {CGGP$thetaPostSamples[,samplenum]
-                  } else {CGGP$thetaPostSamples[,samplenum,outputdim]}
-                )$sigma2
-              })
-        )}
+    sigma2.allsamples.alloutputs <- CGGP$sigma2_samples
     
     for(samplelcv in 1:CGGP$numPostSamples){
       if (nopd == 1) { # Will be a matrix
@@ -330,9 +295,11 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
   
   
   
-  # ====================================================================
+  # =============================.
+  # ====    Append points    ====
+  # =============================.
+  
   # Append points to design until limit until reaching max_design_points
-  # ====================================================================
   max_design_points = CGGP$ss + batchsize
   while (max_design_points > CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - .5) {
     if(selectionmethod=="Greedy"){
@@ -561,7 +528,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
   }
   
   
-  # THIS OVERWRITES AND RECALCULATES design EVERY TIME, WHY NOT JUST DO FOR NEW ROWS?
+  # Get design and other attributes updated
   CGGP <- CGGP_internal_getdesignfromCGGP(CGGP)
   
   

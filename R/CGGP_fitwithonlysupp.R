@@ -196,5 +196,8 @@ CGGP_internal_fitwithonlysupp <- function(CGGP, Xs, Ys,
     }
   }
   
+  # Get sigma2 samples
+  CGGP$sigma2_samples <- CGGP_internal_calc_sigma2_samples(CGGP)
+  
   CGGP
 }

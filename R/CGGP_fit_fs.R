@@ -353,6 +353,8 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     }
   }
   
+  CGGP$sigma2_samples <- CGGP_internal_calc_sigma2_samples(CGGP)
+  
   return(CGGP)
 }
 
@@ -398,3 +400,54 @@ CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,
   }
 }
 
+
+#' Calculate sigma2 for all theta samples
+#'
+#' @param CGGP CGGP object
+#'
+#' @return All sigma2 samples
+## @export
+#' @noRd
+CGGP_internal_calc_sigma2_samples <- function(CGGP) {
+  nopd <- if (is.matrix(CGGP$thetaMAP)) {ncol(CGGP$thetaMAP)} else {1}
+  
+  if (is.null(CGGP[["y"]]) || length(CGGP$y)==0) { # Only supp data
+    # Not sure this is right
+    matrix(CGGP$sigma2MAP, byrow=T,
+           nrow=CGGP$numPostSamples, ncol=length(CGGP$sigma2MAP))
+    
+  } else if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
+    as.matrix(
+      apply(CGGP$thetaPostSamples, 2,
+            function(th) {
+              CGGP_internal_calcsigma2(CGGP,
+                                       CGGP$y,
+                                       th
+              )$sigma2
+            }
+      )
+    )
+  } else if (nopd == 1) { # 1 opd but 2+ od
+    t(
+      apply(CGGP$thetaPostSamples, 2,
+            function(th) {
+              CGGP_internal_calcsigma2(CGGP,
+                                       CGGP$y,
+                                       th
+              )$sigma2
+            }
+      )
+    )
+  } else { # 2+ opd, so must be 2+ od
+    outer(1:CGGP$numPostSamples, 1:nopd,
+          Vectorize(function(samplenum, outputdim) {
+            CGGP_internal_calcsigma2(
+              CGGP,
+              if (nopd==1) {CGGP$y} else {CGGP$y[,outputdim]},
+              if (nopd==1) {CGGP$thetaPostSamples[,samplenum]
+              } else {CGGP$thetaPostSamples[,samplenum,outputdim]}
+            )$sigma2
+          })
+    )
+  }
+}
