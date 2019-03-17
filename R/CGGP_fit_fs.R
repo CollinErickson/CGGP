@@ -235,17 +235,25 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
       rsad[c] =10^(-3)
       PSTn=  log((1+thetaMAP)/(1-thetaMAP)) + rsad
       thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
+      
+      PSTn2=  log((1+thetaMAP)/(1-thetaMAP)) - rsad
+      thetav2=(exp(PSTn2)-1)/(exp(PSTn2)+1)
+      
       H[c,] = (CGGP_internal_gneglogpost(thetav,CGGP,y.thisloop,
                                          Xs=Xs, ys=ys.thisloop,
                                          HandlingSuppData=HandlingSuppData) *
-                 (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)
+                 (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+      
+      H[c,] = H[c,]-(CGGP_internal_gneglogpost(thetav2,CGGP,y.thisloop,
+                                         Xs=Xs, ys=ys.thisloop,
+                                         HandlingSuppData=HandlingSuppData) *
+                 (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+      
     }
     Hmat = H/2+t(H)/2
     A = eigen(Hmat)
-    cHa = (A$vectors)%*%diag(abs(pmax(A$values,10^(-10)))^(-1/2))%*%t(A$vectors)
     
-    
-    cHa = (A$vectors)%*%diag(sqrt(pmax(1/(A$values),10^(-10))))%*%t(A$vectors)
+    cHa = (A$vectors)%*%diag(sqrt(pmax(1/(A$values),10^(-16))))%*%t(A$vectors)
 
     # Get posterior samples using Laplace approximation
     PST= log((1+thetaMAP)/(1-thetaMAP)) +
