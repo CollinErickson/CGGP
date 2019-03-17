@@ -718,10 +718,55 @@ CGGPplottheta <- function(CGGP) {
 #' gs <- CGGPfit(gs, Y=y)
 #' CGGPplotsamplesneglogpost(gs)
 CGGPplotsamplesneglogpost <- function(CGGP) {
-  neglogpost_thetaMAP <- CGGP_internal_neglogpost(CGGP$thetaMAP, CGGP, CGGP$y)
-  neglogpost_samples <- apply(CGGP$thetaPostSamples, 2, CGGP_internal_neglogpost, CGGP=CGGP, y=CGGP$y)
-  ggplot2::ggplot() + 
-    ggplot2::geom_histogram(ggplot2::aes_string(x='x'), data.frame(x=neglogpost_samples), bins=30) + 
-    ggplot2::geom_vline(xintercept = neglogpost_thetaMAP, color="blue", size=2) +
-    ggplot2::xlab("neglogpost") + ggplot2::ggtitle("neglogpost of theta samples (blue is MAP)")
+  # Number of output parameter dimensions, one plot for each
+  nopd <- if (is.matrix(CGGP$thetaPostSamples)) {1}
+  else {dim(CGGP$thetaPostSamples)[3]}
+  
+  if (nopd==1) {
+    neglogpost_thetaMAP <- CGGP_internal_neglogpost(CGGP$thetaMAP,
+                                                    CGGP, y=CGGP$y,
+                                                    Xs=CGGP$Xs, ys=CGGP$ys)
+  } else {
+    neglogpost_thetaMAP <- apply(CGGP$thetaMAP, 2, CGGP_internal_neglogpost,
+                                 CGGP, y=CGGP$y,
+                                 Xs=CGGP$Xs, ys=CGGP$ys)
+  }
+  
+  over_dim <- if (nopd == 1) {2} else {2:3}
+  neglogpost_samples <- apply(CGGP$thetaPostSamples, over_dim,
+                              CGGP_internal_neglogpost,
+                              CGGP=CGGP, y=CGGP$y,
+                              Xs=CGGP$Xs, ys=CGGP$ys)
+  num_Inf <- sum(is.infinite(neglogpost_samples))
+  if (num_Inf > 0) {
+    warning(paste(num_Inf, "neglogpost samples are Inf"))
+  }
+  nlps_melt <- reshape2::melt(neglogpost_samples)
+  nlps_melt$Y_var2 <- paste0('Y', nlps_melt$Var2)
+  
+  p <- ggplot2::ggplot() + 
+    ggplot2::geom_histogram(ggplot2::aes_string(x='value'),
+                            nlps_melt, bins=30) + 
+    
+    ggplot2::xlab("neglogpost") +
+    ggplot2::ggtitle("neglogpost of theta samples (blue is MAP)")
+  
+  if (nopd > 1) {
+    neglogpost_thetaMAP[2] <- -16200; warning('remove this')
+    vl <- data.frame(nlp=neglogpost_thetaMAP,
+                     Y_var2=paste0('Y', 1:length(neglogpost_thetaMAP)))
+    p <- p +
+      ggplot2::geom_vline(data=vl,
+                          mapping=ggplot2::aes_string(xintercept="nlp"),
+                          color="blue", size=2) +
+      ggplot2::facet_wrap(. ~ Y_var2)
+  } else {
+    vl <- data.frame(nlp=neglogpost_thetaMAP)
+    p <- p +
+      ggplot2::geom_vline(data=vl,
+                          mapping=ggplot2::aes_string(xintercept="nlp"),
+                                 color="blue", size=2)
+  }
+  
+  p
 }
