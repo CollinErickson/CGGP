@@ -357,7 +357,11 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
     CGGP$uo[CGGP$uoCOUNT,] = l0 # Save selected block
     CGGP$ss =  CGGP$ss + CGGP$pogsize[pstar] # Update selected size
     
-    # Update ancestors
+    
+    # ================================.
+    # ====    Update ancestors    ====
+    # ================================.
+    
     # Protect against initial block which has no ancestors
     if (CGGP$pilaCOUNT[pstar] > 0) { # Protect for initial block
       new_an = CGGP$pila[pstar, 1:CGGP$pilaCOUNT[pstar]]
@@ -405,6 +409,10 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
     }
     # And reduce number of available blocks by one.
     CGGP$poCOUNT = CGGP$poCOUNT - 1
+    
+    # ==========================================.
+    # ====    Update new possible blocks    ====
+    # ==========================================.
     
     # Loop over possible descendents of selected block, add them if possible    
     for (dimlcv in 1:CGGP$d) {

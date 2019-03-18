@@ -16,9 +16,7 @@ CGGP_internal_calc_supp_pw_sigma2_Sti <- function(CGGP, thetaMAP,
                                                   y.thisloop,
                                                   pw, sigma2MAP,
                                                   only_sigma2MAP=TRUE) {
-  print("Using new function!")
   if (missing(pw) || missing(sigma2MAP)) {
-    print("Calculating pw and s2map in new function")
     if (missing(y.thisloop)) {stop("If not giving in pw and sigma2MAP, must give in y.thisloop")}
     likstuff <- CGGP_internal_calc_cholS_lS_sigma2_pw(CGGP=CGGP, y.thisloop, theta=thetaMAP)
     pw <- likstuff$pw

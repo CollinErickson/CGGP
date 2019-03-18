@@ -48,13 +48,18 @@ test_that("2. MV output, NO PCA, 1opd", {
   
   # Check that append works without error, don't save it
   for (sel.method in c("UCB", "TS", "Greedy")) {
-    expect_error(CGGPappend(SG, 30, sel.method, NA))
+    expect_error(CGGPappend(SG, 30, sel.method), NA)
   }
   
   # Add supplemental data
   expect_error(SG <- CGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
   ysuppred <- CGGPpred(SG, xsup)$me
   expect_equal(ysuppred, ysup, eps.sup)
+  
+  # Check that append works with grid+supp data
+  for (sel.method in c("UCB", "TS", "Greedy")) {
+    expect_error(CGGPappend(SG, 30, sel.method), NA)
+  }
 })
 
 
@@ -111,5 +116,10 @@ test_that("4. MV output, NO PCA, separate opd", {
   expect_error(SG <- CGGPfit(SG, Y=y, Xs=xsup, Ys=ysup), NA) # No error
   ysuppred <- CGGPpred(SG, xsup)$me
   expect_equal(ysuppred, ysup, eps.sup)
+  
+  # Check that append works with grid+supp data
+  for (sel.method in c("UCB", "TS", "Greedy")) {
+    expect_error(CGGPappend(SG, 30, sel.method), NA)
+  }
 })
 

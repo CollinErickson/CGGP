@@ -43,6 +43,8 @@ test_that("Plots work", {
   expect_is(vstats, "data.frame")
   expect_equal(nrow(vstats), 1)
   rm(vstats)
+  expect_error(vstats <- valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9), MAE=TRUE), NA)
+  rm(vstats)
   expect_error(vstats <- valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9),
                                   metrics=function(a,b,c)mean(abs(a-c))),NA)
   rm(vstats)
@@ -159,6 +161,11 @@ test_that("Plots work", {
   expect_is(tsamp, "ggplot")
   rm(tsamp)
   expect_error(tsamp <- CGGPplotsamplesneglogpost(SG2sep), NA)
+  expect_is(tsamp, "ggplot")
+  rm(tsamp)
+  # Force an Inf neglogpost
+  SG$thetaPostSamples[,100] <- rep(10, SG$numpara)
+  expect_warning(tsamp <- CGGPplotsamplesneglogpost(SG))
   expect_is(tsamp, "ggplot")
   rm(tsamp)
 })

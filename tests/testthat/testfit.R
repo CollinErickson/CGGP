@@ -4,10 +4,19 @@ context("testfit")
 
 test_that("CGGPfit works with Laplace approx", {
   d <- 3
-  SG <- CGGPcreate(d=d, batchsize=30)
+  SG <- CGGPcreate(d=d, batchsize=30, corr = "m52")
   f <- function(x){x[1]+x[2]^2}
   y <- apply(SG$design, 1, f)
-  SG <- CGGPfit(SG, Y=y)
+  # Check some fit input options
+  expect_error(CGGPfit(SG, Y=as.matrix(y)), NA)
+  expect_error(CGGPfit(SG, Ynew=as.matrix(y)), NA)
+  expect_error(CGGPfit(SG, Y=c(y, 1.2)))
+  # Set theta
+  expect_error(CGGPfit(SG, Y=y, set_thetaMAP_to = SG$thetaMAP+.1), NA)
+  # Give theta0
+  expect_error(CGGPfit(SG, Y=y, theta0 = SG$thetaMAP+.1), NA)
+  # Change correlation function
+  expect_error(SG <- CGGPfit(SG, Y=y, corr = "cauchysqt"), NA)
   
   # Check that samples from Laplace are near max
   if (F) {
@@ -74,6 +83,7 @@ test_that("CGGPfit works with Laplace approx", {
     expect_equal(c(thetagrad), numgrad, tol=1e-2, info = handling)
   }
   # numDeriv::grad(function(th) {CGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
+  
 })
 
 test_that("CGGPfit works with Ynew - scalar output", {

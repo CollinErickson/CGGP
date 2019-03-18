@@ -507,7 +507,6 @@ CGGP_internal_calc_sigma2_samples <- function(CGGP) {
       )
     }
   } else { # There is supplementary data
-    
     if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
       # Single output dimension
       as.matrix(

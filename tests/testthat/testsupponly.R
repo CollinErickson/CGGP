@@ -13,6 +13,9 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   xtest <- matrix(runif(ntest*d), ntest, d)
   ytest <- apply(xtest, 1, f)
   
+  # Error if give in unname args to supp_args
+  expect_error(CGGPcreate(d, 0, Xs=xsup, Ys=ysup, supp_args = list(12)))
+  
   # Create with only supp
   expect_error(s1 <- CGGPcreate(d, 0, Xs=xsup, Ys=ysup, corr="CauchySQ"), NA)
   expect_true(is.null(s1[["design"]]))
@@ -71,6 +74,9 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   expect_equal(s1$po[1,], rep(1,d))
   expect_true(all(s1$po[-1,]==0))
   
+  tp <- capture.output(print(s1))
+  expect_is(tp, "character")
+  expect_gt(length(tp), 6)
 })
 
 
@@ -136,6 +142,9 @@ test_that("2. Create, append, predict with only supp, MVout, no PCA, yes sepOPD"
     expect_true(s1.app.colMeans[2]+.1 > s1.app.colMeans[3])
   }
   
+  tp <- capture.output(print(s1))
+  expect_is(tp, "character")
+  expect_gt(length(tp), 6)
 })
 
 

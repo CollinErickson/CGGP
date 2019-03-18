@@ -10,7 +10,7 @@ test_that("Correlation CorrMatCauchy works", {
   expect_equal(CGGP_internal_CorrMatCauchy(return_numpara=TRUE), 3)
   
   # Get error when you give in theta of wrong size
-  expect_error(CGGP_internal_CorrMatCauchySQT(x1=x1, x2=x2, theta = c(.1,.1)))
+  expect_error(CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta = c(.1,.1)))
 
   # Now check correlation
   cauchy1 <- CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th)
