@@ -204,7 +204,8 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
   
   neglogpost =  2*sum((log(1-theta)-log(theta+1))^2) #start out with prior
   
-  if(!is.matrix(y)){
+  output_is_1D <- if (!is.null(y)) {!is.matrix(y)} else {!is.matrix(ys)}
+  if(output_is_1D){
     neglogpost = neglogpost+1/2*(nsamples*log(sigma2_hat[1])+lDet)
   }else{
     neglogpost = neglogpost+1/2*(nsamples*mean(log(c(sigma2_hat)))+lDet)

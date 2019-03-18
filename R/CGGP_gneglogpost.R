@@ -374,8 +374,8 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
   neglogpost =  2*sum((log(1-theta)-log(theta+1))^2) #start out with prior
   gneglogpost = -4*(log(1-theta)-log(theta+1))*((1/(1-theta))+1/(1+theta))
   
-  
-  if(!is.matrix(y)){
+  output_is_1D <- if (!is.null(y)) {!is.matrix(y)} else {!is.matrix(ys)}
+  if(output_is_1D){
     neglogpost =neglogpost +1/2*(nsamples*log(sigma2_hat[1])+lDet)
     gneglogpost = gneglogpost+1/2*(dlDet+nsamples*dsigma2_hat / sigma2_hat[1])
   }else{
@@ -385,7 +385,6 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
       gneglogpost = gneglogpost+1/2*1/ndim*nsamples*dsigma2_hat[,i]/sigma2_hat[i]
     }
   }
-  
   
   
   if(return_lik){
