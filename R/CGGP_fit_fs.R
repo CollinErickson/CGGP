@@ -429,10 +429,44 @@ CGGP_internal_calc_sigma2_samples <- function(CGGP) {
   nopd <- if (is.matrix(CGGP$thetaPostSamples)) {1} else {dim(CGGP$thetaPostSamples)[3]}
   
   if (is.null(CGGP[["y"]]) || length(CGGP$y)==0) { # Only supp data
-    # Not sure this is right
-    print("calc_sigma2_samples with only supp is bad")
-    matrix(CGGP$sigma2MAP, byrow=T,
-           nrow=CGGP$numPostSamples, ncol=length(CGGP$sigma2MAP))
+    if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
+      # Single output dimension
+      as.matrix(
+        apply(CGGP$thetaPostSamples, 2,
+              function(th) {
+                CGGP_internal_calc_supp_only_supppw_sigma2_Sti(
+                  CGGP=CGGP,thetaMAP=th,ys.thisloop=CGGP$ys, only_sigma2MAP=TRUE
+                )$sigma2
+              }
+        )
+      )
+    } else if (nopd == 1) { # 1 opd but 2+ od
+      # MV output but shared parameters, so sigma2 is vector
+      t(
+        apply(CGGP$thetaPostSamples, 2,
+              function(th) {
+                CGGP_internal_calc_supp_only_supppw_sigma2_Sti(
+                  CGGP=CGGP,thetaMAP=th,ys.thisloop=CGGP$ys, only_sigma2MAP=TRUE
+                )$sigma2
+              }
+        )
+      )
+    } else { # 2+ opd, so must be 2+ od
+      # MV output with separate parameters, so need to loop over
+      #  both samples and output dimension
+      outer(1:CGGP$numPostSamples, 1:nopd,
+            Vectorize(
+              function(samplenum, outputdim) {
+                CGGP_internal_calc_supp_only_supppw_sigma2_Sti(
+                  CGGP=CGGP,thetaMAP=CGGP$thetaPostSamples[,samplenum,outputdim],
+                  ys.thisloop=CGGP$ys[,outputdim],
+                  only_sigma2MAP=TRUE
+                )$sigma2
+              }
+            )
+      )
+    }
+    
     
   } else if (!CGGP$supplemented) {
     if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od

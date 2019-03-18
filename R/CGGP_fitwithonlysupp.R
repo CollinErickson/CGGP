@@ -28,9 +28,9 @@ CGGP_internal_fitwithonlysupp <- function(CGGP, Xs, Ys,
                                           set_thetaMAP_to,
                                           numPostSamples=NULL
 ) {
-  # ===============
-  #  Set Values
-  # ===============
+  # ==========================.
+  # ====    Set Values    ====
+  # ==========================.
   CGGP$supplemented = TRUE
   CGGP$Xs = Xs
   CGGP$Ys = Ys
@@ -80,9 +80,9 @@ CGGP_internal_fitwithonlysupp <- function(CGGP, Xs, Ys,
   }
   
   
-  # ===========================================================
-  #  Optimize parameters for each output parameter dimension
-  # ===========================================================
+  # =================================================================.
+  # ==== Optimize parameters for each output parameter dimension ====
+  # =================================================================.
   
   for (opdlcv in 1:nopd) { # output parameter dimension
     
@@ -108,9 +108,9 @@ CGGP_internal_fitwithonlysupp <- function(CGGP, Xs, Ys,
     # Set new theta
     thetaMAP <- opt.out$par
     
-    # ==========================
-    #  Get posterior samples
-    # ==========================
+    # =====================================.
+    # ====    Get posterior samples    ====
+    # =====================================.
     
     totnumpara = length(thetaMAP)
     
@@ -137,22 +137,34 @@ CGGP_internal_fitwithonlysupp <- function(CGGP, Xs, Ys,
     PST= log((1+thetaMAP)/(1-thetaMAP)) + cHa%*%matrix(rnorm(CGGP$numPostSamples*length(thetaMAP),0,1),nrow=length(thetaMAP))
     thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
     
-    Sigma_t = matrix(1,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1])
-    for (dimlcv in 1:CGGP$d) { # Loop over dimensions
-      V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$Xs[,dimlcv], thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
-      Sigma_t = Sigma_t*V
-    }
+    # =================================.
+    # ====    Calculate supp stuff ====
+    # # =================================.
+    # Sigma_t = matrix(1,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1])
+    # for (dimlcv in 1:CGGP$d) { # Loop over dimensions
+    #   V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$Xs[,dimlcv], thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
+    #   Sigma_t = Sigma_t*V
+    # }
+    # 
+    # Sti_chol <- chol(Sigma_t + diag(CGGP$nugget, nrow(Sigma_t), ncol(Sigma_t)))
+    # Sti <- chol2inv(Sti_chol)
+    # 
+    # # Use backsolve for stability
+    # # supppw <- Sti %*% ys.thisloop
+    # # supppw is same as Sti_resid in other files
+    # supppw <- backsolve(Sti_chol, backsolve(Sti_chol, ys.thisloop, transpose = T))
+    # if (is.matrix(supppw) && ncol(supppw)==1) {supppw <- as.vector(supppw)}
+    # 
+    # # sigma2MAP <- (t(ys.thisloop) %*% supppw) / nrow(Xs)
+    # # if (is.matrix(sigma2MAP)) {sigma2MAP <- diag(sigma2MAP)}
+    # sigma2MAP = colSums(as.matrix(ys.thisloop)*as.matrix(supppw))/nrow(Xs)
+    supp_quantities <- CGGP_internal_calc_supp_only_supppw_sigma2_Sti(
+      CGGP=CGGP,thetaMAP=thetaMAP,ys.thisloop=ys.thisloop, only_sigma2MAP=FALSE
+    )
+    supppw <- supp_quantities$supppw
+    sigma2MAP <- supp_quantities$sigma2MAP
+    Sti <- supp_quantities$Sti
     
-    Sti_chol <- chol(Sigma_t + diag(CGGP$nugget, nrow(Sigma_t), ncol(Sigma_t)))
-    Sti <- chol2inv(Sti_chol)
-    
-    # Use backsolve for stability
-    # supppw <- Sti %*% ys.thisloop
-    supppw <- backsolve(Sti_chol, backsolve(Sti_chol, ys.thisloop, transpose = T))
-    if (is.matrix(supppw) && ncol(supppw)==1) {supppw <- as.vector(supppw)}
-    
-    sigma2MAP <- (t(ys.thisloop) %*% supppw) / nrow(Xs)
-    if (is.matrix(sigma2MAP)) {sigma2MAP <- diag(sigma2MAP)}
     
     # Add all new variables to CGGP that are needed
     if (nopd==1) { # Only 1 output parameter dim, so just set them
