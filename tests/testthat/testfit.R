@@ -163,6 +163,6 @@ test_that("CGGPfit works with Ynew - vector output", {
 #   expect_equal(o4$dSigma_mat[,3], diag(o3$dSigma_mat[,11:15]))
 # })
 
-test_that("", {
-  
-})
+# test_that("", {
+#   
+# })

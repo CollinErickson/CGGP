@@ -263,55 +263,63 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     
     
     if(CGGP$supplemented){
-      Cs = matrix(1,dim(CGGP$Xs)[1],CGGP$ss)
-      for (dimlcv in 1:CGGP$d) { # Loop over dimensions
-        V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$xb,
-                         thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
-        Cs = Cs*V[,CGGP$designindex[,dimlcv]]
-      }
+      # Cs = matrix(1,dim(CGGP$Xs)[1],CGGP$ss)
+      # for (dimlcv in 1:CGGP$d) { # Loop over dimensions
+      #   V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$xb,
+      #                    thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
+      #   Cs = Cs*V[,CGGP$designindex[,dimlcv]]
+      # }
+      # 
+      # Sigma_t = matrix(1,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1])
+      # for (dimlcv in 1:CGGP$d) { # Loop over dimensions
+      #   V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$Xs[,dimlcv],
+      #                    thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
+      #   Sigma_t = Sigma_t*V
+      # }
+      # 
+      # MSE_s = list(matrix(0,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1]),
+      #              (CGGP$d+1)*(CGGP$maxlevel+1)) 
+      # for (dimlcv in 1:CGGP$d) {
+      #   for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
+      #     MSE_s[[(dimlcv)*CGGP$maxlevel+levellcv]] =
+      #       (-CGGP_internal_postvarmatcalc(CGGP$Xs[,dimlcv],CGGP$Xs[,dimlcv],
+      #                                      CGGP$xb[1:CGGP$sizest[levellcv]],
+      #                                      thetaMAP[(dimlcv-1)*CGGP$numpara +
+      #                                                 1:CGGP$numpara],
+      #                                      CorrMat=CGGP$CorrMat))
+      #   }
+      # }
+      # 
+      # for (blocklcv in 1:CGGP$uoCOUNT) {
+      #   ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
+      #   for (dimlcv in 1:CGGP$d) {
+      #     levelnow = CGGP$uo[blocklcv,dimlcv]
+      #     ME_s = ME_s*MSE_s[[(dimlcv)*CGGP$maxlevel+levelnow]]
+      #   }
+      #   Sigma_t = Sigma_t-CGGP$w[blocklcv]*(ME_s)
+      # }
+      # yhats = Cs%*%pw
+      # 
+      # 
+      # Sti_resid = solve(Sigma_t,ys.thisloop-yhats)
+      # Sti = solve(Sigma_t)
+      # sigma2MAP = (sigma2MAP*dim(CGGP$design)[1] +
+      #                colSums((ys.thisloop-yhats)*Sti_resid)) / (
+      #                  dim(CGGP$design)[1]+dim(Xs)[1])
+      # 
+      # pw_adj_y = t(Cs)%*%Sti_resid
+      # pw_adj <- CGGP_internal_calcpw(CGGP=CGGP, y=pw_adj_y, theta=thetaMAP)
+      # 
+      # pw_uppadj = pw-pw_adj
+      # supppw = Sti_resid
       
-      Sigma_t = matrix(1,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1])
-      for (dimlcv in 1:CGGP$d) { # Loop over dimensions
-        V = CGGP$CorrMat(CGGP$Xs[,dimlcv], CGGP$Xs[,dimlcv],
-                         thetaMAP[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara])
-        Sigma_t = Sigma_t*V
-      }
-      
-      MSE_s = list(matrix(0,dim(CGGP$Xs)[1],dim(CGGP$Xs)[1]),
-                   (CGGP$d+1)*(CGGP$maxlevel+1)) 
-      for (dimlcv in 1:CGGP$d) {
-        for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
-          MSE_s[[(dimlcv)*CGGP$maxlevel+levellcv]] =
-            (-CGGP_internal_postvarmatcalc(CGGP$Xs[,dimlcv],CGGP$Xs[,dimlcv],
-                                           CGGP$xb[1:CGGP$sizest[levellcv]],
-                                           thetaMAP[(dimlcv-1)*CGGP$numpara +
-                                                      1:CGGP$numpara],
-                                           CorrMat=CGGP$CorrMat))
-        }
-      }
-      
-      for (blocklcv in 1:CGGP$uoCOUNT) {
-        ME_s = matrix(1,nrow=dim(Xs)[1],ncol=dim(Xs)[1])
-        for (dimlcv in 1:CGGP$d) {
-          levelnow = CGGP$uo[blocklcv,dimlcv]
-          ME_s = ME_s*MSE_s[[(dimlcv)*CGGP$maxlevel+levelnow]]
-        }
-        Sigma_t = Sigma_t-CGGP$w[blocklcv]*(ME_s)
-      }
-      yhats = Cs%*%pw
-      
-      
-      Sti_resid = solve(Sigma_t,ys.thisloop-yhats)
-      Sti = solve(Sigma_t)
-      sigma2MAP = (sigma2MAP*dim(CGGP$design)[1] +
-                     colSums((ys.thisloop-yhats)*Sti_resid)) / (
-                       dim(CGGP$design)[1]+dim(Xs)[1])
-      
-      pw_adj_y = t(Cs)%*%Sti_resid
-      pw_adj <- CGGP_internal_calcpw(CGGP=CGGP, y=pw_adj_y, theta=thetaMAP)
-      
-      pw_uppadj = pw-pw_adj
-      supppw = Sti_resid
+      supp_values <- CGGP_internal_calc_supp_pw_sigma2_Sti(
+        CGGP, thetaMAP=thetaMAP, ys.thisloop=ys.thisloop, pw=pw,
+        sigma2MAP=sigma2MAP, only_sigma2MAP=FALSE)
+      supppw <- supp_values$supppw
+      sigma2MAP <- supp_values$sigma2MAP
+      Sti <- supp_values$Sti
+      pw_uppadj<- supp_values$pw_uppadj
     }
     
     
@@ -333,7 +341,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
         
         CGGP$thetaMAP <- matrix(NaN, length(thetaMAP), nopd)
         if (length(sigma2MAP) != 1) {
-          stop("Error: sigma2map should be a 1x1 matrix can be matrix.")
+          stop("Error: sigma2map should be a 1x1 matrix.")
         }
         CGGP$sigma2MAP <- numeric(nopd)
         CGGP$pw <- matrix(NaN, length(pw), nopd) 
@@ -420,14 +428,16 @@ CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,
 ## @export
 #' @noRd
 CGGP_internal_calc_sigma2_samples <- function(CGGP) {
-  nopd <- if (is.matrix(CGGP$thetaMAP)) {ncol(CGGP$thetaMAP)} else {1}
+  nopd <- if (is.matrix(CGGP$thetaMAP)) {1} else {dim(CGGP$thetaMAP)[3]}
   
   if (is.null(CGGP[["y"]]) || length(CGGP$y)==0) { # Only supp data
     # Not sure this is right
+    print("calc_sigma2_samples with only supp is bad")
     matrix(CGGP$sigma2MAP, byrow=T,
            nrow=CGGP$numPostSamples, ncol=length(CGGP$sigma2MAP))
     
   } else if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
+    # Single output dimension
     as.matrix(
       apply(CGGP$thetaPostSamples, 2,
             function(th) {
@@ -439,6 +449,7 @@ CGGP_internal_calc_sigma2_samples <- function(CGGP) {
       )
     )
   } else if (nopd == 1) { # 1 opd but 2+ od
+    # MV output but shared parameters, so sigma2 is vector
     t(
       apply(CGGP$thetaPostSamples, 2,
             function(th) {
@@ -450,6 +461,8 @@ CGGP_internal_calc_sigma2_samples <- function(CGGP) {
       )
     )
   } else { # 2+ opd, so must be 2+ od
+    # MV output with separate parameters, so need to loop over
+    #  both samples and output dimension
     outer(1:CGGP$numPostSamples, 1:nopd,
           Vectorize(function(samplenum, outputdim) {
             CGGP_internal_calcsigma2(

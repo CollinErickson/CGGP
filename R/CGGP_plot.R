@@ -752,7 +752,6 @@ CGGPplotsamplesneglogpost <- function(CGGP) {
     ggplot2::ggtitle("neglogpost of theta samples (blue is MAP)")
   
   if (nopd > 1) {
-    neglogpost_thetaMAP[2] <- -16200; warning('remove this')
     vl <- data.frame(nlp=neglogpost_thetaMAP,
                      Y_var2=paste0('Y', 1:length(neglogpost_thetaMAP)))
     p <- p +
