@@ -11,6 +11,7 @@ knitr::opts_chunk$set(
   # fig.path = "README-"
   fig.path = "tools/README-"
 )
+set.seed(0)
 ```
 
 # CGGP
@@ -23,7 +24,7 @@ The goal of CGGP is to provide a sequential design of experiment algorithm that 
 
 ## Installation
 
-You can install CGGP from github with:
+You can install CGGP from GitHub with:
 
 ```{r gh-installation, eval = FALSE}
 # install.packages("devtools")
@@ -45,11 +46,15 @@ print(CG)
 A new `CGGP` object has design points that should be evaluated next, either from `CG$design` or `CG$design_unevaluated`.
 
 ```{r evaluatedesign}
-f <- function(x) {x[1]^2 + 4*(0.5-x[2])^3 + x[1]*sin(2*2*pi*x[3]^2)}
+f <- function(x) {x[1]^2*cos(x[3]) + 4*(0.5-x[2])^3*(1-x[1]/3) + x[1]*sin(2*2*pi*x[3]^2)}
 Y <- apply(CG$design, 1, f)
 ```
 
 Once you have evaluated the design points, you can fit the object with `CGGPfit`.
+
+```{r, echo = FALSE}
+set.seed(1)
+```
 
 ```{r fit}
 CG <- CGGPfit(CG, Y)
@@ -69,6 +74,10 @@ use `CGGPappend`.
 It will use the data already collected to find the most
 useful set of points to evaluate next.
 
+```{r, echo = FALSE}
+set.seed(1)
+```
+
 ```{r append}
 # To add 100 points
 CG <- CGGPappend(CG, 100)
@@ -77,12 +86,20 @@ CG <- CGGPappend(CG, 100)
 Now you will need to evaluate the points added to `CG$design`,
 and refit the model.
 
+```{r, echo = FALSE}
+set.seed(1)
+```
+
 ```{r refit}
 ynew <- apply(CG$design_unevaluated, 1, f)
 CG <- CGGPfit(CG, Ynew=ynew)
 ```
 
 ### Plot functions
+
+```{r, echo = FALSE}
+set.seed(0)
+```
 
 There are a few functions that will help visualize the CGGP design.
 
@@ -181,6 +198,19 @@ You can see how the output changes as each input is varied.
 CGGPplotprojection(CG)
 ```
 
+The next plot changes so that all the other dimensions are held constant
+at 0.15 for each projection plot.
+When moving from the center line, the error bounds generally
+should be larger since
+it is further from the data, but we should see similar patterns
+unless the function is highly nonlinear.
+
+```{r projectionplot2}
+CGGPplotprojection(CG, proj = rep(.15, CG$d))
+```
+
+
+
 
 #### `CGGPplottheta`
 
@@ -202,6 +232,7 @@ CGGPplottheta(CG)
 `CGGPplotsamplesneglogpost` shows the negative log posterior
 for each of the different samples for theta.
 The value for the MAP is shown as a blue line.
+It should be at the far left edge if it is the true MAP.
 
 ```{r samplesneglogpost}
 CGGPplotsamplesneglogpost(CG)

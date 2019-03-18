@@ -13,7 +13,7 @@ algorithm that can efficiently use many points and interpolate exactly.
 
 ## Installation
 
-You can install CGGP from github with:
+You can install CGGP from GitHub with:
 
 ``` r
 # install.packages("devtools")
@@ -43,10 +43,11 @@ print(CG)
 ```
 
 A new `CGGP` object has design points that should be evaluated next,
-either from `CG$design` or `CG$design_unevaluated`.
+either from `CG$design` or
+`CG$design_unevaluated`.
 
 ``` r
-f <- function(x) {x[1]^2 + 4*(0.5-x[2])^3 + x[1]*sin(2*2*pi*x[3]^2)}
+f <- function(x) {x[1]^2*cos(x[3]) + 4*(0.5-x[2])^3*(1-x[1]/3) + x[1]*sin(2*2*pi*x[3]^2)}
 Y <- apply(CG$design, 1, f)
 ```
 
@@ -75,30 +76,30 @@ you can use `CGGPpred`.
 xp <- matrix(runif(10*CG$d), ncol=CG$d)
 CGGPpred(CG, xp)
 #> $mean
-#>              [,1]
-#>  [1,] -0.09990079
-#>  [2,]  1.08397346
-#>  [3,]  0.21605823
-#>  [4,]  0.77011959
-#>  [5,]  0.20280109
-#>  [6,]  0.16050310
-#>  [7,]  0.89803002
-#>  [8,]  0.91208027
-#>  [9,]  0.54244027
-#> [10,]  1.28567833
+#>                [,1]
+#>  [1,]  0.0001162884
+#>  [2,] -0.0344228978
+#>  [3,] -0.0196339461
+#>  [4,]  0.7418505766
+#>  [5,]  0.4708991004
+#>  [6,] -0.2423823333
+#>  [7,]  0.1824982528
+#>  [8,]  0.0323529025
+#>  [9,]  0.4261492247
+#> [10,] -0.2613434429
 #> 
 #> $var
 #>               [,1]
-#>  [1,] 0.0078659174
-#>  [2,] 0.0424122636
-#>  [3,] 0.0733190759
-#>  [4,] 0.0002926377
-#>  [5,] 0.0155673807
-#>  [6,] 0.1188586026
-#>  [7,] 0.1035416454
-#>  [8,] 0.0485755511
-#>  [9,] 0.0754647645
-#> [10,] 0.0047451181
+#>  [1,] 7.974964e-06
+#>  [2,] 1.492197e-06
+#>  [3,] 1.537227e-05
+#>  [4,] 2.460356e-05
+#>  [5,] 1.117700e-05
+#>  [6,] 1.654354e-05
+#>  [7,] 8.025908e-07
+#>  [8,] 7.446481e-06
+#>  [9,] 5.917793e-06
+#> [10,] 1.421730e-05
 ```
 
 To add new design points to the already existing design, use
@@ -161,7 +162,7 @@ explored more. These should be the more active dimensions.
 ``` r
 CGGPplothist(CG)
 #> Warning: Transformation introduced infinite values in continuous y-axis
-#> Warning: Removed 5 rows containing missing values (geom_bar).
+#> Warning: Removed 4 rows containing missing values (geom_bar).
 ```
 
 ![](tools/README-hist-1.png)<!-- -->
@@ -218,6 +219,18 @@ CGGPplotprojection(CG)
 
 ![](tools/README-projectionplot-1.png)<!-- -->
 
+The next plot changes so that all the other dimensions are held constant
+at 0.15 for each projection plot. When moving from the center line, the
+error bounds generally should be larger since it is further from the
+data, but we should see similar patterns unless the function is highly
+nonlinear.
+
+``` r
+CGGPplotprojection(CG, proj = rep(.15, CG$d))
+```
+
+![](tools/README-projectionplot2-1.png)<!-- -->
+
 #### `CGGPplottheta`
 
 `CGGPplottheta` is useful for getting an idea of how the samples for the
@@ -236,7 +249,7 @@ CGGPplottheta(CG)
 
 `CGGPplotsamplesneglogpost` shows the negative log posterior for each of
 the different samples for theta. The value for the MAP is shown as a
-blue line.
+blue line. It should be at the far left edge if it is the true MAP.
 
 ``` r
 CGGPplotsamplesneglogpost(CG)
