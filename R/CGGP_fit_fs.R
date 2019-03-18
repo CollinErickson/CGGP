@@ -245,16 +245,16 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
                  (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
       
       H[c,] = H[c,]-(CGGP_internal_gneglogpost(thetav2,CGGP,y.thisloop,
-                                         Xs=Xs, ys=ys.thisloop,
-                                         HandlingSuppData=HandlingSuppData) *
-                 (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+                                               Xs=Xs, ys=ys.thisloop,
+                                               HandlingSuppData=HandlingSuppData) *
+                       (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
       
     }
     Hmat = H/2+t(H)/2
     A = eigen(Hmat)
     
     cHa = (A$vectors)%*%diag(sqrt(pmax(1/(A$values),10^(-16))))%*%t(A$vectors)
-
+    
     # Get posterior samples using Laplace approximation
     PST= log((1+thetaMAP)/(1-thetaMAP)) +
       cHa%*%matrix(rnorm(CGGP$numPostSamples*length(thetaMAP),0,1),
@@ -428,7 +428,7 @@ CGGP_internal_postvarmatcalc <- function(x1, x2, xo, theta, CorrMat,
 ## @export
 #' @noRd
 CGGP_internal_calc_sigma2_samples <- function(CGGP) {
-  nopd <- if (is.matrix(CGGP$thetaMAP)) {1} else {dim(CGGP$thetaMAP)[3]}
+  nopd <- if (is.matrix(CGGP$thetaPostSamples)) {1} else {dim(CGGP$thetaPostSamples)[3]}
   
   if (is.null(CGGP[["y"]]) || length(CGGP$y)==0) { # Only supp data
     # Not sure this is right
@@ -436,42 +436,88 @@ CGGP_internal_calc_sigma2_samples <- function(CGGP) {
     matrix(CGGP$sigma2MAP, byrow=T,
            nrow=CGGP$numPostSamples, ncol=length(CGGP$sigma2MAP))
     
-  } else if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
-    # Single output dimension
-    as.matrix(
-      apply(CGGP$thetaPostSamples, 2,
-            function(th) {
-              CGGP_internal_calcsigma2(CGGP,
-                                       CGGP$y,
-                                       th
-              )$sigma2
-            }
+  } else if (!CGGP$supplemented) {
+    if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
+      # Single output dimension
+      as.matrix(
+        apply(CGGP$thetaPostSamples, 2,
+              function(th) {
+                CGGP_internal_calcsigma2(CGGP,
+                                         CGGP$y,
+                                         th
+                )$sigma2
+              }
+        )
       )
-    )
-  } else if (nopd == 1) { # 1 opd but 2+ od
-    # MV output but shared parameters, so sigma2 is vector
-    t(
-      apply(CGGP$thetaPostSamples, 2,
-            function(th) {
-              CGGP_internal_calcsigma2(CGGP,
-                                       CGGP$y,
-                                       th
-              )$sigma2
-            }
+    } else if (nopd == 1) { # 1 opd but 2+ od
+      # MV output but shared parameters, so sigma2 is vector
+      t(
+        apply(CGGP$thetaPostSamples, 2,
+              function(th) {
+                CGGP_internal_calcsigma2(CGGP,
+                                         CGGP$y,
+                                         th
+                )$sigma2
+              }
+        )
       )
-    )
-  } else { # 2+ opd, so must be 2+ od
-    # MV output with separate parameters, so need to loop over
-    #  both samples and output dimension
-    outer(1:CGGP$numPostSamples, 1:nopd,
-          Vectorize(function(samplenum, outputdim) {
-            CGGP_internal_calcsigma2(
-              CGGP,
-              if (nopd==1) {CGGP$y} else {CGGP$y[,outputdim]},
-              if (nopd==1) {CGGP$thetaPostSamples[,samplenum]
-              } else {CGGP$thetaPostSamples[,samplenum,outputdim]}
-            )$sigma2
-          })
-    )
+    } else { # 2+ opd, so must be 2+ od
+      # MV output with separate parameters, so need to loop over
+      #  both samples and output dimension
+      outer(1:CGGP$numPostSamples, 1:nopd,
+            Vectorize(function(samplenum, outputdim) {
+              CGGP_internal_calcsigma2(
+                CGGP,
+                CGGP$y[,outputdim],
+                CGGP$thetaPostSamples[,samplenum,outputdim]
+              )$sigma2
+            })
+      )
+    }
+  } else { # There is supplementary data
+    
+    if (nopd == 1 && length(CGGP$sigma2MAP)==1) { # 1 opd and 1 od
+      # Single output dimension
+      as.matrix(
+        apply(CGGP$thetaPostSamples, 2,
+              function(th) {
+                CGGP_internal_calc_supp_pw_sigma2_Sti(CGGP=CGGP,
+                                                      y.thisloop=CGGP$y,
+                                                      thetaMAP=th,
+                                                      ys.thisloop=CGGP$ys,
+                                                      only_sigma2MAP=TRUE
+                )$sigma2
+              }
+        )
+      )
+    } else if (nopd == 1) { # 1 opd but 2+ od
+      # MV output but shared parameters, so sigma2 is vector
+      t(
+        apply(CGGP$thetaPostSamples, 2,
+              function(th) {
+                CGGP_internal_calc_supp_pw_sigma2_Sti(CGGP,
+                                                      y.thisloop=CGGP$y,
+                                                      thetaMAP=th,
+                                                      ys.thisloop=CGGP$ys,
+                                                      only_sigma2MAP=TRUE
+                )$sigma2
+              }
+        )
+      )
+    } else { # 2+ opd, so must be 2+ od
+      # MV output with separate parameters, so need to loop over
+      #  both samples and output dimension
+      outer(1:CGGP$numPostSamples, 1:nopd,
+            Vectorize(function(samplenum, outputdim) {
+              CGGP_internal_calc_supp_pw_sigma2_Sti(
+                CGGP=CGGP,
+                y.thisloop=CGGP$y[,outputdim],
+                thetaMAP=CGGP$thetaPostSamples[,samplenum,outputdim],
+                ys.thisloop=CGGP$ys[,outputdim],
+                only_sigma2MAP=TRUE
+              )$sigma2
+            })
+      )
+    }
   }
 }
