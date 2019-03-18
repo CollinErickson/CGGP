@@ -372,8 +372,6 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     }
   }
   
-  CGGP$sigma2_samples <- CGGP_internal_calc_sigma2_samples(CGGP)
-  
   return(CGGP)
 }
 

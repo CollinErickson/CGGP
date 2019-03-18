@@ -111,7 +111,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     
   }
   
-  if(HandlingSuppData == "Ignore" || HandlingSuppData == "Mixture" ){
+  if(HandlingSuppData == "Ignore" ){
     
     sigma2anddsigma2 <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y,
                                                            theta=theta,

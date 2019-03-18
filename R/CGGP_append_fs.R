@@ -253,6 +253,9 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
     IMES_PostSamples = matrix(0, CGGP$ML,CGGP$numPostSamples)
     
     # Calculate sigma2 for all samples if needed
+    if (is.null(CGGP$sigma2_samples)) {
+      CGGP$sigma2_samples <- CGGP_internal_calc_sigma2_samples(CGGP)
+    }
     sigma2.allsamples.alloutputs <- CGGP$sigma2_samples
     
     for(samplelcv in 1:CGGP$numPostSamples){
