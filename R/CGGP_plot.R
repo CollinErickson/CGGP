@@ -50,6 +50,7 @@ CGGPplotheat <- function(CGGP) {
     ggplot2::geom_tile(ggplot2::aes_string(fill = 'value')) + 
     ggplot2::geom_text(ggplot2::aes_string(label = 'round(value, 1)')) +
     ggplot2::scale_fill_gradient(low = "white", high = "red") +
+    # ggplot2::scale_fill_gradient(low = "yellow", high = "red") +
     ggplot2::scale_x_continuous(breaks = 1:CGGP$d)  +
     ggplot2::scale_y_continuous(breaks = 1:CGGP$d) # labels=c() to set names
 }

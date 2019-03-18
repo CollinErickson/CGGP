@@ -1,146 +1,245 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# SGGP
+# CGGP
 
 [![Travis-CI Build
-Status](https://travis-ci.org/CollinErickson/SGGP.svg?branch=master)](https://travis-ci.org/CollinErickson/SGGP)
+Status](https://travis-ci.org/CollinErickson/CGGP.svg?branch=master)](https://travis-ci.org/CollinErickson/CGGP)
 [![Coverage
-Status](https://img.shields.io/codecov/c/github/CollinErickson/SGGP/master.svg)](https://codecov.io/github/CollinErickson/SGGP?branch=master)
+Status](https://img.shields.io/codecov/c/github/CollinErickson/CGGP/master.svg)](https://codecov.io/github/CollinErickson/CGGP?branch=master)
 
-The goal of SGGP is to provide a sequential design of experiment
+The goal of CGGP is to provide a sequential design of experiment
 algorithm that can efficiently use many points and interpolate exactly.
 
 ## Installation
 
-You can install SGGP from github with:
+You can install CGGP from github with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("CollinErickson/SGGP")
+devtools::install_github("CollinErickson/CGGP")
 ```
 
 ## Example
 
-To create a SGGP object:
+To create a CGGP object:
 
 ``` r
 ## basic example code
-library(SGGP)
+library(CGGP)
 d <- 4
-SG <- SGGPcreate(d=d,200)
-print(SG)
-#> SGGP object
+CG <- CGGPcreate(d=d,200)
+print(CG)
+#> CGGP object
 #>    d = 4
-#>    number of design points = 197
+#>    CorrFunc = CauchySQ
+#>    number of design points             = 197
 #>    number of unevaluated design points = 197
 #>    Available functions:
-#>      - SGGPfit(SGGP, Y) to update parameters with new data
-#>      - sGGPpred(Xp, SGGP) to predict at new points
-#>      - SGGPappend(SGGP, batchsize) to add new design points
+#>      - CGGPfit(CGGP, Y) to update parameters with new data
+#>      - CGGPpred(CGGP, xp) to predict at new points
+#>      - CGGPappend(CGGP, batchsize) to add new design points
+#>      - CGGPplot<name>(CGGP) to visualize CGGP model
 ```
 
-A new `SGGP` object has design points that should be evaluated next,
-either from `SG$design` or `SG$design_unevaluated`.
+A new `CGGP` object has design points that should be evaluated next,
+either from `CG$design` or `CG$design_unevaluated`.
 
 ``` r
 f <- function(x) {x[1]^2 + 4*(0.5-x[2])^3 + x[1]*sin(2*2*pi*x[3]^2)}
-Y <- apply(SG$design, 1, f)
+Y <- apply(CG$design, 1, f)
 ```
 
 Once you have evaluated the design points, you can fit the object with
-`SGGPfit`.
+`CGGPfit`.
 
 ``` r
-SG <- SGGPfit(SG, Y)
-SG
-#> SGGP object
+CG <- CGGPfit(CG, Y)
+CG
+#> CGGP object
 #>    d = 4
-#>    number of design points = 197
+#>    CorrFunc = CauchySQ
+#>    number of design points             = 197
 #>    number of unevaluated design points = 0
 #>    Available functions:
-#>      - SGGPfit(SGGP, Y) to update parameters with new data
-#>      - sGGPpred(Xp, SGGP) to predict at new points
-#>      - SGGPappend(SGGP, batchsize) to add new design points
+#>      - CGGPfit(CGGP, Y) to update parameters with new data
+#>      - CGGPpred(CGGP, xp) to predict at new points
+#>      - CGGPappend(CGGP, batchsize) to add new design points
+#>      - CGGPplot<name>(CGGP) to visualize CGGP model
 ```
 
 If you want to use the model to make predictions at new input points,
-you can use `SGGPpred`.
+you can use `CGGPpred`.
 
 ``` r
-xp <- matrix(runif(10*SG$d), ncol=SG$d)
-SGGPpred(xp, SG)
+xp <- matrix(runif(10*CG$d), ncol=CG$d)
+CGGPpred(CG, xp)
 #> $mean
 #>              [,1]
-#>  [1,] -0.26835444
-#>  [2,]  0.50472256
-#>  [3,]  0.42244512
-#>  [4,]  1.38231071
-#>  [5,]  0.05322841
-#>  [6,]  0.20604725
-#>  [7,]  0.41018218
-#>  [8,]  0.16879444
-#>  [9,]  0.39039751
-#> [10,]  1.23489508
+#>  [1,] -0.09990079
+#>  [2,]  1.08397346
+#>  [3,]  0.21605823
+#>  [4,]  0.77011959
+#>  [5,]  0.20280109
+#>  [6,]  0.16050310
+#>  [7,]  0.89803002
+#>  [8,]  0.91208027
+#>  [9,]  0.54244027
+#> [10,]  1.28567833
 #> 
 #> $var
-#>  [1] 0.0024488401 0.0089301441 0.0002442289 0.0009809289 0.0109454204
-#>  [6] 0.0140288822 0.0016327786 0.0073906167 0.0017421508 0.0062341353
+#>               [,1]
+#>  [1,] 0.0078659174
+#>  [2,] 0.0424122636
+#>  [3,] 0.0733190759
+#>  [4,] 0.0002926377
+#>  [5,] 0.0155673807
+#>  [6,] 0.1188586026
+#>  [7,] 0.1035416454
+#>  [8,] 0.0485755511
+#>  [9,] 0.0754647645
+#> [10,] 0.0047451181
 ```
 
 To add new design points to the already existing design, use
-`SGGPappend`. It will use the data already collected to find the most
+`CGGPappend`. It will use the data already collected to find the most
 useful set of points to evaluate next.
 
 ``` r
 # To add 100 points
-SG <- SGGPappend(SG, 100)
+CG <- CGGPappend(CG, 100)
 ```
 
-Now you will need to evaluate the points added to `SG$design`, and refit
+Now you will need to evaluate the points added to `CG$design`, and refit
 the model.
 
 ``` r
-ynew <- apply(SG$design_unevaluated, 1, f)
-SG <- SGGPfit(SG, Ynew=ynew)
+ynew <- apply(CG$design_unevaluated, 1, f)
+CG <- CGGPfit(CG, Ynew=ynew)
 ```
 
-There are a few functions that will help visualize the design.
+### Plot functions
 
-`SGGPblockplot` shows the block structure when projected down to all
-pairs of two dimensions.
+There are a few functions that will help visualize the CGGP design.
+
+#### `CGGPplotblocks`
+
+`CGGPplotblocks` shows the block structure when projected down to all
+pairs of two dimensions. The plot is symmetric. The facet labels be a
+little bit confusing. The first column has the label 1, and it looks
+like it is saying that the x-axis for each plot in that column is for
+`X1`, but it is actually the y-axis that is `X1` for each plot in that
+column.
 
 ``` r
-SGGPblockplot(SG)
+CGGPplotblocks(CG)
 ```
 
-![](tools/README-blockplot-1.png)<!-- -->
+![](tools/README-plotblocks-1.png)<!-- -->
 
-`SGGPhist` shows histograms of how far the blocks extend in each
-direction.
+#### `CGGPplotheat`
+
+`CGGPplotheat` is similar to `CGGPplotblocks` and can be easier to read
+since it is only a single plot. The \((i,j)\) entry shows the maximum
+value for which a block was selected with \(X_i\) and \(X_j\) at least
+that large. The diagonal entries, \((i, i)\), show the maximum depth for
+\(X_i\). A diagonal entry must be at least as large as any entry in its
+column or row. This plot is also symmetric.
 
 ``` r
-SGGPhist(SG)
+CGGPplotheat(CG)
+```
+
+![](tools/README-heat-1.png)<!-- -->
+
+#### `CGGPhist`
+
+`CGGPhist` shows histograms of the block depth in each direction. The
+dimensions that have more large values are dimensions that have been
+explored more. These should be the more active dimensions.
+
+``` r
+CGGPplothist(CG)
 #> Warning: Transformation introduced infinite values in continuous y-axis
-#> Warning: Removed 7 rows containing missing values (geom_bar).
+#> Warning: Removed 5 rows containing missing values (geom_bar).
 ```
 
 ![](tools/README-hist-1.png)<!-- -->
 
+#### `CGGPplotcorr`
+
+`CGGPplotcorr` gives an idea of what the correlation structure in each
+dimension is. The values plotted do not represent the actual data given
+to CGGP. Each wiggly line represents a random Gaussian process drawn
+using the correlation parameters for that dimension from the given CGGP
+model. Dimensions that are more wiggly and have higher variance are the
+more active dimensions. Dimensions with nearly flat lines mean that the
+corresponding input dimension has a relatively small effect on the
+output.
+
 ``` r
-SGGPcorrplot(SG)
+CGGPplotcorr(CG)
 ```
 
 ![](tools/README-corrplot-1.png)<!-- -->
 
+#### `CGGPplotvariogram`
+
+`CGGPplotvariogram` shows something similar to the semi-variogram for
+the correlation parameters found for each dimension. Really it is just
+showing how the correlation function decays for points that are further
+away. It should always start at `y=1` for `x=0` and decrease in `y` as
+`x` gets larger
+
 ``` r
-SGGPprojectionplot(SG)
+CGGPplotvariogram(CG)
+```
+
+![](tools/README-vario-1.png)<!-- -->
+
+#### `CGGPplotprojection`
+
+`CGGPplotprojection` shows what the predicted model along each
+individual dimension when the other input dimensions are held constant,
+i.e., the projections down to single dimensions. By default the
+projection is done holding all other inputs at 0.5, but this can be
+changed by changing the argument `proj`. The black dots are the data
+points that are in that projection. If you change `proj` to have values
+not equal to 0.5, you probably won’t see any black dots. The pink
+regions are the 95% prediction intervals.
+
+This plot is the best for giving an idea of what the higher dimension
+function look like. You can see how the output changes as each input is
+varied.
+
+``` r
+CGGPplotprojection(CG)
 ```
 
 ![](tools/README-projectionplot-1.png)<!-- -->
 
+#### `CGGPplottheta`
+
+`CGGPplottheta` is useful for getting an idea of how the samples for the
+correlation parameters (theta) vary compared to the maximum a posteriori
+(MAP). This may be helpful when using `UCB` or `TS` in `CGGPappend` to
+get an idea of how much uncertainty there is in the parameters. Note
+that there are likely multiple parameters for each input dimension.
+
 ``` r
-SGGPheat(SG)
+CGGPplottheta(CG)
 ```
 
-![](tools/README-heat-1.png)<!-- -->
+![](tools/README-plottheta-1.png)<!-- -->
+
+#### `CGGPplotsamplesneglogpost`
+
+`CGGPplotsamplesneglogpost` shows the negative log posterior for each of
+the different samples for theta. The value for the MAP is shown as a
+blue line.
+
+``` r
+CGGPplotsamplesneglogpost(CG)
+```
+
+![](tools/README-samplesneglogpost-1.png)<!-- -->

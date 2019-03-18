@@ -13,99 +13,197 @@ knitr::opts_chunk$set(
 )
 ```
 
-# SGGP
+# CGGP
 
-[![Travis-CI Build Status](https://travis-ci.org/CollinErickson/SGGP.svg?branch=master)](https://travis-ci.org/CollinErickson/SGGP)
-[![Coverage Status](https://img.shields.io/codecov/c/github/CollinErickson/SGGP/master.svg)](https://codecov.io/github/CollinErickson/SGGP?branch=master)
+[![Travis-CI Build Status](https://travis-ci.org/CollinErickson/CGGP.svg?branch=master)](https://travis-ci.org/CollinErickson/CGGP)
+[![Coverage Status](https://img.shields.io/codecov/c/github/CollinErickson/CGGP/master.svg)](https://codecov.io/github/CollinErickson/CGGP?branch=master)
 
 
-The goal of SGGP is to provide a sequential design of experiment algorithm that can efficiently use many points and interpolate exactly.
+The goal of CGGP is to provide a sequential design of experiment algorithm that can efficiently use many points and interpolate exactly.
 
 ## Installation
 
-You can install SGGP from github with:
+You can install CGGP from github with:
 
 ```{r gh-installation, eval = FALSE}
 # install.packages("devtools")
-devtools::install_github("CollinErickson/SGGP")
+devtools::install_github("CollinErickson/CGGP")
 ```
 
 ## Example
 
-To create a SGGP object:
+To create a CGGP object:
 
 ```{r example}
 ## basic example code
-library(SGGP)
+library(CGGP)
 d <- 4
-SG <- SGGPcreate(d=d,200)
-print(SG)
+CG <- CGGPcreate(d=d,200)
+print(CG)
 ```
 
-A new `SGGP` object has design points that should be evaluated next, either from `SG$design` or `SG$design_unevaluated`.
+A new `CGGP` object has design points that should be evaluated next, either from `CG$design` or `CG$design_unevaluated`.
 
 ```{r evaluatedesign}
 f <- function(x) {x[1]^2 + 4*(0.5-x[2])^3 + x[1]*sin(2*2*pi*x[3]^2)}
-Y <- apply(SG$design, 1, f)
+Y <- apply(CG$design, 1, f)
 ```
 
-Once you have evaluated the design points, you can fit the object with `SGGPfit`.
+Once you have evaluated the design points, you can fit the object with `CGGPfit`.
 
 ```{r fit}
-SG <- SGGPfit(SG, Y)
-SG
+CG <- CGGPfit(CG, Y)
+CG
 ```
 
 If you want to use the model to make predictions at new input points,
-you can use `SGGPpred`.
+you can use `CGGPpred`.
 
 ```{r pred}
-xp <- matrix(runif(10*SG$d), ncol=SG$d)
-SGGPpred(xp, SG)
+xp <- matrix(runif(10*CG$d), ncol=CG$d)
+CGGPpred(CG, xp)
 ```
 
 To add new design points to the already existing design,
-use `SGGPappend`.
+use `CGGPappend`.
 It will use the data already collected to find the most
 useful set of points to evaluate next.
 
 ```{r append}
 # To add 100 points
-SG <- SGGPappend(SG, 100)
+CG <- CGGPappend(CG, 100)
 ```
 
-Now you will need to evaluate the points added to `SG$design`,
+Now you will need to evaluate the points added to `CG$design`,
 and refit the model.
 
 ```{r refit}
-ynew <- apply(SG$design_unevaluated, 1, f)
-SG <- SGGPfit(SG, Ynew=ynew)
+ynew <- apply(CG$design_unevaluated, 1, f)
+CG <- CGGPfit(CG, Ynew=ynew)
 ```
 
-There are a few functions that will help visualize the design.
+### Plot functions
 
-`SGGPblockplot` shows the block structure when projected down
+There are a few functions that will help visualize the CGGP design.
+
+#### `CGGPplotblocks`
+
+`CGGPplotblocks` shows the block structure when projected down
 to all pairs of two dimensions.
+The plot is symmetric.
+The facet labels be a little bit confusing.
+The first column has the label 1, and it looks like it is saying that
+the x-axis for each plot in that column is for `X1`, but it is
+actually the y-axis that is `X1` for each plot in that column.
 
-```{r blockplot}
-SGGPblockplot(SG)
+```{r plotblocks}
+CGGPplotblocks(CG)
 ```
 
-`SGGPhist` shows histograms of how far the blocks extend in each direction.
 
-```{r hist}
-SGGPhist(SG)
-```
+#### `CGGPplotheat`
 
-```{r corrplot}
-SGGPcorrplot(SG)
-```
+`CGGPplotheat` is similar to `CGGPplotblocks` and can be easier to read
+since it is only a single plot.
+The $(i,j)$ entry shows the maximum value for which a block was selected
+with $X_i$ and $X_j$ at least that large.
+The diagonal entries, $(i, i)$, show the maximum depth for $X_i$.
+A diagonal entry must be at least as large as any entry in its column or row.
+This plot is also symmetric.
 
-```{r projectionplot}
-SGGPprojectionplot(SG)
-```
 
 ```{r heat}
-SGGPheat(SG)
+CGGPplotheat(CG)
+```
+
+
+#### `CGGPhist`
+
+`CGGPhist` shows histograms of the block depth in each direction.
+The dimensions that have more large values are dimensions that have been
+explored more.
+These should be the more active dimensions.
+
+```{r hist}
+CGGPplothist(CG)
+```
+
+
+#### `CGGPplotcorr`
+
+`CGGPplotcorr` gives an idea of what the correlation structure in each
+dimension is.
+The values plotted do not represent the actual data given to CGGP.
+Each wiggly line represents a random Gaussian process drawn using the
+correlation parameters for that dimension from the given CGGP model.
+Dimensions that are more wiggly and have higher variance are the
+more active dimensions.
+Dimensions with nearly flat lines mean that the corresponding input
+dimension has a relatively small effect on the output.
+
+```{r corrplot}
+CGGPplotcorr(CG)
+```
+
+
+#### `CGGPplotvariogram`
+
+`CGGPplotvariogram` shows something similar to the semi-variogram
+for the correlation parameters found for each dimension.
+Really it is just showing how the correlation function decays for
+points that are further away.
+It should always start at `y=1` for `x=0` and decrease in `y`
+as `x` gets larger
+
+```{r vario}
+CGGPplotvariogram(CG)
+```
+
+
+
+#### `CGGPplotprojection`
+
+`CGGPplotprojection` shows what the predicted model along each individual
+dimension when the other input dimensions are held constant, i.e.,
+the projections down to single dimensions.
+By default the projection is done holding all other inputs at 0.5, but this
+can be changed by changing the argument `proj`.
+The black dots are the data points that are in that projection.
+If you change `proj` to have values not equal to 0.5, you probably
+won't see any black dots.
+The pink regions are the 95% prediction intervals.
+
+This plot is the best for giving an idea of what the higher dimension
+function look like.
+You can see how the output changes as each input is varied.
+
+```{r projectionplot}
+CGGPplotprojection(CG)
+```
+
+
+#### `CGGPplottheta`
+
+`CGGPplottheta` is useful for getting an idea of how the
+samples for the correlation parameters (theta) vary compared
+to the maximum a posteriori (MAP).
+This may be helpful when using `UCB` or `TS` in `CGGPappend`
+to get an idea of how much uncertainty there is in the
+parameters.
+Note that there are likely multiple parameters for each input dimension.
+
+```{r plottheta}
+CGGPplottheta(CG)
+```
+
+
+#### `CGGPplotsamplesneglogpost`
+
+`CGGPplotsamplesneglogpost` shows the negative log posterior
+for each of the different samples for theta.
+The value for the MAP is shown as a blue line.
+
+```{r samplesneglogpost}
+CGGPplotsamplesneglogpost(CG)
 ```
 
