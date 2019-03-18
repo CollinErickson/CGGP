@@ -167,54 +167,48 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
     lDet_supp = 2*sum(log(diag(Sigma_chol)))
   }
   
-  neglogpost = 0
-  
   if(HandlingSuppData == "Ignore"){
+    sigma2_hat = sigma2_hat_grid
+    lDet = lDet_grid
+    
     if(!is.matrix(y)){
-      neglogpost = neglogpost + 1/2*(
-        (length(y))*log(sigma2_hat_grid[1]) -
-          0.500*sum(log(1-theta)+log(theta+1))+lDet_grid)
+      nsamples = length(y)
     }else{
-      neglogpost = neglogpost+1/2*(
-        (dim(y)[1])*sum(log(c(sigma2_hat_grid))) -
-          0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet_grid)
+      nsamples = dim(y)[1]
     }
-  }
+  } 
   
   if(HandlingSuppData == "Only"){
+    sigma2_hat = sigma2_hat_supp
+    lDet = lDet_supp
+    
     if(!is.matrix(ys)){
-      neglogpost = neglogpost+1/2*(
-        (length(ys))*log(sigma2_hat_supp[1]) - 
-          0.500*sum(log(1-theta)+log(theta+1))+lDet_supp)
+      nsamples = length(ys)
     }else{
-      neglogpost = neglogpost+1/2*(
-        (dim(ys)[1])*sum(log(c(sigma2_hat_supp))) -
-          0.500*sum(log(1-theta)+log(theta+1))+dim(ys)[2]*lDet_supp)
+      nsamples = dim(ys)[1]
     }
   }
-  
   
   if(HandlingSuppData =="Correct"){
     sigma2_hat = sigma2_hat_grid*dim(CGGP$design)[1] / (
       dim(Xs)[1]+dim(CGGP$design)[1])+sigma2_hat_supp*dim(Xs)[1]/(
         dim(Xs)[1]+dim(CGGP$design)[1])
-    
     lDet = lDet_grid+lDet_supp
+    
     if(!is.matrix(y)){
-      neglogpost = 1/2*((length(y)+length(ys))*log(sigma2_hat[1]) -
-                          0.500*sum(log(1-theta)+log(theta+1))+lDet)
+      nsamples = length(y)+length(ys)
     }else{
-      neglogpost = 1/2*((dim(y)[1]+dim(ys)[1])*sum(log(c(sigma2_hat))) -
-                          0.500*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
+      nsamples = dim(y)[1]+dim(ys)[1]
     }
   }
   
-  n_outdim <- if (is.null(y) || length(y)==0) {
-    if (is.matrix(ys)) ncol(ys) else 1
-  } else {
-    if (is.matrix(y))  ncol(y)  else 1
+  neglogpost =  2*sum((log(1-theta)-log(theta+1))^2) #start out with prior
+  
+  if(!is.matrix(y)){
+    neglogpost = neglogpost+1/2*(nsamples*log(sigma2_hat[1])+lDet)
+  }else{
+    neglogpost = neglogpost+1/2*(nsamples*mean(log(c(sigma2_hat)))+lDet)
   }
-  neglogpost <- neglogpost / n_outdim
   
   return(neglogpost)
 }
