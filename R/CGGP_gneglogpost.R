@@ -324,53 +324,33 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
                           dsigma2_hat_part3)/dim(Xs)[1]
   }
   
-  neglogpost = 0
-  gneglogpost = rep(0,length(theta))
   
-  if(HandlingSuppData =="Only"){
-    sigma2_hat = sigma2_hat_supp
-    dsigma2_hat = dsigma2_hat_supp
-    dlDet = dlDet_supp
-    lDet = lDet_supp
-    
-    if(!is.matrix(ys)){
-      neglogpost = neglogpost+1/2*(dim(Xs)[1]*log(sigma2_hat[1]) -
-                                     0.5*sum(log(1-theta)+log(theta+1))+lDet)
-      gneglogpost = gneglogpost+0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet +
-        1/2*length(ys)*dsigma2_hat / sigma2_hat[1]
-    }else{
-      neglogpost = neglogpost+1/2*(dim(Xs)[1]*sum(log(c(sigma2_hat))) -
-                                     0.5*sum(log(1-theta)+log(theta+1)
-                                     )+dim(ys)[2]*lDet)
-      gneglogpostn = 0.5*(1/(1-theta)-1/(theta+1))+dim(ys)[2]*dlDet
-      for(i in 1:dim(ys)[2]){
-        gneglogpostn = gneglogpostn + dim(Xs)[1]*dsigma2_hat[,i] / sigma2_hat[i]
-      }
-      gneglogpost = gneglogpost+  gneglogpostn/2
-      
-    }
-  }
-  if(HandlingSuppData =="Ignore"){
+  
+  if(HandlingSuppData == "Ignore"){
     sigma2_hat = sigma2_hat_grid
     dsigma2_hat = dsigma2_hat_grid
     dlDet = dlDet_grid
     lDet = lDet_grid
     
     if(!is.matrix(y)){
-      neglogpost = neglogpost+1/2*(dim(CGGP$design)[1]*log(sigma2_hat[1]) -
-                                     0.500*sum(log(1-theta)+log(theta+1))+lDet)
-      gneglogpost = gneglogpost+0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet +
-        1/2*length(y)*dsigma2_hat / sigma2_hat[1]
+      nsamples = length(y)
     }else{
-      neglogpost = neglogpost+1/2*(dim(CGGP$design)[1]*sum(log(c(sigma2_hat))) -
-                                     0.5*sum(log(1-theta)+log(theta+1)
-                                     )+dim(y)[2]*lDet)
-      gneglogpostn = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
-      for(i in 1:dim(y)[2]){
-        gneglogpostn = gneglogpostn + dim(CGGP$design)[1]*dsigma2_hat[,i] /
-          sigma2_hat[i]
-      }
-      gneglogpost = gneglogpost+  gneglogpostn/2
+      nsamples = dim(y)[1]
+      ndim = dim(y)[2]
+    }
+  } 
+  
+  if(HandlingSuppData == "Only"){
+    sigma2_hat = sigma2_hat_supp
+    dsigma2_hat = dsigma2_hat_supp
+    dlDet = dlDet_supp
+    lDet = lDet_supp
+    
+    if(!is.matrix(ys)){
+      nsamples = length(ys)
+    }else{
+      nsamples = dim(ys)[1]
+      ndim = dim(y)[2]
     }
   }
   
@@ -385,30 +365,28 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     lDet = lDet_grid+lDet_supp
     
     if(!is.matrix(y)){
-      neglogpost = 1/2*((dim(CGGP$design)[1]+dim(Xs)[1])*log(sigma2_hat[1]) -
-                          0.500*sum(log(1-theta)+log(theta+1))+lDet)
-      gneglogpost = 0.25*(1/(1-theta)-1/(theta+1))+ 1/2*dlDet +
-        1/2*(length(y)+length(ys))*dsigma2_hat / sigma2_hat[1]
+      nsamples = length(y)+length(ys)
     }else{
-      neglogpost = 1/2*((dim(CGGP$design)[1]+dim(Xs)[1])*sum(log(c(sigma2_hat))
-      ) -
-        0.5*sum(log(1-theta)+log(theta+1))+dim(y)[2]*lDet)
-      gneglogpost = 0.5*(1/(1-theta)-1/(theta+1))+dim(y)[2]*dlDet
-      for(i in 1:dim(y)[2]){
-        gneglogpost = gneglogpost +
-          (dim(CGGP$design)[1]+dim(Xs)[1])*dsigma2_hat[,i] / sigma2_hat[i]
-      }
-      gneglogpost =  gneglogpost/2
+      nsamples = dim(y)[1]+dim(ys)[1]
+      ndim = dim(y)[2]
+    }
+  }
+  neglogpost =  2*sum((log(1-theta)-log(theta+1))^2) #start out with prior
+  gneglogpost = -4*(log(1-theta)-log(theta+1))*((1/(1-theta))+1/(1+theta))
+  
+  
+  if(!is.matrix(y)){
+    neglogpost =neglogpost +1/2*(nsamples*log(sigma2_hat[1])+lDet)
+    gneglogpost = gneglogpost+1/2*(dlDet+nsamples*dsigma2_hat / sigma2_hat[1])
+  }else{
+    neglogpost = neglogpost+1/2*(nsamples*mean(log(c(sigma2_hat)))+lDet)
+    gneglogpost = gneglogpost+1/2*dlDet
+    for(i in 1:ndim){
+      gneglogpost = gneglogpost+1/2*1/ndim*nsamples*dsigma2_hat[,i]/sigma2_hat[i]
     }
   }
   
-  n_outdim <- if (is.null(y) || length(y)==0) {
-    if (is.matrix(ys)) ncol(ys) else 1
-  } else {
-    if (is.matrix(y))  ncol(y)  else 1
-  }
-  neglogpost <- neglogpost / n_outdim
-  gneglogpost <- gneglogpost / n_outdim
+  
   
   if(return_lik){
     return(list(neglogpost=neglogpost,gneglogpost=gneglogpost))
