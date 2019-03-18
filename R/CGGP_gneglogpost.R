@@ -350,7 +350,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
       nsamples = length(ys)
     }else{
       nsamples = dim(ys)[1]
-      ndim = dim(y)[2]
+      ndim = dim(ys)[2]
     }
   }
   
