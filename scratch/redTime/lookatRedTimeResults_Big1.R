@@ -23,6 +23,9 @@ r2.sggp.2699 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-2699.rds")
 r2.sggp.3199 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-3199.rds")
 r2.sggp.4199 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-4199.rds")
 r2.sggp.5199 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-5199.rds")
+r2.sggp.6195 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-6195.rds")
+r2.sggp.7187 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-7187.rds")
+r2.sggp.8179 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-8179.rds")
 
 
 # Get stats
@@ -42,6 +45,9 @@ stats.r2.sggp.2699 <- CGGPvalstats(r2.sggp.2699, x1000, y1000, bydim=F)
 stats.r2.sggp.3199 <- CGGPvalstats(r2.sggp.3199, x1000, y1000, bydim=F)
 stats.r2.sggp.4199 <- CGGPvalstats(r2.sggp.4199, x1000, y1000, bydim=F)
 stats.r2.sggp.5199 <- CGGPvalstats(r2.sggp.5199, x1000, y1000, bydim=F)
+stats.r2.sggp.6195 <- CGGPvalstats(r2.sggp.6195, x1000, y1000, bydim=F)
+stats.r2.sggp.7187 <- CGGPvalstats(r2.sggp.7187, x1000, y1000, bydim=F)
+stats.r2.sggp.8179 <- CGGPvalstats(r2.sggp.8179, x1000, y1000, bydim=F)
 
 
 # Check stats on 50th dim
@@ -77,23 +83,26 @@ stats.mlegp.100 <- valstats(pred.mlegp.100$fit, pred.mlegp.100$se, y1000, bydim=
 
 allstats <- list(
   # CGGP
-  data.frame("CGGP1", 100, 1699, 0.03876258, -5.951558, 0.01723906,  0.92504, 0.9998292, 0.9996583, 0.02941151),
-  data.frame("CGGP1", 100, 2195, 0.03973626, -5.939358, 0.01805724,  0.94663, 0.9998205, 0.9996409, 0.0301442),
-  data.frame("CGGP1", 100, 2695, 0.03895927, -5.709819, 0.01752450,  0.89132, 0.9998274, 0.9996548, 0.02955428),
-  data.frame("CGGP", 100, 399,  0.03292523, -6.292347, 0.01476177,   0.93929, 0.9998769, 0.9997534, 0.02502954),
-  data.frame("CGGP", 100, 599,  0.02445636, -6.717207, 0.01163083,   0.95573, 0.999932,  0.999864,  0.01859961),
-  data.frame("CGGP", 100, 799,  0.02426409, -6.831546, 0.01119061,   0.95034, 0.9999334, 0.9998661, 0.01841507),
-  data.frame("CGGP", 100, 999,  0.02418435, -6.846158, 0.01062984,   0.95242, 0.9999338, 0.999867,  0.01836773),
-  data.frame("CGGP", 100, 1199, 0.02205223, -7.085375, 0.009788555,  0.95352, 0.9999454, 0.9998894, 0.01662363),
-  data.frame("CGGP", 100, 1699, 0.01527591, -7.696946, 0.007269341,  0.97937, 0.9999735, 0.9999469, 0.01145086),
-  data.frame("CGGP", 100, 2199, 0.01370636, -7.730417, 0.006900497,   0.9812, 0.9999787, 0.9999573, 0.01036107),
-  data.frame("CGGP", 100, 2699, 0.014988  , -7.711674, 0.006816212,  0.98524, 0.9999745, 0.9999489, 0.01092403),
-  data.frame("CGGP", 100, 3199, 0.01357989, -8.056265, 0.005935432,  0.98193, 0.9999791, 0.9999581, 0.009891518),
-  data.frame("CGGP", 100, 4199, 0.01130804, -8.147965, 0.005525203,  0.97767, 0.9999855, 0.9999709, 0.008477671),
-  data.frame("CGGP", 100, 5199, 0.009739982,-8.454266, 0.004678459,  0.98001, 0.9999892, 0.9999784, 0.007307837),
-  # data.frame("CGGP", 100, 2199, ),
-  # data.frame("CGGP", 100, , ),
-  # data.frame("CGGP", 100, , ),
+  data.frame("CGGP1", 90, 1699, 0.03876258, -5.951558, 0.01723906,  0.92504, 0.9998292, 0.9996583, 0.02941151),
+  data.frame("CGGP1", 90, 2195, 0.03973626, -5.939358, 0.01805724,  0.94663, 0.9998205, 0.9996409, 0.0301442),
+  data.frame("CGGP1", 90, 2695, 0.03895927, -5.709819, 0.01752450,  0.89132, 0.9998274, 0.9996548, 0.02955428),
+  data.frame("CGGP", 90, 399,  0.03292523, -6.292347, 0.01476177,   0.93929, 0.9998769, 0.9997534, 0.02502954),
+  data.frame("CGGP", 90, 599,  0.02445636, -6.717207, 0.01163083,   0.95573, 0.999932,  0.999864,  0.01859961),
+  data.frame("CGGP", 90, 799,  0.02426409, -6.831546, 0.01119061,   0.95034, 0.9999334, 0.9998661, 0.01841507),
+  data.frame("CGGP", 90, 999,  0.02418435, -6.846158, 0.01062984,   0.95242, 0.9999338, 0.999867,  0.01836773),
+  data.frame("CGGP", 90, 1199, 0.02205223, -7.085375, 0.009788555,  0.95352, 0.9999454, 0.9998894, 0.01662363),
+  data.frame("CGGP", 90, 1699, 0.01527591, -7.696946, 0.007269341,  0.97937, 0.9999735, 0.9999469, 0.01145086),
+  data.frame("CGGP", 90, 2199, 0.01370636, -7.730417, 0.006900497,   0.9812, 0.9999787, 0.9999573, 0.01036107),
+  data.frame("CGGP", 90, 2699, 0.014988  , -7.711674, 0.006816212,  0.98524, 0.9999745, 0.9999489, 0.01092403),
+  data.frame("CGGP", 90, 3199, 0.01357989, -8.056265, 0.005935432,  0.98193, 0.9999791, 0.9999581, 0.009891518),
+  data.frame("CGGP", 90, 4199, 0.01130804, -8.147965, 0.005525203,  0.97767, 0.9999855, 0.9999709, 0.008477671),
+  data.frame("CGGP", 90, 5199, 0.009739982,-8.454266, 0.004678459,  0.98001, 0.9999892, 0.9999784, 0.007307837),
+  data.frame("CGGP", 90, 6195, 0.007799561, -8.601915, 0.004069435,  0.99209, 0.9999931, 0.9999862, 0.005720459),
+  data.frame("CGGP", 90, 7187, 0.007602274, -8.832714, 0.003677643,   0.9891, 0.9999934, 0.9999869, 0.005552559),
+  data.frame("CGGP", 90, 8179, 0.006772034, -9.045547, 0.003310222,  0.98978, 0.9999948, 0.9999896, 0.004955794),
+  # data.frame("CGGP", 90, 2199, ),
+  # data.frame("CGGP", 90, , ),
+  # data.frame("CGGP", 90, , ),
   # mlegp
   data.frame("mlegp", 0, 50, 0.2121086, -2.136166, 0.1122491,   0.9941, 0.9949418, 0.9897676, 0.1614444),
   data.frame("mlegp", 0, 75, 0.1266577, -2.708455, 0.0773198,  0.99936, 0.9982067, 0.9963514, 0.09525388),
@@ -107,7 +116,7 @@ ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=(Package), shape=as.factor
 ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10() + scale_y_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Nsup)) + geom_point(size=3) + facet_grid(. ~ Package) + scale_x_log10() + scale_y_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, score, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10()
-ggplot(data=allstats %>% filter(score<1e5), mapping=aes(Ntotal, score, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10()
+# ggplot(data=allstats %>% filter(score<1e5), mapping=aes(Ntotal, score, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10()
 
 
 
