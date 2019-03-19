@@ -372,6 +372,9 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     }
   }
   
+  # Clear old sigma2_samples. They will be recalculated when needed.
+  CGGP$sigma2_samples <- NULL
+  
   return(CGGP)
 }
 

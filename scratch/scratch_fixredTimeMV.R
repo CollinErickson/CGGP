@@ -41,7 +41,7 @@ ods <- c(1,2);CGGPappend(CGGPfit(rt.sggp.2695, Y=rt.sggp.2695$Y[,ods],
                                  separateoutputparameterdimensions = F),
                          500, selectionmethod = "UCB")$design_unevaluated %>% pairs(main="1,2 UCB")
 
-ml <- CGGPfit(rt.sggp.2695, Y=rt.sggp.2695$Y[,ods],
+ods <- c(1,2);ml <- CGGPfit(rt.sggp.2695, Y=rt.sggp.2695$Y[,ods],
               Xs=rt.sggp.2695$Xs, Ys=rt.sggp.2695$Ys[,ods],
               set_thetaMAP_to=rt.sggp.2695$thetaMAP,
               separateoutputparameterdimensions = F)
