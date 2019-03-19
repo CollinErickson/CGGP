@@ -44,18 +44,29 @@ run_lagp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_agp=FA
   mny <- mean(y)
   y <- (y-mny) / sdy
   if (use_agp) {
+    stop("Don't use this version")
+    fit.time.start <- Sys.time()
+    fit.time.end <- Sys.time()
+    pred.time.start <- Sys.time()
     pred <- laGP::aGPsep(X=x, Z=y, XX=xtest, method="alc")
     pred$var <- pred$var * sdy^2
   } else {
+    fit.time.start <- Sys.time()
     mod.agp <- laGP::newGPsep(X=x, Z=y, d=laGP::darg(d=list(mle = TRUE, max = 100), X=x)$start,
                               g=laGP::garg(g=list(mle = TRUE), y=y)$start)
     laGP::updateGPsep(mod.agp, x, y)
+    fit.time.end <- Sys.time()
+    
+    pred.time.start <- Sys.time()
     pred <- laGP::predGPsep(mod.agp, xtest, lite=T)
     pred$var <- pred$s2 * sdy^2
   }
   # browser()
   pred$mean <- pred$mean * sdy + mny
-  list(mean=pred$mean, var=pred$var, n=nrow(x))
+  pred.time.end <- Sys.time()
+  list(mean=pred$mean, var=pred$var, n=nrow(x),
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
 run_MRFA <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
@@ -65,9 +76,15 @@ run_MRFA <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
     else {x <- decentLHS(Ntotal, d, max.time=15)}
     y <- apply(x, 1, f)
   }
+  fit.time.start <- Sys.time()
   mod <- MRFA::MRFA_fit(X=x, Y=y, verbose=FALSE)
+  fit.time.end <- Sys.time()
+  pred.time.start <- Sys.time()
   pred <- predict(mod, xtest, lambda = min(mod$lambda))
-  list(mean=pred$y_hat, var=rep(NaN, nrow(xtest)), n=nrow(x))
+  pred.time.end <- Sys.time()
+  list(mean=pred$y_hat, var=rep(NaN, nrow(xtest)), n=nrow(x),
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
 
@@ -79,9 +96,15 @@ run_svm <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
     y <- apply(x, 1, f)
   }
   require(e1071)
+  fit.time.start <- Sys.time()
   mod <- svm(x, y)
+  fit.time.end <- Sys.time()
+  pred.time.start <- Sys.time()
   pred <- predict(mod, xtest)
-  list(mean=pred, var=rep(NaN, nrow(xtest)), n=nrow(x))
+  pred.time.end <- Sys.time()
+  list(mean=pred, var=rep(NaN, nrow(xtest)), n=nrow(x),
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
 run_mlegp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
@@ -92,9 +115,15 @@ run_mlegp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser
     y <- apply(x, 1, f)
   }
   require(mlegp)
+  fit.time.start <- Sys.time()
   mod <- mlegp(x, y)
+  fit.time.end <- Sys.time()
+  pred.time.start <- Sys.time()
   pred <- predict(mod, xtest, se.fit)
-  list(mean=pred$fit, var=pred$se.fit^2, n=nrow(x))
+  pred.time.end <- Sys.time()
+  list(mean=pred$fit, var=pred$se.fit^2, n=nrow(x),
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
 
@@ -104,6 +133,7 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) 
   if (!missing(seed)) {set.seed(seed)}
   xsup <- lhs::maximinLHS(Nlhs, d)
   ysup <- apply(xsup, 1, f)
+  fit.time.start <- Sys.time()
   sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup)
   notdone <- TRUE
   while (notdone) {
@@ -120,13 +150,18 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) 
     ynew <- apply(sg$design_unevaluated, 1, f)
     sg <- CGGPfit(sg, Ynew=ynew, Xs=xsup, Ys=ysup)
   }
+  fit.time.end <- Sys.time()
   print(sg)
   Nevaluated <- nrow(sg$design) + nrow(sg$Xs)
   if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
   
+  pred.time.start <- Sys.time()
   pred <- predict(sg, xtest)
+  pred.time.end <- Sys.time()
   list(mean=pred$mean, var=pred$var,
-       n=Nevaluated)
+       n=Nevaluated,
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
 
@@ -138,8 +173,9 @@ run_one <- function(package, f, d, npd, replicate) {
   # if (n!= 500) {stop('bad n')}
   f <- eval(parse(text=paste0("TestFunctions::", f)))
   
-  ntest <- 1e3
-  xtest <- matrix(runif(ntest*d), ncol=d)
+  ntest <- 1e4
+  # xtest <- matrix(runif(ntest*d), ncol=d)
+  xtest <- decentLHS(ntest, d, max.time = 10)
   ytest <- apply(xtest, 1, f)
   
   # if (package == "CGGP") {
@@ -179,7 +215,7 @@ excomp <- ffexp$new(
                 d=c(3,6,7,8,10),
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
   package=c("CGGPsupp", "MRFA", "svm", "aGP"),
-  npd=c(10, 30, 100, 300, 1000, 3000),
+  npd=c(10, 30, 100, 300, 1000, 3000, 10000),
   parallel=T,
   parallel_cores = 10,
   replicate=1:5,

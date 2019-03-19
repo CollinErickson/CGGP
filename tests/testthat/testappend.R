@@ -2,7 +2,7 @@ context("testappend")
 
 test_that("CGGPappend works", {
   SG <- CGGPcreate(d=3, batchsize=100, corr='GAUSS')
-  f <- function(x){x[1]+x[2]^2}
+  f <- function(x){x[1]*x[3]+x[2]^2}
   y <- apply(SG$design, 1, f)
   SG <- CGGPfit(SG, Y=y)
   for (i in c("UCB", "Greedy", "TS", "Oldest", "Random", "Lowest")) {
@@ -19,6 +19,14 @@ test_that("CGGPappend works", {
   # # Can append after append without fitting between
   # expect_error(SG <- CGGPappend(SG, 20), NA)
   # expect_error(SG <- CGGPappend(SG, 20), NA)
+  
+  # Can append with supp data
+  xsup <- matrix(runif(3*10), ncol=3)
+  ysup <- apply(xsup, 1, f)
+  SG <- CGGPfit(SG, SG$Y, Xs=xsup, Ys=ysup, corr='m32')
+  for (sel.method in c("UCB", "TS", "Greedy")) {
+    expect_error(CGGPappend(SG, 30, sel.method), NA)
+  }
 })
 
 test_that("CGGPappend works with large number", {

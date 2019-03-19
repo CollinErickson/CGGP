@@ -26,6 +26,8 @@ r2.sggp.5199 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-5199.rds")
 r2.sggp.6195 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-6195.rds")
 r2.sggp.7187 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-7187.rds")
 r2.sggp.8179 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-8179.rds")
+r2.sggp.10163<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-10163.rds")
+r2.sggp.12159<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-12159.rds")
 
 
 # Get stats
@@ -48,6 +50,8 @@ stats.r2.sggp.5199 <- CGGPvalstats(r2.sggp.5199, x1000, y1000, bydim=F)
 stats.r2.sggp.6195 <- CGGPvalstats(r2.sggp.6195, x1000, y1000, bydim=F)
 stats.r2.sggp.7187 <- CGGPvalstats(r2.sggp.7187, x1000, y1000, bydim=F)
 stats.r2.sggp.8179 <- CGGPvalstats(r2.sggp.8179, x1000, y1000, bydim=F)
+stats.r2.sggp.10163<- CGGPvalstats(r2.sggp.10163, x1000, y1000, bydim=F)
+stats.r2.sggp.12159<- CGGPvalstats(r2.sggp.12159, x1000, y1000, bydim=F)
 
 
 # Check stats on 50th dim
@@ -100,6 +104,8 @@ allstats <- list(
   data.frame("CGGP", 90, 6195, 0.007799561, -8.601915, 0.004069435,  0.99209, 0.9999931, 0.9999862, 0.005720459),
   data.frame("CGGP", 90, 7187, 0.007602274, -8.832714, 0.003677643,   0.9891, 0.9999934, 0.9999869, 0.005552559),
   data.frame("CGGP", 90, 8179, 0.006772034, -9.045547, 0.003310222,  0.98978, 0.9999948, 0.9999896, 0.004955794),
+  data.frame("CGGP", 90, 10163,0.005923366, -9.315209, 0.002928836,  0.98941, 0.999996,  0.999992,  0.004356485),
+  data.frame("CGGP", 90, 12159,0.004279414, -9.339384, 0.002790037,  0.99488, 0.9999979, 0.9999958, 0.003197408),
   # data.frame("CGGP", 90, 2199, ),
   # data.frame("CGGP", 90, , ),
   # data.frame("CGGP", 90, , ),
