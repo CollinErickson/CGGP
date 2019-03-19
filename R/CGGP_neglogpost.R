@@ -202,7 +202,7 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
     }
   }
   
-  neglogpost =  2*sum((log(1-theta)-log(theta+1))^2) #start out with prior
+  neglogpost =  0.1*sum((log(1-theta)-log(theta+1))^2) #start out with prior
   
   output_is_1D <- if (!is.null(y)) {!is.matrix(y)} else {!is.matrix(ys)}
   if(output_is_1D){
