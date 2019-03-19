@@ -1,11 +1,4 @@
-rm(list = ls())
-library(SGGP)
-library(Rcpp)
 
-#sourceCpp("../src/testing_C_function.cpp")
-
-#source("../R/SGGP_fastcalcassist_fs.R")
-#source("../R/SGGP_speedup_returnthings.R")
 borehole <- function(x) {
   rw <- x[, 1] * (0.15 - 0.05) + 0.05
   r <-  x[, 2] * (50000 - 100) + 100
@@ -36,9 +29,9 @@ Yp = testf(Xp)
 
 Xs = randomLHS(80, d)
 Ys = testf(Xs)
-SGGP = SGGPcreate(d,1000) #create the design.  it has so many entries because i am sloppy
-Y = testf(SGGP$design) #the design is $design, simple enough, right?
-SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
+CGGP = CGGPcreate(d,1000) #create the design.  it has so many entries because i am sloppy
+Y = testf(CGGP$design) #the design is $design, simple enough, right?
+CGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
 library(tictoc)
 tic('here')
 PredGreedy = SGGPpred(SGGPGreedy,Xp)
