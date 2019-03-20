@@ -141,3 +141,86 @@ CGGPvalstats(r2.sggp.399      , x1000, y1000, bydim = F)
 CGGPvalstats(r2.sggp.399.refit, x1000, y1000, bydim = F)
 r2.sggp.399 %>% CGGPplottheta()
 r2.sggp.399.refit %>% CGGPplottheta()
+
+# Check time between Ignore and Correct
+timestamp()
+system.time({
+r2.sggp.8179.refit <- CGGPfit(r2.sggp.8179, Y=r2.sggp.8179$Y,
+                              Xs=r2.sggp.8179$Xs, Ys=r2.sggp.8179$Ys,
+                              HandlingSuppData = "Ignore",
+                              separateoutputparameterdimensions = F)
+})
+timestamp()
+# user  system elapsed 
+# 301.72    0.67  314.98 
+
+timestamp()
+system.time({
+  r2.sggp.8179.refit <- CGGPfit(r2.sggp.8179, Y=r2.sggp.8179$Y,
+                                Xs=r2.sggp.8179$Xs, Ys=r2.sggp.8179$Ys,
+                                HandlingSuppData = "Correct",
+                                separateoutputparameterdimensions = F)
+})
+timestamp()
+# user  system elapsed 
+# 776.73   13.56  835.27 
+
+
+# Check again with single dimensions
+# Check time between Ignore and Correct
+ods <- 50
+timestamp()
+system.time({
+  r2.sggp.8179.refit <- CGGPfit(r2.sggp.8179, Y=r2.sggp.8179$Y[,ods],
+                                Xs=r2.sggp.8179$Xs, Ys=r2.sggp.8179$Ys[,ods],
+                                HandlingSuppData = "Ignore",
+                                separateoutputparameterdimensions = F)
+})
+timestamp()
+# user  system elapsed 
+# 9.33    0.04    9.42 
+
+timestamp()
+system.time({
+  r2.sggp.8179.refit <- CGGPfit(r2.sggp.8179, Y=r2.sggp.8179$Y[,ods],
+                                Xs=r2.sggp.8179$Xs, Ys=r2.sggp.8179$Ys[,ods],
+                                HandlingSuppData = "Correct",
+                                separateoutputparameterdimensions = F)
+})
+timestamp()
+# user  system elapsed 
+# 60.06   11.31   73.12 
+
+# ADD UCB APPEND AFTER FIT
+# Check time between Ignore and Correct
+timestamp()
+system.time({
+  r2.sggp.8179.refit.ignore <- CGGPfit(r2.sggp.8179, Y=r2.sggp.8179$Y,
+                                Xs=r2.sggp.8179$Xs, Ys=r2.sggp.8179$Ys,
+                                HandlingSuppData = "Ignore",
+                                separateoutputparameterdimensions = F)
+})
+# user  system elapsed 
+# 182.89    0.67  187.50 
+system.time({
+  CGGPappend(r2.sggp.8179.refit.ignore, 1000)
+})
+# user  system elapsed 
+# 126.56    0.43  129.56 
+timestamp()
+
+timestamp()
+system.time({
+  r2.sggp.8179.refit.correct<- CGGPfit(r2.sggp.8179, Y=r2.sggp.8179$Y,
+                                Xs=r2.sggp.8179$Xs, Ys=r2.sggp.8179$Ys,
+                                HandlingSuppData = "Correct",
+                                separateoutputparameterdimensions = F)
+})
+# user  system elapsed 
+# 462.22    6.15  480.26 
+system.time({
+  CGGPappend(r2.sggp.8179.refit.correct, 1000)
+})
+# user  system elapsed 
+# 125.03    0.61  128.55 
+timestamp()

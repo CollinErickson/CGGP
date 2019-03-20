@@ -28,6 +28,11 @@ r2.sggp.7187 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-7187.rds")
 r2.sggp.8179 <- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-8179.rds")
 r2.sggp.10163<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-10163.rds")
 r2.sggp.12159<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-12159.rds")
+r2.sggp.16159<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-16159.rds")
+r2.sggp.18159<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-18159.rds")
+r2.sggp.20155<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-20155.rds")
+r2.sggp.22155<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-22155.rds")
+# r2.sggp.<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-.rds")
 
 
 # Get stats
@@ -52,6 +57,11 @@ stats.r2.sggp.7187 <- CGGPvalstats(r2.sggp.7187, x1000, y1000, bydim=F)
 stats.r2.sggp.8179 <- CGGPvalstats(r2.sggp.8179, x1000, y1000, bydim=F)
 stats.r2.sggp.10163<- CGGPvalstats(r2.sggp.10163, x1000, y1000, bydim=F)
 stats.r2.sggp.12159<- CGGPvalstats(r2.sggp.12159, x1000, y1000, bydim=F)
+stats.r2.sggp.16159<- CGGPvalstats(r2.sggp.18159, x1000, y1000, bydim=F)
+stats.r2.sggp.18159<- CGGPvalstats(r2.sggp.18159, x1000, y1000, bydim=F)
+stats.r2.sggp.20155<- CGGPvalstats(r2.sggp.20155, x1000, y1000, bydim=F)
+stats.r2.sggp.22155<- CGGPvalstats(r2.sggp.22155, x1000, y1000, bydim=F)
+# stats.r2.sggp.<- CGGPvalstats(r2.sggp., x1000, y1000, bydim=F)
 
 
 # Check stats on 50th dim
@@ -69,18 +79,18 @@ stats.mlegp.75 <- valstats(pred.mlegp.75$fit, pred.mlegp.75$se, y1000, bydim=F)
 mod.mlegp.100 <- mlegp::mlegp(x100, y100)
 pred.mlegp.100 <- lapply(1:100, function(i) predict(mod.mlegp.100[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
 stats.mlegp.100 <- valstats(pred.mlegp.100$fit, pred.mlegp.100$se, y1000, bydim=F)
-# mod.mlegp.200 <- mlegp::mlegp(x1000_2, y1000_2)
-# pred.mlegp.200 <- predict(mod.mlegp.200, x1000, se=T)
-# stats.mlegp.200 <- valstats(pred.mlegp.200$fit, pred.mlegp.200$se, y1000, bydim=F)
+mod.mlegp.200 <- sample(1:1000, 200) %>% {mlegp::mlegp(x1000_2[.,], y1000_2[.,])}
+pred.mlegp.200 <- lapply(1:100, function(i) predict(mod.mlegp.200[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.200 <- valstats(pred.mlegp.200$fit, pred.mlegp.200$se^2, y1000, bydim=F)
 # mod.mlegp.300 <- mlegp::mlegp(x1000_2, y1000_2)
 # pred.mlegp.300 <- predict(mod.mlegp.300, x1000, se=T)
-# stats.mlegp.300 <- valstats(pred.mlegp.300$fit, pred.mlegp.300$se, y1000, bydim=F)
+# stats.mlegp.300 <- valstats(pred.mlegp.300$fit, pred.mlegp.300$se^2, y1000, bydim=F)
 # mod.mlegp.400 <- mlegp::mlegp(x1000_2, y1000_2)
 # pred.mlegp.400 <- predict(mod.mlegp.400, x1000, se=T)
-# stats.mlegp.400 <- valstats(pred.mlegp.400$fit, pred.mlegp.400$se, y1000, bydim=F)
+# stats.mlegp.400 <- valstats(pred.mlegp.400$fit, pred.mlegp.400$se^2, y1000, bydim=F)
 # mod.mlegp.500 <- mlegp::mlegp(x1000_2, y1000_2)
 # pred.mlegp.500 <- predict(mod.mlegp.500, x1000, se=T)
-# stats.mlegp.500 <- valstats(pred.mlegp.500$fit, pred.mlegp.500$se, y1000, bydim=F)
+# stats.mlegp.500 <- valstats(pred.mlegp.500$fit, pred.mlegp.500$se^2, y1000, bydim=F)
 
 
 
@@ -106,6 +116,10 @@ allstats <- list(
   data.frame("CGGP", 90, 8179, 0.006772034, -9.045547, 0.003310222,  0.98978, 0.9999948, 0.9999896, 0.004955794),
   data.frame("CGGP", 90, 10163,0.005923366, -9.315209, 0.002928836,  0.98941, 0.999996,  0.999992,  0.004356485),
   data.frame("CGGP", 90, 12159,0.004279414, -9.339384, 0.002790037,  0.99488, 0.9999979, 0.9999958, 0.003197408),
+  data.frame("CGGP", 90, 16159,0.003443654, -9.731616, 0.002267292,  0.99656, 0.9999987, 0.9999973, 0.002545515),
+  data.frame("CGGP", 90, 18159,0.003443654, -9.731616, 0.002267292,  0.99656, 0.9999987, 0.9999973, 0.002545515),
+  data.frame("CGGP", 90, 20155,0.003984703, -9.738379, 0.002263422,  0.99591, 0.9999982, 0.9999964, 0.002905657),
+  data.frame("CGGP", 90, 22155,0.004459119, -9.739725, 0.002274312,  0.99623, 0.9999977, 0.9999955, 0.00319555),
   # data.frame("CGGP", 90, 2199, ),
   # data.frame("CGGP", 90, , ),
   # data.frame("CGGP", 90, , ),
