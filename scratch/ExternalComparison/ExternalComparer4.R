@@ -69,6 +69,54 @@ run_lagp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_agp=FA
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
+run_lagp_bobby <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_agp=FALSE) {
+  require(laGP)
+  if (!missing(seed)) {set.seed(seed)}
+  if (missing(x) && missing(y)) {
+    if (Ntotal<=2000) {x <- lhs::maximinLHS(Ntotal, d)}
+    else {x <- decentLHS(Ntotal, d, max.time=15)}
+    y <- apply(x, 1, f)
+  }
+  
+  fit.time.start <- Sys.time()
+  ## fixing a tiny nugget is very helpful on this problem
+  g <- 1/10000000
+  ## macro-scale analysis on a random subset of the data
+  # browser()
+  n <- min(Ntotal, 1000)
+  d2 <- darg(list(mle = TRUE, max = 100), x)
+  subs <- sample(1:Ntotal, n, replace = FALSE)
+  gpsepi <- newGPsep(x[subs, ], y[subs], rep(d2$start, d), g=g, dK=TRUE)
+  that <- mleGPsep(gpsepi, param="d", tmin=d2$min, tmax=d2$max, ab=d2$ab, maxit=200)
+  # p <- predGPsep(gpsepi, xpred, lite=TRUE)
+  # rmse.sub[r] <- sqrt(mean((p$mean - ypred.0)^2))
+  deleteGPsep(gpsepi)
+  
+  ## scale the inputs according to the macro-analysis lengthscales
+  scale <- sqrt(that$d)
+  xs <- x
+  xtests <- xtest
+  for(j in 1:ncol(xs)) {
+    xs[,j] <- xs[,j] / scale[j]
+    xtests[,j] <- xtests[,j] / scale[j]
+  }
+  
+  fit.time.end <- Sys.time()
+  pred.time.start <- Sys.time()
+  ## laGP analysis on scaled inputs distributed over 8 cores. 
+  ## If you don't have 8 cores, change omp.threads to something smaller
+  # out <- aGP(xs, y, xtests, d=list(start=1, max=20), g=g, verb=0)
+  out.sep <- aGPsep(xs, y, xtests, d=list(start=1, max=20), g=g, verb=0,
+                    end= min(50, Ntotal-1))
+  pred.time.end <- Sys.time()
+  
+  # browser()
+  list(mean=out.sep$mean, var=out.sep$var, n=nrow(xs),
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
+}
+
+
 run_MRFA <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   if (!missing(seed)) {set.seed(seed)}
   if (missing(x) && missing(y)) {
@@ -126,20 +174,39 @@ run_mlegp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
+run_GPfit <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
+  if (!missing(seed)) {set.seed(seed)}
+  if (missing(x) && missing(y)) {
+    if (Ntotal<=2000) {x <- lhs::maximinLHS(Ntotal, d)}
+    else {x <- decentLHS(Ntotal, d, max.time=15)}
+    y <- apply(x, 1, f)
+  }
+  require(GPfit)
+  fit.time.start <- Sys.time()
+  mod <- GP_fit(x, y)
+  fit.time.end <- Sys.time()
+  pred.time.start <- Sys.time()
+  pred <- predict(mod, xtest, se.fit)
+  pred.time.end <- Sys.time()
+  list(mean=pred$fit, var=pred$se.fit^2, n=nrow(x),
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
+}
 
 
-run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {
+
+run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#browser()
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
-  xsup <- lhs::maximinLHS(Nlhs, d)
-  ysup <- apply(xsup, 1, f)
+  if (!missing(Nlhs) && Nlhs!=0) {stop("Nlhs given to run_CGGP")}
   fit.time.start <- Sys.time()
-  sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup)
-  notdone <- TRUE
+  sg <- CGGPcreate(d=d, batchsize=min(Ntotal,200))
+  sg <- CGGPfit(sg, apply(sg$design, 1, f))
+  notdone <- (nrow(sg$design) < Ntotal)
   while (notdone) {
     print(sg)
-    Nalready <- (if (!is.null(sg$design)) {nrow(sg$design)} else {0}) + nrow(sg$Xs)
-    ni <- if (Nalready<1000) {200} else if (Nalready<10000) {500} else {2000}
+    Nalready <- nrow(sg$design)
+    ni <- if (Nalready<1000) {200} else if (Nalready<10000) {500} else if (Nalready<20000) {2000} else {10000}
     
     if (ni +Nalready > Ntotal) {
       ni <- Ntotal - Nalready
@@ -147,12 +214,100 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) 
     }
     sg <- CGGPappend(sg, batchsize = ni)
     
-    ynew <- apply(sg$design_unevaluated, 1, f)
-    sg <- CGGPfit(sg, Ynew=ynew, Xs=xsup, Ys=ysup)
+    if (!is.null(sg$design_unevaluated)) {
+      ynew <- apply(sg$design_unevaluated, 1, f)
+      sg <- CGGPfit(sg, Ynew=ynew)
+    } else {
+      print('Nothing new to evaluate, hopefully !notdone')
+    }
   }
   fit.time.end <- Sys.time()
   print(sg)
-  Nevaluated <- nrow(sg$design) + nrow(sg$Xs)
+  Nevaluated <- if (!is.null(sg$design)) nrow(sg$design) else {0} + nrow(sg$Xs)
+  if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
+  
+  pred.time.start <- Sys.time()
+  pred <- predict(sg, xtest)
+  pred.time.end <- Sys.time()
+  list(mean=pred$mean, var=pred$var,
+       n=Nevaluated,
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
+}
+
+run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#browser()
+  require("CGGP")
+  if (!missing(seed)) {set.seed(seed)}
+  xsup <- lhs::maximinLHS(Nlhs, d)
+  ysup <- apply(xsup, 1, f)
+  fit.time.start <- Sys.time()
+  sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup)
+  notdone <- (Nlhs < Ntotal)
+  while (notdone) {
+    print(sg)
+    Nalready <- (if (!is.null(sg$design)) {nrow(sg$design)} else {0}) + nrow(sg$Xs)
+    ni <- if (Nalready<1000) {200} else if (Nalready<10000) {500} else if (Nalready<20000) {2000} else {10000}
+    
+    if (ni +Nalready > Ntotal) {
+      ni <- Ntotal - Nalready
+      notdone <- FALSE
+    }
+    sg <- CGGPappend(sg, batchsize = ni)
+    
+    if (!is.null(sg$design_unevaluated)) {
+      ynew <- apply(sg$design_unevaluated, 1, f)
+      sg <- CGGPfit(sg, Ynew=ynew, Xs=xsup, Ys=ysup)
+    } else {
+      print('Nothing new to evaluate, hopefully !notdone')
+    }
+  }
+  fit.time.end <- Sys.time()
+  print(sg)
+  Nevaluated <- if (!is.null(sg$design)) nrow(sg$design) else {0} + nrow(sg$Xs)
+  if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
+  
+  pred.time.start <- Sys.time()
+  pred <- predict(sg, xtest)
+  pred.time.end <- Sys.time()
+  list(mean=pred$mean, var=pred$var,
+       n=Nevaluated,
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
+}
+
+run_CGGPsupponly <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#browser()
+  require("CGGP")
+  if (!missing(seed)) {set.seed(seed)}
+  if (Ntotal > 2000) {stop("CGGPsupponly can't run with more than 2000")}
+  xsup <- lhs::maximinLHS(Ntotal, d)
+  ysup <- apply(xsup, 1, f)
+  fit.time.start <- Sys.time()
+  sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup)
+  fit.time.end <- Sys.time()
+  print(sg)
+  Nevaluated <- nrow(sg$Xs)
+  if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
+  
+  pred.time.start <- Sys.time()
+  pred <- predict(sg, xtest)
+  pred.time.end <- Sys.time()
+  list(mean=pred$mean, var=pred$var,
+       n=Nevaluated,
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
+}
+
+run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#browser()
+  require("CGGP")
+  if (!missing(seed)) {set.seed(seed)}
+  # xsup <- lhs::maximinLHS(Nlhs, d)
+  # ysup <- apply(xsup, 1, f)
+  fit.time.start <- Sys.time()
+  sg <- CGGPcreate(d=d, batchsize=Ntotal)
+  sg <- CGGPfit(sg, Y=apply(sg$design, 1, f))
+  fit.time.end <- Sys.time()
+  print(sg)
+  Nevaluated <- nrow(sg$design)
   if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
   
   pred.time.start <- Sys.time()
@@ -188,13 +343,15 @@ run_one <- function(package, f, d, npd, replicate) {
   } else if (package == "laGP") {
     out <- run_lagp(Ntotal=n, f=f, d=d, xtest=xtest)
   } else if (package == "aGP") {
-    out <- run_lagp(Ntotal=n, f=f, d=d, xtest=xtest, use_agp=TRUE)
+    out <- run_lagp_bobby(Ntotal=n, f=f, d=d, xtest=xtest, use_agp=TRUE)
   } else if (package == "MRFA") {
     out <- run_MRFA(Ntotal=n, f=f, d=d, xtest=xtest)
   } else if (package == "svm") {
     out <- run_svm(Ntotal=n, f=f, d=d, xtest=xtest)
   } else if (package == "mlegp") {
     out <- run_mlegp(Ntotal=n, f=f, d=d, xtest=xtest)
+  } else if (package == "GPfit") {
+    out <- run_GPfit(Ntotal=n, f=f, d=d, xtest=xtest)
   } else {
     stop(paste("Package", package, "not recognized"))
   }
@@ -216,18 +373,20 @@ excomp <- ffexp$new(
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
   package=c("CGGPsupp", "MRFA", "svm", "aGP"),
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
-  parallel=T,
-  parallel_cores = 10,
-  replicate=1:5,
+  parallel=TRUE,
+  parallel_cores = 3,
+  replicate=1, #:5,
   # folder_path= "/home/collin/scratch/CGGP/scratch/ExternalComparison/ExComp4"
   folder_path="./scratch/ExternalComparison/ExComp4/"
 )
-excomp$run_all(save_output = F, parallel = F, run_order = "random")
+excomp$run_one(81)
+# excomp$run_all(save_output = F, parallel = F, run_order = "random")
 
 excomp$rungrid
 # try because it gave delete error before, but shouldn't need it now
 try(excomp$recover_parallel_temp_save(delete_after = FALSE))
-excomp$save_self()
+table(excomp$completed_runs)
+# excomp$save_self()
 excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
                write_start_files=T, write_error_files=T)
 # excomp$run_all()
@@ -243,9 +402,10 @@ if (F) {
   plyr::dlply(excomp$outcleandf, "d")
   require('ggplot2')
   ecdf <- excomp$outcleandf[excomp$completed_runs,]
-  ggplot(data=ecdf, mapping=aes(n, RMSE, color=as.factor(n))) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+  ecdf$n <- ecdf$npd * ecdf$d
+  ggplot(data=ecdf, mapping=aes(n, RMSE, color=as.factor(n))) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
   ggplot(data=ecdf, mapping=aes(n, score, color=as.factor(n))) + geom_point() + facet_grid(f ~ package, scales="free_y")
   ggplot(data=ecdf, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
-  ggplot(data=ecdf, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+  ggplot(data=ecdf, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
   # saveRDS(excomp, "./scratch/ExternalComparison/ExComp1_completed.rds")
 }
