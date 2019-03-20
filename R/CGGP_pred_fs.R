@@ -34,6 +34,27 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
   }
   # We could check for design_unevaluated, maybe give warning?
   
+  # If xp has many rows, split it up over calls to CGGPpred and regroup
+  predgroupsize <- 100
+  if (nrow(xp) >= predgroupsize*2) {
+    ngroups <- floor(nrow(xp) / predgroupsize)
+    list_preds <- lapply(1:ngroups,
+                         function(i) {
+                           inds.i <- if (i < ngroups) {1:predgroupsize + (i-1)*predgroupsize} else {((i-1)*predgroupsize+1):(nrow(xp))}
+                           CGGPpred(CGGP=CGGP,
+                                    xp=xp[inds.i, , drop=FALSE],
+                                    theta=theta,
+                                    outdims=outdims)
+                         })
+    outlist <- list(mean=do.call(rbind, lapply(list_preds, function(ll) ll$mean)),
+                    var= do.call(rbind, lapply(list_preds, function(ll) ll$var ))
+    )
+    if (nrow(outlist$mean)!=nrow(xp) || nrow(outlist$var)!=nrow(xp)) {
+      stop("Error with CGGPpred predicting many points")
+    }
+    return(outlist)
+  }
+  
   # If theta is given (for full Bayesian prediction), need to recalculate pw
   if (!is.null(theta) && length(theta)!=length(CGGP$thetaMAP)) {stop("Theta is wrong length")}
   if (!is.null(theta) && theta==CGGP$thetaMAP) {
@@ -73,30 +94,31 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
     thetaMAP.thisloop <- if (nopd==1) thetaMAP else thetaMAP[, opdlcv]
     if (!recalculate_pw) { # use already calculated
       pw.thisloop <- if (nopd==1) CGGP$pw else CGGP$pw[,opdlcv]
-      # sigma2MAP.thisloop <- if (nopd==1) CGGP$sigma2MAP else CGGP$sigma2MAP[opdlcv]
-      sigma2MAP.thisloop <- CGGP$sigma2MAP # Need this, not above, bc of PCA?
+      sigma2MAP.thisloop <- CGGP$sigma2MAP
       cholS.thisloop <- if (nopd==1) CGGP$cholSs else CGGP$cholSs[[opdlcv]]
     } else { # recalculate pw and sigma2MAP
       y.thisloop <- if (nopd==1) CGGP$y else CGGP$y[,opdlcv]
       
-      lik_stuff <- CGGP_internal_calc_cholS_lS_sigma2_pw(CGGP=CGGP, y=y.thisloop,theta=thetaMAP.thisloop)
+      lik_stuff <- CGGP_internal_calc_cholS_lS_sigma2_pw(CGGP=CGGP,
+                                                         y=y.thisloop,
+                                                         theta=thetaMAP.thisloop
+      )
       cholS.thisloop = lik_stuff$cholS
       sigma2MAP.thisloop <-  lik_stuff$sigma2
       pw.thisloop = lik_stuff$pw
-      # if (length(sigma2MAP.thisloop) != 1) {stop("sigma2MAP not scalar #923583")}
-      # sigma2MAP.thisloop <- sigma2MAP.thisloop[1,1] # Convert 1x1 matrix to scalar
       # It can be vector when there is multiple output
       sigma2MAP.thisloop <- as.vector(sigma2MAP.thisloop)
       rm(y.thisloop)
     }
     mu.thisloop <- if (nopd==1) CGGP$mu else CGGP$mu[opdlcv] # Not used for PCA, added back at end
     
-    
     # Cp is sigma(x_0) in paper, correlation vector between design points and xp
     Cp = matrix(0,dim(xp)[1],CGGP$ss)
     GGGG = list(matrix(1,dim(xp)[1],length(CGGP$xb)),CGGP$d)
     for (dimlcv in 1:CGGP$d) { # Loop over dimensions
-      V = CGGP$CorrMat(xp[,dimlcv], CGGP$xb[1:CGGP$sizest[max(CGGP$uo[,dimlcv])]], thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],returnlogs=TRUE)
+      V = CGGP$CorrMat(xp[,dimlcv], CGGP$xb[1:CGGP$sizest[max(CGGP$uo[,dimlcv])]],
+                       thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],
+                       returnlogs=TRUE)
       GGGG[[dimlcv]] = exp(V)
       Cp = Cp+V[,CGGP$designindex[,dimlcv]]
     }
@@ -111,14 +133,18 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
         Q  = max(CGGP$uo[1:CGGP$uoCOUNT,])
         gg = (dimlcv-1)*Q
         INDSN = 1:CGGP$sizest[levellcv]
-        INDSN = INDSN[sort(CGGP$xb[1:CGGP$sizest[levellcv]],index.return = TRUE)$ix]
-        MSE_v[[(dimlcv)*CGGP$maxlevel+levellcv]] = (CGGP_internal_postvarmatcalc_fromGMat(GGGG[[dimlcv]],
-                                                                                       c(),
-                                                                                       as.matrix(cholS.thisloop[[gg+levellcv]]),
-                                                                                       c(),
-                                                                                       INDSN,
-                                                                                       CGGP$numpara,
-                                                                                       returndiag=TRUE))
+        INDSN = INDSN[sort(CGGP$xb[1:CGGP$sizest[levellcv]],
+                           index.return = TRUE)$ix]
+        MSE_v[[(dimlcv)*CGGP$maxlevel+levellcv]] =
+          CGGP_internal_postvarmatcalc_fromGMat(GGGG[[dimlcv]],
+                                                c(),
+                                                as.matrix(
+                                                  cholS.thisloop[[gg+levellcv]]
+                                                ),
+                                                c(),
+                                                INDSN,
+                                                CGGP$numpara,
+                                                returndiag=TRUE)
       }
     }
     
@@ -161,7 +187,7 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
           stop("When is it a matrix but sigma2MAP a scalar???")
         }else{
           mean = (matrix(rep(mu.thisloop,each=dim(xp)[1]), ncol=ncol(CGGP$Y), byrow=FALSE) +
-                     (Cp%*%pw.thisloop))
+                    (Cp%*%pw.thisloop))
           var=as.vector(ME_t)%*%t(sigma2MAP.thisloop)
         }
       }
@@ -202,9 +228,9 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
           INDSN = 1:CGGP$sizest[levellcv]
           INDSN = INDSN[sort(CGGP$xb[1:CGGP$sizest[levellcv]],index.return = TRUE)$ix]
           REEALL= CGGP_internal_postvarmatcalc_fromGMat_asym(GGGG[[dimlcv]],
-                                                                                              GGGG2[[dimlcv]],
-                                                                                              as.matrix(cholS.thisloop[[gg+levellcv]]),
-                                                                                              INDSN)
+                                                             GGGG2[[dimlcv]],
+                                                             as.matrix(cholS.thisloop[[gg+levellcv]]),
+                                                             INDSN)
           MSE_ps[,(dimlcv-1)*CGGP$maxlevel+levellcv]  =  as.vector(REEALL)
         }
       }
@@ -237,7 +263,8 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
           tempM[-opdlcv,] <- 0
           tempsigma2.thisloop <- sigma2MAP.thisloop
           tempsigma2.thisloop[-opdlcv] <- 0
-          tempvar <- (as.vector(ME_t)%*%t(leftvar+diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM))))
+          tempvar <- (as.vector(ME_t)%*%t(
+            leftvar + diag(t(tempM)%*%diag(tempsigma2.thisloop)%*%(tempM))))
         }
         
       }else{
@@ -255,7 +282,8 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
     rm(Cp,ME_t, MSE_v, V) # Just to make sure nothing is carrying through
     if (nopd > 1) {tempvarall <- tempvarall + tempvar}
   }
-  # If PCA values were calculated separately, need to do transformation on both before mu is added, then add mu back
+  # If PCA values were calculated separately, need to do transformation on
+  #  both before mu is added, then add mu back
   # if (nopd > 1) {meanall <- sweep(sweep(meanall,2,CGGP$mu) %*% CGGP$M,2,CGGP$mu, `+`)}
   if (nopd > 1) {meanall2 <- sweep(meanall2, 2, CGGP$mu, `+`)}
   
@@ -307,10 +335,10 @@ CGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
 ## @export
 #' @noRd
 CGGP_internal_postvarmatcalc_fromGMat_asym <- function(GMat1,GMat2,cholS,INDSN) {
+  CoinvC1o = backsolve(cholS,
+                       backsolve(cholS,t(GMat1[,INDSN]), transpose = TRUE))
+  Sigma_mat = (t(CoinvC1o)%*%(t(GMat2[,INDSN])))
   
-  CoinvC1o = backsolve(cholS,backsolve(cholS,t(GMat1[,INDSN]), transpose = TRUE))
-  Sigma_mat =  (t(CoinvC1o)%*%(t(GMat2[,INDSN])))
-  
-  return(Sigma_mat )
+  return(Sigma_mat)
   
 }
