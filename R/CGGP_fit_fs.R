@@ -253,7 +253,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     Hmat = H/2+t(H)/2
     A = eigen(Hmat)
     
-    cHa = (A$vectors)%*%diag(sqrt(pmax(1/(A$values),10^(-16))))%*%t(A$vectors)
+    cHa = (A$vectors)%*%diag(pmin(sqrt(pmax(1/(A$values),10^(-16))),4))%*%t(A$vectors)
     
     # Get posterior samples using Laplace approximation
     PST= log((1+thetaMAP)/(1-thetaMAP)) +
