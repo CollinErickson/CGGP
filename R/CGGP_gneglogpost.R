@@ -375,7 +375,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
   gneglogpost = -0.2*(log(1-theta)-log(theta+1))*((1/(1-theta))+1/(1+theta))
   
   neglogpost =  neglogpost+0.1*sum((log(1-theta)-log(theta+1))^4) #start out with prior
-  gneglogpost = gneglogpost-0.1*12*((log(1-theta)-log(theta+1))^2)*((1/(1-theta))+1/(1+theta))
+  gneglogpost = gneglogpost-0.1*4*((log(1-theta)-log(theta+1))^3)*((1/(1-theta))+1/(1+theta))
   
   output_is_1D <- if (!is.null(y)) {!is.matrix(y)} else {!is.matrix(ys)}
   if(output_is_1D){
