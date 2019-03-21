@@ -398,8 +398,8 @@ excomp <- ffexp$new(
   parallel=TRUE,
   parallel_cores = 20,
   replicate=1:10, #:5,
-  # folder_path= "/home/collin/scratch/CGGP/scratch/ExternalComparison/ExComp4"
-  folder_path="./scratch/ExternalComparison/ExComp4/"
+  folder_path= "/home/collin/scratch/CGGP/scratch/ExternalComparison/ExComp4"
+  # folder_path="./scratch/ExternalComparison/ExComp4/"
 )
 # Remove ones that can't do full size
 package.name <- excomp$arglist$psch$package[excomp$rungrid$psch]
