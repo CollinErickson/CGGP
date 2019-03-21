@@ -1,5 +1,7 @@
 # Comparison for paper
 
+expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
+
 # decentLHS <- sFFLHD::decentLHS
 decentLHS <- function(n, d, ndes, max.time) {
   if (missing(ndes) && missing(max.time)) {
@@ -195,12 +197,12 @@ run_GPfit <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser
 
 
 
-run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#browser()
+run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, selection.method, correlation) {#browser()
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
   if (!missing(Nlhs) && Nlhs!=0) {stop("Nlhs given to run_CGGP")}
   fit.time.start <- Sys.time()
-  sg <- CGGPcreate(d=d, batchsize=min(Ntotal,200))
+  sg <- CGGPcreate(d=d, batchsize=min(Ntotal,200), corr=correlation)
   sg <- CGGPfit(sg, apply(sg$design, 1, f))
   notdone <- (nrow(sg$design) < Ntotal)
   while (notdone) {
@@ -212,7 +214,7 @@ run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#br
       ni <- Ntotal - Nalready
       notdone <- FALSE
     }
-    sg <- CGGPappend(sg, batchsize = ni)
+    sg <- CGGPappend(sg, batchsize = ni, selectionmethod = selection.method)
     
     if (!is.null(sg$design_unevaluated)) {
       ynew <- apply(sg$design_unevaluated, 1, f)
@@ -235,13 +237,13 @@ run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#br
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
-run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#browser()
+run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, HandlingSuppData, selection.method, correlation) {#browser()
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
   xsup <- lhs::maximinLHS(Nlhs, d)
   ysup <- apply(xsup, 1, f)
   fit.time.start <- Sys.time()
-  sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup)
+  sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup, corr=correlation)
   notdone <- (Nlhs < Ntotal)
   while (notdone) {
     print(sg)
@@ -252,11 +254,11 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) 
       ni <- Ntotal - Nalready
       notdone <- FALSE
     }
-    sg <- CGGPappend(sg, batchsize = ni)
+    sg <- CGGPappend(sg, batchsize = ni, selection.method)
     
     if (!is.null(sg$design_unevaluated)) {
       ynew <- apply(sg$design_unevaluated, 1, f)
-      sg <- CGGPfit(sg, Ynew=ynew, Xs=xsup, Ys=ysup)
+      sg <- CGGPfit(sg, Ynew=ynew, Xs=xsup, Ys=ysup, HandlingSuppData = HandlingSuppData)
     } else {
       print('Nothing new to evaluate, hopefully !notdone')
     }
@@ -275,14 +277,14 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) 
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
-run_CGGPsupponly <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#browser()
+run_CGGPsupponly <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, correlation) {#browser()
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
   if (Ntotal > 2000) {stop("CGGPsupponly can't run with more than 2000")}
   xsup <- lhs::maximinLHS(Ntotal, d)
   ysup <- apply(xsup, 1, f)
   fit.time.start <- Sys.time()
-  sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup)
+  sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup, corr=correlation)
   fit.time.end <- Sys.time()
   print(sg)
   Nevaluated <- nrow(sg$Xs)
@@ -297,13 +299,13 @@ run_CGGPsupponly <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, se
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
-run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed) {#browser()
+run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, correlation) {#browser()
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
   # xsup <- lhs::maximinLHS(Nlhs, d)
   # ysup <- apply(xsup, 1, f)
   fit.time.start <- Sys.time()
-  sg <- CGGPcreate(d=d, batchsize=Ntotal)
+  sg <- CGGPcreate(d=d, batchsize=Ntotal, corr=correlation)
   sg <- CGGPfit(sg, Y=apply(sg$design, 1, f))
   fit.time.end <- Sys.time()
   print(sg)
@@ -323,7 +325,8 @@ run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, see
 
 
 # Need a generic function that passes to specific ones
-run_one <- function(package, f, d, npd, replicate) {
+run_one <- function(psch, f, d, npd, replicate) {
+  package <- psch$package
   n <- npd * d
   # if (n!= 500) {stop('bad n')}
   f <- eval(parse(text=paste0("TestFunctions::", f)))
@@ -337,9 +340,15 @@ run_one <- function(package, f, d, npd, replicate) {
   #   out <- run_CGGP(Nappend=floor(n * (1:5)/5), f=f, d=d, xtest=xtest)
   if (package == "CGGPsupp") {
     # out <- run_CGGP(Nappend=floor(n*(2:5)/5), Nlhs=floor(.2*n), f=f, d=d, xtest=xtest)
-    out <- run_CGGPsupp(Ntotal=n, Nlhs=10*d, f=f, d=d, xtest=xtest)
+    out <- run_CGGPsupp(Ntotal=n, Nlhs=10*d, f=f, d=d, xtest=xtest, HandlingSuppData=HandlingSuppData, selection.method=selection.method, correlation=correlation)
     # } else if (package == "CGGPsupponly") {
     #   out <- run_CGGP(Nappend=c(), Nlhs=n, f=f, d=d, xtest=xtest)
+  } else if (package == "CGGPsupponly") {
+    out <- run_CGGPsupponly(Ntotal=n, f=f, d=d, xtest=xtest, correlation=correlation)
+  } else if (package == "CGGPoneshot") {
+    out <- run_CGGPoneshot(Ntotal=n, f=f, d=d, xtest=xtest, correlation=correlation)
+  } else if (package == "CGGP") {
+    out <- run_CGGP(Ntotal=n, f=f, d=d, xtest=xtest, selection.method=selection.method, correlation=correlation)
   } else if (package == "laGP") {
     out <- run_lagp(Ntotal=n, f=f, d=d, xtest=xtest)
   } else if (package == "aGP") {
@@ -362,7 +371,14 @@ run_one <- function(package, f, d, npd, replicate) {
 }
 
 
-
+eg1 <- expand.grid(selection.method = c("UCB", "Greedy"),
+            correlation = c("CauchySQ", "Matern32", "PowerExp"))
+eg2a <- expand.grid.df(eg1, data.frame(HandlingSuppData=c("Ignore", "Correct")), data.frame(package="CGGPsupp"))
+eg2b <- expand.grid.df(eg1, data.frame(HandlingSuppData="NA"), data.frame(package=c("CGGP")))
+eg2c <- expand.grid(selection.method="NA", correlation = c("CauchySQ", "Matern32", "PowerExp"), HandlingSuppData="NA", package=c("CGGPoneshot", "CGGPnosupp"))
+eg2d <- data.frame(selection.method="NA", correlation="NA", HandlingSuppData="NA",
+                   package=c("MRFA", "svm", "aGP", "laGP", "mlegp", "GPfit"))
+eg3 <- rbind(eg2a, eg2b, eg2c, eg2d)
 
 require("comparer")
 
@@ -371,7 +387,9 @@ excomp <- ffexp$new(
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"),
                 d=c(3,6,7,8,10),
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
-  package=c("CGGPsupp", "MRFA", "svm", "aGP"),
+  # package=c("CGGPsupp", "CGPPoneshot", "CGGPsupponly", "CGGPnosupp",
+  #           "MRFA", "svm", "aGP", "laGP", "mlegp", "GPfit"),
+  psch=eg3,
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
   parallel=TRUE,
   parallel_cores = 3,
@@ -379,6 +397,16 @@ excomp <- ffexp$new(
   # folder_path= "/home/collin/scratch/CGGP/scratch/ExternalComparison/ExComp4"
   folder_path="./scratch/ExternalComparison/ExComp4/"
 )
+# Remove ones that can't do full size
+package.name <- excomp$arglist$package[excomp$rungrid$package]
+npd.excomp <- excomp$arglist$npd[excomp$rungrid$npd]
+n.excomp <- npd.excomp * excomp$arglist$fd$d[excomp$rungrid$fd]
+excomp$completed_runs[package.name == "CGGPsupponly" & n.excomp > 1000] <- TRUE
+excomp$completed_runs[package.name == "laGP" & n.excomp > 400] <- TRUE
+excomp$completed_runs[package.name == "mlegp" & n.excomp > 400] <- TRUE
+excomp$completed_runs[package.name == "GPfit" & n.excomp > 100] <- TRUE
+
+
 excomp$run_one(81)
 # excomp$run_all(save_output = F, parallel = F, run_order = "random")
 
