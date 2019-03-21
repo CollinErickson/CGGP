@@ -20,7 +20,9 @@ for (i in run_redTime) {
     # This will hold until all of last number_cores groups finishes.
     # Makes it easier for others to get onto Crunch.
     qsub_sh_file(fileID=paste0(groupID_short, "_", restart_on, "_", i), 
-                 holdID=paste0(groupID_short, "_", restart_on, "_", (i - (i%%number_cores)) - number_cores + (1:number_cores), collapse = ','),
+                 holdID=paste0(groupID_short, "_", restart_on, "_",
+                               ceiling(i/number_cores)*number_cores - number_cores + (1:number_cores),
+                               collapse = ','),
                  shpathbase=shpathbase)
   } else {
     qsub_sh_file(fileID=paste0(groupID_short, "_", restart_on, "_", i), 
