@@ -15,12 +15,11 @@
 #'          CorrMat=CGGP_internal_CorrMatCauchySQT)
 CGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
   S = CorrMat(xl, xl, theta)
-  xp = seq(0,1,l=101)
+  xp = seq(-10^(-4),1+10^(-4),l=401)
   Cp = CorrMat(xp,xl,theta)
   n = length(xl)
   cholS = chol(S)
   CiCp = backsolve(cholS,backsolve(cholS,t(Cp), transpose = TRUE))
-  
   MSE_MAPal = mean(1 - rowSums(t(CiCp)*Cp))
   
   MSE_MAPal
