@@ -12,7 +12,8 @@ groupID <- "redTimeTestBig2"
 groupID_short <- "Big2"#"O90_1k"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
-number_cores <- 125
+number_cores <- 250
+hold_in_groups <- TRUE
 
 # Input dimensions
 d <- 9

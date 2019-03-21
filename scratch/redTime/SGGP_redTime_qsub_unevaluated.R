@@ -21,12 +21,20 @@ for (i in 1:nrow(SG$design_unevaluated)) {
                 # No longer having last one gather results, have separate master
                 # additional_command=if (i == nrow(SG$design_unevaluated)) {paste0("Rscript ", sourcefilepath, "SGGP_redTime_continue.R")} else {""},
                 # node= if (i == nrow(SG$design_unevaluated)) {"crunch.local"} else {NULL}
-                )
+  )
   
   # qsub .sh files
-  qsub_sh_file(fileID=paste0(groupID_short, "_", SG$ss, "_", i), 
-               holdID=paste0(groupID_short, "_", SG$ss, "_", i - number_cores),
-               shpathbase=shpathbase)
+  if (hold_in_groups) {
+    # This will hold until all of last number_cores groups finishes.
+    # Makes it easier for others to get onto Crunch.
+    qsub_sh_file(fileID=paste0(groupID_short, "_", SG$ss, "_", i), 
+                 holdID=paste0(groupID_short, "_", SG$ss, "_", (i - (i%%number_cores)) - number_cores + (1:number_cores), collapse = ','),
+                 shpathbase=shpathbase)
+  } else {
+    qsub_sh_file(fileID=paste0(groupID_short, "_", SG$ss, "_", i), 
+                 holdID=paste0(groupID_short, "_", SG$ss, "_", i - number_cores),
+                 shpathbase=shpathbase)
+  }
 }
 
 # Below is with a master for each iteration.

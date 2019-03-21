@@ -20,7 +20,7 @@ install.packages(repos=NULL, pkgs="/home/collin/scratch/CGGP_1.0.tar.gz")
 cat("SGGP installed correctly\n")
 
 library('CGGP')
-cat("SGGP loaded successfully\n")
+cat("CGGP loaded successfully\n")
 
 # Create SGGP object
 if (!is.null(Xsup)) { # If supp, create/fit with that, then append N0
