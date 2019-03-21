@@ -15,7 +15,7 @@
 #'          CorrMat=CGGP_internal_CorrMatCauchySQT)
 CGGP_internal_calcMSE <- function(xl, theta, CorrMat) {
   S = CorrMat(xl, xl, theta)
-  xp = seq(0,1,l=101)
+  xp = seq(-1/64,1+1/64,l=401)
   Cp = CorrMat(xp,xl,theta)
   n = length(xl)
   cholS = chol(S)
@@ -420,7 +420,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
       
       lp[dimlcv] = lp[dimlcv] + 1
       
-      if (max(lp) < CGGP$maxlevel && CGGP$poCOUNT < 4 * CGGP$ML) {
+      if (max(lp) <= CGGP$maxlevel && CGGP$poCOUNT < 4 * CGGP$ML) {
         kvals = which(lp > 1.5) # Dimensions above base level
         
         canuse = 1

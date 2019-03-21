@@ -31,7 +31,7 @@
 #' y <- apply(cg$design, 1, function(x){x[1]+x[2]^2})
 #' cg <- CGGPfit(CGGP=cg, Y=y)
 CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
-                    theta0 = CGGP$thetaMAP,
+                    theta0 = pmax(pmin(CGGP$thetaMAP,0.8),-0.8), #gotta pull away from edges to get not corner solution
                     HandlingSuppData=CGGP$HandlingSuppData,
                     separateoutputparameterdimensions=is.matrix(CGGP$thetaMAP),
                     set_thetaMAP_to,
