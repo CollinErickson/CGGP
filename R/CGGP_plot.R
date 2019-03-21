@@ -770,3 +770,34 @@ CGGPplotsamplesneglogpost <- function(CGGP) {
   
   p
 }
+
+#' Plot CGGP block selection over time
+#' 
+#' Shows the order in which blocks were selected
+#' for each dimension.
+#' Gives an idea of how the selection schange over time.
+#'
+#' @param CGGP CGGP object
+#'
+#' @return ggplot2 object
+#' @export
+#'
+#' @examples
+#' gs <- CGGPcreate(d=3, batchsize=100)
+#' f <- function(x){x[1]^1.2+x[3]^.4*sin(2*pi*x[2]^2*3) + .1*exp(3*x[3])}
+#' y <- apply(gs$design, 1, f)
+#' gs <- CGGPfit(gs, Y=y)
+#' CGGPplotblockselection(gs)
+CGGPplotblockselection <- function(CGGP) {
+    uodf <- CGGP$uo[1:r2.sggp.26155$uoCOUNT,]
+  tdf2 <- reshape2::melt(data.frame(uodf,
+                                    ninblock=CGGP$gridsize,
+                                    ncumsum=cumsum(CGGP$gridsize),
+                                    ind=1:CGGP$uoCOUNT),
+                         id.vars=c("ind", "ninblock", "ncumsum"))
+  tdf2$Var2 <- as.integer(substr(tdf2$variable, 2, 3))
+  ggplot(data=tdf2, mapping=aes(ncumsum, value, weight=ninblock)) + geom_point() +
+    facet_grid(Var2 ~ .) +
+    stat_smooth(color="green", method="loess", formula = y ~ x) +
+    xlab("uo") + ylab("Block level")
+}
