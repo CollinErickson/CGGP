@@ -398,7 +398,7 @@ excomp <- ffexp$new(
   parallel=TRUE,
   parallel_cores = 20,
   replicate=1:10, #:5,
-  folder_path= "/home/collin/scratch/CGGP/scratch/ExternalComparison/ExComp4"
+  folder_path= "/home/collin/scratch/SGGP/scratch/ExternalComparison/ExComp4"
   # folder_path="./scratch/ExternalComparison/ExComp4/"
 )
 # Remove ones that can't do full size
@@ -409,6 +409,8 @@ excomp$completed_runs[package.name == "CGGPsupponly" & n.excomp > 1000] <- TRUE
 excomp$completed_runs[package.name == "laGP" & n.excomp > 1000] <- TRUE
 excomp$completed_runs[package.name == "mlegp" & n.excomp > 400] <- TRUE
 excomp$completed_runs[package.name == "GPfit" & n.excomp > 100] <- TRUE
+# agp is giving errors
+excomp$completed_runs[package.name == "aGP"] <- TRUE
 table(paste(package.name, excomp$completed_runs))
 
 
