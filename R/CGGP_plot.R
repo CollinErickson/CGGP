@@ -789,15 +789,15 @@ CGGPplotsamplesneglogpost <- function(CGGP) {
 #' gs <- CGGPfit(gs, Y=y)
 #' CGGPplotblockselection(gs)
 CGGPplotblockselection <- function(CGGP) {
-    uodf <- CGGP$uo[1:r2.sggp.26155$uoCOUNT,]
+  uodf <- CGGP$uo[1:CGGP$uoCOUNT,]
   tdf2 <- reshape2::melt(data.frame(uodf,
                                     ninblock=CGGP$gridsize,
                                     ncumsum=cumsum(CGGP$gridsize),
                                     ind=1:CGGP$uoCOUNT),
                          id.vars=c("ind", "ninblock", "ncumsum"))
   tdf2$Var2 <- as.integer(substr(tdf2$variable, 2, 3))
-  ggplot(data=tdf2, mapping=aes(ncumsum, value, weight=ninblock)) + geom_point() +
-    facet_grid(Var2 ~ .) +
-    stat_smooth(color="green", method="loess", formula = y ~ x) +
-    xlab("uo") + ylab("Block level")
+  ggplot2::ggplot(data=tdf2, mapping=ggplot2::aes_string("ncumsum", "value", weight="ninblock")) + ggplot2::geom_point() +
+    ggplot2::facet_grid(Var2 ~ .) +
+    ggplot2::stat_smooth(color="green", method="loess", formula = y ~ x) +
+    ggplot2::xlab("uo") + ggplot2::ylab("Block level")
 }
