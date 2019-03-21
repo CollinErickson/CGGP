@@ -54,6 +54,13 @@ test_that("CGGPfit works with Laplace approx", {
     expect_equal(thetagrad[i], numgrad, tol=1e-4)
   }
   
+  if (F) {
+    expect_equal(
+      c(CGGP_internal_gneglogpost(theta, SG, SG$y)),
+      numDeriv::grad(CGGP_internal_neglogpost, theta, CGGP=SG, y=SG$y)
+    )
+  }
+  
   # Works with supplementary data
   nsup <- 30
   xsup <- matrix(runif(nsup*3), nsup, 3)
@@ -74,16 +81,17 @@ test_that("CGGPfit works with Laplace approx", {
       # numgrad <- (CGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
       #               CGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (2*epsval)
       numgrad[i] <- (-CGGP_internal_neglogpost(theta + 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
-                    8*CGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
-                    8*CGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
-                    CGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
+                       8*CGGP_internal_neglogpost(theta + eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) - 
+                       8*CGGP_internal_neglogpost(theta - eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling) + 
+                       CGGP_internal_neglogpost(theta - 2*eps, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)) / (12*epsval)
       # 
       # print(numgrad)
     }
     expect_equal(c(thetagrad), numgrad, tol=1e-2, info = handling)
   }
-  # numDeriv::grad(function(th) {CGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
-  
+  if (F) {
+    numDeriv::grad(function(th) {CGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
+  }
 })
 
 test_that("CGGPfit works with Ynew - scalar output", {

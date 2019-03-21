@@ -62,7 +62,10 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
   }
   
   if(HandlingSuppData == "Only"){
-    Sigma_chol = chol(Sigma_t)
+    try.chol <- try({Sigma_chol = chol(Sigma_t)}, silent = TRUE)
+    if (inherits(try.chol, "try-error")) {
+      return(Inf)
+    }; rm(try.chol)
     
     Sti_resid = backsolve(Sigma_chol,backsolve(Sigma_chol,ys,transpose=TRUE))
     sigma2_hat_supp = colSums(as.matrix(ys*Sti_resid))/dim(Xs)[1]
@@ -159,7 +162,10 @@ CGGP_internal_neglogpost <- function(theta, CGGP, y, ..., ys=NULL, Xs=NULL,
     
     Sigma_t = (1-CGGP$nugget)*Sigma_t+diag(dim(Sigma_t)[1])*CGGP$nugget
     
-    Sigma_chol = chol(Sigma_t)
+    try.chol <- try({Sigma_chol = chol(Sigma_t)}, silent = TRUE)
+    if (inherits(try.chol, "try-error")) {
+      return(Inf)
+    }; rm(try.chol)
     
     Sti_resid = backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,
                                                transpose = TRUE))

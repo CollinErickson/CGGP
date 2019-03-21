@@ -25,7 +25,6 @@
 CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
                                       ys=NULL,Xs=NULL,
                                       HandlingSuppData = "Correct") {
-  
   # ================================
   # Check that inputs are acceptable
   # ================================
@@ -74,7 +73,12 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
   
   
   if(HandlingSuppData == "Only"){
-    Sigma_chol = chol(Sigma_t)
+    try.chol <- try({Sigma_chol = chol(Sigma_t)}, silent = TRUE)
+    if (inherits(try.chol, "try-error")) {
+      stop("chol error in gneglogpost, this shouldn't happen but does #1")
+      # return(rep(NA, length(theta)))
+    }; rm(try.chol)
+    
     tempvec1 = backsolve(Sigma_chol,backsolve(Sigma_chol,ys,transpose = TRUE))
     sigma2_hat_supp = colSums(as.matrix(ys*tempvec1))/dim(Xs)[1]
     if(is.matrix(ys)){
@@ -265,7 +269,12 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
       dSigma_to[[dimlcv]] = (1-CGGP$nugget)*dSigma_to[[dimlcv]]
     }
     
-    Sigma_chol = chol(Sigma_t)
+    try.chol <- try({Sigma_chol = chol(Sigma_t)}, silent = TRUE)
+    if (inherits(try.chol, "try-error")) {
+      stop("chol error in gneglogpost, this shouldn't happen but does #2")
+      # return(rep(NA, length(theta)))
+    }; rm(try.chol)
+    
     tempvec1= backsolve(Sigma_chol,backsolve(Sigma_chol,ys-yhats,
                                              transpose = TRUE))
     
@@ -375,7 +384,7 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
   gneglogpost = -0.2*(log(1-theta)-log(theta+1))*((1/(1-theta))+1/(1+theta))
   
   neglogpost =  neglogpost+0.1*sum((log(1-theta)-log(theta+1))^4) #start out with prior
-  gneglogpost = gneglogpost-0.1*12*((log(1-theta)-log(theta+1))^2)*((1/(1-theta))+1/(1+theta))
+  gneglogpost = gneglogpost-0.1*4*((log(1-theta)-log(theta+1))^3)*((1/(1-theta))+1/(1+theta))
   
   output_is_1D <- if (!is.null(y)) {!is.matrix(y)} else {!is.matrix(ys)}
   if(output_is_1D){
