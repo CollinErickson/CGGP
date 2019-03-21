@@ -420,7 +420,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
       
       lp[dimlcv] = lp[dimlcv] + 1
       
-      if (max(lp) < CGGP$maxlevel && CGGP$poCOUNT < 4 * CGGP$ML) {
+      if (max(lp) <= CGGP$maxlevel && CGGP$poCOUNT < 4 * CGGP$ML) {
         kvals = which(lp > 1.5) # Dimensions above base level
         
         canuse = 1
