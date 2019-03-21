@@ -384,7 +384,10 @@ eg3 <- rbind(eg2a, eg2b, eg2c, eg2d)
 require("comparer")
 
 excomp <- ffexp$new(
-  eval_func = run_one_parallel, #run_one_parallel,
+  eval_func = run_one,
+  varlist = c("decentLHS", "run_CGGP", "run_CGGPoneshot", "run_CGGPsupp",
+              "run_CGGPsupponly", "run_GPfit", "run_lagp", "run_lagp_bobby",
+              "run_mlegp", "run_MRFA", "run_svm"),
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"),
                 d=c(3,6,7,8,10),
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
@@ -393,8 +396,8 @@ excomp <- ffexp$new(
   psch=eg3,
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
   parallel=TRUE,
-  parallel_cores = 4,
-  replicate=1, #:5,
+  parallel_cores = 20,
+  replicate=1:10, #:5,
   # folder_path= "/home/collin/scratch/CGGP/scratch/ExternalComparison/ExComp4"
   folder_path="./scratch/ExternalComparison/ExComp4/"
 )
@@ -410,20 +413,21 @@ table(paste(package.name, excomp$completed_runs))
 
 
 # excomp$run_one(640)
-excomp$run_all(save_output = T, parallel = F, parallel_temp_save = T, run_order = "random")
+# excomp$run_all(save_output = T, parallel = F, parallel_temp_save = T, run_order = "random")
 
-excomp$rungrid
+# excomp$rungrid
 # try because it gave delete error before, but shouldn't need it now
+table(excomp$completed_runs)
 try(excomp$recover_parallel_temp_save(delete_after = FALSE))
 table(excomp$completed_runs)
-# excomp$save_self()
+excomp$save_self()
 excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
                write_start_files=T, write_error_files=T)
 # excomp$run_all()
 
 cat("Completed all runs in ExternalComparer4.R\n")
 
-# excomp$save_self()
+excomp$save_self()
 
 cat("Saved self\n")
 
