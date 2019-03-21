@@ -21,7 +21,7 @@ for (i in run_redTime) {
     # Makes it easier for others to get onto Crunch.
     qsub_sh_file(fileID=paste0(groupID_short, "_", restart_on, "_", i), 
                  holdID=paste0(groupID_short, "_", restart_on, "_",
-                               ceiling(i/number_cores)*number_cores - number_cores + (1:number_cores),
+                               ceiling(i/number_cores)*number_cores - 2*number_cores + (1:number_cores),
                                collapse = ','),
                  shpathbase=shpathbase)
   } else {
