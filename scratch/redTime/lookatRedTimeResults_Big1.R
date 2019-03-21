@@ -1,3 +1,8 @@
+# This has the results from Big1 and Big2.
+# Big1 used UCB and gave bad results.
+# Big2 used Greedy and seemed to work well.
+# We fixed UCB while it was running, so UCB should work from now on.
+
 x100 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n100_s0228_all_input.csv")[,-1]))
 y100 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n100_s0228_all_output.csv")[,-1])))
 x1000 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges2_LHS1L_n1000_s0303_all_input.csv")[,-1]))
@@ -37,7 +42,8 @@ r2.sggp.26155<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-26155.rds")
 # r2.sggp.<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-.rds")
 r2.sggp.26155.Ignore<- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$Xs,Ys=r2.sggp.26155$Ys,HandlingSuppData="Ignore")
 r2.sggp.26155.Mat32<- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$Xs,Ys=r2.sggp.26155$Ys,corr="m3")
-
+r2.sggp.26155.18ktheta <- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$Xs,Ys=r2.sggp.26155$Ys,set_thetaMAP_to = r2.sggp.18159$thetaMAP)
+r2.sggp.26155.18kthetanosupp <- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,set_thetaMAP_to = r2.sggp.18159$thetaMAP)
 
 # Get stats
 # Big1
@@ -70,6 +76,8 @@ stats.r2.sggp.26155<- CGGPvalstats(r2.sggp.26155, x1000, y1000, bydim=F)
 # stats.r2.sggp.<- CGGPvalstats(r2.sggp., x1000, y1000, bydim=F)
 stats.r2.sggp.26155.Ignore<- CGGPvalstats(r2.sggp.26155.Ignore, x1000, y1000, bydim=F)
 stats.r2.sggp.26155.Mat32<- CGGPvalstats(r2.sggp.26155.Mat32, x1000, y1000, bydim=F)
+stats.r2.sggp.26155.18ktheta<- CGGPvalstats(r2.sggp.26155.18ktheta, x1000, y1000, bydim=F)
+stats.r2.sggp.26155.18kthetanosupp<- CGGPvalstats(r2.sggp.26155.18kthetanosupp, x1000, y1000, bydim=F)
 
 
 # Check stats on 50th dim
@@ -132,6 +140,8 @@ allstats <- list(
   data.frame("CGGP", 90, 26155,0.004961369, -9.659113, 0.002383479,  0.99554, 0.9999972, 0.9999944, 0.00355455),
   data.frame("CGGPIgnore", 90, 26155,0.004959593, -9.656147, 0.002386668,  0.99554, 0.9999972, 0.9999944, 0.003553383),
   data.frame("CGGPMat32", 90, 26155, 0.004838821, -8.49521 , 0.003830926,  0.99942, 0.9999973, 0.9999947, 0.003493466),
+  data.frame("CGGP18ktheta", 90, 26155, 0.004768937, -7.572385, 0.005782846,  0.99923, 0.9999974, 0.9999948, 0.003410945),
+  data.frame("CGGP18kthetanosupp", 90, 26155, 0.00473138, -7.165235, 0.007330487,  0.99932, 0.9999975, 0.9999949, 0.003383729),
   # data.frame("CGGP", 90, 2199, ),
   # data.frame("CGGP", 90, , ),
   # data.frame("CGGP", 90, , ),

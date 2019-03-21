@@ -4,7 +4,8 @@
 \alias{CGGPfit}
 \title{Update CGGP model given data}
 \usage{
-CGGPfit(CGGP, Y, Xs = NULL, Ys = NULL, theta0 = CGGP$thetaMAP,
+CGGPfit(CGGP, Y, Xs = NULL, Ys = NULL,
+  theta0 = pmax(pmin(CGGP$thetaMAP, 0.8), -0.8),
   HandlingSuppData = CGGP$HandlingSuppData,
   separateoutputparameterdimensions = is.matrix(CGGP$thetaMAP),
   set_thetaMAP_to, corr, Ynew)

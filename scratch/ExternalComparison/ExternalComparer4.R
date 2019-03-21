@@ -1,7 +1,5 @@
 # Comparison for paper
 
-expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
-
 # decentLHS <- sFFLHD::decentLHS
 decentLHS <- function(n, d, ndes, max.time) {
   if (missing(ndes) && missing(max.time)) {
@@ -169,7 +167,7 @@ run_mlegp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser
   mod <- mlegp(x, y)
   fit.time.end <- Sys.time()
   pred.time.start <- Sys.time()
-  pred <- predict(mod, xtest, se.fit)
+  pred <- predict(mod, xtest, se.fit=T)
   pred.time.end <- Sys.time()
   list(mean=pred$fit, var=pred$se.fit^2, n=nrow(x),
        pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
@@ -188,9 +186,9 @@ run_GPfit <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser
   mod <- GP_fit(x, y)
   fit.time.end <- Sys.time()
   pred.time.start <- Sys.time()
-  pred <- predict(mod, xtest, se.fit)
+  pred <- predict(mod, xtest)
   pred.time.end <- Sys.time()
-  list(mean=pred$fit, var=pred$se.fit^2, n=nrow(x),
+  list(mean=pred$Y_hat, var=pred$MSE, n=nrow(x),
        pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
@@ -325,8 +323,9 @@ run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, see
 
 
 # Need a generic function that passes to specific ones
-run_one <- function(psch, f, d, npd, replicate) {
-  package <- psch$package
+run_one <- function(package, selection.method, correlation, HandlingSuppData,
+                    f, d, npd, replicate) {#browser()
+  # package <- psch$package
   n <- npd * d
   # if (n!= 500) {stop('bad n')}
   f <- eval(parse(text=paste0("TestFunctions::", f)))
@@ -371,44 +370,47 @@ run_one <- function(psch, f, d, npd, replicate) {
 }
 
 
+expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
+
 eg1 <- expand.grid(selection.method = c("UCB", "Greedy"),
-            correlation = c("CauchySQ", "Matern32", "PowerExp"))
-eg2a <- expand.grid.df(eg1, data.frame(HandlingSuppData=c("Ignore", "Correct")), data.frame(package="CGGPsupp"))
-eg2b <- expand.grid.df(eg1, data.frame(HandlingSuppData="NA"), data.frame(package=c("CGGP")))
-eg2c <- expand.grid(selection.method="NA", correlation = c("CauchySQ", "Matern32", "PowerExp"), HandlingSuppData="NA", package=c("CGGPoneshot", "CGGPnosupp"))
+            correlation = c("CauchySQ", "Matern32", "PowerExp"), stringsAsFactors=F)
+eg2a <- expand.grid.df(eg1, data.frame(HandlingSuppData=c("Ignore", "Correct"), stringsAsFactors=F), data.frame(package="CGGPsupp", stringsAsFactors=F))
+eg2b <- expand.grid.df(eg1, data.frame(HandlingSuppData="NA", stringsAsFactors=F), data.frame(package=c("CGGP"), stringsAsFactors=F))
+eg2c <- expand.grid(selection.method="NA", correlation = c("CauchySQ", "Matern32", "PowerExp"), HandlingSuppData="NA", package=c("CGGPoneshot", "CGGPsupponly"), stringsAsFactors=F)
 eg2d <- data.frame(selection.method="NA", correlation="NA", HandlingSuppData="NA",
-                   package=c("MRFA", "svm", "aGP", "laGP", "mlegp", "GPfit"))
+                   package=c("MRFA", "svm", "aGP", "laGP", "mlegp", "GPfit"), stringsAsFactors=F)
 eg3 <- rbind(eg2a, eg2b, eg2c, eg2d)
 
 require("comparer")
 
 excomp <- ffexp$new(
-  eval_func = run_one, #run_one_parallel,
+  eval_func = run_one_parallel, #run_one_parallel,
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"),
                 d=c(3,6,7,8,10),
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
-  # package=c("CGGPsupp", "CGPPoneshot", "CGGPsupponly", "CGGPnosupp",
+  # package=c("CGGPsupp", "CGPPoneshot", "CGGPsupponly", "CGGP",
   #           "MRFA", "svm", "aGP", "laGP", "mlegp", "GPfit"),
   psch=eg3,
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
   parallel=TRUE,
-  parallel_cores = 3,
+  parallel_cores = 4,
   replicate=1, #:5,
   # folder_path= "/home/collin/scratch/CGGP/scratch/ExternalComparison/ExComp4"
   folder_path="./scratch/ExternalComparison/ExComp4/"
 )
 # Remove ones that can't do full size
-package.name <- excomp$arglist$package[excomp$rungrid$package]
+package.name <- excomp$arglist$psch$package[excomp$rungrid$psch]
 npd.excomp <- excomp$arglist$npd[excomp$rungrid$npd]
 n.excomp <- npd.excomp * excomp$arglist$fd$d[excomp$rungrid$fd]
 excomp$completed_runs[package.name == "CGGPsupponly" & n.excomp > 1000] <- TRUE
-excomp$completed_runs[package.name == "laGP" & n.excomp > 400] <- TRUE
+excomp$completed_runs[package.name == "laGP" & n.excomp > 1000] <- TRUE
 excomp$completed_runs[package.name == "mlegp" & n.excomp > 400] <- TRUE
 excomp$completed_runs[package.name == "GPfit" & n.excomp > 100] <- TRUE
+table(paste(package.name, excomp$completed_runs))
 
 
-excomp$run_one(81)
-# excomp$run_all(save_output = F, parallel = F, run_order = "random")
+# excomp$run_one(640)
+excomp$run_all(save_output = T, parallel = F, parallel_temp_save = T, run_order = "random")
 
 excomp$rungrid
 # try because it gave delete error before, but shouldn't need it now

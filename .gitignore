@@ -82,3 +82,5 @@ scratch/redTime/redTimeData/
 scratch/redTime/redTimeMVExp1/redTimeMVExp1_completed\.rds
 
 scratch/redTime/redTimeMVExp2/Exp2_completed\.rds
+
+scratch/ExternalComparison/ExComp4/*parallel_temp_output_*
