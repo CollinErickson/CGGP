@@ -5,6 +5,12 @@ decentLHS <- function(n, d, ndes, max.time) {
   if (missing(ndes) && missing(max.time)) {
     stop("Must give ndes or max.time to decentLHS")
   }
+  
+  # MaxProMeasure in 10d with 3e4 pts takes 3 min, crashes with 1e5 pts.
+  if (n > 1e4) {
+    return(lhs::randomLHS(n, d))
+  }
+  
   start.time <- Sys.time()
   bestdes <- NULL
   bestcrit <- Inf
