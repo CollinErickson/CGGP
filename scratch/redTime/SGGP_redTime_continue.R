@@ -101,7 +101,8 @@ if (SG$ss >= Nfinal) {
 set.seed(SG$ss)
 
 # Append new values
-batchsize <- if (SG$ss<1000) {batchsize1} else if (SG$ss<10000) {batchsize2} else {batchsize3}
+# batchsize <- if (SG$ss<1000) {batchsize1} else if (SG$ss<10000) {batchsize2} else {batchsize3}
+batchsize <- if (SG$ss<1000) {batchsize1} else if (SG$ss<10000) {batchsize2} else if (SG$ss<20000) {batchsize3} else {batchsize4}
 SG <- CGGPappend(SG, batchsize, selectionmethod=selectionmethod)
 cat("CGGPappend successful\n")
 

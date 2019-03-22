@@ -8,8 +8,9 @@
 # Sup2 is with supp data, but on expandedranges2
 # Big1 is all output dimensions, no pca, shared params. Meant to be for paper. Not good b/c of UCB error
 # Big2 is same as Big1 except using Greedy in append
-groupID <- "redTimeTestBig2"
-groupID_short <- "Big2"#"O90_1k"
+# Big3 is back same as Big1, i.e. uses UCB, we think we fixed the error.
+groupID <- "redTimeTestBig3"
+groupID_short <- "Big3"#"O90_1k"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
 number_cores <- 250
@@ -25,6 +26,7 @@ N0 <- NA #100
 batchsize1 <- 200
 batchsize2 <- 500
 batchsize3 <- 2000
+batchsize4 <- 10000
 
 # Correlation function
 corr <- "CauchySQ"
@@ -48,7 +50,7 @@ separateoutputparameterdimensions <- FALSE
 outdims <- 1:100
 
 # append selectionmethod. Used to just use UCB, but UCB/TS are bad with MV out. Use Greedy instead.
-selectionmethod <- "Greedy"
+selectionmethod <- "UCB"
 
 # To use supplementary data
 if (FALSE) {
