@@ -210,7 +210,7 @@ run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, sele
   sg <- CGGPfit(sg, apply(sg$design, 1, f))
   notdone <- (nrow(sg$design) < Ntotal)
   while (notdone) {
-    print(sg)
+    # print(sg)
     Nalready <- nrow(sg$design)
     ni <- if (Nalready<1000) {200} else if (Nalready<10000) {500} else if (Nalready<20000) {2000} else {10000}
     
@@ -228,7 +228,7 @@ run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, sele
     }
   }
   fit.time.end <- Sys.time()
-  print(sg)
+  # print(sg)
   Nevaluated <- if (!is.null(sg$design)) nrow(sg$design) else {0} + nrow(sg$Xs)
   if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
   
@@ -250,7 +250,7 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, 
   sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup, corr=correlation)
   notdone <- (Nlhs < Ntotal)
   while (notdone) {
-    print(sg)
+    # print(sg)
     Nalready <- (if (!is.null(sg$design)) {nrow(sg$design)} else {0}) + nrow(sg$Xs)
     ni <- if (Nalready<1000) {200} else if (Nalready<10000) {500} else if (Nalready<20000) {2000} else {10000}
     
@@ -268,7 +268,7 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, 
     }
   }
   fit.time.end <- Sys.time()
-  print(sg)
+  # print(sg)
   Nevaluated <- if (!is.null(sg$design)) nrow(sg$design) else {0} + nrow(sg$Xs)
   if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
   
@@ -290,7 +290,7 @@ run_CGGPsupponly <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, se
   fit.time.start <- Sys.time()
   sg <- CGGPcreate(d=d, batchsize=0, Xs=xsup, Ys=ysup, corr=correlation)
   fit.time.end <- Sys.time()
-  print(sg)
+  # print(sg)
   Nevaluated <- nrow(sg$Xs)
   if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
   
@@ -312,7 +312,7 @@ run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, see
   sg <- CGGPcreate(d=d, batchsize=Ntotal, corr=correlation)
   sg <- CGGPfit(sg, Y=apply(sg$design, 1, f))
   fit.time.end <- Sys.time()
-  print(sg)
+  # print(sg)
   Nevaluated <- nrow(sg$design)
   if (Nevaluated > Ntotal) {stop("CGGP has more points than Ntotal")}
   

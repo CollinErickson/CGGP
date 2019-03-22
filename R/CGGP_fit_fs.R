@@ -183,12 +183,27 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
         CGGP = CGGP,
         HandlingSuppData="Ignore", # Never supp data here, so set to Ignore
         #  regardless of user setting
+        lower=rep(-.9, CGGP$d),
+        upper=rep( .9, CGGP$d),
         control = list(rel.tol = 1e-2,iter.max = 500)
       )
       
+      neglogpost_par <- CGGP_internal_neglogpost(theta=opt.out$par,
+                                                 CGGP=CGGP,
+                                                 y=y.thisloop,
+                                                 ys=ys.thisloop,
+                                                 Xs=Xs,
+                                                 HandlingSuppData=HandlingSuppData
+                                                 )
+      if (is.infinite(neglogpost_par)) {
+        theta0_2 <- rep(0, CGGP$d)
+      } else {
+        theta0_2 <- opt.out$par
+      }
+      
       # Then use best point as initial point with supp data
       opt.out = nlminb(
-        opt.out$par,
+        theta0_2,
         objective = CGGP_internal_neglogpost,
         gradient = CGGP_internal_gneglogpost,
         y = y.thisloop,
