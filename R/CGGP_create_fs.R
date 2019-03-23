@@ -113,6 +113,9 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   # ====   Add Blocks    ====
   # =========================.
   
+  # sample has unexpected behavior, eg sample(34,1), see help file for sample
+  resample <- function(x, ...) x[sample.int(length(x), ...)]
+  
   # While number selected + min sample size <= batch size, i.e.,
   #  still have enough spots for a block, keep adding blocks
   while (batchsize > (CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - 0.5)) {
@@ -126,10 +129,10 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
       pstar = 1
     } else{ # Next d iterations randomly pick from boxes w/ min # of pts
       if (CGGP$uoCOUNT < (2 * CGGP$d + 1.5)) {
-        pstar = sample(which(CGGP$pogsize[1:CGGP$poCOUNT] <=
+        pstar = resample(which(CGGP$pogsize[1:CGGP$poCOUNT] <=
                                0.5 + min(CGGP$pogsize[1:CGGP$poCOUNT])), 1)
       } else{ # After that randomly select from blocks that still fit
-        pstar = sample(which(CGGP$pogsize[1:CGGP$poCOUNT] <
+        pstar = resample(which(CGGP$pogsize[1:CGGP$poCOUNT] <
                                min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)), 1)
       }
     }
