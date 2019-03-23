@@ -420,7 +420,8 @@ excomp$completed_runs[package.name == "aGP"] <- TRUE
 table(paste(package.name, excomp$completed_runs))
 
 
-# excomp$run_one(640)
+# excomp$run_one(1752)
+# excomp$run_one(7299)
 # excomp$run_all(save_output = T, parallel = F, parallel_temp_save = T, run_order = "random")
 
 # excomp$rungrid
