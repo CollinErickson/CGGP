@@ -781,6 +781,7 @@ CGGPplotsamplesneglogpost <- function(CGGP) {
 #' Gives an idea of how the selection schange over time.
 #'
 #' @param CGGP CGGP object
+#' @param indims Which input dimensions should be shown?
 #'
 #' @return ggplot2 object
 #' @export
@@ -791,8 +792,11 @@ CGGPplotsamplesneglogpost <- function(CGGP) {
 #' y <- apply(gs$design, 1, f)
 #' gs <- CGGPfit(gs, Y=y)
 #' CGGPplotblockselection(gs)
-CGGPplotblockselection <- function(CGGP) {
+CGGPplotblockselection <- function(CGGP, indims) {
   uodf <- CGGP$uo[1:CGGP$uoCOUNT,]
+  if (!missing(indims) && !is.null(indims)) {
+    uodf <- uodf[,indims]
+  }
   tdf2 <- reshape2::melt(data.frame(uodf,
                                     ninblock=CGGP$gridsize,
                                     ncumsum=cumsum(CGGP$gridsize),
