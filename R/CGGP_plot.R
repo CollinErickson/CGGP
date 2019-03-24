@@ -303,6 +303,9 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE,
                      corr=TRUE, R2=TRUE, MAE=FALSE,
                      metrics,
                      min_var=.Machine$double.eps) {
+  if (missing(predvar) || is.null(predvar)) {
+    predvar <- NaN * predmean
+  }
   # Boost up all variances to at least min_var, should be tiny number
   if (is.numeric(min_var) && !is.na(min_var) && min_var>=0) {
     predvar <- pmax(predvar, min_var)
