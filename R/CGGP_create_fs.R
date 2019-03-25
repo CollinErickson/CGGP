@@ -118,6 +118,7 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   while (batchsize > (CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - 0.5)) {
     CGGP$uoCOUNT = CGGP$uoCOUNT + 1 #increment used count
     
+    
     if (CGGP$uoCOUNT < 1.5) { # Nothing picked yet, so take base block (1,1,...,1)
       pstar <- 1
     } else if (CGGP$uoCOUNT < (CGGP$d + 1.5)) {
@@ -125,13 +126,8 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
       #  info on each dimension before going adaptive
       pstar = 1
     } else{ # Next d iterations randomly pick from boxes w/ min # of pts
-      if (CGGP$uoCOUNT < (2 * CGGP$d + 1.5)) {
-        pstar = sample(which(CGGP$pogsize[1:CGGP$poCOUNT] <=
-                               0.5 + min(CGGP$pogsize[1:CGGP$poCOUNT])), 1)
-      } else{ # After that randomly select from blocks that still fit
-        pstar = sample(which(CGGP$pogsize[1:CGGP$poCOUNT] <
-                               min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)), 1)
-      }
+        criteriahere = rowSums(CGGP$po[1:CGGP$poCOUNT,])
+        pstar = sample(which((criteriahere <= 0.5 + min(criteriahere)) && (CGGP$pogsize[1:CGGP$poCOUNT] < min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)) ), 1)
     }
     
     l0 =  CGGP$po[pstar, ] # Selected block e.g. (2,1,1,2)
