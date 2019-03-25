@@ -127,7 +127,8 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
       pstar = 1
     } else{ # Next d iterations randomly pick from boxes w/ min # of pts
         criteriahere = rowSums(CGGP$po[1:CGGP$poCOUNT,])
-        pstar = sample(which((criteriahere <= 0.5 + min(criteriahere)) && (CGGP$pogsize[1:CGGP$poCOUNT] < min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)) ), 1)
+        MCN = min(criteriahere[(CGGP$pogsize[1:CGGP$poCOUNT] < min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize))])
+        pstar = sample(which((criteriahere <= 0.5 + MCN) && (CGGP$pogsize[1:CGGP$poCOUNT] < min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)) ), 1)
     }
     
     l0 =  CGGP$po[pstar, ] # Selected block e.g. (2,1,1,2)
