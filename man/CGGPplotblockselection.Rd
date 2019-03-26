@@ -4,10 +4,12 @@
 \alias{CGGPplotblockselection}
 \title{Plot CGGP block selection over time}
 \usage{
-CGGPplotblockselection(CGGP)
+CGGPplotblockselection(CGGP, indims)
 }
 \arguments{
 \item{CGGP}{CGGP object}
+
+\item{indims}{Which input dimensions should be shown?}
 }
 \value{
 ggplot2 object
