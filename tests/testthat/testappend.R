@@ -77,7 +77,7 @@ test_that("Append with different weights on different outputs works", {
   
   # Now with multiple output
   # Should get to 3,1 and 1,3 with 2,2
-  set.seed(3)
+  set.seed(13)
   SG <- CGGPcreate(d=2, batchsize=17, grid_sizes = c(1,2,4,2,2,2,2,2,2,12,32))
   # Should be equal so far
   if (F) {
