@@ -26,7 +26,7 @@
 #' @examples
 #' CGGPcreate(d=8,200)
 CGGPcreate <- function(d, batchsize, corr="CauchySQ",
-                       grid_sizes=c(1,2,4,4,8,12,32),
+                       grid_sizes=c(1,2,4,4,8,12,20,28,32),
                        Xs=NULL, Ys=NULL,
                        HandlingSuppData="Correct",
                        supp_args=list()
@@ -239,8 +239,8 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   #  These are distances from the center 0.5.
   xb = rep(
     c(
-      1 / 2, # 0, 1
       3 / 8, # 1/8, 7/8
+      1 / 2, # 0, 1
       1 / 4, # 1/4, 3/4
       1 / 8, # 3/8, 5/8
       15 / 32, # etc
@@ -255,7 +255,10 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
       5 / 32,
       1 / 32,
       1 / 16,
-      seq(31,1,-2)/64
+      seq(31,1,-4)/64,
+      seq(29,1,-4)/64,
+      seq(63,1,-4)/128,
+      seq(61,1,-4)/128
     ),
     "each" = 2
   )
