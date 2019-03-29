@@ -157,6 +157,9 @@ test_that("Plots work", {
   expect_error(tp <- CGGPplotblockselection(SG), NA)
   expect_is(tp, "ggplot")
   rm(tp)
+  expect_error(tp <- CGGPplotblockselection(SG, indims=1:2), NA)
+  expect_is(tp, "ggplot")
+  rm(tp)
   
   
   # neglogpost samples plot
