@@ -20,6 +20,7 @@ print.CGGP <- function(x, ...) {
     c(
       "CGGP object\n",
       "   d = ", x$d, '\n',
+      "   output dimensions = ", if (is.matrix(x$Y)) ncol(x$Y) else {1}, '\n',
       "   CorrFunc = ", x$CorrName, '\n',
       "   number of design points             = ", if (is.null(x$design) || length(x$design)==0) {"0"} else {nrow(x$design)}, '\n',
       "   number of unevaluated design points = ", if (is.null(x$design_unevaluated)) 0 else nrow(x$design_unevaluated), '\n',
