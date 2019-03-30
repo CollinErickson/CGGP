@@ -54,6 +54,10 @@ test_that("Plots work", {
   expect_error(vstats <- valstats(c(0,1,2), c(.01,.01,.01), c(0,1.1,1.9),
                                   metrics=list(mae=function(a,b,c)mean(abs(a-c)))), NA)
   rm(vstats)
+  expect_error(vstats <- valstats(predmean=c(0,1,2), Yval=c(0,1.1,1.9)), NA)
+  expect_is(vstats, "data.frame")
+  expect_equal(nrow(vstats), 1)
+  rm(vstats)
   
   # CGGP Val stats
   vstats <- CGGPvalstats(SG, Xval, Yval)
