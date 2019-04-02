@@ -141,11 +141,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
   
   # Can get an error for theta0 if number of PCA dimensions has changed
   if (is.matrix(theta0) && (ncol(theta0) != nopd)) {
-    if (ncol(theta0) > nopd) {
-      theta0 <- theta0[,1:nopd]
-    } else {
-      theta0 <- cbind(theta0, matrix(0,nrow(theta0), nopd-ncol(theta0)))
-    }
+    stop(paste("theta0 should have", nopd, "columns"))
   }
   
   

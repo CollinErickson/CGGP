@@ -131,6 +131,9 @@ test_that("CGGPfit works with Ynew - vector output", {
   # Other errors when giving ynew and wrong number of rows
   expect_error(CGGPfit(SG, Ynew=y[1:5,]))
   expect_error(CGGPfit(SG, Ynew=y1[1:5]))
+  # Errors for bad theta0
+  expect_error(CGGPfit(SG, Y=y, theta0 = matrix(0, ncol=3, nrow=SG$numpara), separateoutputparameterdimensions = T))
+  expect_error(CGGPfit(SG, Y=y, theta0 = matrix(0, ncol=1, nrow=SG$numpara), separateoutputparameterdimensions = T))
   
   # Works with just Ynew
   SG <- CGGPfit(SG, Ynew=y)
