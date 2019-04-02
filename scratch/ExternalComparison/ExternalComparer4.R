@@ -434,7 +434,7 @@ excomp$save_self()
 #                write_start_files=T, write_error_files=T)
 # Getting errors, run by package.name to see which is causing it
 excomp$parallel_cores <- 10
-excomp$run_all(to_run = !excomp$completed_runs & (package.name == "mlegp"),
+excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "mlegp")),
                parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
                write_start_files=T, write_error_files=T)
 # excomp$run_all()
