@@ -430,7 +430,12 @@ table(excomp$completed_runs)
 try(excomp$recover_parallel_temp_save(delete_after = FALSE))
 table(excomp$completed_runs)
 excomp$save_self()
-excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
+# excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
+#                write_start_files=T, write_error_files=T)
+# Getting errors, run by package.name to see which is causing it
+excomp$parallel_cores <- 10
+excomp$run_all(to_run = !excomp$completed_runs & (package.name == "mlegp"),
+               parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
                write_start_files=T, write_error_files=T)
 # excomp$run_all()
 
