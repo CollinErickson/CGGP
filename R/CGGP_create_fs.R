@@ -26,7 +26,7 @@
 #' @examples
 #' CGGPcreate(d=8,200)
 CGGPcreate <- function(d, batchsize, corr="CauchySQ",
-                       grid_sizes=c(1,2,4,4,8,12,32),
+                       grid_sizes=c(1,2,4,4,8,12,20,28,32),
                        Xs=NULL, Ys=NULL,
                        HandlingSuppData="Correct",
                        supp_args=list()
@@ -113,13 +113,11 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   # ====   Add Blocks    ====
   # =========================.
   
-  # sample has unexpected behavior, eg sample(34,1), see help file for sample
-  resample <- function(x, ...) x[sample.int(length(x), ...)]
-  
   # While number selected + min sample size <= batch size, i.e.,
   #  still have enough spots for a block, keep adding blocks
   while (batchsize > (CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - 0.5)) {
     CGGP$uoCOUNT = CGGP$uoCOUNT + 1 #increment used count
+    
     
     if (CGGP$uoCOUNT < 1.5) { # Nothing picked yet, so take base block (1,1,...,1)
       pstar <- 1
@@ -128,13 +126,11 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
       #  info on each dimension before going adaptive
       pstar = 1
     } else{ # Next d iterations randomly pick from boxes w/ min # of pts
-      if (CGGP$uoCOUNT < (2 * CGGP$d + 1.5)) {
-        pstar = resample(which(CGGP$pogsize[1:CGGP$poCOUNT] <=
-                               0.5 + min(CGGP$pogsize[1:CGGP$poCOUNT])), 1)
-      } else{ # After that randomly select from blocks that still fit
-        pstar = resample(which(CGGP$pogsize[1:CGGP$poCOUNT] <
-                               min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)), 1)
-      }
+        criteriahere = rowSums(CGGP$po[1:CGGP$poCOUNT,])
+        A1 = (CGGP$pogsize[1:CGGP$poCOUNT] < min(batchsize - CGGP$ss + 0.5,CGGP$maxgridsize)) 
+        MCN = min(criteriahere[A1])
+        A2 = criteriahere <= 0.5 + MCN
+        pstar = sample(which(A1 & A2), 1)
     }
     
     l0 =  CGGP$po[pstar, ] # Selected block e.g. (2,1,1,2)
@@ -243,8 +239,8 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   #  These are distances from the center 0.5.
   xb = rep(
     c(
-      1 / 2, # 0, 1
       3 / 8, # 1/8, 7/8
+      1 / 2, # 0, 1
       1 / 4, # 1/4, 3/4
       1 / 8, # 3/8, 5/8
       15 / 32, # etc
@@ -259,7 +255,10 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
       5 / 32,
       1 / 32,
       1 / 16,
-      seq(31,1,-2)/64
+      seq(31,1,-4)/64,
+      seq(29,1,-4)/64,
+      seq(63,1,-4)/128,
+      seq(61,1,-4)/128
     ),
     "each" = 2
   )
