@@ -418,6 +418,8 @@ excomp$completed_runs[package.name == "GPfit" & n.excomp > 100] <- TRUE
 # agp is giving errors
 excomp$completed_runs[package.name == "aGP"] <- TRUE
 table(paste(package.name, excomp$completed_runs))
+# plyr::ddply(data.frame(package.name, compruns=excomp$completed_runs), "package.name", function(d) {data.frame(done=sum(d$compruns), notdone=sum(!d$compruns))})
+rbind(plyr::ddply(data.frame(package.name, compruns=excomp$completed_runs), "package.name", function(d) {data.frame(done=sum(d$compruns), notdone=sum(!d$compruns))}), data.frame(package.name="all", done=sum(excomp$completed_runs), notdone=sum(!excomp$completed_runs)))
 
 
 # excomp$run_one(1752)
@@ -429,6 +431,8 @@ table(paste(package.name, excomp$completed_runs))
 table(excomp$completed_runs)
 try(excomp$recover_parallel_temp_save(delete_after = FALSE))
 table(excomp$completed_runs)
+# plyr::ddply(data.frame(package.name, compruns=excomp$completed_runs), "package.name", function(d) {data.frame(done=sum(d$compruns), notdone=sum(!d$compruns))})
+rbind(plyr::ddply(data.frame(package.name, compruns=excomp$completed_runs), "package.name", function(d) {data.frame(done=sum(d$compruns), notdone=sum(!d$compruns))}), data.frame(package.name="all", done=sum(excomp$completed_runs), notdone=sum(!excomp$completed_runs)))
 excomp$save_self()
 # excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
 #                write_start_files=T, write_error_files=T)
