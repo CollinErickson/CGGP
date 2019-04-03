@@ -45,6 +45,28 @@ r2.sggp.26155.Mat32<- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$
 r2.sggp.26155.18ktheta <- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$Xs,Ys=r2.sggp.26155$Ys,set_thetaMAP_to = r2.sggp.18159$thetaMAP)
 r2.sggp.26155.18kthetanosupp <- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,set_thetaMAP_to = r2.sggp.18159$thetaMAP)
 
+# Big3
+r3.sggp.399 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-399.rds")
+r3.sggp.599 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-599.rds")
+r3.sggp.799 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-799.rds")
+r3.sggp.999 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-999.rds")
+r3.sggp.1199 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-1199.rds")
+r3.sggp.1699 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-1699.rds")
+r3.sggp.2199 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-2199.rds")
+r3.sggp.2699 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-2699.rds")
+r3.sggp.3199 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-3199.rds")
+r3.sggp.4199 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-4199.rds")
+r3.sggp.5199 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-5199.rds")
+r3.sggp.6195 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-6195.rds")
+r3.sggp.7187 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-7187.rds")
+r3.sggp.8179 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-8179.rds")
+r3.sggp.10163 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-10163.rds")
+r3.sggp.12163 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-12163.rds")
+r3.sggp.16163 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-16163.rds")
+r3.sggp.18163 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-18163.rds")
+r3.sggp.20159 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-20159.rds")
+
+
 # Get stats
 # Big1
 stats.rt.sggp.1699 <- CGGPvalstats(rt.sggp.1699, x1000, y1000, bydim=T)
@@ -79,6 +101,27 @@ stats.r2.sggp.26155.Mat32<- CGGPvalstats(r2.sggp.26155.Mat32, x1000, y1000, bydi
 stats.r2.sggp.26155.18ktheta<- CGGPvalstats(r2.sggp.26155.18ktheta, x1000, y1000, bydim=F)
 stats.r2.sggp.26155.18kthetanosupp<- CGGPvalstats(r2.sggp.26155.18kthetanosupp, x1000, y1000, bydim=F)
 
+# Big 3
+stats.r3.sggp.399  <- CGGPvalstats(r3.sggp.399,   x1000, y1000, bydim=F)
+stats.r3.sggp.599  <- CGGPvalstats(r3.sggp.599,   x1000, y1000, bydim=F)
+stats.r3.sggp.799  <- CGGPvalstats(r3.sggp.799,   x1000, y1000, bydim=F)
+stats.r3.sggp.999  <- CGGPvalstats(r3.sggp.999,   x1000, y1000, bydim=F)
+stats.r3.sggp.1199 <- CGGPvalstats(r3.sggp.1199,  x1000, y1000, bydim=F)
+stats.r3.sggp.1699 <- CGGPvalstats(r3.sggp.1699,  x1000, y1000, bydim=F)
+stats.r3.sggp.2199 <- CGGPvalstats(r3.sggp.2199,  x1000, y1000, bydim=F)
+stats.r3.sggp.2699 <- CGGPvalstats(r3.sggp.2699,  x1000, y1000, bydim=F)
+stats.r3.sggp.3199 <- CGGPvalstats(r3.sggp.3199,  x1000, y1000, bydim=F)
+stats.r3.sggp.4199 <- CGGPvalstats(r3.sggp.4199,  x1000, y1000, bydim=F)
+stats.r3.sggp.5199 <- CGGPvalstats(r3.sggp.5199,  x1000, y1000, bydim=F)
+stats.r3.sggp.6195 <- CGGPvalstats(r3.sggp.6195,  x1000, y1000, bydim=F)
+stats.r3.sggp.7187 <- CGGPvalstats(r3.sggp.7187,  x1000, y1000, bydim=F)
+stats.r3.sggp.8179 <- CGGPvalstats(r3.sggp.8179,  x1000, y1000, bydim=F)
+stats.r3.sggp.10163<- CGGPvalstats(r3.sggp.10163, x1000, y1000, bydim=F)
+stats.r3.sggp.12163<- CGGPvalstats(r3.sggp.12163, x1000, y1000, bydim=F)
+stats.r3.sggp.16163<- CGGPvalstats(r3.sggp.16163, x1000, y1000, bydim=F)
+stats.r3.sggp.18163<- CGGPvalstats(r3.sggp.18163, x1000, y1000, bydim=F)
+stats.r3.sggp.20159<- CGGPvalstats(r3.sggp.20159, x1000, y1000, bydim=F)
+# stats.r3.sggp. <- CGGPvalstats(r3.sggp., x1000, y1000, bydim=F)
 
 # Check stats on 50th dim
 CGGPvalstats(CGGPfit(rt.sggp.1699, rt.sggp.1699$Y[,50], Xs=rt.sggp.1699$Xs, Ys=rt.sggp.1699$Ys[,50]), x1000, y1000[,50], bydim=F)
@@ -145,6 +188,27 @@ allstats <- list(
   # data.frame("CGGP", 90, 2199, ),
   # data.frame("CGGP", 90, , ),
   # data.frame("CGGP", 90, , ),
+  data.frame("CGGP3", 90,   399,  0.03086891, -6.507128, 0.01359139,    0.9464, 0.9998919, 0.9997833, 0.023462),
+  data.frame("CGGP3", 90,   599,  0.02465403, -6.811887, 0.01158544,   0.94892, 0.999931,  0.9998618, 0.01870552),
+  data.frame("CGGP3", 90,   799,  0.02501423, -6.701828, 0.01198723,    0.9419, 0.9999293, 0.9998577, 0.01896552),
+  data.frame("CGGP3", 90,   999,  0.02635975, -6.529451, 0.01207771,   0.90545, 0.9999212, 0.999842 , 0.02004152),
+  data.frame("CGGP3", 90,  1199,  0.02474022, -6.754248, 0.01105155,   0.90884, 0.9999306, 0.9998608, 0.01878582),
+  data.frame("CGGP3", 90,  1699,  0.01494981, -7.536539, 0.007537477,  0.97898, 0.9999747, 0.9999492, 0.01117594),
+  data.frame("CGGP3", 90,  2199,  0.01467389, -7.641863, 0.00727886,   0.97162, 0.9999755, 0.999951 , 0.01102318),
+  data.frame("CGGP3", 90,  2699,  0.01491939, -7.712265, 0.006820505,  0.98566, 0.9999747, 0.9999494, 0.01086603),
+  data.frame("CGGP3", 90,  3199,  0.01306396, -8.091254, 0.005814433,  0.98243, 0.9999806, 0.9999612, 0.009469989),
+  data.frame("CGGP3", 90,  4199,  0.01082473, -8.154173, 0.005511459,  0.98191, 0.9999867, 0.9999734, 0.008157038),
+  data.frame("CGGP3", 90,  5199,  0.00822481, -8.572066, 0.004325123,  0.98704, 0.9999923, 0.9999846, 0.006089218),
+  data.frame("CGGP3", 90,  6195, 0.008069555, -8.623623, 0.004043901,  0.99013, 0.9999926, 0.9999852, 0.005929349),
+  data.frame("CGGP3", 90,  7187, 0.007608375, -8.91085 , 0.003599635,  0.98793, 0.9999934, 0.9999868, 0.005580803),
+  data.frame("CGGP3", 90,  8179,  0.00736447, -9.108104, 0.003316512,  0.98517, 0.9999938, 0.9999877, 0.005399971),
+  data.frame("CGGP3", 90, 10163, 0.006123244, -9.453641, 0.002815331,  0.98794, 0.9999958, 0.9999915, 0.004529484),
+  data.frame("CGGP3", 90, 12163, 0.004061737, -9.652619, 0.002411071,  0.99395, 0.9999981, 0.9999962, 0.003012229),
+  data.frame("CGGP3", 90, 16163, 0.004127308, -9.924129, 0.002172679,  0.99046, 0.9999981, 0.9999961, 0.003106536),
+  data.frame("CGGP3", 90, 18163, 0.003674585, -10.05135, 0.002041532,  0.99177, 0.9999985, 0.9999969, 0.002787224),
+  data.frame("CGGP3", 90, 20159, 0.003491477, -10.04612, 0.001995089,  0.99532, 0.9999986, 0.9999972, 0.002585274),
+  # data.frame("CGGP3", 90, , ),
+  # data.frame("CGGP3", 90, , ),
   # mlegp
   data.frame("mlegp", 0, 50, 0.2121086, -2.136166, 0.1122491,   0.9941, 0.9949418, 0.9897676, 0.1614444),
   data.frame("mlegp", 0, 75, 0.1266577, -2.708455, 0.0773198,  0.99936, 0.9982067, 0.9963514, 0.09525388),
