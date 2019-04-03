@@ -114,7 +114,7 @@ CGGPcreate <- function(d, batchsize, corr="CauchySQ",
   # =========================.
   
   # sample has unexpected behavior, e.g., sample(34,1), see help file for sample
-  resample <- function(x, ...) x[sample.int(length(x), xxx)]
+  resample <- function(x, ...) x[sample.int(length(x), ...)]
   
   # While number selected + min sample size <= batch size, i.e.,
   #  still have enough spots for a block, keep adding blocks
