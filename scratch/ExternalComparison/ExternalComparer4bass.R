@@ -53,7 +53,7 @@ run_BASS <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   pred.time.start <- Sys.time()
   pred <- predict(mod, xtest)
   pred.time.end <- Sys.time()
-  list(mean=colMeans(pred), var=rep(NaN, nrow(xtest)), n=nrow(x),
+  list(mean=colMeans(pred), var=apply(pred, 2, var), n=nrow(x),
        pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
