@@ -455,13 +455,13 @@ table(excomp$completed_runs)
 # plyr::ddply(data.frame(package.name, compruns=excomp$completed_runs), "package.name", function(d) {data.frame(done=sum(d$compruns), notdone=sum(!d$compruns))})
 rbind(plyr::ddply(data.frame(package.name, compruns=excomp$completed_runs), "package.name", function(d) {data.frame(done=sum(d$compruns), notdone=sum(!d$compruns))}), data.frame(package.name="all", done=sum(excomp$completed_runs), notdone=sum(!excomp$completed_runs)))
 excomp$save_self()
-# excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
-#                write_start_files=T, write_error_files=T)
+excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
+               write_start_files=T, write_error_files=T)
 # Getting errors, run by package.name to see which is causing it
 # excomp$parallel_cores <- 10
-excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "aGP")),
-               parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
-               write_start_files=T, write_error_files=T)
+# excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "aGP")),
+#                parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
+#                write_start_files=T, write_error_files=T)
 # excomp$run_all()
 
 cat("Completed all runs in ExternalComparer4.R\n")
