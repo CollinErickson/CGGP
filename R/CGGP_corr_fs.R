@@ -36,7 +36,7 @@ CGGP_internal_CorrMatCauchy <- function(x1, x2, theta, return_dCdtheta=FALSE,
     expLS = exp(3*(theta[1]))
     expHE = exp(3*(theta[2]))
     h = diffmat/expLS
-    alpha = 2*exp(3*theta[3]+4)/(1+exp(3*theta[3]+4))
+    alpha = 2*exp(3*theta[3]+2)/(1+exp(3*theta[3]+2))
     halpha = h^alpha
     pow = -expHE/alpha
     
@@ -51,13 +51,13 @@ CGGP_internal_CorrMatCauchy <- function(x1, x2, theta, return_dCdtheta=FALSE,
                          3*C*pow*log(1+halpha),
                          (C*(expHE*log(1+halpha)/alpha^2 - 
                                expHE*halpha*log(h)/alpha/(1+halpha))) * 
-                           6*exp(3*theta[3]+4)/(1+exp(3*theta[3]+4))^2)
+                           6*exp(3*theta[3]+2)/(1+exp(3*theta[3]+2))^2)
       } else {
         dCdtheta = cbind(3*expHE*halpha/(1+halpha),
                          3*pow*log(1+halpha),
                          ((expHE*log(1+halpha)/alpha^2 - 
                              expHE*halpha*log(h)/alpha/(1+halpha))) * 
-                           6*exp(3*theta[3]+4)/(1+exp(3*theta[3]+4))^2)
+                           6*exp(3*theta[3]+2)/(1+exp(3*theta[3]+2))^2)
       }
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
