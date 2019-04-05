@@ -31,7 +31,7 @@ test_that("Correlation CorrMatCauchy works", {
     (1+halpha)^pow
   }
   cauchy2 <- cauchyfunc(x1, x2, theta=th)
-  expect_equal(cauchy1, cauchy2)
+  expect_equal(cauchy1, cauchy2, tol=1e-5)
 
   # Now check that dC is actually grad of C
   cauchy_C_dC <- CGGP_internal_CorrMatCauchy(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)

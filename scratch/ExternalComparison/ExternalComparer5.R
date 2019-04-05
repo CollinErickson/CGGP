@@ -119,11 +119,70 @@ run_lagp_bobby <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_
   pred.time.end <- Sys.time()
   
   # browser()
-  list(mean=out.sep$mean, var=out.sep$var, n=nrow(xs),
+  list(mean=out.sep$mean, var=out.sep$var, n=nrow(Xs),
        pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
+run_lagp_matt <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
+  require(laGP)
+  if (!missing(seed)) {set.seed(seed)}
+  if (missing(x) && missing(y)) {
+    if (Ntotal<=2000) {x <- lhs::maximinLHS(Ntotal, d)}
+    else {x <- decentLHS(Ntotal, d, max.time=15)}
+    y <- apply(x, 1, f)
+  }
+  
+  fit.time.start <- Sys.time()
+  
+  Xs <- x
+  Ys <- y
+  Xp <- xtest
+  sdy <- sd(Ys)
+  mny <- mean(Ys)
+  ys <- (Ys-mny) / sdy
+  # yp <- (Yp-mny) / sdy
+  if(nrow(Xs)>80){
+    gpisep <- newGPsep(Xs[1:80,], ys[1:80],d=rep(1,d), g=10^(-8),dK=TRUE)
+  }else{
+    gpisep <- newGPsep(Xs, ys,d=rep(1,d), g=10^(-8),dK=TRUE)
+  }
+  
+  gpisep <-mleGPsep(gpisep)
+  XslaGP<-Xs
+  XplaGP<-Xp
+  for(lcv in 1:d){
+    XslaGP[,lcv] <- Xs[,lcv]/gpisep$d[lcv]
+    XplaGP[,lcv] <- Xp[,lcv]/gpisep$d[lcv]
+  }
+  if(nrow(Xs)>80){
+    gpi <- newGP(XslaGP[1:80,], ys[1:80],d=1, g=10^(-8),dK=TRUE)
+  }else{
+    gpi <- newGP(XslaGP, ys,d=1, g=10^(-8),dK=TRUE)
+  }
+  predsGloblaGP <- predGP(gpi, XslaGP)
+  predpGloblaGP <- predGP(gpi, XplaGP)
+  if(nrow(Xs)>80){
+    predlaGP = aGP(XslaGP,ys-predsGloblaGP$mean,XplaGP,verb=0)
+    fit.time.end <- Sys.time()
+    pred.time.start <- Sys.time()
+    
+    predturn = list("mean"=mny+sdy*(predpGloblaGP$mean+predlaGP$mean),
+                    "var"= sdy^2*predlaGP$var)
+  }else{
+    fit.time.end <- Sys.time()
+    pred.time.start <- Sys.time()
+    
+    predturn = list("mean"=mny+sdy*(predpGloblaGP$mean),
+                    "var"= sdy^2*diag(predpGloblaGP$Sigma))
+  }
+  pred.time.end <- Sys.time()
+  
+  # return(predturn)
+  list(mean=predturn$mean, var=predturn$var, n=nrow(Xs),
+       pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
+       fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
+}
 
 run_MRFA <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   if (!missing(seed)) {set.seed(seed)}
@@ -377,6 +436,8 @@ run_one <- function(package, selection.method, correlation, HandlingSuppData,
     out <- run_lagp(Ntotal=n, f=f, d=d, xtest=xtest)
   } else if (package == "aGP") {
     out <- run_lagp_bobby(Ntotal=n, f=f, d=d, xtest=xtest, use_agp=TRUE)
+  } else if (package == "aGP2") {
+    out <- run_lagp_matt(Ntotal=n, f=f, d=d, xtest=xtest)
   } else if (package == "MRFA") {
     out <- run_MRFA(Ntotal=n, f=f, d=d, xtest=xtest)
   } else if (package == "svm") {
@@ -407,7 +468,7 @@ eg2a <- expand.grid.df(eg1, data.frame(HandlingSuppData=c("Ignore", "Correct"), 
 eg2b <- expand.grid.df(eg1, data.frame(HandlingSuppData="NA", stringsAsFactors=F), data.frame(package=c("CGGP"), stringsAsFactors=F))
 eg2c <- expand.grid(selection.method="NA", correlation = c("CauchySQ", "Matern32", "PowerExp", "Cauchy", "CauchySQT"), HandlingSuppData="NA", package=c("CGGPoneshot", "CGGPsupponly"), stringsAsFactors=F)
 eg2d <- data.frame(selection.method="NA", correlation="NA", HandlingSuppData="NA",
-                   package=c("MRFA", "svm", "aGP", "laGP", "mlegp", "GPfit", "BASS"), stringsAsFactors=F)
+                   package=c("MRFA", "svm", "aGP", "aGP2", "laGP", "mlegp", "GPfit", "BASS"), stringsAsFactors=F)
 eg3 <- rbind(eg2a, eg2b, eg2c, eg2d)
 
 require("comparer")
@@ -416,7 +477,7 @@ excomp <- ffexp$new(
   eval_func = run_one,
   varlist = c("decentLHS", "run_CGGP", "run_CGGPoneshot", "run_CGGPsupp",
               "run_CGGPsupponly", "run_GPfit", "run_lagp", "run_lagp_bobby",
-              "run_mlegp", "run_MRFA", "run_svm", "run_bass"),
+              "run_mlegp", "run_MRFA", "run_svm", "run_bass", "run_lagp_matt"),
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"),
                 d=c(3,6,7,8,10),
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
@@ -425,7 +486,7 @@ excomp <- ffexp$new(
   psch=eg3,
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
   parallel=if (version$os =="linux-gnu") {TRUE} else {FALSE},
-  parallel_cores = if (version$os =="linux-gnu") {35} else {3},
+  parallel_cores = if (version$os =="linux-gnu") {34} else {3},
   replicate=1:10, #:5,
   folder_path= if (version$os =="linux-gnu") {"/home/collin/scratch/SGGP/scratch/ExternalComparison/ExComp5/"}
   else {"./scratch/ExternalComparison/ExComp5/"}
