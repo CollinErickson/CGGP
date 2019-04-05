@@ -23,7 +23,7 @@ test_that("Correlation CorrMatCauchy works", {
   cauchyfunc <- function(a,b,theta) {
     expLS <- exp(3*theta[1])
     expHE <- exp(3*theta[2])
-    alpha = 2*exp(3*theta[3]+4)/(1+exp(3*theta[3]+4))
+    alpha = 2*exp(3*theta[3]+2)/(1+exp(3*theta[3]+2))
     diffmat <- outer(a, b, Vectorize(function(aa,bb) abs(aa-bb)))
     h = diffmat/expLS
     halpha = h^alpha

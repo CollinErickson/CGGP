@@ -42,6 +42,7 @@ r2.sggp.26155<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-26155.rds")
 # r2.sggp.<- readRDS("./scratch/redTime/redTimeData/out_Big2_SGGP-.rds")
 r2.sggp.26155.Ignore<- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$Xs,Ys=r2.sggp.26155$Ys,HandlingSuppData="Ignore")
 r2.sggp.26155.Mat32<- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$Xs,Ys=r2.sggp.26155$Ys,corr="m3")
+r2.sggp.26155.PE<- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$Xs,Ys=r2.sggp.26155$Ys,corr="PowerExp")
 r2.sggp.26155.18ktheta <- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,Xs=r2.sggp.26155$Xs,Ys=r2.sggp.26155$Ys,set_thetaMAP_to = r2.sggp.18159$thetaMAP)
 r2.sggp.26155.18kthetanosupp <- CGGPfit(r2.sggp.26155, Y=r2.sggp.26155$Y,set_thetaMAP_to = r2.sggp.18159$thetaMAP)
 
@@ -66,6 +67,8 @@ r3.sggp.16163 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-16163.rds"
 r3.sggp.18163 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-18163.rds")
 r3.sggp.20159 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-20159.rds")
 r3.sggp.30155 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-30155.rds")
+r3.sggp.20159.PE<- CGGPfit(r3.sggp.20159, Y=r3.sggp.20159$Y,Xs=r3.sggp.20159$Xs,Ys=r3.sggp.20159$Ys,corr="PowerExp")
+r3.sggp.30155.PE<- CGGPfit(r3.sggp.30155, Y=r3.sggp.30155$Y,Xs=r3.sggp.30155$Xs,Ys=r3.sggp.30155$Ys,corr="PowerExp")
 
 
 # Get stats
@@ -123,6 +126,8 @@ stats.r3.sggp.16163<- CGGPvalstats(r3.sggp.16163, x1000, y1000, bydim=F)
 stats.r3.sggp.18163<- CGGPvalstats(r3.sggp.18163, x1000, y1000, bydim=F)
 stats.r3.sggp.20159<- CGGPvalstats(r3.sggp.20159, x1000, y1000, bydim=F)
 stats.r3.sggp.30155<- CGGPvalstats(r3.sggp.30155, x1000, y1000, bydim=F)
+stats.r3.sggp.20159.PE<- CGGPvalstats(r3.sggp.20159.PE, x1000, y1000, bydim=F)
+stats.r3.sggp.30155.PE<- CGGPvalstats(r3.sggp.30155.PE, x1000, y1000, bydim=F)
 
 # Check stats on 50th dim
 CGGPvalstats(CGGPfit(rt.sggp.1699, rt.sggp.1699$Y[,50], Xs=rt.sggp.1699$Xs, Ys=rt.sggp.1699$Ys[,50]), x1000, y1000[,50], bydim=F)
@@ -209,6 +214,8 @@ allstats <- list(
   data.frame("CGGP3", 90, 18163, 0.003674585, -10.05135, 0.002041532,  0.99177, 0.9999985, 0.9999969, 0.002787224),
   data.frame("CGGP3", 90, 20159, 0.003491477, -10.04612, 0.001995089,  0.99532, 0.9999986, 0.9999972, 0.002585274),
   data.frame("CGGP3", 90, 30155, 0.004722018, -10.10524, 0.00193077,   0.99323, 0.9999975, 0.9999949, 0.003389804),
+  data.frame("CGGP3PE",90,20159, 0.003089233, -8.211388, 0.004281498,        1, 0.9999989, 0.9999978, 0.002299494),
+  data.frame("CGGP3PE",90,30155, 0.003431799, -8.39904,  0.003919711,  0.99961, 0.9999987, 0.9999973, 0.002488821),
   # data.frame("CGGP3", 90, , ),
   # mlegp
   data.frame("mlegp", 0, 50, 0.2121086, -2.136166, 0.1122491,   0.9941, 0.9949418, 0.9897676, 0.1614444),
