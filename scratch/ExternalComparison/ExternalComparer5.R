@@ -477,7 +477,7 @@ excomp <- ffexp$new(
   eval_func = run_one,
   varlist = c("decentLHS", "run_CGGP", "run_CGGPoneshot", "run_CGGPsupp",
               "run_CGGPsupponly", "run_GPfit", "run_lagp", "run_lagp_bobby",
-              "run_mlegp", "run_MRFA", "run_svm", "run_bass", "run_lagp_matt"),
+              "run_mlegp", "run_MRFA", "run_svm", "run_BASS", "run_lagp_matt"),
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"),
                 d=c(3,6,7,8,10),
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
