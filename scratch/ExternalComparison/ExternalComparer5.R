@@ -393,6 +393,8 @@ run_one <- function(package, selection.method, correlation, HandlingSuppData,
   # browser()
   outstats <- CGGP::valstats(predmean=out[[1]], predvar=out[[2]],Yval=ytest) #, bydim=FALSE)
   if (out$n > n) {warning(paste("n too big for", package, n, f, d))}
+  outstats$predtime <- out$pred.time
+  outstats$fittime  <- out$fit.time
   outstats
 }
 
@@ -400,10 +402,10 @@ run_one <- function(package, selection.method, correlation, HandlingSuppData,
 expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
 
 eg1 <- expand.grid(selection.method = c("UCB", "Greedy"),
-                   correlation = c("CauchySQ", "Matern32", "PowerExp"), stringsAsFactors=F)
+                   correlation = c("CauchySQ", "Matern32", "PowerExp", "Cauchy", "CauchySQT"), stringsAsFactors=F)
 eg2a <- expand.grid.df(eg1, data.frame(HandlingSuppData=c("Ignore", "Correct"), stringsAsFactors=F), data.frame(package="CGGPsupp", stringsAsFactors=F))
 eg2b <- expand.grid.df(eg1, data.frame(HandlingSuppData="NA", stringsAsFactors=F), data.frame(package=c("CGGP"), stringsAsFactors=F))
-eg2c <- expand.grid(selection.method="NA", correlation = c("CauchySQ", "Matern32", "PowerExp"), HandlingSuppData="NA", package=c("CGGPoneshot", "CGGPsupponly"), stringsAsFactors=F)
+eg2c <- expand.grid(selection.method="NA", correlation = c("CauchySQ", "Matern32", "PowerExp", "Cauchy", "CauchySQT"), HandlingSuppData="NA", package=c("CGGPoneshot", "CGGPsupponly"), stringsAsFactors=F)
 eg2d <- data.frame(selection.method="NA", correlation="NA", HandlingSuppData="NA",
                    package=c("MRFA", "svm", "aGP", "laGP", "mlegp", "GPfit", "BASS"), stringsAsFactors=F)
 eg3 <- rbind(eg2a, eg2b, eg2c, eg2d)
@@ -422,7 +424,7 @@ excomp <- ffexp$new(
   #           "MRFA", "svm", "aGP", "laGP", "mlegp", "GPfit"),
   psch=eg3,
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
-  parallel=TRUE,
+  parallel=if (version$os =="linux-gnu") {TRUE} else {FALSE},
   parallel_cores = if (version$os =="linux-gnu") {35} else {3},
   replicate=1:10, #:5,
   folder_path= if (version$os =="linux-gnu") {"/home/collin/scratch/SGGP/scratch/ExternalComparison/ExComp5/"}
