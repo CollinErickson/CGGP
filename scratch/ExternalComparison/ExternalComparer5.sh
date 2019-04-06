@@ -39,7 +39,7 @@
 ###  # $ -l h=crunch.local
 
 #### Email after done, -abe is abort, begin, end
-#$ -m a
+#$ -m ae
 #$ -M collinerickson@u.northwestern.edu
 
 #########################

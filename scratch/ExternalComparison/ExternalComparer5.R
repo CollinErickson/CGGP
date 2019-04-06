@@ -119,7 +119,7 @@ run_lagp_bobby <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_
   pred.time.end <- Sys.time()
   
   # browser()
-  list(mean=out.sep$mean, var=out.sep$var, n=nrow(Xs),
+  list(mean=out.sep$mean, var=out.sep$var, n=nrow(xs),
        pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
@@ -302,7 +302,7 @@ run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, sele
       ynew <- apply(sg$design_unevaluated, 1, f)
       sg <- CGGPfit(sg, Ynew=ynew)
     } else {
-      print('Nothing new to evaluate, hopefully !notdone')
+      # print('Nothing new to evaluate, hopefully !notdone')
     }
   }
   fit.time.end <- Sys.time()
@@ -342,7 +342,7 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, 
       ynew <- apply(sg$design_unevaluated, 1, f)
       sg <- CGGPfit(sg, Ynew=ynew, Xs=xsup, Ys=ysup, HandlingSuppData = HandlingSuppData)
     } else {
-      print('Nothing new to evaluate, hopefully !notdone')
+      # print('Nothing new to evaluate, hopefully !notdone')
     }
   }
   fit.time.end <- Sys.time()
