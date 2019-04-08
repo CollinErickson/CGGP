@@ -21,14 +21,14 @@ convert_x_from_01_to_ranges <- function(x,
 write_params_file <- function(..., x01, fileID, overwrite=F,
                               parampathbase="/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_") {
   x <- convert_x_from_01_to_ranges(x01)
-  n_s <- x[1]
-  sigma_8<- x[2]
-  h<- x[3]
-  Omega_m<- x[4]
-  Omega_b<- x[5]
-  Omega_nu<- x[6]
-  w0<- x[7]
-  wa<- x[8]
+  n_s <- x[1] # Fixed spectral index
+  sigma_8<- x[2] # Normalization
+  h<- x[3] # Hubble constant, .72
+  Omega_m<- x[4] # 
+  Omega_b<- x[5] # Baryon density
+  Omega_nu<- x[6] # Neutrino mass parameter
+  w0<- x[7] # w0 and wa are two-component dynamical dark energy component
+  wa<- x[8] # see above
   redshift <- x[9] # This is new, used to be set for whole system
   paste0(rep('0',1),as.character(3))
   outpath <- paste0(parampathbase, fileID, ".dat")
