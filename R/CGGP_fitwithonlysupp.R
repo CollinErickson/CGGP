@@ -92,8 +92,20 @@ CGGP_internal_fitwithonlysupp <- function(CGGP, Xs, Ys,
     if (!missing(set_thetaMAP_to) && !is.null(set_thetaMAP_to)) {
       opt.out <- list(par = if (nopd>1) {set_thetaMAP_to[,opdlcv]} else {set_thetaMAP_to})
     } else {
-      opt.out = nlminb(
-        theta0.thisloop,
+      # Sometimes it starts in a bad spot
+      # Catch it with try, and start it at zero.
+      # If that fails, we don't know what to do.
+      neglogpost_par <- CGGP_internal_neglogpost(theta = theta0.thisloop,
+                                                 CGGP=CGGP, y=NULL, Xs=Xs,
+                                       ys=ys.thisloop)
+      
+      if (is.infinite(neglogpost_par)) {
+        theta0_touse <- rep(0, CGGP$d)
+      } else {
+        theta0_touse <- theta0.thisloop
+      }
+      opt.out <- nlminb(
+        theta0_touse,
         objective = CGGP_internal_neglogpost,
         gradient = CGGP_internal_gneglogpost,
         y = NULL,
