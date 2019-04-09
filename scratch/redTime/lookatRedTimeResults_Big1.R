@@ -69,6 +69,8 @@ r3.sggp.20159 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-20159.rds"
 r3.sggp.30155 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-30155.rds")
 r3.sggp.20159.PE<- CGGPfit(r3.sggp.20159, Y=r3.sggp.20159$Y,Xs=r3.sggp.20159$Xs,Ys=r3.sggp.20159$Ys,corr="PowerExp")
 r3.sggp.30155.PE<- CGGPfit(r3.sggp.30155, Y=r3.sggp.30155$Y,Xs=r3.sggp.30155$Xs,Ys=r3.sggp.30155$Ys,corr="PowerExp")
+r3.sggp.20159.C <- CGGPfit(r3.sggp.20159, Y=r3.sggp.20159$Y,Xs=r3.sggp.20159$Xs,Ys=r3.sggp.20159$Ys,corr="Cauchy")
+r3.sggp.30155.C <- CGGPfit(r3.sggp.30155, Y=r3.sggp.30155$Y,Xs=r3.sggp.30155$Xs,Ys=r3.sggp.30155$Ys,corr="Cauchy")
 
 
 # Get stats
@@ -128,6 +130,8 @@ stats.r3.sggp.20159<- CGGPvalstats(r3.sggp.20159, x1000, y1000, bydim=F)
 stats.r3.sggp.30155<- CGGPvalstats(r3.sggp.30155, x1000, y1000, bydim=F)
 stats.r3.sggp.20159.PE<- CGGPvalstats(r3.sggp.20159.PE, x1000, y1000, bydim=F)
 stats.r3.sggp.30155.PE<- CGGPvalstats(r3.sggp.30155.PE, x1000, y1000, bydim=F)
+stats.r3.sggp.20159.C <- CGGPvalstats(r3.sggp.20159.C , x1000, y1000, bydim=F)
+stats.r3.sggp.30155.C <- CGGPvalstats(r3.sggp.30155.C , x1000, y1000, bydim=F)
 
 # Check stats on 50th dim
 CGGPvalstats(CGGPfit(rt.sggp.1699, rt.sggp.1699$Y[,50], Xs=rt.sggp.1699$Xs, Ys=rt.sggp.1699$Ys[,50]), x1000, y1000[,50], bydim=F)
@@ -144,9 +148,15 @@ stats.mlegp.75 <- valstats(pred.mlegp.75$fit, pred.mlegp.75$se, y1000, bydim=F)
 mod.mlegp.100 <- mlegp::mlegp(x100, y100)
 pred.mlegp.100 <- lapply(1:100, function(i) predict(mod.mlegp.100[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
 stats.mlegp.100 <- valstats(pred.mlegp.100$fit, pred.mlegp.100$se, y1000, bydim=F)
+mod.mlegp.150 <- sample(1:1000, 150) %>% {mlegp::mlegp(x1000_2[.,], y1000_2[.,])}
+pred.mlegp.150 <- lapply(1:100, function(i) predict(mod.mlegp.150[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.150 <- valstats(pred.mlegp.150$fit, pred.mlegp.150$se^2, y1000, bydim=F)
 mod.mlegp.200 <- sample(1:1000, 200) %>% {mlegp::mlegp(x1000_2[.,], y1000_2[.,])}
 pred.mlegp.200 <- lapply(1:100, function(i) predict(mod.mlegp.200[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
 stats.mlegp.200 <- valstats(pred.mlegp.200$fit, pred.mlegp.200$se^2, y1000, bydim=F)
+mod.mlegp.250 <- sample(1:1000, 250) %>% {mlegp::mlegp(x1000_2[.,], y1000_2[.,])}
+pred.mlegp.250 <- lapply(1:100, function(i) predict(mod.mlegp.250[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.250 <- valstats(pred.mlegp.250$fit, pred.mlegp.250$se^2, y1000, bydim=F)
 # mod.mlegp.300 <- mlegp::mlegp(x1000_2, y1000_2)
 # pred.mlegp.300 <- predict(mod.mlegp.300, x1000, se=T)
 # stats.mlegp.300 <- valstats(pred.mlegp.300$fit, pred.mlegp.300$se^2, y1000, bydim=F)
@@ -216,18 +226,23 @@ allstats <- list(
   data.frame("CGGP3", 90, 30155, 0.004722018, -10.10524, 0.00193077,   0.99323, 0.9999975, 0.9999949, 0.003389804),
   data.frame("CGGP3PE",90,20159, 0.003089233, -8.211388, 0.004281498,        1, 0.9999989, 0.9999978, 0.002299494),
   data.frame("CGGP3PE",90,30155, 0.003431799, -8.39904,  0.003919711,  0.99961, 0.9999987, 0.9999973, 0.002488821),
+  data.frame("CGGP3C" ,90,20159, 0.003050064, -8.897864, 0.003109479,  0.99982, 0.9999989, 0.9999979, 0.002269927),
+  data.frame("CGGP3C" ,90,30155, 0.003797589, -8.963827, 0.003034772,  0.99897, 0.9999984, 0.9999967, 0.002741234),
   # data.frame("CGGP3", 90, , ),
   # mlegp
   data.frame("mlegp", 0, 50, 0.2121086, -2.136166, 0.1122491,   0.9941, 0.9949418, 0.9897676, 0.1614444),
   data.frame("mlegp", 0, 75, 0.1266577, -2.708455, 0.0773198,  0.99936, 0.9982067, 0.9963514, 0.09525388),
-  data.frame("mlegp", 0,100, 0.1005995, -2.896368, 0.06750803,   0.9998, 0.9988543, 0.9976983, 0.07583394)
+  data.frame("mlegp", 0,100, 0.1005995, -2.896368, 0.06750803,   0.9998, 0.9988543, 0.9976983, 0.07583394),
+  data.frame("mlegp", 0,150, 0.08580729,-4.263628, 0.04071472,  0.83153, 0.9991757, 0.9983254, 0.06421618),
+  data.frame("mlegp", 0,200, 0.06383321, -4.68457, 0.02916151,  0.79007, 0.9995385, 0.9990733, 0.04804422),
+  data.frame("mlegp", 0,250, 0.05941459,-5.003207, 0.02610797,  0.80917, 0.9996011, 0.9991971, 0.04498041)
 )
 allstats <- lapply(allstats, function(x){colnames(x) <- c("Package", 'Nsup',"Ngrid","RMSE","score","CRPscore","coverage","corr","R2","RMSEnorm");x})
 allstats <- do.call(rbind, allstats)
 allstats$Ntotal <- allstats$Nsup + allstats$Ngrid
 library(ggplot2)
-ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_y_log10()
-ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10() + scale_y_log10()
+# ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Package, shape=as.factor(Nsup))) + geom_point(size=3) + scale_y_log10()
+ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Package, shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10() + scale_y_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Nsup)) + geom_point(size=3) + facet_grid(. ~ Package) + scale_x_log10() + scale_y_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, score, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, CRPscore, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10() + scale_y_log10()

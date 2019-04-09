@@ -75,7 +75,13 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
   if(HandlingSuppData == "Only"){
     try.chol <- try({Sigma_chol = chol(Sigma_t)}, silent = TRUE)
     if (inherits(try.chol, "try-error")) {
-      stop("chol error in gneglogpost, this shouldn't happen but does #1")
+      stop("chol error in gneglogpost #1, this can happen when neglogpost is Inf")
+      # This came up a lot when running nlminb on the initial point.
+      # If the initial neglogpost is Inf, it will call gneglogpost
+      # and get the error here. To avoid this we have to make sure the
+      # initial points of nlminb are always finite values.
+      # This one wasn't the problem, it was usually the other which
+      # happens when there is supp data.
       # return(rep(NA, length(theta)))
     }; rm(try.chol)
     
@@ -271,7 +277,11 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     
     try.chol <- try({Sigma_chol = chol(Sigma_t)}, silent = TRUE)
     if (inherits(try.chol, "try-error")) {
-      stop("chol error in gneglogpost, this shouldn't happen but does #2")
+      stop("chol error in gneglogpost #2, this can happen when neglogpost is Inf")
+      # This came up a lot when running nlminb on the initial point.
+      # If the initial neglogpost is Inf, it will call gneglogpost
+      # and get the error here. To avoid this we have to make sure the
+      # initial points of nlminb are always finite values.
       # return(rep(NA, length(theta)))
     }; rm(try.chol)
     
