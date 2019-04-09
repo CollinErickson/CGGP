@@ -108,18 +108,21 @@ CGGP_internal_getdesignfromCGGP <- function(CGGP) {
                                                                                CGGP$gridsizes[blocklcv, dimlcv])
           CGGP$designindex[(tv + 1):(tv + CGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, "each" = CGGP$gridsize[blocklcv] /
                                                                                     CGGP$gridsizes[blocklcv, dimlcv])
+          CGGP$blockassign[(tv + 1):(tv + CGGP$gridsize[blocklcv])] <- blocklcv
         }
         if (dimlcv > (CGGP$d - 0.5)) {
           CGGP$design[(tv + 1):(tv + CGGP$gridsize[blocklcv]), dimlcv] = rep(x0, CGGP$gridsize[blocklcv] /
                                                                                CGGP$gridsizes[blocklcv, dimlcv])
           CGGP$designindex[(tv + 1):(tv + CGGP$gridsize[blocklcv]), dimlcv] = rep(xi0, CGGP$gridsize[blocklcv] /
                                                                                     CGGP$gridsizes[blocklcv, dimlcv])
+          CGGP$blockassign[(tv + 1):(tv + CGGP$gridsize[blocklcv])] <- blocklcv
         }
         if (dimlcv < (CGGP$d - 0.5)  && dimlcv > 1.5) {
           CGGP$design[(tv + 1):(tv + CGGP$gridsize[blocklcv]), dimlcv] = rep(rep(x0, each =
                                                                                    prod(CGGP$gridsizes[blocklcv, (dimlcv + 1):CGGP$d])), prod(CGGP$gridsizes[blocklcv, 1:(dimlcv - 1)]))
           CGGP$designindex[(tv + 1):(tv + CGGP$gridsize[blocklcv]), dimlcv] = rep(rep(xi0, each =
                                                                                         prod(CGGP$gridsizes[blocklcv, (dimlcv + 1):CGGP$d])), prod(CGGP$gridsizes[blocklcv, 1:(dimlcv - 1)]))
+          CGGP$blockassign[(tv + 1):(tv + CGGP$gridsize[blocklcv])] <- blocklcv
         }
       }
     }

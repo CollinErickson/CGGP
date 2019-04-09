@@ -27,27 +27,29 @@ library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
-Xs = randomLHS(80, d)
+Xs = randomLHS(40, d)
 Ys = testf(Xs)
-CGGP = CGGPcreate(d,1000) #create the design.  it has so many entries because i am sloppy
-Y = testf(CGGP$design) #the design is $design, simple enough, right?
-CGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
+CGGP = CGGPcreate(d,300) 
+Y = testf(CGGP$design) 
+CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
+CGGP = CGGPappend(CGGP,600) 
 library(tictoc)
 tic('here')
-PredGreedy = SGGPpred(SGGPGreedy,Xp)
+Pred = CGGPpred(CGGP,Xp)
 toc()
-mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
-mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
 
-# 
-# library(tictoc)
-# 
-# source("testing_fit_fs.R")
-# SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
-# 
-# source("testing_pred_fs.R")
-# tic('here')
-# PredGreedy = SGGPpred(SGGPGreedy,Xp)
-# toc()
-# mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
-# mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+Y = testf(CGGP$design) 
+CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
+
+source('./CGGP_impute_fs.R')
+Y = testf(CGGP$design) 
+CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
+Y = Y - mean(Y)
+Yb= Y
+Yb[261] = NA
+Yb[14] = NA
+Yb[56] = NA
+Yb[660] = NA
+Yb[760] = NA
+CGGPimpute(CGGP,Yb,Y)
+
