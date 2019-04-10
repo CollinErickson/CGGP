@@ -534,13 +534,11 @@ excomp$save_self()
 cat("Saved self\n")
 
 if (F) {
-  excomp <- readRDS("./scratch/ExternalComparison/ExternalComparer4_mostlydone.rds")
-  excompbass <- readRDS("./scratch/ExternalComparison/ExternalComparer4bass_quarterdone.rds")
+  excomp <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5_12kdone.rds")
   excomp$plot_run_times()
   plyr::dlply(excomp$outcleandf, "d")
-  require('ggplot2')
-  ecdf <- rbind(excomp$outcleandf[excomp$completed_runs & !is.na(excomp$outcleandf$package),],
-                excompbass$outcleandf[excompbass$completed_runs & !is.na(excompbass$outcleandf$package),])
+  require('ggplot2');require('dplyr')
+  ecdf <- excomp$outcleandf[excomp$completed_runs & !is.na(excomp$outcleandf$package),]
   ecdf$n <- ecdf$npd * ecdf$d
   ggplot(data=ecdf, mapping=aes(n, RMSE, color=package)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
   ggplot(data=ecdf, mapping=aes(n, score, color=package)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_x_log10()
@@ -548,4 +546,13 @@ if (F) {
   ggplot(data=ecdf, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
   ggplot(data=ecdf, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
   # saveRDS(excomp, "./scratch/ExternalComparison/ExComp1_completed.rds")
+  ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp", "CGGPoneshot")), mapping=aes(n, RMSE, color=correlation)) + geom_point() + facet_grid(f ~ interaction(package,correlation), scales="free_y") + scale_y_log10() + scale_x_log10()
+  ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp")), mapping=aes(n, RMSE, color=correlation)) + geom_point() + facet_grid(f ~ interaction(package,correlation), scales="free_y") + scale_y_log10() + scale_x_log10()
+  
+  # Plots for thesis
+  # First internal
+  ggplot(data=ecdf %>% filter(package %in% c("CGGP", "CGGPsupp")), mapping=aes(n, RMSE, color=correlation, shape=correlation)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
+  # Only wingweight, supp, and Cauchy/M32/PowerExp
+  ggplot(data=ecdf %>% filter(package=="CGGPsupp", correlation !="Cauchy", correlation!="CauchySQ", f=="wingweight" | f=="OTL_Circuit"), mapping=aes(n, RMSE, color=selection.method, shape=selection.method)) + geom_point(size=4) + facet_grid(f ~ correlation, scales="free_y") + scale_y_log10() + scale_x_log10()
+  
 }
