@@ -277,7 +277,11 @@ CGGP_internal_gneglogpost <- function(theta, CGGP, y,..., return_lik=FALSE,
     
     try.chol <- try({Sigma_chol = chol(Sigma_t)}, silent = TRUE)
     if (inherits(try.chol, "try-error")) {
-      stop("chol error in gneglogpost #2, this can happen when neglogpost is Inf")
+      # stop(paste("chol error in gneglogpost #2, this can happen when",
+      #            " neglogpost is Inf, theta is ", theta, collapse=' '))
+      warning(paste(c("chol error in gneglogpost #2, this can happen when",
+                 " neglogpost is Inf, theta is ", theta)))
+      return(NaN * theta)
       # This came up a lot when running nlminb on the initial point.
       # If the initial neglogpost is Inf, it will call gneglogpost
       # and get the error here. To avoid this we have to make sure the

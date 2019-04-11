@@ -190,7 +190,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
                                                  ys=ys.thisloop,
                                                  Xs=Xs,
                                                  HandlingSuppData=HandlingSuppData
-                                                 )
+      )
       if (is.infinite(neglogpost_par)) {
         theta0_2 <- rep(0, CGGP$d)
       } else {
@@ -199,7 +199,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
       
       # Then use best point as initial point with supp data
       opt.out = nlminb(
-        theta0_2,
+        start = theta0_2,
         objective = CGGP_internal_neglogpost,
         gradient = CGGP_internal_gneglogpost,
         y = y.thisloop,
@@ -250,17 +250,35 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
       PSTn2=  log((1+thetaMAP)/(1-thetaMAP)) - rsad
       thetav2=(exp(PSTn2)-1)/(exp(PSTn2)+1)
       
-      H[c,] = (CGGP_internal_gneglogpost(thetav,CGGP,y.thisloop,
-                                         Xs=Xs, ys=ys.thisloop,
-                                         HandlingSuppData=HandlingSuppData) *
-                 (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+      # There can be issues if gneglogpost can't be calculated at +/- epsilon,
+      # happens when theta is at the edge of allowing matrix to be Cholesky
+      # decomposed. Check here for that, use one side approx if only one grad
+      # can be calculated. If both fail, no clue what to do.
+      g_plus <- (CGGP_internal_gneglogpost(thetav,CGGP,y.thisloop,
+                                           Xs=Xs, ys=ys.thisloop,
+                                           HandlingSuppData=HandlingSuppData) *
+                   (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
       
-      H[c,] = H[c,]-(CGGP_internal_gneglogpost(thetav2,CGGP,y.thisloop,
-                                               Xs=Xs, ys=ys.thisloop,
-                                               HandlingSuppData=HandlingSuppData) *
-                       (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+      g_minus <- (CGGP_internal_gneglogpost(thetav2,CGGP,y.thisloop,
+                                            Xs=Xs, ys=ys.thisloop,
+                                            HandlingSuppData=HandlingSuppData) *
+                    (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+      if (all(is.finite(g_plus)) && all(is.finite(g_minus))) {
+        H[c,] <- g_plus - g_minus
+      } else {
+        # message(c("At least one was not finite, ", g_plus, g_minus))
+        if (all(is.finite(g_plus))) {
+          H[c,] <- 2 * g_plus
+        } else if (all(is.finite(g_minus))) {
+          H[c,] <- 2 * g_minus
+        } else {
+          stop("Having to set one to NaN, will probably break stuff")
+          H[c,] <- NaN
+        }
+      }
       
     }
+    
     Hmat = H/2+t(H)/2
     A = eigen(Hmat)
     
