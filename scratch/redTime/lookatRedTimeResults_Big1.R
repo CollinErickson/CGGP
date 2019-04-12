@@ -240,6 +240,7 @@ allstats <- list(
 allstats <- lapply(allstats, function(x){colnames(x) <- c("Package", 'Nsup',"Ngrid","RMSE","score","CRPscore","coverage","corr","R2","RMSEnorm");x})
 allstats <- do.call(rbind, allstats)
 allstats$Ntotal <- allstats$Nsup + allstats$Ngrid
+allstats$Package <- as.character(allstats$Package)
 library(ggplot2)
 # ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Package, shape=as.factor(Nsup))) + geom_point(size=3) + scale_y_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Package, shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10() + scale_y_log10()
@@ -255,3 +256,9 @@ tdf <- rbind(cbind(Ngrid=1699, stats.rt.sggp.1699),
       cbind(Ngrid=2195, stats.rt.sggp.2195),
       cbind(Ngrid=2695, stats.rt.sggp.2695))
 ggplot(data=tdf, mapping=aes(Ngrid, RMSE)) + geom_point()
+
+
+# Plot for thesis
+tdf2 <- allstats %>% filter(Package  %in% c("CGGP3", "mlegp"))
+tdf2$Package[tdf2$Package == "CGGP3"] <- "CGGP"
+ggplot(data=tdf2, mapping=aes(Ntotal, RMSE, color=Package, shape=Package)) + geom_point(size=4) + scale_x_log10() + scale_y_log10() + xlab("Number of points evaluated")

@@ -283,26 +283,56 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
                                       Xs=Xs, ys=ys.thisloop,
                                       HandlingSuppData=HandlingSuppData) *
       (2*(exp(PSTn))/(exp(PSTn)+1)^2)
-    for(c in 1:totnumpara){
+    
+    dimensions_that_need_fixing <- c()
+    for(ipara in 1:totnumpara){
       rsad = rep(0,totnumpara)
-      rsad[c] =10^(-3)
+      rsad[ipara] =10^(-3)
       PSTn=  log((1+thetaMAP)/(1-thetaMAP)) + rsad
       thetav=(exp(PSTn)-1)/(exp(PSTn)+1)
       
       PSTn2=  log((1+thetaMAP)/(1-thetaMAP)) - rsad
       thetav2=(exp(PSTn2)-1)/(exp(PSTn2)+1)
       
-      H[c,] = (CGGP_internal_gneglogpost(thetav,CGGP,y.thisloop,
-                                         Xs=Xs, ys=ys.thisloop,
-                                         HandlingSuppData=HandlingSuppData) *
-                 (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+      # There can be issues if gneglogpost can't be calculated at +/- epsilon,
+      # happens when theta is at the edge of allowing matrix to be Cholesky
+      # decomposed. Check here for that, use one side approx if only one grad
+      # can be calculated. If both fail, no clue what to do.
+      g_plus <- (CGGP_internal_gneglogpost(thetav,CGGP,y.thisloop,
+                                           Xs=Xs, ys=ys.thisloop,
+                                           HandlingSuppData=HandlingSuppData) *
+                   (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
       
-      H[c,] = H[c,]-(CGGP_internal_gneglogpost(thetav2,CGGP,y.thisloop,
-                                               Xs=Xs, ys=ys.thisloop,
-                                               HandlingSuppData=HandlingSuppData) *
-                       (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+      g_minus <- (CGGP_internal_gneglogpost(thetav2,CGGP,y.thisloop,
+                                            Xs=Xs, ys=ys.thisloop,
+                                            HandlingSuppData=HandlingSuppData) *
+                    (2*(exp(PSTn))/(exp(PSTn)+1)^2)-grad0 )*10^(3)/2
+      
+      if (all(is.finite(g_plus)) && all(is.finite(g_minus))) {
+        H[ipara,] <- g_plus - g_minus
+      } else {
+        dimensions_that_need_fixing <- c(dimensions_that_need_fixing, ipara)
+        # message(c("At least one was not finite, ", g_plus, g_minus))
+        if (all(is.finite(g_plus))) {
+          H[ipara,] <- 2 * g_plus
+        } else if (all(is.finite(g_minus))) {
+          H[ipara,] <- -2 * g_minus
+        } else {
+          # stop("Having to set one to NaN, will probably break stuff")
+          H[ipara,] <- NaN
+        }
+      }
       
     }
+    
+    # For any dimensions that gave issues, set them to unit vector here
+    # Shouldn't affect eigen stuff for other dimensions?
+    for (ipara in dimensions_that_need_fixing) {
+      message(paste(c("Had to fix dimensions ", dimensions_that_need_fixing, " in CGGP_fit")))
+      H[ipara,] <- H[,ipara] <- 0
+      H[ipara, ipara] <- 1
+    }
+    
     Hmat = H/2+t(H)/2
     A = eigen(Hmat)
     
@@ -314,6 +344,12 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
                    nrow=length(thetaMAP))
     thetaPostSamples = (exp(PST)-1)/(exp(PST)+1)
     
+    # Now if there were any bad dimensions, we need to set all those
+    # thetaPostSamples for that dimension to be the MAP
+    for (ipara in dimensions_that_need_fixing) {
+      message(paste(c("Changed thetaPostSamples for dims ", dimensions_that_need_fixing)))
+      thetaPostSamples[ipara,] <- thetaMAP[ipara]
+    }
     
     if(CGGP$supplemented){
       # Cs = matrix(1,dim(CGGP$Xs)[1],CGGP$ss)

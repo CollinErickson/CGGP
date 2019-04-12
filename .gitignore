@@ -66,21 +66,23 @@ src/*.so
 src/*.dll
 
 scratch/ExternalComparison/ExternalCompExpResults\.html
-
-scratch/ExternalComparison/ExternalComparison\.html
-
 scratch/InternalComparison/InternalComparisonExperiment\.html
 
+scratch/ExternalComparison/ExternalComparison\.html
 scratch/ExternalComparison/ExComp3/parallel_temp_output_*\.rds
+scratch/ExternalComparison/ExComp4/*parallel_temp_output_*
+scratch/ExternalComparison/ExternalComparer4bass_quarterdone\.rds
+scratch/ExternalComparison/ExternalComparer4_mostlydone\.rds
+scratch/ExternalComparison/ExComp5_16k_of_17k_beforefixingsupp\.rds
+scratch/ExternalComparison/ExComp5_1400_of_11k\.rds
+scratch/ExternalComparison/ExComp5_12kdone\.rds
+
 scratch/redTime/redTimeSuppExp2/redTimeSuppExp2_od10/parallel_temp_output_*\.rds
 scratch/redTime/redTimeSuppExp2/redTimeSuppExp2_od50/parallel_temp_output_*\.rds
-
 scratch/redTime/redTimeSuppExp2/redTimeSuppExp_Results\.html
-
 scratch/redTime/redTimeData/
-
 scratch/redTime/redTimeMVExp1/redTimeMVExp1_completed\.rds
-
 scratch/redTime/redTimeMVExp2/Exp2_completed\.rds
 
-scratch/ExternalComparison/ExComp4/*parallel_temp_output_*
+scratch/thesis/
+
