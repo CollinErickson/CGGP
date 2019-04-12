@@ -14,40 +14,39 @@ borehole <- function(x) {
   m3 <- 1 + 2 * L * Tu / (m2 * rw ^ 2 * Kw) + Tu / Tl
   
   Yn = m1 / m2 / m3
- # return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.1)))
-  return(Yn)
+  return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.1)))
+#  return(Yn)
 }
 
 
 d = 8
 testf<-function (x) {  return(borehole(x))} 
 
-Npred <- 2000
+Npred <- 500
 library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
 
-Xs = randomLHS(80, d)
+Xs = randomLHS(40, d)
 Ys = testf(Xs)
-CGGP = CGGPcreate(d,1000) #create the design.  it has so many entries because i am sloppy
-Y = testf(CGGP$design) #the design is $design, simple enough, right?
-CGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
+CGGP = CGGPcreate(d,300) 
+Y = testf(CGGP$design) 
+CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
+CGGP = CGGPappend(CGGP,1500, selectionmethod = "Greedy")
+Y = testf(CGGP$design)  
+CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
 library(tictoc)
 tic('here')
-PredGreedy = SGGPpred(SGGPGreedy,Xp)
+Pred1 = CGGPpred(CGGP,Xp)
 toc()
-mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
-mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+mean((Pred1$mean-Yp)^2)
 
-# 
-# library(tictoc)
-# 
-# source("testing_fit_fs.R")
-# SGGPGreedy = SGGPfit(SGGP,Y,Xs=Xs,Ys=Ys)
-# 
-# source("testing_pred_fs.R")
-# tic('here')
-# PredGreedy = SGGPpred(SGGPGreedy,Xp)
-# toc()
-# mean(abs(Yp-PredGreedy$mean)^2)  #prediction should be much better
-# mean(abs(Yp-PredGreedy$mean)^2/PredGreedy$var+log(PredGreedy$var)) #score should be much better
+Y = testf(CGGP$design)  
+Yb= Y
+Yb[261,1] = NA
+Yb[710:810,1] = NA
+Yb[261,2] = NA
+Yb[710:810,3] = NA
+CGGP3 = CGGPfit(CGGP,Yb)
+Pred2 = CGGPpred(CGGP3,Xp)
+mean((Pred2$mean-Yp)^2)

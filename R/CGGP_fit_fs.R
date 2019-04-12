@@ -96,10 +96,13 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     CGGP$supplemented = FALSE
     
     if(!is.matrix(Y)){
-      CGGP$mu = mean(Y)
+      CGGP$mu = mean(Y[!is.na(Y)])
       y = Y-CGGP$mu
     }else{ # Y is matrix, PCA no longer an option
       CGGP$mu = colMeans(Y)
+      for(oplcv in 1:dim(Y)[2]){
+      CGGP$mu[oplcv] = mean(Y[!is.na(Y[,oplcv]),oplcv])
+      }
       y <- sweep(Y, 2, CGGP$mu)
       # Need to set CGGP$M somewhere so that it doesn't use transformation
     }
@@ -112,11 +115,14 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     CGGP$Ys = Ys
     
     if(!is.matrix(Y)){
-      CGGP$mu = mean(Ys)
+      CGGP$mu = mean(Ys[!is.na(Ys)])
       y = Y-CGGP$mu
       ys = Ys-CGGP$mu
     } else{ # PCA no longer an option
       CGGP$mu = colMeans(Ys) # Could use Y, or colMeans(rbind(Y, Ys)),
+      for(oplcv in 1:dim(Ys)[2]){
+        CGGP$mu[oplcv] = mean(Ys[!is.na(Ys[,oplcv]),oplcv])
+      }
       #  or make sure Ys is big enough for this
       y <- sweep(Y, 2, CGGP$mu)
       ys <- sweep(Ys, 2, CGGP$mu)
@@ -154,62 +160,102 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     else {ys.thisloop <- NULL}
     theta0.thisloop <- if (nopd==1) {theta0} else {theta0[,opdlcv]}
     
-    # Find MAP theta
-    if (!missing(set_thetaMAP_to) && !is.null(set_thetaMAP_to)) {
-      opt.out <- list(par = if (nopd>1) {set_thetaMAP_to[,opdlcv]} else {set_thetaMAP_to})
-    } else if (is.null(CGGP$Xs)){ # No supp data, just optimize
-      opt.out = nlminb(
-        theta0.thisloop,
-        objective = CGGP_internal_neglogpost,
-        gradient = CGGP_internal_gneglogpost,
-        y = y.thisloop,
-        CGGP = CGGP,
-        ys = ys.thisloop,
-        Xs = Xs,
-        HandlingSuppData=HandlingSuppData,
-        control = list(rel.tol = 1e-4,iter.max = 500)
-      )
-    } else { # W/ supp data, optimize on grid first, then with both
-      # Only grid data b/c it's fast
-      opt.out = nlminb(
-        theta0.thisloop,
-        objective = CGGP_internal_neglogpost,
-        gradient = CGGP_internal_gneglogpost,
-        y = y.thisloop,
-        CGGP = CGGP,
-        HandlingSuppData="Ignore", # Never supp data here, so set to Ignore
-        #  regardless of user setting
-        lower=rep(-.9, CGGP$d),
-        upper=rep( .9, CGGP$d),
-        control = list(rel.tol = 1e-2,iter.max = 500)
-      )
-      
-      neglogpost_par <- CGGP_internal_neglogpost(theta=opt.out$par,
-                                                 CGGP=CGGP,
-                                                 y=y.thisloop,
-                                                 ys=ys.thisloop,
-                                                 Xs=Xs,
-                                                 HandlingSuppData=HandlingSuppData
-      )
-      if (is.infinite(neglogpost_par)) {
-        theta0_2 <- rep(0, CGGP$d)
-      } else {
-        theta0_2 <- opt.out$par
+    if(any(is.na(y.thisloop))){
+      if (!missing(set_thetaMAP_to) && !is.null(set_thetaMAP_to)) {
+        opt.out <- list(par = if (nopd>1) {set_thetaMAP_to[,opdlcv]} else {set_thetaMAP_to})
+        y.thisloop=CGGP_internal_imputesomegrid(CGGP,y.thisloop,opt.out)
+        repeattimes = 1
+      }else{
+        y.orig = y.thisloop
+        y.thisloop=CGGP_internal_imputesomegrid(CGGP,y.thisloop,theta0.thisloop)
+        repeattimes = 10
       }
-      
-      # Then use best point as initial point with supp data
-      opt.out = nlminb(
-        start = theta0_2,
-        objective = CGGP_internal_neglogpost,
-        gradient = CGGP_internal_gneglogpost,
-        y = y.thisloop,
-        ys = ys.thisloop,
-        Xs = Xs,
-        CGGP = CGGP,
-        HandlingSuppData = HandlingSuppData,
-        control = list(rel.tol = 1e-4,iter.max = 500)
-      )
-      
+    }else{
+      repeattimes = 1
+    }
+    
+    for(imputelcv in 1:repeattimes){
+      if(imputelcv > 1.5){
+        if(imputelcv < 2.5){
+          y.thisloop=CGGP_internal_imputesomegrid(CGGP,y.orig,thetaMAP)
+        }else{
+          ystart = y.thisloop
+          y.thisloop=CGGP_internal_imputesomegrid(CGGP,y.orig,thetaMAP,ystart=ystart)
+          if(max(abs(y.thisloop-ystart))<10^(-10)*max(abs(ystart))){
+             break
+          }
+        }
+      }
+      # Find MAP theta
+      if (!missing(set_thetaMAP_to) && !is.null(set_thetaMAP_to)) {
+        opt.out <- list(par = if (nopd>1) {set_thetaMAP_to[,opdlcv]} else {set_thetaMAP_to})
+      } else if (is.null(CGGP$Xs)){ # No supp data, just optimize
+        opt.out = nlminb(
+          theta0.thisloop,
+          objective = CGGP_internal_neglogpost,
+          gradient = CGGP_internal_gneglogpost,
+          y = y.thisloop,
+          CGGP = CGGP,
+          ys = ys.thisloop,
+          Xs = Xs,
+          HandlingSuppData=HandlingSuppData,
+          control = list(rel.tol = 1e-4,iter.max = 500)
+        )
+      } else { # W/ supp data, optimize on grid first, then with both
+        # Only grid data b/c it's fast
+        opt.out = nlminb(
+          theta0.thisloop,
+          objective = CGGP_internal_neglogpost,
+          gradient = CGGP_internal_gneglogpost,
+          y = y.thisloop,
+          CGGP = CGGP,
+          HandlingSuppData="Ignore", # Never supp data here, so set to Ignore
+          #  regardless of user setting
+          lower=rep(-.9, CGGP$d),
+          upper=rep( .9, CGGP$d),
+          control = list(rel.tol = 1e-2,iter.max = 500)
+        )
+        
+        neglogpost_par <- CGGP_internal_neglogpost(theta=opt.out$par,
+                                                   CGGP=CGGP,
+                                                   y=y.thisloop,
+                                                   ys=ys.thisloop,
+                                                   Xs=Xs,
+                                                   HandlingSuppData=HandlingSuppData
+        )
+        if (is.infinite(neglogpost_par)) {
+          theta0_2 <- rep(0, CGGP$d)
+        } else {
+          theta0_2 <- opt.out$par
+        }
+        
+        # Then use best point as initial point with supp data
+        opt.out = nlminb(
+          theta0_2,
+          objective = CGGP_internal_neglogpost,
+          gradient = CGGP_internal_gneglogpost,
+          y = y.thisloop,
+          ys = ys.thisloop,
+          Xs = Xs,
+          CGGP = CGGP,
+          HandlingSuppData = HandlingSuppData,
+          control = list(rel.tol = 1e-4,iter.max = 500)
+        )
+        
+        thetaMAP <- opt.out$par
+        sigma2MAP <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y.thisloop,
+                                                        theta=thetaMAP,
+                                                        return_lS=FALSE)$sigma2
+        
+        if(imputelcv > 1.5){
+          if(all(abs(sigma2MAP0-sigma2MAP)<0.025*sigma2MAP)){
+            break
+          }
+          sigma2MAP0 = sigma2MAP
+        }else{
+          sigma2MAP0 = sigma2MAP
+        }
+      }
     }
     
     
@@ -218,10 +264,6 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     # ===================================.
     
     # Set new theta
-    thetaMAP <- opt.out$par
-    sigma2MAP <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y.thisloop,
-                                                    theta=thetaMAP,
-                                                    return_lS=FALSE)$sigma2
     # If one value, it gives it as matrix. Convert it to scalar
     if (length(sigma2MAP) == 1) {sigma2MAP <- sigma2MAP[1,1]}
     
