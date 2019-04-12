@@ -14,15 +14,15 @@ borehole <- function(x) {
   m3 <- 1 + 2 * L * Tu / (m2 * rw ^ 2 * Kw) + Tu / Tl
   
   Yn = m1 / m2 / m3
- # return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.1)))
-  return(Yn)
+  return(abs(cbind(Yn,Yn^0.75,Yn^0.5,Yn^1.1)))
+#  return(Yn)
 }
 
 
 d = 8
 testf<-function (x) {  return(borehole(x))} 
 
-Npred <- 2000
+Npred <- 500
 library("lhs")
 Xp = randomLHS(Npred, d)
 Yp = testf(Xp)
@@ -32,24 +32,21 @@ Ys = testf(Xs)
 CGGP = CGGPcreate(d,300) 
 Y = testf(CGGP$design) 
 CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
-CGGP = CGGPappend(CGGP,600) 
+CGGP = CGGPappend(CGGP,1500, selectionmethod = "Greedy")
+Y = testf(CGGP$design)  
+CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
 library(tictoc)
 tic('here')
-Pred = CGGPpred(CGGP,Xp)
+Pred1 = CGGPpred(CGGP,Xp)
 toc()
+mean((Pred1$mean-Yp)^2)
 
-Y = testf(CGGP$design) 
-CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
-
-source('./CGGP_impute_fs.R')
-Y = testf(CGGP$design) 
-CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
-Y = Y - mean(Y)
+Y = testf(CGGP$design)  
 Yb= Y
-Yb[261] = NA
-Yb[14] = NA
-Yb[56] = NA
-Yb[660] = NA
-Yb[760] = NA
-CGGPimpute(CGGP,Yb,Y)
-
+Yb[261,1] = NA
+Yb[710:810,1] = NA
+Yb[261,2] = NA
+Yb[710:810,3] = NA
+CGGP3 = CGGPfit(CGGP,Yb)
+Pred2 = CGGPpred(CGGP3,Xp)
+mean((Pred2$mean-Yp)^2)

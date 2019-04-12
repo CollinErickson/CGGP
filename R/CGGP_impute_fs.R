@@ -1,4 +1,6 @@
-CGGP_internal_imputesomegrid <- function(CGGP, y) {
+CGGP_internal_imputesomegrid <- function(CGGP,y,theta,...,ystart = NULL) {
+  Q  = max(CGGP$uo[1:CGGP$uoCOUNT,]) # Max value of all blocks
+  
   if(!is.matrix(y)){
     numoutputs = 1
     yimputed <- y
@@ -6,25 +8,80 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
     numoutputs = dim(y)[2]
     yimputed <- y
   }
-  
   for(oplcv in 1:numoutputs){
     if(!is.matrix(y)){
       y.thisloop = y
-      cholS.thisloop = CGGP$cholSs
-      thetaMAP.thisloop = CGGP$thetaMAP
     }else{
       y.thisloop = as.vector(y[,oplcv])
-      
-      if(is.matrix(CGGP$thetaMAP)){
-        thetaMAP.thisloop = CGGP$thetaMAP[,oplcv]
-        cholS.thisloop = CGGP$cholSs[[oplcv]]
-      }else{
-        thetaMAP.thisloop = CGGP$thetaMAP
-        cholS.thisloop = CGGP$cholSs
-      }
     }
+    
     if(any(is.na(y.thisloop))){
       Is = sort(which(is.na(y.thisloop)))
+      
+      if(!is.matrix(y)){
+        thetaMAP.thisloop = theta
+        
+        cholS = list(matrix(1,1,1),Q*CGGP$d) # To store choleskys
+        # Loop over each dimension
+        for (dimlcv in 1:CGGP$d) {
+          # Loop over each possible needed correlation matrix
+          for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
+            Xbrn = CGGP$xb[1:CGGP$sizest[levellcv]]
+            Xbrn = Xbrn[order(Xbrn)]
+            Sstuff = CGGP$CorrMat(Xbrn, Xbrn ,  thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],return_dCdtheta = FALSE)
+            S = Sstuff
+            # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
+            solvetry <- try({
+              cS = chol(S)
+              cholS[[(dimlcv-1)*Q+levellcv]]= cS+t(cS)-diag(diag(cS)) #store the symmetric version for C code
+            }, silent = TRUE)
+          }
+        }
+        cholS.thisloop =cholS
+      }else{
+        if(is.matrix(theta)){
+          thetaMAP.thisloop = theta[,oplcv]
+          cholS = list(matrix(1,1,1),Q*CGGP$d) # To store choleskys
+          # Loop over each dimension
+          for (dimlcv in 1:CGGP$d) {
+            # Loop over each possible needed correlation matrix
+            for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
+              Xbrn = CGGP$xb[1:CGGP$sizest[levellcv]]
+              Xbrn = Xbrn[order(Xbrn)]
+              Sstuff = CGGP$CorrMat(Xbrn, Xbrn ,  thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],return_dCdtheta = FALSE)
+              S = Sstuff
+              # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
+              solvetry <- try({
+                cS = chol(S)
+                cholS[[(dimlcv-1)*Q+levellcv]]= cS+t(cS)-diag(diag(cS)) #store the symmetric version for C code
+              }, silent = TRUE)
+            }
+          }
+          cholS.thisloop =cholS
+        }else{
+          thetaMAP.thisloop = theta
+          
+          if(oplcv <1.5){
+            cholS = list(matrix(1,1,1),Q*CGGP$d) # To store choleskys
+            # Loop over each dimension
+            for (dimlcv in 1:CGGP$d) {
+              # Loop over each possible needed correlation matrix
+              for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
+                Xbrn = CGGP$xb[1:CGGP$sizest[levellcv]]
+                Xbrn = Xbrn[order(Xbrn)]
+                Sstuff = CGGP$CorrMat(Xbrn, Xbrn ,  thetaMAP.thisloop[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],return_dCdtheta = FALSE)
+                S = Sstuff
+                # When theta is large (> about 5), the matrix is essentially all 1's, can't be inverted
+                solvetry <- try({
+                  cS = chol(S)
+                  cholS[[(dimlcv-1)*Q+levellcv]]= cS+t(cS)-diag(diag(cS)) #store the symmetric version for C code
+                }, silent = TRUE)
+              }
+            }
+            cholS.thisloop =cholS
+          }
+        }
+      }
       
       xp = as.matrix(CGGP$design[Is,])
       if(dim(xp)[2]<CGGP$d){
@@ -32,6 +89,40 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
       }
       n2pred = dim(xp)[1]
       
+      warmstart = 1
+      if(is.null(ystart)){
+        warmstart = 0
+      }else{
+        if(!is.matrix(y)){
+          if(is.matrix(ystart)){
+            warmstart = 0
+          }else{
+            if(length(ystart)!=length(y)){
+              warmstart =0
+            }else{
+              warmstart = 1
+              yn0 = ystart
+              yhat0 = ystart[Is]
+              w = rep(1,n2pred)
+            }
+          }
+        }else{
+          if(!is.matrix(ystart)){
+            warmstart = 0
+          }else{
+            if(dim(ystart)[1] !=dim(y)[1] || dim(ystart)[2] !=dim(y)[2] ){
+              warmstart =0
+            }else{
+              warmstart = 1
+              yn0 = ystart[,oplcv]
+              yhat0 = ystart[Is,oplcv]
+              w = rep(1,n2pred)
+            }
+          }
+        }
+      }
+      
+      if(warmstart<0.5){
       brokenblocks = unique(CGGP$blockassign[Is])
       possblocks = 1:max(CGGP$uoCOUNT,20)
       
@@ -67,7 +158,6 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
       Q  = max(CGGP$uo[1:CGGP$uoCOUNT,])
       for (dimlcv in 1:CGGP$d) {
         for (levellcv in 1:max(CGGP$uo[1:CGGP$uoCOUNT,dimlcv])) {
-          Q  = max(CGGP$uo[1:CGGP$uoCOUNT,])
           gg = (dimlcv-1)*Q
           INDSN = 1:CGGP$sizest[levellcv]
           INDSN = INDSN[sort(CGGP$xb[1:CGGP$sizest[levellcv]],
@@ -102,16 +192,17 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
       #find x0
       yn0 = y.thisloop
       yhat0 = rep(0,n2pred)
+      gg = (1:CGGP$d-1)*Q
       for(lcv in 1:length(Jstar)){
         Q  = max(CGGP$uo[1:CGGP$uoCOUNT,]) # Max value of all blocks
-        gg = (1:CGGP$d-1)*Q
         IS = CGGP$dit[Jstar[lcv], 1:CGGP$gridsizet[Jstar[lcv]]];
         B = y.thisloop[IS]
         rcpp_kronDBS(unlist(cholS.thisloop[gg+CGGP$uo[Jstar[lcv],]]), B, CGGP$gridsizest[Jstar[lcv],])
         yhat0[lcv] = Cp[lcv,IS]%*%B
         yn0[Is[lcv]] = yhat0[lcv]
       }
-      
+      }
+      gg = (1:CGGP$d-1)*Q
       #find g at x0
       pwforg = rep(0,length(y.thisloop))
       for (blocklcv in 1:CGGP$uoCOUNT) {
@@ -132,9 +223,11 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
       dotheseblocks = rep(0,CGGP$uoCOUNT)
       for (blocklcv in 1:CGGP$uoCOUNT) {
         IS = CGGP$dit[blocklcv, 1:CGGP$gridsizet[blocklcv]]
-        B = wgst1[IS]
-        rcpp_kronDBS(unlist(cholS.thisloop[gg+CGGP$uo[blocklcv,]]), B, CGGP$gridsizest[blocklcv,])
-        wgst2[IS] = wgst2[IS]+CGGP$w[blocklcv] * B
+        if(any(Is %in% IS) ){
+          B = wgst1[IS]
+          rcpp_kronDBS(unlist(cholS.thisloop[gg+CGGP$uo[blocklcv,]]), B, CGGP$gridsizest[blocklcv,])
+          wgst2[IS] = wgst2[IS]+CGGP$w[blocklcv] * B
+        }
       }
       
       lambdas = pmax(pmin(sum(wgst2*yn0)/sum(wgst1[Is]*wgst2[Is]),1.1),-0.1)
@@ -155,7 +248,7 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
       pwforg = pwforg[Is]
       dir1 = pwforg
       
-      M = 12
+      M = 20
       s = matrix(0,length(dir1),M)
       ny = matrix(0,length(dir1),M)
       dirsave = matrix(0,length(dir1),M)
@@ -171,8 +264,8 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
       xsave[,lcv] = yhat1
       dirsave[,lcv] = dir1
       
-      L = rep(0,40)
-      for(lcv in 1:40){
+      L = rep(0,400)
+      for(lcv in 1:400){
         
         q = dir1
         if(lcv > 1.5){
@@ -232,10 +325,13 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
         pwforg = pwforg[Is]
         dir2 = pwforg
         
-        s[,1] = yhat2-xsave[,1]
+        s[,1] = yhat2-xsave[,2]
         ny[,1] = dir2-dirsave[,2]
         xsave[,1] = yhat2
         dirsave[,1] = dir2
+        if(any(is.na(yn2))){
+          break
+        }
         
         dir1 = dir2
         yhat1 = yhat2
@@ -248,7 +344,7 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
             break
           }
         }
-        if(lcv > 5 && lcv <= M+1){
+        if(lcv > 10 && lcv <= M+1){
           if(max(abs(L[lcv:(lcv-3)]-L[(lcv-1):(lcv-4)])) < 10^(-3)*L[lcv]){
             break
           }
@@ -264,137 +360,4 @@ CGGP_internal_imputesomegrid <- function(CGGP, y) {
     }
   }
   return(yimputed)
-}
-
-
-#' Calculate MSE prediction along a single dimension
-#'
-#' @param xp Points at which to calculate MSE
-#' @param xl Levels along dimension, vector???
-#' @param theta Correlation parameters
-#' @param CorrMat Function that gives correlation matrix for vectors of 1D points.
-#'
-#' @return MSE predictions
-#' @export
-#'
-#' @examples
-#' CGGP_internal_MSEpredcalc(c(.4,.52), c(0,.25,.5,.75,1), theta=c(.1,.2),
-#'              CorrMat=CGGP_internal_CorrMatCauchySQ)
-CGGP_internal_MSEpredcalc <- function(xp,xl,theta,CorrMat) {
-  S = CorrMat(xl, xl, theta)
-  n = length(xl)
-  cholS = chol(S)
-  
-  Cp = CorrMat(xp, xl, theta)
-  CiCp = backsolve(cholS,backsolve(cholS,t(Cp), transpose = TRUE))
-  
-  MSE_val = 1 - rowSums(t(CiCp)*((Cp)))
-  return(MSE_val)
-}
-
-
-
-#' Calculate posterior variance, faster version
-#'
-#' @param GMat1 Matrix 1
-#' @param GMat2 Matrix 2
-#' @param cholS Cholesky factorization of S
-#' @param INDSN Indices, maybe
-#'
-#' @return Variance posterior
-## @export
-#' @noRd
-CGGP_internal_postvarmatcalc_fromGMat_asym <- function(GMat1,GMat2,cholS,INDSN) {
-  CoinvC1o = backsolve(cholS,
-                       backsolve(cholS,t(GMat1[,INDSN]), transpose = TRUE))
-  Sigma_mat = (t(CoinvC1o)%*%(t(GMat2[,INDSN])))
-  
-  return(Sigma_mat)
-  
-}
-
-#' Calculate posterior variance, faster version
-#'
-#' @param GMat Matrix
-#' @param dGMat Derivative of matrix
-#' @param cholS Cholesky factorization of S
-#' @param dSMat Deriv of SMat
-#' @param INDSN Indices, maybe
-#' @param numpara Number of parameters for correlation function
-#' @param returnlogs Should log scale be returned
-#' @param returnderiratio Should derivative ratio be returned?
-#' @param returndG Should dG be returned
-#' @param returndiag Should diag be returned
-#' @param ... Placeholder
-#'
-#' @return Variance posterior
-# @export
-#' @noRd
-CGGP_internal_postvarmatcalc_fromGMat <- function(GMat, dGMat,cholS,dSMat,INDSN,numpara,...,
-                                                  returnlogs=FALSE, returnderiratio =FALSE,
-                                                  returndG = FALSE,returndiag = FALSE) {
-  
-  # Next line was giving error with single value, so I changed it
-  CoinvC1o = backsolve(cholS,backsolve(cholS, t(GMat[,INDSN, drop=F]), transpose = TRUE))
-  # backsolve1 <- backsolve(cholS,if (is.matrix(GMat[,INDSN]) && ncol(GMat[,INDSN])>1) t(GMat[,INDSN]) else GMat[,INDSN], transpose = TRUE)
-  # CoinvC1o = backsolve(cholS,backsolve1)
-  if(returndiag){
-    if(!returnlogs){
-      Sigma_mat = rowSums(t((CoinvC1o))*((GMat[,INDSN])))
-    }else{
-      nlSm = rowSums(t((CoinvC1o))*((GMat[,INDSN])))
-      Sigma_mat =log(nlSm)
-    }
-    np = length(Sigma_mat)
-  }else{
-    if(!returnlogs){
-      Sigma_mat = t(CoinvC1o)%*%(t(GMat[,INDSN]))
-    }else{
-      nlSm =(t(CoinvC1o))%*%(t(GMat[,INDSN]))
-      Sigma_mat =log(nlSm)
-    }
-    np = dim(Sigma_mat)[1]
-  }
-  
-  
-  if(returndG){
-    nb = dim(GMat)[2]
-    nc = dim(dSMat)[1]
-    if(returndiag){
-      dSigma_mat = matrix(0,np,numpara)
-    }else{
-      dSigma_mat = matrix(0,np,np*numpara)
-    }
-    
-    for(k in 1:numpara){
-      dS = dSMat[,(k-1)*nc+(1:nc)]
-      CoinvC1oE = ((as.matrix(dS))%*%t(GMat[,INDSN]))
-      if(returndiag){
-        dCoinvC1o = backsolve(cholS,backsolve(cholS,CoinvC1oE, transpose = TRUE))
-        dCoinvC1o = dCoinvC1o + backsolve(cholS,backsolve(cholS,t(dGMat[,(k-1)*nb+INDSN]), transpose = TRUE))
-        
-        if(!returnlogs && !returnderiratio){
-          dSigma_mat[,k] = rowSums(t(dCoinvC1o)*(GMat[,INDSN]))+rowSums(t(CoinvC1o)*(dGMat[,(k-1)*nb+INDSN]))
-        }else if(returnderiratio){
-          dSigma_mat[,k] = rowSums(t(dCoinvC1o)*(GMat[,INDSN]))+rowSums(t(CoinvC1o)*(dGMat[,(k-1)*nb+INDSN]))/Sigma_mat
-        }else{
-          dSigma_mat[,k] = (rowSums(t(dCoinvC1o)*(GMat[,INDSN]))+rowSums(t(CoinvC1o)*(dGMat[,(k-1)*nb+INDSN])))/nlSm
-        }
-      }else{
-        dCoinvC1_part1 = t(CoinvC1o)%*%(CoinvC1oE)
-        dCoinvC1_part2 = t(CoinvC1o)%*%t(dGMat[,(k-1)*nb+INDSN])
-        dCoinvC1_part2 = dCoinvC1_part2+t(dCoinvC1_part2)
-        if(!returnlogs && !returnderiratio){
-          dSigma_mat[,(k-1)*np + 1:np] =dCoinvC1_part1+dCoinvC1_part2
-        }else if(returnderiratio){
-          dSigma_mat[,(k-1)*np + 1:np] =( dCoinvC1_part1+dCoinvC1_part2)/Sigma_mat
-        }else{
-          dSigma_mat[,(k-1)*np + 1:np] =( dCoinvC1_part1+dCoinvC1_part2)/nlSm
-        }
-      }
-    }
-    return(list("Sigma_mat"= Sigma_mat,"dSigma_mat" = dSigma_mat))
-  }else{
-    return(Sigma_mat)
-  }
 }
