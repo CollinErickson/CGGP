@@ -24,7 +24,7 @@
 #  If you have a multi-threaded application, you need to specify here how many
 #  cores your process uses.
 #  Note: You explicitly have to tell you program how many threads to use
-#$ -pe smp 34
+#$ -pe smp 5
 
 #### Run time limit
 #  Specify maximum CPU time after which job is to be killed (format HH:MM:SS).
@@ -34,7 +34,7 @@
 #  specifies the maximum amount of memory this job can take
 #  This is per thread, so the total amount is this number times the number
 #  of threads. The default value is 2g.
-#$ -l h_vmem=2g  # here we choose 4g, so that overall we reserve up to 8*4g=32g total
+#$ -l h_vmem=4g  # here we choose 4g, so that overall we reserve up to 8*4g=32g total
 
 ###  # $ -l h=crunch.local
 

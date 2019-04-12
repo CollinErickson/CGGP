@@ -487,7 +487,7 @@ excomp <- ffexp$new(
   psch=eg3,
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
   parallel=if (version$os =="linux-gnu") {TRUE} else {FALSE},
-  parallel_cores = if (version$os =="linux-gnu") {34} else {3},
+  parallel_cores = if (version$os =="linux-gnu") {5} else {3},
   replicate=1:10, #:5,
   folder_path= if (version$os =="linux-gnu") {"/home/collin/scratch/SGGP/scratch/ExternalComparison/ExComp5/"}
   else {"./scratch/ExternalComparison/ExComp5/"}
@@ -519,13 +519,13 @@ table(excomp$completed_runs)
 # plyr::ddply(data.frame(package.name, compruns=excomp$completed_runs), "package.name", function(d) {data.frame(done=sum(d$compruns), notdone=sum(!d$compruns))})
 rbind(plyr::ddply(data.frame(package.name, compruns=excomp$completed_runs), "package.name", function(d) {data.frame(done=sum(d$compruns), notdone=sum(!d$compruns))}), data.frame(package.name="all", done=sum(excomp$completed_runs), notdone=sum(!excomp$completed_runs)))
 excomp$save_self()
-excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
-               write_start_files=T, write_error_files=T)
+# excomp$run_all(parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
+#                write_start_files=T, write_error_files=T)
 # Getting errors, run by package.name to see which is causing it
 # excomp$parallel_cores <- 10
-# excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "aGP")),
-#                parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
-#                write_start_files=T, write_error_files=T)
+excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "CGGPsupp")),
+               parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
+               write_start_files=T, write_error_files=T)
 # excomp$run_all()
 
 cat("Completed all runs in ExternalComparer4.R\n")
@@ -535,7 +535,7 @@ excomp$save_self()
 cat("Saved self\n")
 
 if (F) {
-  excomp <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5_12kdone.rds")
+  excomp <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5_16k_of_17k_beforefixingsupp.rds")
   excomp$plot_run_times()
   plyr::dlply(excomp$outcleandf, "d")
   require('ggplot2');require('dplyr');require('magrittr');
@@ -549,6 +549,7 @@ if (F) {
   # saveRDS(excomp, "./scratch/ExternalComparison/ExComp1_completed.rds")
   ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp", "CGGPoneshot")), mapping=aes(n, RMSE, color=correlation)) + geom_point() + facet_grid(f ~ interaction(package,correlation), scales="free_y") + scale_y_log10() + scale_x_log10()
   ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp")), mapping=aes(n, RMSE, color=correlation)) + geom_point() + facet_grid(f ~ interaction(package,correlation), scales="free_y") + scale_y_log10() + scale_x_log10()
+  ggplot(data=ecdf, mapping=aes(n, RMSE, color=package)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
   
   # Plots for thesis
   # First internal, CGGP vsCGGPsupp, compare correlations (only 3) and sel.method
@@ -564,4 +565,7 @@ if (F) {
   ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f %in% c("wingweight","OTL_Circuit","borehole")), mapping=aes(n, score, color=package, shape=package)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
   ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f %in% c("wingweight","OTL_Circuit","borehole")), mapping=aes(n, runtime, color=package, shape=package)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
   ecdf %>% group_by(package, correlation, selection.method)
+  # shared plots
+  ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA")), mapping=aes(n, RMSE, color=package, shape=package)) + geom_point(size=4) + facet_wrap(. ~ f) + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
+  ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA")), mapping=aes(n, runtime, color=package, shape=package)) + geom_point(size=4) + facet_wrap(. ~ f) + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
 }
