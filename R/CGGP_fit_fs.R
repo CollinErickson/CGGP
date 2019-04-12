@@ -101,7 +101,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
     }else{ # Y is matrix, PCA no longer an option
       CGGP$mu = colMeans(Y)
       for(oplcv in 1:dim(Y)[2]){
-      CGGP$mu[oplcv] = mean(Y[!is.na(Y[,oplcv]),oplcv])
+        CGGP$mu[oplcv] = mean(Y[!is.na(Y[,oplcv]),oplcv])
       }
       y <- sweep(Y, 2, CGGP$mu)
       # Need to set CGGP$M somewhere so that it doesn't use transformation
@@ -182,7 +182,7 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
           ystart = y.thisloop
           y.thisloop=CGGP_internal_imputesomegrid(CGGP,y.orig,thetaMAP,ystart=ystart)
           if(max(abs(y.thisloop-ystart))<10^(-10)*max(abs(ystart))){
-             break
+            break
           }
         }
       }
@@ -242,19 +242,23 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
           control = list(rel.tol = 1e-4,iter.max = 500)
         )
         
-        thetaMAP <- opt.out$par
-        sigma2MAP <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y.thisloop,
-                                                        theta=thetaMAP,
-                                                        return_lS=FALSE)$sigma2
         
-        if(imputelcv > 1.5){
-          if(all(abs(sigma2MAP0-sigma2MAP)<0.025*sigma2MAP)){
-            break
-          }
-          sigma2MAP0 = sigma2MAP
-        }else{
-          sigma2MAP0 = sigma2MAP
+      } # End supp data opt
+      
+      
+      thetaMAP <- opt.out$par
+      sigma2MAP <- CGGP_internal_calcsigma2anddsigma2(CGGP=CGGP, y=y.thisloop,
+                                                      theta=thetaMAP,
+                                                      return_lS=FALSE)$sigma2
+      
+      if(imputelcv > 1.5){
+        if(all(abs(sigma2MAP0-sigma2MAP)<0.025*sigma2MAP)){
+          break
         }
+        sigma2MAP0 = sigma2MAP
+      }else{
+        # On first time through
+        sigma2MAP0 = sigma2MAP
       }
     }
     
