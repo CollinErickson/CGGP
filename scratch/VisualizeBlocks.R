@@ -4,12 +4,16 @@ x2 <- c(.5)
 pts <- expand.grid(x1, x2)
 box1 <- 1
 mat <- matrix(c(1,1,1,2,1,3,2,1,1,1,2,2,3,1,4,1), ncol=2, byrow=T)
-require(ggplot2)
+require(ggplot2); require(CGGP)
 CGGPplotblocks(mat) + coord_fixed()
 
-blocks_points <- function(SG, mat, scale=.9, includebelow=FALSE) {
+blocks_points <- function(SG, mat, scale=.9, includebelow=FALSE, b_plot=TRUE) {
   use_xb <- (SG$xb-.5)*scale + .5
   # mat <- matrix(c(1,1,1,2,1,3,2,1,1,1), ncol=2, byrow=T)
+  # a refers to points in 0 to 1
+  # b refers to points location in the block shown. So the point in 0 to 1
+  #   plus the block depth in that direction
+  aptsall <- NULL
   bptsall <- NULL
   blocksall <- NULL
   for (i in 1:nrow(mat)) {
@@ -31,17 +35,25 @@ blocks_points <- function(SG, mat, scale=.9, includebelow=FALSE) {
     b2pts <- a2pts + a2-1
     apts <- expand.grid(X1=a1pts, X2=a2pts)
     bpts <- expand.grid(X1=b1pts, X2=b2pts)
+    aptsall <- rbind(aptsall, apts)
     bptsall <- rbind(bptsall, bpts)
     blocksall <- rbind(blocksall, data.frame(xmin=a1-1, xmax=a1,
                                              ymin=a2-1, ymax=a2))
   }
   
-  ggplot() + xlim(0,max(mat)) + ylim(0,max(mat)) +
-    geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), data=blocksall, color='black', fill='pink') + 
-    geom_point(data=bptsall, mapping=aes(X1,X2))
+  if (b_plot) {
+    ggplot() + xlim(0,max(mat)) + ylim(0,max(mat)) +
+      geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), data=blocksall, color='black', fill='pink') + 
+      geom_point(data=bptsall, mapping=aes(X1,X2))
+  } else {
+    ggplot() + xlim(0,1) + ylim(0,1) +
+      geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), data=data.frame(xmin=0, xmax=1, ymin=0, ymax=1), color='black', fill='palegreen1') + 
+      geom_point(data=(aptsall-.5)/scale+.5, mapping=aes(X1,X2), size=2)
+  }
 }
 
 eg4 <- expand.grid(1:4,1:4)
+SG <- CGGPcreate(d=2, batchsize=100)
 # Full factorial
 blocks_points(SG, eg4) + coord_fixed()
 # Sparse grid
