@@ -262,3 +262,18 @@ ggplot(data=tdf, mapping=aes(Ngrid, RMSE)) + geom_point()
 tdf2 <- allstats %>% filter(Package  %in% c("CGGP3", "mlegp"))
 tdf2$Package[tdf2$Package == "CGGP3"] <- "CGGP"
 ggplot(data=tdf2, mapping=aes(Ntotal, RMSE, color=Package, shape=Package)) + geom_point(size=4) + scale_x_log10() + scale_y_log10() + xlab("Number of points evaluated")
+
+
+# Plots for dissertation for specific redTime object
+r3.sggp.20159 <- readRDS("./scratch/redTime/redTimeData/out_Big3_SGGP-20159.rds")
+# blocks plot
+r3.sggp.20159 %>% CGGPplotblocks() + coord_fixed()
+maybe_save("redTime_plotblocks", r3.sggp.20159 %>% CGGPplotblocks() + coord_fixed(), height=6, width=6)
+# Correlation plot
+r3.sggp.20159 %>% CGGPplotcorr()
+maybe_save("redTime_corr", r3.sggp.20159 %>% CGGPplotcorr(), height=8, width=6.8)
+# Projection plot
+r3.sggp.20159 %>% CGGPplotprojection(outdims = c(20,50,80))
+r3.sggp.20159 %>% CGGPplotprojection(outdims = c(50))
+r3.sggp.20159 %>% CGGPplotprojection(outdims = c(50), facet="wrap")
+maybe_save("redTimeProjection", r3.sggp.20159 %>% CGGPplotprojection(outdims = c(50), facet="wrap"), height=6, width=6)
