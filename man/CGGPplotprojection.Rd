@@ -5,7 +5,7 @@
 \title{CGGP projection plot}
 \usage{
 CGGPplotprojection(CGGP, proj = 0.5, np = 300, color = "pink",
-  outdims)
+  outdims, scales = "free_y", facet = "grid")
 }
 \arguments{
 \item{CGGP}{CGGP object}
@@ -17,6 +17,11 @@ CGGPplotprojection(CGGP, proj = 0.5, np = 300, color = "pink",
 \item{color}{Color to make error region}
 
 \item{outdims}{If multiple outputs, which of them should be plotted?}
+
+\item{scales}{Parameter passed to ggplot2::facet_grid()}
+
+\item{facet}{If "grid", will use ggplot2::facet_grid(), if "wrap" will
+use ggplot2::facet_wrap(). Only applicable for a single output dimension.}
 }
 \value{
 ggplot2 object

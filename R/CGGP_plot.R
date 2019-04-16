@@ -517,6 +517,9 @@ CGGPplotcorr <- function(Corr=CGGP_internal_CorrMatGaussian, theta=NULL,
 #' @param np Number of points to use along each dimension
 #' @param color Color to make error region
 #' @param outdims If multiple outputs, which of them should be plotted?
+#' @param scales Parameter passed to ggplot2::facet_grid()
+#' @param facet If "grid", will use ggplot2::facet_grid(), if "wrap" will
+#' use ggplot2::facet_wrap(). Only applicable for a single output dimension.
 #'
 #' @return ggplot2 object
 #' @export
@@ -534,7 +537,7 @@ CGGPplotcorr <- function(Corr=CGGP_internal_CorrMatGaussian, theta=NULL,
 #' CGGPplotprojection(s1, 0.)
 #' CGGPplotprojection(s1, s1$design[nrow(s1$design),])
 #' }
-CGGPplotprojection <- function(CGGP, proj=.5, np=300, color="pink", outdims) {
+CGGPplotprojection <- function(CGGP, proj=.5, np=300, color="pink", outdims, scales="free_y", facet="grid") {
   if (!is.null(CGGP$design_unevaluated)) {stop("CGGP must be updated with all data")}
   if (length(proj) == 1) {proj <- rep(proj, CGGP$d)}
   if (length(proj) != CGGP$d) {stop("proj should be of length CGGP$d or 1")}
@@ -562,10 +565,10 @@ CGGPplotprojection <- function(CGGP, proj=.5, np=300, color="pink", outdims) {
       p5 <- CGGPpred(CGGP, m)
     }
     # p5 %>% str
-    poly <- cbind(c(rep(xl,each=2))[-c(1,2*np)])
+    # poly <- cbind(c(rep(xl,each=2))[-c(1,2*np)])
     # If multiple outputs, get all of them
     for (outdim in outdims) {
-      if (numoutdims > 1) {
+      if (is.matrix(p5$mean)) { #numoutdims > 1) {
         tdf <- data.frame(mean=p5$mean[,outdim], var=p5$var[,outdim])
       } else { # Single out dim
         tdf <- as.data.frame(p5)
@@ -606,9 +609,15 @@ CGGPplotprojection <- function(CGGP, proj=.5, np=300, color="pink", outdims) {
     p <- p + ggplot2::geom_point(ggplot2::aes_string(x='x', y='y'), data=pointdfall)
   }
   if (numoutdims == 1) {
-    p <- p + ggplot2::facet_grid(d ~ .)
+    if (facet == "grid") {
+      p <- p + ggplot2::facet_grid(d ~ .)
+    } else if (facet == "wrap") {
+      p <- p + ggplot2::facet_wrap(d ~ .)
+    } else {
+      stop("Not valid facet argument in CGGPprojectionplot")
+    }
   } else {
-    p <- p +ggplot2::facet_grid(outdim ~ d, scales="free_y")
+    p <- p +ggplot2::facet_grid(outdim ~ d, scales=scales) #"free_y")
   }
   p
 }
