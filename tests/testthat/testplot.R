@@ -114,7 +114,7 @@ test_that("Plots work", {
   expect_is(pp1, "ggplot")
   expect_error(pp1 <- CGGPplotprojection(SG2), NA)
   expect_is(pp1, "ggplot")
-  expect_error(pp1 <- CGGPplotprojection(SG2, outdims = 2))
+  expect_error(pp1 <- CGGPplotprojection(SG2, outdims = 2), NA)
   expect_is(pp1, "ggplot")
   expect_error(pp2 <- CGGPplotprojection(SG, proj = c(0)), NA)
   expect_is(pp2, "ggplot")
