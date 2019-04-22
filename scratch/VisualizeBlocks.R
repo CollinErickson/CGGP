@@ -7,7 +7,7 @@ mat <- matrix(c(1,1,1,2,1,3,2,1,1,1,2,2,3,1,4,1), ncol=2, byrow=T)
 require(ggplot2); require(CGGP)
 CGGPplotblocks(mat) + coord_fixed()
 
-blocks_points <- function(SG, mat, scale=.9, includebelow=FALSE, b_plot=TRUE) {
+blocks_points <- function(SG, mat, scale=.9, includebelow=FALSE, b_plot=TRUE, add_beneath_points) {
   use_xb <- (SG$xb-.5)*scale + .5
   # mat <- matrix(c(1,1,1,2,1,3,2,1,1,1), ncol=2, byrow=T)
   # a refers to points in 0 to 1
@@ -41,15 +41,21 @@ blocks_points <- function(SG, mat, scale=.9, includebelow=FALSE, b_plot=TRUE) {
                                              ymin=a2-1, ymax=a2))
   }
   
+  if (!missing(add_beneath_points)) {
+    p <- add_beneath_points
+  } else {
+    p <- ggplot()
+  }
   if (b_plot) {
-    ggplot() + xlim(0,max(mat)) + ylim(0,max(mat)) +
+    p <- p + xlim(0,max(mat)) + ylim(0,max(mat)) +
       geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), data=blocksall, color='black', fill='yellow') + 
       geom_point(data=bptsall, mapping=aes(X1,X2)) + xlab(expression(i[1])) + ylab(expression(i[2]))
   } else {
-    ggplot() + xlim(0,1) + ylim(0,1) +
+    p <- p + coord_fixed(xlim=c(0,1), ylim=c(0,1)) +#xlim(0,1) + ylim(0,1) +
       geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), data=data.frame(xmin=0, xmax=1, ymin=0, ymax=1), color='black', fill='palegreen1', alpha=0) + 
       geom_point(data=(aptsall-.5)/scale+.5, mapping=aes(X1,X2), size=2) + xlab(expression(x[1])) + ylab(expression(x[2]))
   }
+  p
 }
 
 eg4 <- expand.grid(1:4,1:4)
@@ -96,6 +102,7 @@ maybe_save("CGGP2DexAGd1_a", blocks_points(SG, eg4[c(1,2,3,4,5,6,9, 7),], b_plot
 # Demonstration of selecting points
 d <- 2
 f <- function(x) {(1+.1*x[2]^1.1)*(1-.5*x[1]) + (.1*x[2]+.5)*cos(2*pi*x[1]^1.3)}
+f <- function(x) {(1+.1*x[2])*(1-.5*x[1]) + (.1*x[2]+.5)*cos(2*pi*x[1])}
 ContourFunctions::cf(f)
 c1 <- CGGPcreate(d, 5+12)
 c1 <- CGGPfit(c1, apply(c1$design, 1, f))
@@ -107,7 +114,22 @@ c1 <- CGGPfit(c1, apply(c1$design, 1, f))
 c1 <- CGGPappend(c1, 64)
 blocks_points(c1, c1$uo[1:c1$uoCOUNT,])
 blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F)
+epsil <- .0; t1 <- expand.grid(seq(0-epsil,1+epsil,l=101), seq(0,1,l=101))
+y1 <- apply(t1, 1, f)
+t2 <- cbind(t1, y=y1)
+ggplot() + geom_contour(aes(x=Var1, y=Var2, z=y), t2)
+ggplot() + geom_contour(aes(x=Var1, y=Var2, z=y), t2)+ geom_raster(aes(x=Var1, y=Var2, fill = y), t2) +  geom_contour(colour = "white")
+## Wrong order
+blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F) + geom_contour(aes(x=Var1, y=Var2, z=y), t2)+ geom_raster(aes(x=Var1, y=Var2, fill = y), t2, alpha=.6) +  geom_contour(colour = "white")
+ggplot() + geom_contour(aes(x=Var1, y=Var2, z=y), t2)+ geom_raster(aes(x=Var1, y=Var2, fill = y), t2) +  geom_contour(colour = "white") + blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F)
+# Here's a good one
+blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F, add_beneath_points = ggplot() + geom_raster(aes(x=Var1, y=Var2, fill = y), t2)+
+                scale_fill_gradientn(colours=c("#639fff","#FFFFFFFF","#ff5959")) +  geom_contour(aes(x=Var1, y=Var2, z=y), t2, colour = "white"))
+# Same but with no lines
+blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F, add_beneath_points = ggplot() + geom_raster(aes(x=Var1, y=Var2, fill = y), t2)+
+                scale_fill_gradientn(colours=c("#639fff","#FFFFFFFF","#ff5959")))
 
+# Save these plots
 SAVEPLOT <- T
 c1 <- CGGPcreate(d, 5+12)
 c1 <- CGGPfit(c1, apply(c1$design, 1, f))
@@ -119,3 +141,6 @@ c1 <- CGGPfit(c1, apply(c1$design, 1, f))
 c1 <- CGGPappend(c1, 64)
 maybe_save("CGGPsequentialdemoc", blocks_points(c1, c1$uo[1:c1$uoCOUNT,]))
 maybe_save("CGGPsequentialdemod", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F))
+# Save d with contour plot underneath
+maybe_save("CGGPsequentialdemod_cont", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F, add_beneath_points = ggplot() + geom_raster(aes(x=Var1, y=Var2, fill = y), t2)+
+                                                       scale_fill_gradientn(colours=c("#639fff","#FFFFFFFF","#ff5959"))))
