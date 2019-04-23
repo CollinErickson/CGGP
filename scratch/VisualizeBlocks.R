@@ -144,3 +144,30 @@ maybe_save("CGGPsequentialdemod", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot
 # Save d with contour plot underneath
 maybe_save("CGGPsequentialdemod_cont", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F, add_beneath_points = ggplot() + geom_raster(aes(x=Var1, y=Var2, fill = y), t2)+
                                                        scale_fill_gradientn(colours=c("#639fff","#FFFFFFFF","#ff5959"))))
+
+
+# Visualize nested designs (xb)
+require(ggplot2); require(CGGP)
+sg <- CGGPcreate(d=2, 100)
+sg$xb
+sg$sizes
+indexlow <- c(1, (cumsum(sg$sizes)+1)[1:8])
+indexhigh <- cumsum(sg$sizes)
+cbind(sg$sizes, indexlow, indexhigh)
+xnew <- sapply(1:9, function(i){sg$xb[indexlow[i]:indexhigh[i]]})
+xall <- sapply(1:9, function(i){sg$xb[1:indexhigh[i]]})
+indexes <- rep(1:length(sg$sizes), times=sg$sizes)
+cumindexes <- rep(1:length(sg$sizes), times=cumsum(sg$sizes))
+df <- data.frame(lev=indexes, x=sg$xb[1:length(indexes)])
+# ggplot(data=df, mapping=aes(x, lev)) + geom_point()
+# Plot of only new points in each
+# df$lev <- factor(df$lev);
+# levels(df$lev) <- c(expression(Chi(1)),expression(chi(2)),expression(Chi(3)),expression(Chi(4)),expression(Chi(5)),expression(Chi(6)),expression(Chi(7)),expression(Chi(8)),expression(Chi(9)))
+# ggplot(data=df, mapping=aes(x, 0)) + geom_point() +facet_grid(lev ~ ., labeller=label_parsed) + theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(), axis.title.y=element_blank())
+# my_labeller <- c(expression(Chi(1)),expression(Chi(2)),expression(Chi(3)),expression(Chi(4)),expression(Chi(5)),expression(Chi(6)),expression(Chi(7)),expression(Chi(8)),expression(Chi(9))); names(my_labeller) <- 1:9
+px1 <- ggplot(data=df, mapping=aes(x, 0)) + geom_point() +facet_grid(lev ~ .) + theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(), axis.title.y=element_blank()); px1
+cumdf <- do.call(rbind, lapply(1:9, function(i) {data.frame(lev=i, x=sg$xb[1:indexhigh[i]])}))
+px2 <- ggplot(data=cumdf, mapping=aes(x, 0)) + geom_point() +facet_grid(lev ~ .) + theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(), axis.title.y=element_blank()); px2
+
+# Save these plots
+maybe_save("NestedSets", px2, height=8, width=8)

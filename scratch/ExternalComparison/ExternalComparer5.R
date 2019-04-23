@@ -535,7 +535,8 @@ excomp$save_self()
 cat("Saved self\n")
 
 if (F) {
-  excomp <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5_16k_of_17k_beforefixingsupp.rds")
+  # excomp <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5_16k_of_17k_beforefixingsupp.rds")
+  excomp <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5_almostall.rds")
   excomp$plot_run_times()
   plyr::dlply(excomp$outcleandf, "d")
   require('ggplot2');require('dplyr');require('magrittr');
@@ -570,11 +571,11 @@ if (F) {
   ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA")), mapping=aes(n, runtime, color=package, shape=package)) + geom_point(size=4) + facet_wrap(. ~ f) + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
   # Get mean lines for other packages
   ecdf_mean <- plyr::ddply(ecdf, c("package", "f", "n", "selection.method", "correlation", "HandlingSuppData"),
-              function(df) {data.frame(package=df$package[1],f=df$f[1], d=df$d[1], n=df$n[1],
-                                       selection.method=df$selection.method[1], correlation=df$correlation[1],
-                                       RMSEmeanlog=exp(mean(log(df$RMSE))),
-                                       CRPscoremeanlog=exp(mean(log(df$CRPscore))),
-                                       runtimemeanlog=exp(mean(log(df$runtime))), stringsAsFactors = F)})
+                           function(df) {data.frame(package=df$package[1],f=df$f[1], d=df$d[1], n=df$n[1],
+                                                    selection.method=df$selection.method[1], correlation=df$correlation[1],
+                                                    RMSEmeanlog=exp(mean(log(df$RMSE))),
+                                                    CRPscoremeanlog=exp(mean(log(df$CRPscore))),
+                                                    runtimemeanlog=exp(mean(log(df$runtime))), stringsAsFactors = F)})
   ggplot(data=ecdf_mean %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA")), mapping=aes(n, RMSEmeanlog, color=package, shape=package)) + geom_point(size=4) + facet_wrap(. ~ f) + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
   ggplot(data=ecdf_mean %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f  %in% c("borehole", "OTL_Circuit", "piston", "wingweight")), mapping=aes(n, RMSEmeanlog, color=package, shape=package)) + geom_point(size=4) + facet_wrap(. ~ f, scales="free") + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18)) 
   ggplot() + geom_line(data=ecdf_mean %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f  %in% c("borehole", "OTL_Circuit", "piston", "wingweight")), mapping=aes(n, RMSEmeanlog, color=package), size=1) + facet_wrap(. ~ f, scales="free") + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
@@ -585,8 +586,9 @@ if (F) {
   # Using smoother for mean
   # Put all packages on same plot, only 4 plots, 1 for each function, facet wrapped
   ecdf2 <- ecdf; ecdf2$f[ecdf2$f=="piston"] <- "Piston"; ecdf2$f[ecdf2$f=="OTL_Circuit"] <- "OTL circuit"; ecdf2$f[ecdf2$f=="wingweight"] <- "Wing weight"; ecdf2$f[ecdf2$f=="borehole"] <- "Borehole"
-  ecdf2$package[ecdf$package=="aGP"] <- "laGP"; ecdf2$package[ecdf$package=="CGGPsupp"] <- "CGGP"
+  ecdf2$package[ecdf$package=="aGP"] <- "laGP"; ecdf2 <- ecdf2 %>% filter(package!="CGGP");ecdf2$package[ecdf2$package=="CGGPsupp"] <- "CGGP"
   colnames(ecdf2)[colnames(ecdf2)=="package"] <- "Package"
+  colnames(ecdf_mean_toplot)[colnames(ecdf_mean_toplot)=="package"] <- "Package"
   # Loess smoothing
   p1 <- ggplot(data=ecdf2 %>% filter(Package %in% c("CGGP","MRFA","laGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f!='beambending') %>% mutate(pointsize=1+(Package=="CGGP")), mapping=aes(n, RMSE, color=Package, shape=Package, group=Package, linetype=Package, size=Package)) + geom_point(mapping=aes(size=Package))+ scale_size_manual(values=c(2,4,2,2), name='Package') + facet_wrap(. ~ f, scales="free") + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,17,16,18)) + stat_smooth(se=F, alpha=.6, geom='line') +scale_linetype_manual(values=c(2,1,3,4), name='Package') + scale_color_manual(values=c("#F8766D", "#00BFC4","#7CAE00", "#C77CFF"), name="Package"); p1
   p2 <- ggplot(data=ecdf2 %>% filter(Package %in% c("CGGP","laGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f!='beambending') %>% mutate(pointsize=1+(Package=="CGGP")), mapping=aes(n, CRPscore, color=Package, shape=Package, group=Package, linetype=Package, size=Package)) + geom_point(mapping=aes(size=Package))+ scale_size_manual(values=c(2,4,2,2), name='Package') + facet_wrap(. ~ f, scales="free") + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,17,16,18)) + stat_smooth(se=F, alpha=.6, geom='line') +scale_linetype_manual(values=c(2,1,3,4), name='Package') + scale_color_manual(values=c("#F8766D", "#00BFC4","#7CAE00", "#C77CFF"), name="Package"); p2
@@ -603,4 +605,42 @@ if (F) {
   maybe_save("ExternalCompRMSE_2", device="png", width=8, height=8, p1)
   maybe_save("ExternalCompCRPscore_2", device="png", width=8, height=8, p2)
   maybe_save("ExternalCompruntime_2", device="png", width=8, height=8, p3)
+  
+  # -------------------------------
+  # Going to redo, make it cleaner
+  # -------------------------------
+  # Filter out only the 4 we want, on the four functions
+  ecdf3 <- ecdf
+  ecdf3 <- ecdf3 %>% filter(package %in% c("CGGPsupp", "MRFA", "aGP", "BASS"), selection.method %in% c("NA", "UCB"), correlation  %in% c("PowerExp", "NA"), HandlingSuppData %in% c("NA", "Correct"), f!="beambending")
+  ecdf3$package[ecdf3$package=="CGGPsupp"] <- "CGGP"; ecdf3$package[ecdf3$package=="aGP"] <- "laGP"
+  colnames(ecdf3)[colnames(ecdf3)=="package"] <- "Package"
+  ecdf3$f[ecdf3$f=="piston"] <- "Piston"; ecdf3$f[ecdf3$f=="OTL_Circuit"] <- "OTL circuit"; ecdf3$f[ecdf3$f=="wingweight"] <- "Wing weight"; ecdf3$f[ecdf3$f=="borehole"] <- "Borehole"
+  if (nrow(ecdf3) != 10*4*4*7 - 16) {stop("ecdf3 is wrong")} # Missing 1 BASS and 15 MRFA
+  # Mean smoothing, but all normal lines (no dots/dashes). Use true means, not the log scale. For run times, only use means, no dots.
+  p1 <- ggplot(data=ecdf3,
+               mapping=aes(n, RMSE, color=Package, shape=Package, group=Package, linetype=Package, size=Package)) + 
+    facet_wrap(. ~ f, scales="free") + scale_y_log10() + scale_x_log10() + 
+    scale_shape_manual(values=c(15,17,16,18)) + scale_linetype_manual(values=c(1,1,1,1), name='Package') + 
+    scale_color_manual(values=c("#F8766D", "#00BFC4","#7CAE00", "#C77CFF"), name="Package") + 
+    stat_summary(fun.y=mean, geom="line", alpha=.6) +
+    geom_point(mapping=aes(size=Package)) + scale_size_manual(values=c(2,4,2,2), name='Package'); p1
+  p2 <- ggplot(data=ecdf3 %>% filter(Package!= "MRFA"), 
+               mapping=aes(n, CRPscore, color=Package, shape=Package, group=Package, linetype=Package, size=Package)) + 
+    facet_wrap(. ~ f, scales="free") + scale_y_log10() + scale_x_log10() + 
+    scale_shape_manual(values=c(15,17,16,18)) + scale_linetype_manual(values=c(1,1,1,1), name='Package') + 
+    scale_color_manual(values=c("#F8766D", "#00BFC4","#7CAE00", "#C77CFF"), name="Package") + 
+    stat_summary(fun.y=mean, geom="line", alpha=.6) + ylab("CRP score") +
+    geom_point(mapping=aes(size=Package)) + scale_size_manual(values=c(2,4,2,2), name='Package'); p2
+  p3 <- ggplot(data=ecdf3, 
+               mapping=aes(n, runtime, color=Package, shape=Package, group=Package, linetype=Package, size=Package)) + 
+    facet_wrap(. ~ f, scales="free") + scale_y_log10() + scale_x_log10() + 
+    scale_shape_manual(values=c(15,17,16,18)) +scale_linetype_manual(values=c(1,1,1,1), name='Package') + 
+    scale_color_manual(values=c("#F8766D", "#00BFC4","#7CAE00", "#C77CFF"), name="Package") + 
+    stat_summary(fun.y=mean, geom="line", alpha=.6) + ylab("Run time (sec)") + 
+    geom_point(mapping=aes(size=Package))+ scale_size_manual(values=c(2,4,2,2), name='Package'); p3
+  # Save these
+  maybe_save("ExternalCompRMSE_2", device="png", width=8, height=8, p1)
+  maybe_save("ExternalCompCRPscore_2", device="png", width=8, height=8, p2)
+  maybe_save("ExternalCompruntime_2", device="png", width=8, height=8, p3)
+  
 }
