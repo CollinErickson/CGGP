@@ -528,7 +528,7 @@ excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "CGGPsup
                write_start_files=T, write_error_files=T)
 # excomp$run_all()
 
-cat("Completed all runs in ExternalComparer4.R\n")
+cat("Completed all runs in ExternalComparer5.R\n")
 
 excomp$save_self()
 
@@ -552,7 +552,12 @@ if (F) {
   ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp")), mapping=aes(n, RMSE, color=correlation)) + geom_point() + facet_grid(f ~ interaction(package,correlation), scales="free_y") + scale_y_log10() + scale_x_log10()
   ggplot(data=ecdf, mapping=aes(n, RMSE, color=package)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
   
-  # Plots for thesis
+  
+  ##########################
+  #### Plots for thesis ####
+  ##########################
+  
+  #### Internal comparisons
   # First internal, CGGP vsCGGPsupp, compare correlations (only 3) and sel.method
   ggplot(data=ecdf %>% filter(package %in% c("CGGP", "CGGPsupp")), mapping=aes(n, RMSE, color=correlation, shape=correlation)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
   # Only wingweight and OTL, supp, and Cauchy/M32/PowerExp
@@ -560,7 +565,23 @@ if (F) {
   # Now compare CGGP vs CGGPsupp
   ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp"), correlation=="PowerExp", f=="wingweight" | f=="OTL_Circuit"), mapping=aes(n, RMSE, color=selection.method, shape=selection.method)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
   ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp"), correlation=="PowerExp", f=="wingweight" | f=="OTL_Circuit"), mapping=aes(n, score, color=selection.method, shape=selection.method)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_x_log10()
-  # External comparisons
+  # Making plots better
+  # First show that power exp is only reliable corr func
+  incompdf1 <- ecdf %>% filter(package %in% c("CGGP","CGGPsupp"), correlation !="Cauchy", correlation!="CauchySQ", HandlingSuppData!="Ignore", f %in% c("wingweight","OTL_Circuit","borehole", "piston"), selection.method=="UCB") %>% rename(ICC=selection.method); if (nrow(incompdf1)!=4*3*10*2*7) {stop("incompdf1 wrong")}
+  # incompdf1$ICC[incompdf1$ICC=="Greedy"] <- "ICC-MAP"; incompdf1$ICC[incompdf1$ICC=="UCB"] <- "ICC-UCB"
+  incompdf1$package[incompdf1$package=="CGGP"] <- "No";incompdf1$package[incompdf1$package=="CGGPsupp"] <- "Yes"
+  incompdf1$f[incompdf1$f=="borehole"] <- "Borehole";incompdf1$f[incompdf1$f=="OTL_Circuit"] <- "OTL circuit";incompdf1$f[incompdf1$f=="piston"] <- "Piston";incompdf1$f[incompdf1$f=="wingweight"] <- "Wing weight";
+  
+  pi1 <- ggplot(data=incompdf1, mapping=aes(n, RMSE, color=package, shape=package)) + labs(color="Supp. data?", shape="Supp. data?") + geom_point(size=4) + facet_grid(f ~ correlation, scales="free_y") + scale_y_log10() + scale_x_log10(); pi1
+  pi2 <- ggplot(data=incompdf1, mapping=aes(n, CRPscore, color=package, shape=package)) + labs(color="Supp. data?", shape="Supp. data?") + geom_point(size=4) + facet_grid(f ~ correlation, scales="free_y") + scale_y_log10() + scale_x_log10()+ylab("CRP score"); pi2
+  pi3 <- ggplot(data=incompdf1, mapping=aes(n, runtime, color=package, shape=package)) + labs(color="Supp. data?", shape="Supp. data?") + geom_point(size=4) + facet_grid(f ~ correlation, scales="free_y") + scale_y_log10() + scale_x_log10()+ylab("Run time (sec)"); pi3
+  
+  
+  maybe_save("InternalCompRMSE_corr", device="eps", width=8, height=8, pi1)
+  maybe_save("InternalCompCRPscore_corr", device="eps", width=8, height=8, pi2)
+  maybe_save("InternalCompRuntime_corr", device="eps", width=8, height=8, pi3)
+  
+  #### External comparisons
   # First
   ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f %in% c("wingweight","OTL_Circuit","borehole")), mapping=aes(n, RMSE, color=package, shape=package)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
   ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f %in% c("wingweight","OTL_Circuit","borehole")), mapping=aes(n, score, color=package, shape=package)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
@@ -643,4 +664,8 @@ if (F) {
   maybe_save("ExternalCompCRPscore_2", device="png", width=8, height=8, p2)
   maybe_save("ExternalCompruntime_2", device="png", width=8, height=8, p3)
   
+}
+
+if (F) {
+  egTS <- 1
 }
