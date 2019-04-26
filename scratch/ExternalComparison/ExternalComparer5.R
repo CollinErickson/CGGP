@@ -581,7 +581,27 @@ if (F) {
   maybe_save("InternalCompCRPscore_corr", device="eps", width=8, height=8, pi2)
   maybe_save("InternalCompRuntime_corr", device="eps", width=8, height=8, pi3)
   
+  # Now compare ICC, ran TS separately
+  excompTS <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5TS_twothirds.rds")
+  ecdfTS <- excompTS$outcleandf[excompTS$completed_runs & !is.na(excompTS$outcleandf$package),]
+  ecdfTS$n <- ecdfTS$npd * ecdfTS$d
+  iccs <- rbind(ecdf, ecdfTS) %>% filter(package %in% c("CGGP"), f!="beambending", correlation=="PowerExp") %>% rename(ICC=selection.method)
+  iccs$f[iccs$f=="borehole"] <- "Borehole";iccs$f[iccs$f=="OTL_Circuit"] <- "OTL circuit";iccs$f[iccs$f=="piston"] <- "Piston";iccs$f[iccs$f=="wingweight"] <- "Wing weight";
+  iccs$ICC[iccs$ICC=="Greedy"] <- "MAP"
+  # To reorder so it's not all green on top
+  iccs <- iccs[sample(1:nrow(iccs)), ]
+  picc1 <- ggplot(data=iccs, mapping=aes(n, RMSE, color=ICC, shape=ICC)) + geom_point(size=4) + facet_wrap(f ~ ., scales="free_y") + scale_y_log10() + scale_x_log10(); picc1
+  picc2 <- ggplot(data=iccs, mapping=aes(n, CRPscore, color=ICC, shape=ICC)) + geom_point(size=4) + facet_wrap(f ~ ., scales="free_y") + scale_y_log10() + scale_x_log10() + ylab("CRP score"); picc2
+  picc3 <- ggplot(data=iccs, mapping=aes(n, runtime, color=ICC, shape=ICC)) + geom_point(size=4) + facet_wrap(f ~ ., scales="free_y") + scale_y_log10() + scale_x_log10() + ylab("Run time (sec)"); picc3
+  # Save these plots
+  maybe_save("InternalCompRMSE_icc", device="eps", width=8, height=8, picc1)
+  maybe_save("InternalCompCRPscore_icc", device="eps", width=8, height=8, picc2)
+  maybe_save("InternalCompRuntime_icc", device="eps", width=8, height=8, picc3)
+  
+  
+  # ===========================
   #### External comparisons
+  # ===========================
   # First
   ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f %in% c("wingweight","OTL_Circuit","borehole")), mapping=aes(n, RMSE, color=package, shape=package)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))
   ggplot(data=ecdf %>% filter(package %in% c("CGGPsupp","MRFA","aGP","BASS"), selection.method %in% c("NA","UCB"),correlation %in% c("PowerExp","NA"), f %in% c("wingweight","OTL_Circuit","borehole")), mapping=aes(n, score, color=package, shape=package)) + geom_point(size=4) + facet_grid(f ~ package, scales="free_y") + scale_x_log10() + scale_shape_manual(values=c(15,16,17,18))

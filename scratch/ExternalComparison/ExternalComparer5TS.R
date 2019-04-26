@@ -209,7 +209,7 @@ excompTS <- ffexp$new(
                 row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
   psch=eg3TS,
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
-  parallel=if (version$os =="linux-gnu") {TRUE} else {!FALSE},
+  parallel=if (version$os =="linux-gnu") {TRUE} else {FALSE},
   parallel_cores = if (version$os =="linux-gnu") {35} else {3},
   replicate=1:10, #:5,
   folder_path= if (version$os =="linux-gnu") {"/home/collin/scratch/SGGP/scratch/ExternalComparison/ExComp5TS/"}
