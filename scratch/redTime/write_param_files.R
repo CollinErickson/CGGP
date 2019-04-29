@@ -9,7 +9,7 @@ convert_x_from_01_to_ranges <- function(x,
                                         # high=c(1.3,1.0, 1., .30, .030, .01, -.7, 1.25), # Expanded ranges 2
                                         low= c( .7, .5, .4, .016, .010,   0,-2.5,1.65), # Expanded ranges 3, use wa transform,x8 low > x8 high
                                         high=c(1.3,1.3,  1,   .6, .035, .01,   0,   0), # Expanded ranges 3
-                                        transform_wa = TRUE, # Starting for Expanded ranges 3, use (-w_0-w_a)^.25 for 8th parameter
+                                        transform_wa, # Starting for Expanded ranges 3, use (-w_0-w_a)^.25 for 8th parameter
                                         # low_redshift=0, high_redshift=5 # Original redshift
                                         # low_redshift=0, high_redshift=10 # Expanded ranges bad, either this or x1 caused it
                                         low_redshift=0, high_redshift=8 # Expanded ranges
@@ -22,8 +22,9 @@ convert_x_from_01_to_ranges <- function(x,
 }
 
 write_params_file <- function(..., x01, fileID, overwrite=F,
+                              transform_wa=TRUE, # Use for ER3 onward
                               parampathbase="/home/collin/scratch/redTime_v0.1/sub_files/params_redTime_") {
-  x <- convert_x_from_01_to_ranges(x01)
+  x <- convert_x_from_01_to_ranges(x01, transform_wa=transform_wa)
   n_s <- x[1] # Fixed spectral index
   sigma_8<- x[2] # Normalization
   h<- x[3] # Hubble constant, .72
