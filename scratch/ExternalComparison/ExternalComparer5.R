@@ -582,7 +582,7 @@ if (F) {
   maybe_save("InternalCompRuntime_corr", device="eps", width=8, height=8, pi3)
   
   # Now compare ICC, ran TS separately
-  excompTS <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5TS_twothirds.rds")
+  excompTS <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp5TS_done.rds")
   ecdfTS <- excompTS$outcleandf[excompTS$completed_runs & !is.na(excompTS$outcleandf$package),]
   ecdfTS$n <- ecdfTS$npd * ecdfTS$d
   iccs <- rbind(ecdf, ecdfTS) %>% filter(package %in% c("CGGP"), f!="beambending", correlation=="PowerExp") %>% rename(ICC=selection.method)
