@@ -5,8 +5,11 @@ convert_x_from_01_to_ranges <- function(x,
                                         # high=c(1.05,.9,.85,.155,.0235,.01,-.7,1.15), # Original high/low
                                         # low= c(.5 , .5, .5, .05, .010,   0,-1.5,-2.50),
                                         # high=c(1.5,1.0, 1., .20, .025, .02, -.5, 1.25), # Expanded ranges bad, some gave NA
-                                        low= c(.5 , .5, .3, .05, .010,   0,-1.5,-2.50),
-                                        high=c(1.3,1.0, 1., .30, .030, .01, -.7, 1.25), # Expanded ranges
+                                        # low= c(.5 , .5, .3, .05, .010,   0,-1.5,-2.50), # Expanded ranges 2
+                                        # high=c(1.3,1.0, 1., .30, .030, .01, -.7, 1.25), # Expanded ranges 2
+                                        low= c( .7, .5, .4, .016, .010,   0,-2.5,1.65), # Expanded ranges 3, use wa transform,x8 low > x8 high
+                                        high=c(1.3,1.3,  1,   .6, .035, .01,   0,   0), # Expanded ranges 3
+                                        transform_wa = TRUE, # Starting for Expanded ranges 3, use (-w_0-w_a)^.25 for 8th parameter
                                         # low_redshift=0, high_redshift=5 # Original redshift
                                         # low_redshift=0, high_redshift=10 # Expanded ranges bad, either this or x1 caused it
                                         low_redshift=0, high_redshift=8 # Expanded ranges
@@ -28,7 +31,11 @@ write_params_file <- function(..., x01, fileID, overwrite=F,
   Omega_b<- x[5] # Baryon density
   Omega_nu<- x[6] # Neutrino mass parameter
   w0<- x[7] # w0 and wa are two-component dynamical dark energy component
-  wa<- x[8] # see above
+  if (transform_wa) {
+    wa<- -x[8]^4 - w0
+  } else {
+    wa<- x[8] # see above
+  }
   redshift <- x[9] # This is new, used to be set for whole system
   paste0(rep('0',1),as.character(3))
   outpath <- paste0(parampathbase, fileID, ".dat")

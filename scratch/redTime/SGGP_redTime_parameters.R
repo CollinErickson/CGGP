@@ -9,11 +9,12 @@
 # Big1 is all output dimensions, no pca, shared params. Meant to be for paper. Not good b/c of UCB error
 # Big2 is same as Big1 except using Greedy in append
 # Big3 is back same as Big1, i.e. uses UCB, we think we fixed the error.
-groupID <- "redTimeTestBig3"
-groupID_short <- "Big3"#"O90_1k"
+# ER3a is using ExpandedRanges3, Greedy, Power Exp, 
+groupID <- "redTimeTestER3a"
+groupID_short <- "ER3a"
 
 # Number of cores to use at a time. Keep <= 40 so others can use server.
-number_cores <- 250
+number_cores <- 125
 hold_in_groups <- TRUE
 
 # Input dimensions
@@ -29,7 +30,7 @@ batchsize3 <- 2000
 batchsize4 <- 10000
 
 # Correlation function
-corr <- "CauchySQ"
+corr <- "PowerExp" # "CauchySQ"
 
 # Number of points after which to stop (will go up to batchsize-1 over)
 Nfinal <- 25000
@@ -37,7 +38,8 @@ Nfinal <- 25000
 # Grid size to use. This option wasn't included in Test1
 # grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
 # grid_sizes <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 8, 12)
-grid_sizes <- c(1,2,4,4,8,12,32) # This is default, was "fast" in our internal comparisons
+# grid_sizes <- c(1,2,4,4,8,12,32) # This is default, was "fast" in our internal comparisons. Used for Bigx
+grid_sizes <- c(1,2,4,4,8,12,20,28,32) # new default, goes up to 111. Used for ER3.
 
 # PCA no longer an option
 # # use_PCA, 100 outputs, PCA can reduce to 37 I think.
@@ -50,18 +52,19 @@ separateoutputparameterdimensions <- FALSE
 outdims <- 1:100
 
 # append selectionmethod. Used to just use UCB, but UCB/TS are bad with MV out. Use Greedy instead.
-selectionmethod <- "UCB"
+selectionmethod <- "Greedy"
 
 # To use supplementary data
-if (FALSE) {
-  stop("use supp")
+if (TRUE) {
+  # stop("use supp")
   Xsup <- NULL
   Ysup <- NULL
 } else {
+  stop("Not using supp any more")
   # Xall <- unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_Xmatrix.csv")[,-1]))
   # Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/SGGP/scratch/redTime/data/LHS1L_n8039_s1226_all_output.csv")[,-1])))
-  Xall <-     unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n90_s0315_all_input.csv")[,-1]))
-  Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n90_s0315_all_output.csv")[,-1])))
+  # Xall <-     unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n90_s0315_all_input.csv")[,-1]))
+  # Yall <- log(unname(as.matrix(read.csv("/home/collin/scratch/redTime_v0.1/SGGPruns/important_files/ExpandedRanges2_LHS1L_n90_s0315_all_output.csv")[,-1])))
   # set.seed(100) # Set seed for reproducibility
   # SupRows <- sample(1:nrow(Xall), 100, replace=FALSE)
   SupRows <- 1:nrow(Xall)
