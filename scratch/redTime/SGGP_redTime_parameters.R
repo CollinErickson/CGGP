@@ -21,7 +21,7 @@ hold_in_groups <- TRUE
 d <- 9
 
 # Initial sample size
-N0 <- NA #100
+N0 <- 200
 # Number of points to add in each batch
 # batchsize <- 100 #100
 batchsize1 <- 200
@@ -49,7 +49,7 @@ grid_sizes <- c(1,2,4,4,8,12,20,28,32) # new default, goes up to 111. Used for E
 separateoutputparameterdimensions <- FALSE
 
 # outdims: output dimensions to use. Default should be 1:100.
-outdims <- 1:100
+outdims <- 1:80 # 1:100 is all, 1:76 is up to .2, 1:80 is up to .25
 
 # append selectionmethod. Used to just use UCB, but UCB/TS are bad with MV out. Use Greedy instead.
 selectionmethod <- "Greedy"
