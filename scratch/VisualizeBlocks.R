@@ -98,10 +98,13 @@ maybe_save("CGGP2DexAGcross_a", blocks_points(SG, eg4[apply(eg4, 1, function(x)a
 maybe_save("CGGP2DexAGd1", blocks_points(SG, eg4[c(1,2,3,4,5,6,9, 7),]) + coord_fixed())
 maybe_save("CGGP2DexAGd1_a", blocks_points(SG, eg4[c(1,2,3,4,5,6,9, 7),], b_plot=F) + coord_fixed())
 
+# Sparse grid with only three blocks
+maybe_save("CGGP2DexSG_3blocks", blocks_points(SG, eg4[rowSums(eg4)<4,]) + coord_fixed())
+
 
 # Demonstration of selecting points
 d <- 2
-f <- function(x) {(1+.1*x[2]^1.1)*(1-.5*x[1]) + (.1*x[2]+.5)*cos(2*pi*x[1]^1.3)}
+# f <- function(x) {(1+.1*x[2]^1.1)*(1-.5*x[1]) + (.1*x[2]+.5)*cos(2*pi*x[1]^1.3)}
 f <- function(x) {(1+.1*x[2])*(1-.5*x[1]) + (.1*x[2]+.5)*cos(2*pi*x[1])}
 ContourFunctions::cf(f)
 c1 <- CGGPcreate(d, 5+12)
@@ -134,20 +137,24 @@ SAVEPLOT <- T
 c1 <- CGGPcreate(d, 5+12)
 c1 <- CGGPfit(c1, apply(c1$design, 1, f))
 maybe_save("CGGPsequentialdemoa", blocks_points(c1, c1$uo[1:c1$uoCOUNT,]))
+maybe_save("CGGPsequentialdemoa_pts_cont", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F, add_beneath_points = ggplot() + geom_raster(aes(x=Var1, y=Var2, fill = y), t2)+
+                                                       scale_fill_gradientn(colours=c("#639fff","#FFFFFFFF","#ff5959"))))
 c1 <- CGGPfit(c1, apply(c1$design, 1, f))
 c1 <- CGGPappend(c1, 32)
 maybe_save("CGGPsequentialdemob", blocks_points(c1, c1$uo[1:c1$uoCOUNT,]))
+maybe_save("CGGPsequentialdemob_pts_cont", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F, add_beneath_points = ggplot() + geom_raster(aes(x=Var1, y=Var2, fill = y), t2)+
+                                                           scale_fill_gradientn(colours=c("#639fff","#FFFFFFFF","#ff5959"))))
 c1 <- CGGPfit(c1, apply(c1$design, 1, f))
 c1 <- CGGPappend(c1, 64)
 maybe_save("CGGPsequentialdemoc", blocks_points(c1, c1$uo[1:c1$uoCOUNT,]))
-maybe_save("CGGPsequentialdemod", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F))
+maybe_save("CGGPsequentialdemoc_pts", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F))
 # Save d with contour plot underneath
-maybe_save("CGGPsequentialdemod_cont", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F, add_beneath_points = ggplot() + geom_raster(aes(x=Var1, y=Var2, fill = y), t2)+
+maybe_save("CGGPsequentialdemoc_pts_cont", blocks_points(c1, c1$uo[1:c1$uoCOUNT,], b_plot=F, add_beneath_points = ggplot() + geom_raster(aes(x=Var1, y=Var2, fill = y), t2)+
                                                        scale_fill_gradientn(colours=c("#639fff","#FFFFFFFF","#ff5959"))))
 
 
 # Visualize nested designs (xb)
-require(ggplot2); require(CGGP)
+require(ggplot2); require(CGGP); require(dplyr)
 sg <- CGGPcreate(d=2, 100)
 sg$xb
 sg$sizes
@@ -168,6 +175,8 @@ df <- data.frame(lev=indexes, x=sg$xb[1:length(indexes)])
 px1 <- ggplot(data=df, mapping=aes(x, 0)) + geom_point() +facet_grid(lev ~ .) + theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(), axis.title.y=element_blank()); px1
 cumdf <- do.call(rbind, lapply(1:9, function(i) {data.frame(lev=i, x=sg$xb[1:indexhigh[i]])}))
 px2 <- ggplot(data=cumdf, mapping=aes(x, 0)) + geom_point() +facet_grid(lev ~ .) + theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(), axis.title.y=element_blank()); px2
+px2_firstfour <- ggplot(data=cumdf %>% filter(lev<=4), mapping=aes(x, 0)) + geom_point() +facet_grid(lev ~ .) + theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(), axis.title.y=element_blank())+ggtitle("Nested Sets"); px2_firstfour
 
 # Save these plots
 maybe_save("NestedSets", px2, height=8, width=8)
+maybe_save("NestedSetsFirstFour", px2_firstfour, height=3, width=3)
