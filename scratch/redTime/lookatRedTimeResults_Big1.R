@@ -261,7 +261,8 @@ ggplot(data=tdf, mapping=aes(Ngrid, RMSE)) + geom_point()
 # Plot for thesis
 tdf2 <- allstats %>% filter(Package  %in% c("CGGP3", "mlegp"))
 tdf2$Package[tdf2$Package == "CGGP3"] <- "CGGP"
-ggplot(data=tdf2, mapping=aes(Ntotal, RMSE, color=Package, shape=Package)) + geom_point(size=4) + scale_x_log10() + scale_y_log10() + xlab("Number of points evaluated")
+ggrmse <- ggplot(data=tdf2, mapping=aes(Ntotal, RMSE, color=Package, shape=Package)) + geom_point(size=4) + scale_x_log10() + scale_y_log10() + xlab("Number of points evaluated"); ggrmse
+maybe_save("redTimeRMSE", ggrmse, height=6, width=7)
 
 
 # Plots for dissertation for specific redTime object
