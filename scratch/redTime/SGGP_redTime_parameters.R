@@ -33,7 +33,7 @@ batchsize4 <- 10000
 corr <- "PowerExp" # "CauchySQ"
 
 # Number of points after which to stop (will go up to batchsize-1 over)
-Nfinal <- 25000
+Nfinal <- 60000 #25000
 
 # Grid size to use. This option wasn't included in Test1
 # grid_size <- c(1, 2, 2, 2, 4, 4, 4, 4, 4, 6, 32)
@@ -82,7 +82,8 @@ use_log_redTime <- TRUE
 # When should the object be saved
 # save_after <- c(200, 400, 1000, 2000, 4000, 8000)
 save_after <- c(100, 200, 300, 500, 700, 900, 1100,1500,1900,2400,3000,4000,5000,6000,7000,8000,10000,
-                12000,15000,18000,21000,23000,25000,30000,35000,40000)
+                12000,15000,18000,20000,21000,23000,25000,30000,35000,40000,45000,50000,55000,60000,
+                65000,70000,75000,80000,85000,90000,95000,100000)
 # save_after <- c(50,150,250,350,450,550)
 
 sourcefilepath <- "/home/collin/scratch/SGGP/scratch/redTime/"

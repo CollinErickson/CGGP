@@ -1,3 +1,5 @@
+# This will restart a redTime SGGP run that was killed while
+#  points were still being evaluated.
 
 restart_on <- 26155 # 26155
 run_redTime <- 501:2000 # 501:2000
