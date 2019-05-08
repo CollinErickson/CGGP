@@ -16,8 +16,8 @@ source('write_sh_files.R')
 # create_LHS_and_submit(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0304_', holdnum=50, seed=0304)
 # create_LHS_and_submit(n=90,   prefix='ExpandedRanges2_LHS1L_n90_s0315_',   holdnum=50, seed=0315)
 # create_LHS_and_submit(n=1000, prefix='ExpandedRanges3_LHS1L_n1000_s0429_', holdnum=250, seed=0429)
-create_LHS_and_submit(n=1000,   prefix='ExpandedRanges3_LHS1L_n1000_s0505_', holdnum=250, seed=0505)
-create_LHS_and_submit(n=100,    prefix='ExpandedRanges3_LHS1L_n100_s0506_',  holdnum=250, seed=0506)
+# create_LHS_and_submit(n=1000, prefix='ExpandedRanges3_LHS1L_n1000_s0505_', holdnum=250, seed=0505)
+# create_LHS_and_submit(n=100,  prefix='ExpandedRanges3_LHS1L_n100_s0506_',  holdnum=250, seed=0506)
 
 
 # After done, run
@@ -28,3 +28,5 @@ create_LHS_and_submit(n=100,    prefix='ExpandedRanges3_LHS1L_n100_s0506_',  hol
 # extract_redTime_from_completed_LHS(n=1000, prefix='ExpandedRanges2_LHS1L_n1000_s0304_')
 # extract_redTime_from_completed_LHS(n=90, prefix='ExpandedRanges2_LHS1L_n90_s0315_')
 # extract_redTime_from_completed_LHS(n=1000, prefix='ExpandedRanges3_LHS1L_n1000_s0429_')
+# extract_redTime_from_completed_LHS(n=1000, prefix='ExpandedRanges3_LHS1L_n1000_s0505_')
+# extract_redTime_from_completed_LHS(n=100,  prefix='ExpandedRanges3_LHS1L_n100_s0506_')
