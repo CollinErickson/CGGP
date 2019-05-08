@@ -55,10 +55,10 @@ test_that("CGGPfit works with Laplace approx", {
   }
   
   if (F) {
-    expect_equal(
-      c(CGGP_internal_gneglogpost(theta, SG, SG$y)),
-      numDeriv::grad(CGGP_internal_neglogpost, theta, CGGP=SG, y=SG$y)
-    )
+    # expect_equal(
+    #   c(CGGP_internal_gneglogpost(theta, SG, SG$y)),
+    #   numDeriv::grad(CGGP_internal_neglogpost, theta, CGGP=SG, y=SG$y)
+    # )
   }
   
   # Works with supplementary data
@@ -90,7 +90,7 @@ test_that("CGGPfit works with Laplace approx", {
     expect_equal(c(thetagrad), numgrad, tol=1e-2, info = handling)
   }
   if (F) {
-    numDeriv::grad(function(th) {CGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
+    # numDeriv::grad(function(th) {CGGP_internal_neglogpost(th, SG, SG$y, Xs=xsup, ys=SG$ys, HandlingSuppData = handling)}, theta)
   }
 })
 
