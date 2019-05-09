@@ -57,7 +57,7 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
   
   # If theta is given (for full Bayesian prediction), need to recalculate pw
   if (!is.null(theta) && length(theta)!=length(CGGP$thetaMAP)) {stop("Theta is wrong length")}
-  if (!is.null(theta) && theta==CGGP$thetaMAP) {
+  if (!is.null(theta) && all(theta==CGGP$thetaMAP)) {
     # If you give in theta=thetaMAP, set it to NULL to avoid recalculating.
     theta <- NULL
   }
