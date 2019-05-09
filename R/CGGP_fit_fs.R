@@ -92,6 +92,9 @@ CGGPfit <- function(CGGP, Y, Xs=NULL,Ys=NULL,
   # For cleanness: Y is always the user input, y is after transformation
   # ====================================================================.
   CGGP$Y = Y
+  if (any(is.na(Y))) {
+    message(paste0(sum(is.na(Y)), "/",length(Y)," Y values are NA, will impute them"))
+  }
   if(is.null(Xs)){ # No supplemental data
     CGGP$supplemented = FALSE
     
