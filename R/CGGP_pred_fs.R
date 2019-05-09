@@ -287,9 +287,6 @@ CGGPpred <- function(CGGP, xp, theta=NULL, outdims=NULL) {
   # if (nopd > 1) {meanall <- sweep(sweep(meanall,2,CGGP$mu) %*% CGGP$M,2,CGGP$mu, `+`)}
   if (nopd > 1) {meanall2 <- sweep(meanall2, 2, CGGP$mu, `+`)}
   
-  if (!all(is.numeric(nopd)) || length(nopd) != 1) {stop(paste(c("nopd isn't numeric of length 1, it is ", nopd)))}
-  # This should never happen, but Travis is saying it's an error somehow.
-  if (length(nopd) > 1) {nopd <- nopd[1]}
   if (nopd > 1) {
     GP <- list(mean=meanall2, var=tempvarall)
   } else {
