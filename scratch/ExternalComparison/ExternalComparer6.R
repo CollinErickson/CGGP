@@ -291,7 +291,7 @@ run_BART <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   pred.time.start <- Sys.time()
   # pred <- predict(mod, xtest) # Doing pred inside fit
   pred.time.end <- Sys.time()
-  list(mean=colMeans(pred), var=apply(mod$yhat.test, 2, var), n=nrow(x),
+  list(mean=mod$yhat.test.mean, var=apply(mod$yhat.test, 2, var), n=nrow(x),
        pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
@@ -511,7 +511,7 @@ excomp <- ffexp$new(
   psch=eg3,
   npd=c(10, 30, 100, 300, 1000, 3000, 10000),
   parallel=if (version$os =="linux-gnu") {TRUE} else {FALSE},
-  parallel_cores = if (version$os =="linux-gnu") {5} else {3},
+  parallel_cores = if (version$os =="linux-gnu") {10} else {3},
   replicate=1:10, #:5,
   folder_path= if (version$os =="linux-gnu") {"/home/collin/scratch/SGGP/scratch/ExternalComparison/ExComp6/"}
   else {"./scratch/ExternalComparison/ExComp6/"}
@@ -547,7 +547,7 @@ excomp$save_self()
 #                write_start_files=T, write_error_files=T)
 # Getting errors, run by package.name to see which is causing it
 # excomp$parallel_cores <- 10
-excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "CGGPsupp")),
+excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "BART")),
                parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
                write_start_files=T, write_error_files=T)
 # excomp$run_all()

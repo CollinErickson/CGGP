@@ -24,7 +24,7 @@
 #  If you have a multi-threaded application, you need to specify here how many
 #  cores your process uses.
 #  Note: You explicitly have to tell you program how many threads to use
-#$ -pe smp 5
+#$ -pe smp 10
 
 #### Run time limit
 #  Specify maximum CPU time after which job is to be killed (format HH:MM:SS).
