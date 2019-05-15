@@ -3,12 +3,12 @@
 # ER3a used no supp, Greedy, power exp.
 # Only using first 80 output dimensions.
 
-x100 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n100_s0228_all_input.csv")[,-1]))
-y100 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n100_s0228_all_output.csv")[,-1])))[,1:80]
+x100 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n100_s0506_all_input.csv")[,-1]))
+y100 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n100_s0506_all_output.csv")[,-1])))[,1:80]
 x1000 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n1000_s0429_all_input.csv")[,-1]))
 y1000 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n1000_s0429_all_output.csv")[,-1])))[,1:80]
-x1000_2 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n1000_s0304_all_input.csv")[,-1]))
-y1000_2 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n1000_s0304_all_output.csv")[,-1])))[,1:80]
+x1000_2 <- unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n1000_s0505_all_input.csv")[,-1]))
+y1000_2 <- log(unname(as.matrix(read.csv("./scratch/redTime/redTimeData/ExpandedRanges3_LHS1L_n1000_s0505_all_output.csv")[,-1])))[,1:80]
 
 # ER3a
 ra.sggp.399 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-399.rds")
@@ -31,6 +31,8 @@ ra.sggp.16155 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-16155.rds"
 ra.sggp.18155 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-18155.rds")
 # ra.sggp.20159 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-20159.rds")
 ra.sggp.30151 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-30151.rds")
+ra.sggp.40147 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-40147.rds")
+ra.sggp.50143 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-50143.rds")
 # ra.sggp.20159.PE<- CGGPfit(ra.sggp.20159, Y=ra.sggp.20159$Y,Xs=ra.sggp.20159$Xs,Ys=ra.sggp.20159$Ys,corr="PowerExp")
 ra.sggp.30151.PE<- CGGPfit(ra.sggp.30151, Y=ra.sggp.30151$Y,Xs=ra.sggp.30151$Xs,Ys=ra.sggp.30151$Ys,corr="PowerExp")
 # ra.sggp.20159.C <- CGGPfit(ra.sggp.20159, Y=ra.sggp.20159$Y,Xs=ra.sggp.20159$Xs,Ys=ra.sggp.20159$Ys,corr="Cauchy")
@@ -60,10 +62,45 @@ stats.ra.sggp.16155<- CGGPvalstats(ra.sggp.16155, x1000, y1000, bydim=F)
 stats.ra.sggp.18155<- CGGPvalstats(ra.sggp.18155, x1000, y1000, bydim=F)
 # stats.ra.sggp.20159<- CGGPvalstats(ra.sggp.20159, x1000, y1000, bydim=F)
 stats.ra.sggp.30151<- CGGPvalstats(ra.sggp.30151, x1000, y1000, bydim=F)
+stats.ra.sggp.40147<- CGGPvalstats(ra.sggp.40147, x1000, y1000, bydim=F)
+stats.ra.sggp.50143<- CGGPvalstats(ra.sggp.50143, x1000, y1000, bydim=F)
 # stats.ra.sggp.20159.PE<- CGGPvalstats(ra.sggp.20159.PE, x1000, y1000, bydim=F)
 stats.ra.sggp.30151.PE<- CGGPvalstats(ra.sggp.30151.PE, x1000, y1000, bydim=F)
 # stats.ra.sggp.20159.C <- CGGPvalstats(ra.sggp.20159.C , x1000, y1000, bydim=F)
 stats.ra.sggp.30151.C <- CGGPvalstats(ra.sggp.30151.C , x1000, y1000, bydim=F)
+
+##########################
+#### Run with mlegp
+##########################
+mod.mlegp.50 <- mlegp::mlegp(x100[1:50,], y100[1:50,])
+pred.mlegp.50 <- lapply(1:80, function(i) predict(mod.mlegp.50[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.50 <- valstats(pred.mlegp.50$fit, pred.mlegp.50$se, y1000, bydim=F)
+mod.mlegp.75 <- mlegp::mlegp(x100[1:75,], y100[1:75,])
+pred.mlegp.75 <- lapply(1:80, function(i) predict(mod.mlegp.75[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.75 <- valstats(pred.mlegp.75$fit, pred.mlegp.75$se, y1000, bydim=F)
+mod.mlegp.100 <- mlegp::mlegp(x100, y100)
+pred.mlegp.100 <- lapply(1:80, function(i) predict(mod.mlegp.100[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.100 <- valstats(pred.mlegp.100$fit, pred.mlegp.100$se, y1000, bydim=F)
+mod.mlegp.150 <- sample(1:1000, 150) %>% {mlegp::mlegp(x1000_2[.,], y1000_2[.,])}
+pred.mlegp.150 <- lapply(1:80, function(i) predict(mod.mlegp.150[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.150 <- valstats(pred.mlegp.150$fit, pred.mlegp.150$se^2, y1000, bydim=F)
+mod.mlegp.200 <- sample(1:1000, 200) %>% {mlegp::mlegp(x1000_2[.,], y1000_2[.,])}
+pred.mlegp.200 <- lapply(1:80, function(i) predict(mod.mlegp.200[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.200 <- valstats(pred.mlegp.200$fit, pred.mlegp.200$se^2, y1000, bydim=F)
+mod.mlegp.250 <- sample(1:1000, 250) %>% {mlegp::mlegp(x1000_2[.,], y1000_2[.,])}
+pred.mlegp.250 <- lapply(1:80, function(i) predict(mod.mlegp.250[[i]], x1000, se=T)) %>% {list(fit={do.call(cbind, lapply(., function(i) i$fit))}, se.fit={do.call(cbind, lapply(., function(i) i$se.fit))})}
+stats.mlegp.250 <- valstats(pred.mlegp.250$fit, pred.mlegp.250$se^2, y1000, bydim=F)
+# mod.mlegp.300 <- mlegp::mlegp(x1000_2, y1000_2)
+# pred.mlegp.300 <- predict(mod.mlegp.300, x1000, se=T)
+# stats.mlegp.300 <- valstats(pred.mlegp.300$fit, pred.mlegp.300$se^2, y1000, bydim=F)
+# mod.mlegp.400 <- mlegp::mlegp(x1000_2, y1000_2)
+# pred.mlegp.400 <- predict(mod.mlegp.400, x1000, se=T)
+# stats.mlegp.400 <- valstats(pred.mlegp.400$fit, pred.mlegp.400$se^2, y1000, bydim=F)
+# mod.mlegp.500 <- mlegp::mlegp(x1000_2, y1000_2)
+# pred.mlegp.500 <- predict(mod.mlegp.500, x1000, se=T)
+# stats.mlegp.500 <- valstats(pred.mlegp.500$fit, pred.mlegp.500$se^2, y1000, bydim=F)
+
+
 
 allstats <- list(
   # CGGP
@@ -85,7 +122,19 @@ allstats <- list(
   data.frame("CGGP", 0, 12159, 0.009005683,-7.803026, 0.005657783, 0.991825, 0.9999838, 0.9999674, 0.006588723),
   data.frame("CGGP", 0, 16155, 0.007374222,-7.991828, 0.005007521,0.9932375, 0.9999891, 0.9999782, 0.005393246),
   data.frame("CGGP", 0, 18155, 0.006947166,-8.225993, 0.004492074, 0.991475, 0.9999903, 0.9999806, 0.005082594),
-  data.frame("CGGP", 0, 30151, 0.005188444,-8.647838, 0.003515817,   0.9932, 0.9999946, 0.9999892, 0.003800047)
+  data.frame("CGGP", 0, 30151, 0.005188444,-8.647838, 0.003515817,   0.9932, 0.9999946, 0.9999892, 0.003800047),
+  data.frame("CGGP", 0, 40147, 0.004770253,-8.632408, 0.003520589, 0.9935875,0.9999955, 0.9999909, 0.003494456),
+  data.frame("CGGP", 0, 40147, 0.003983129,-8.958887, 0.002996187, 0.9950625,0.9999968, 0.9999936, 0.002909961),
+  
+  
+  data.frame("mlegp", 0,  50, 0.3392193, -1.446142, 0.1700039, 0.9710875, 0.9789255, 0.9537862, 0.2458831),
+  data.frame("mlegp", 0,  75, 0.2660584, -1.835621, 0.1350989, 0.986425,  0.9859735, 0.9715708, 0.1934031),
+  data.frame("mlegp", 0, 100, 0.2208473, -1.999161, 0.1182225, 0.9906625, 0.9901938, 0.9804118, 0.1607628),
+  data.frame("mlegp", 0, 150, 0.1951786, -1.795716, 0.08392041,  0.81135, 0.9923303, 0.9847006, 0.1424369),
+  data.frame("mlegp", 0, 200, 0.19641,   -2.27177,  0.08338489,0.781575 , 0.9923615, 0.9845069, 0.1433341),
+  data.frame("mlegp", 0, 250, 0.1393964, -2.492744, 0.0581818, 0.7953125, 0.9961854, 0.9921961, 0.1017273)
+  # data.frame("mlegp", , ),
+  # data.frame("mlegp", , ),
 )
 
 allstats <- lapply(allstats, function(x){colnames(x) <- c("Package", 'Nsup',"Ngrid","RMSE","score","CRPscore","coverage","corr","R2","RMSEnorm");x})
