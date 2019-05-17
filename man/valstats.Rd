@@ -6,7 +6,8 @@
 \usage{
 valstats(predmean, predvar, Yval, bydim = TRUE, RMSE = TRUE,
   score = TRUE, CRPscore = TRUE, coverage = TRUE, corr = TRUE,
-  R2 = TRUE, MAE = FALSE, metrics, min_var = .Machine$double.eps)
+  R2 = TRUE, MAE = FALSE, MIS90 = FALSE, metrics,
+  min_var = .Machine$double.eps)
 }
 \arguments{
 \item{predmean}{Predicted mean}
@@ -21,7 +22,7 @@ valstats(predmean, predvar, Yval, bydim = TRUE, RMSE = TRUE,
 
 \item{score}{Should score be included?}
 
-\item{CRPscore}{Should CRP scorebe included?}
+\item{CRPscore}{Should CRP score be included?}
 
 \item{coverage}{Should coverage be included?}
 
@@ -31,10 +32,14 @@ valstats(predmean, predvar, Yval, bydim = TRUE, RMSE = TRUE,
 
 \item{MAE}{Should mean absolute error (MAE) be included?}
 
+\item{MIS90}{Should mean interval score for 90\% confidence be included?
+See Gneiting and Raftery (2007).}
+
 \item{metrics}{Optional additional metrics to be calculated. Should have
 same first three parameters as this function.}
 
-\item{min_var}{Minimum value of the predicted variance.}
+\item{min_var}{Minimum value of the predicted variance.
+Negative or zero variances can cause errors.}
 }
 \value{
 data frame

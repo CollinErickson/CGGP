@@ -272,13 +272,16 @@ CGGPvalplot <- function(CGGP, Xval, Yval, d=NULL) {
 #' @param metrics Optional additional metrics to be calculated. Should have
 #'  same first three parameters as this function.
 #' @param min_var Minimum value of the predicted variance.
+#' Negative or zero variances can cause errors.
 #' @param RMSE Should root mean squared error (RMSE) be included?
 #' @param score Should score be included?
-#' @param CRPscore Should CRP scorebe included?
+#' @param CRPscore Should CRP score be included?
 #' @param coverage Should coverage be included?
 #' @param R2 Should R^2 be included?
 #' @param corr Should correlation between predicted and true mean be included?
 #' @param MAE Should mean absolute error (MAE) be included?
+#' @param MIS90 Should mean interval score for 90\% confidence be included?
+#' See Gneiting and Raftery (2007).
 #'
 #' @return data frame
 #' @export
@@ -300,7 +303,7 @@ CGGPvalplot <- function(CGGP, Xval, Yval, d=NULL) {
 #'          cbind(c(1,2,3),c(10,20,30)), bydim=FALSE)
 valstats <- function(predmean, predvar, Yval, bydim=TRUE,
                      RMSE=TRUE, score=TRUE, CRPscore=TRUE, coverage=TRUE,
-                     corr=TRUE, R2=TRUE, MAE=FALSE,
+                     corr=TRUE, R2=TRUE, MAE=FALSE, MIS90=FALSE,
                      metrics,
                      min_var=.Machine$double.eps) {
   if (missing(predvar) || is.null(predvar)) {
@@ -340,6 +343,9 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE,
   if (corr) out$corr <- cor(c(predmean), c(Yval))
   if (R2) out$R2 <- 1 - (sum((Yval - predmean)^2) / sum((Yval - mean(Yval))^2))
   if (MAE) out$MAE <- mean(abs(predmean - Yval))
+  if (MIS90) {
+    out$MIS90 <- mean(3.28 * s + 20 * pmax(0, m - Yval - 1.64 * s) + 20 * pmax(0, -m + Yval - 1.64 * s))
+  }
   
   # Remove initial element
   out$DELETETHISELEMENT <- NULL
