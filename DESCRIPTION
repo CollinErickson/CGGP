@@ -12,14 +12,17 @@ Description: Run computer experiments using a sparse grid adaptive Gaussian proc
 License: GPL-3 | file LICENSE
 Imports: Rcpp (>= 0.12.18)
 LinkingTo: Rcpp, RcppArmadillo
-Suggests: testthat,
+Suggests: 
+    testthat,
     covr,
     ggplot2,
     reshape2,
     plyr,
     MASS,
-    lhs
+    knitr,
+    rmarkdown
 URL: https://github.com/CollinErickson/SGGP
 BugReports: https://github.com/CollinErickson/SGGP/issues
 Encoding: UTF-8
 RoxygenNote: 6.1.1
+VignetteBuilder: knitr
