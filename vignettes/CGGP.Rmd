@@ -101,6 +101,12 @@ Now you must pass these points to your function to be evaluated.
 Once you have the data for each row of `mod$design`,
 you can now fit the model using `CGGPfit`.
 
+```{r}
+Y <- apply(mod$design, 1, function(x){x[1]*x[2] + x[3]^2 + sin(2*pi*x[4])})
+
+```
+
+
 ```{r cggpfit}
 mod <- CGGPfit(mod, Y)
 print(mod)
