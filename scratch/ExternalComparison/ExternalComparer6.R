@@ -69,7 +69,7 @@ run_lagp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_agp=FA
     pred <- laGP::predGPsep(mod.agp, xtest, lite=T)
     pred$var <- pred$s2 * sdy^2
   }
-  # browser()
+  
   pred$mean <- pred$mean * sdy + mny
   pred.time.end <- Sys.time()
   list(mean=pred$mean, var=pred$var, n=nrow(x),
@@ -90,7 +90,7 @@ run_lagp_bobby <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_
   ## fixing a tiny nugget is very helpful on this problem
   g <- 1/10000000
   ## macro-scale analysis on a random subset of the data
-  # browser()
+  
   n <- min(Ntotal, 1000)
   d2 <- darg(list(mle = TRUE, max = 100), x)
   subs <- sample(1:Ntotal, n, replace = FALSE)
@@ -118,7 +118,6 @@ run_lagp_bobby <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed, use_
                     end= min(50, Ntotal-1))
   pred.time.end <- Sys.time()
   
-  # browser()
   list(mean=out.sep$mean, var=out.sep$var, n=nrow(xs),
        pred.time=as.numeric(pred.time.end - pred.time.start, units="secs"),
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
@@ -174,7 +173,7 @@ run_lagp_matt <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
     pred.time.start <- Sys.time()
     
     predturn = list("mean"=mny+sdy*(predpGloblaGP$mean),
-                    "var"= sdy^2*diag(predpGloblaGP$Sigma))
+                    "var"= sdy^2*(predpGloblaGP$s2)) # used to be diag(.$Sigma), gave error
   }
   pred.time.end <- Sys.time()
   
@@ -203,7 +202,7 @@ run_MRFA <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
 }
 
 
-run_svm <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
+run_svm <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   if (!missing(seed)) {set.seed(seed)}
   if (missing(x) && missing(y)) {
     if (Ntotal<=2000) {x <- lhs::maximinLHS(Ntotal, d)}
@@ -222,7 +221,7 @@ run_svm <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
-run_mlegp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
+run_mlegp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   if (!missing(seed)) {set.seed(seed)}
   if (missing(x) && missing(y)) {
     if (Ntotal<=2000) {x <- lhs::maximinLHS(Ntotal, d)}
@@ -241,7 +240,7 @@ run_mlegp <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
-run_GPfit <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {#browser()
+run_GPfit <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
   if (!missing(seed)) {set.seed(seed)}
   if (missing(x) && missing(y)) {
     if (Ntotal<=2000) {x <- lhs::maximinLHS(Ntotal, d)}
@@ -297,7 +296,7 @@ run_BART <- function(Ntotal, Nappend, f, d, x, y, xtest, ytest, seed) {
 }
 
 
-run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, selection.method, correlation) {#browser()
+run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, selection.method, correlation) {
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
   if (!missing(Nlhs) && Nlhs!=0) {stop("Nlhs given to run_CGGP")}
@@ -338,7 +337,7 @@ run_CGGP <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, sele
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
-run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, HandlingSuppData, selection.method, correlation) {#browser()
+run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, HandlingSuppData, selection.method, correlation) {
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
   xsup <- lhs::maximinLHS(Nlhs, d)
@@ -379,7 +378,7 @@ run_CGGPsupp <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, 
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
-run_CGGPsupponly <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, correlation) {#browser()
+run_CGGPsupponly <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, correlation) {
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
   if (Ntotal > 2000) {stop("CGGPsupponly can't run with more than 2000")}
@@ -401,7 +400,7 @@ run_CGGPsupponly <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, se
        fit.time =as.numeric(fit.time.end  - fit.time.start , units="secs"))
 }
 
-run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, correlation) {#browser()
+run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, seed, correlation) {
   require("CGGP")
   if (!missing(seed)) {set.seed(seed)}
   # xsup <- lhs::maximinLHS(Nlhs, d)
@@ -428,7 +427,7 @@ run_CGGPoneshot <- function(Ntotal, Nappend, Nlhs, f, d, x, y, xtest, ytest, see
 
 # Need a generic function that passes to specific ones
 run_one <- function(package, selection.method, correlation, HandlingSuppData,
-                    f, d, npd, replicate) {#browser()
+                    f, d, npd, replicate) {
   # package <- psch$package
   n <- npd * d
   # if (n!= 500) {stop('bad n')}
@@ -473,7 +472,7 @@ run_one <- function(package, selection.method, correlation, HandlingSuppData,
   } else {
     stop(paste("Package", package, "not recognized"))
   }
-  # browser()
+  
   outstats <- CGGP::valstats(predmean=out[[1]], predvar=out[[2]],Yval=ytest) #, bydim=FALSE)
   if (out$n > n) {warning(paste("n too big for", package, n, f, d))}
   outstats$predtime <- out$pred.time
