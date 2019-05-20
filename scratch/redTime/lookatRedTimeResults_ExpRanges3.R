@@ -33,6 +33,7 @@ ra.sggp.18155 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-18155.rds"
 ra.sggp.30151 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-30151.rds")
 ra.sggp.40147 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-40147.rds")
 ra.sggp.50143 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-50143.rds")
+ra.sggp.60139 <- readRDS("./scratch/redTime/redTimeData/out_ER3a_SGGP-60139.rds")
 # ra.sggp.20159.PE<- CGGPfit(ra.sggp.20159, Y=ra.sggp.20159$Y,Xs=ra.sggp.20159$Xs,Ys=ra.sggp.20159$Ys,corr="PowerExp")
 ra.sggp.30151.PE<- CGGPfit(ra.sggp.30151, Y=ra.sggp.30151$Y,Xs=ra.sggp.30151$Xs,Ys=ra.sggp.30151$Ys,corr="PowerExp")
 # ra.sggp.20159.C <- CGGPfit(ra.sggp.20159, Y=ra.sggp.20159$Y,Xs=ra.sggp.20159$Xs,Ys=ra.sggp.20159$Ys,corr="Cauchy")
@@ -64,6 +65,7 @@ stats.ra.sggp.18155<- CGGPvalstats(ra.sggp.18155, x1000, y1000, bydim=F)
 stats.ra.sggp.30151<- CGGPvalstats(ra.sggp.30151, x1000, y1000, bydim=F)
 stats.ra.sggp.40147<- CGGPvalstats(ra.sggp.40147, x1000, y1000, bydim=F)
 stats.ra.sggp.50143<- CGGPvalstats(ra.sggp.50143, x1000, y1000, bydim=F)
+stats.ra.sggp.60139<- CGGPvalstats(ra.sggp.60139, x1000, y1000, bydim=F)
 # stats.ra.sggp.20159.PE<- CGGPvalstats(ra.sggp.20159.PE, x1000, y1000, bydim=F)
 stats.ra.sggp.30151.PE<- CGGPvalstats(ra.sggp.30151.PE, x1000, y1000, bydim=F)
 # stats.ra.sggp.20159.C <- CGGPvalstats(ra.sggp.20159.C , x1000, y1000, bydim=F)
@@ -124,7 +126,8 @@ allstats <- list(
   data.frame("CGGP", 0, 18155, 0.006947166,-8.225993, 0.004492074, 0.991475, 0.9999903, 0.9999806, 0.005082594),
   data.frame("CGGP", 0, 30151, 0.005188444,-8.647838, 0.003515817,   0.9932, 0.9999946, 0.9999892, 0.003800047),
   data.frame("CGGP", 0, 40147, 0.004770253,-8.632408, 0.003520589, 0.9935875,0.9999955, 0.9999909, 0.003494456),
-  data.frame("CGGP", 0, 40147, 0.003983129,-8.958887, 0.002996187, 0.9950625,0.9999968, 0.9999936, 0.002909961),
+  data.frame("CGGP", 0, 50143, 0.003983129,-8.958887, 0.002996187, 0.9950625,0.9999968, 0.9999936, 0.002909961),
+  data.frame("CGGP", 0, 60139, 0.004100328,-9.040298, 0.00288365,  0.9943125,0.9999966, 0.9999932, 0.003006344),
   
   
   data.frame("mlegp", 0,  50, 0.3392193, -1.446142, 0.1700039, 0.9710875, 0.9789255, 0.9537862, 0.2458831),
@@ -143,7 +146,7 @@ allstats$Ntotal <- allstats$Nsup + allstats$Ngrid
 allstats$Package <- as.character(allstats$Package)
 library(ggplot2)
 # ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Package, shape=as.factor(Nsup))) + geom_point(size=3) + scale_y_log10()
-ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Package, shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10() + scale_y_log10()
+ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Package)) + geom_point(size=3) + scale_x_log10() + scale_y_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, RMSE, color=Nsup)) + geom_point(size=3) + facet_grid(. ~ Package) + scale_x_log10() + scale_y_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, score, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10()
 ggplot(data=allstats, mapping=aes(Ntotal, CRPscore, color=(Package), shape=as.factor(Nsup))) + geom_point(size=3) + scale_x_log10() + scale_y_log10()
