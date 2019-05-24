@@ -20,7 +20,7 @@ void rcpp_fastmatclcr(NumericMatrix I, NumericVector w, NumericMatrix MSEmat, Nu
   NumericVector RR(ns);
   
   for(int bindex=0; bindex<=(nb-1); bindex++){
-    if(abs(w[bindex])>0.5){
+    if(fabs(w[bindex])>0.5){
     RR = MSEmat( _ ,I(bindex,0)-1);
     for(int dim=1;dim<=(d-1); dim++){
       RR = RR*MSEmat( _ ,maxlevel*dim+I(bindex,dim)-1);
@@ -60,7 +60,7 @@ void rcpp_fastmatclcranddclcr(NumericMatrix I, NumericVector w, NumericMatrix MS
   NumericVector RR(ns);
   
   for(int bindex=0; bindex<=(nb-1); bindex++){
-    if(abs(w[bindex])>0.5){
+    if(fabs(w[bindex])>0.5){
     RR = MSEmat( _ ,I(bindex,0)-1);
     for(int dim=1;dim<=(d-1); dim++){
       RR = RR*MSEmat( _ ,maxlevel*dim+I(bindex,dim)-1);
