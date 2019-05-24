@@ -2,14 +2,13 @@ Package: CGGP
 Type: Package
 Title: Composite Grid Gaussian Processes
 Version: 1.0
-Date: 2018-09-27
 Authors@R:
     c(
     person("Collin", "Erickson", email = "collinberickson@gmail.com", role = c("aut", "cre")), # Creator is who gets bothered with issues
     person("Matthew", "Plumlee", role = c("aut"))
     ) # Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: Run computer experiments using the adaptive composite grid
-    algotihm with a Gaussian process model.
+    algorithm with a Gaussian process model.
     The algorithm works best when running an experiment that can evaluate thousands
     of points from a deterministic computer simulation.
     This package is an implementation of a forthcoming paper by Plumlee,
