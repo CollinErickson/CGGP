@@ -12,12 +12,14 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 7
 )
 ```
 
 ```{r setup}
-library(CGGP)
+
 ```
 
 ## Introduction
@@ -76,13 +78,13 @@ to make predictions or evaluate additional points.
 To begin, use `CGGPcreate` to create a `CGGP` object.
 You must tell it the number of input dimensions $d$
 and the number of points for the first batch.
-For example, if $d=10$ and you want to begin will 100 points,
+For example, if $d=6$ and you want to begin will 100 points,
 you can create a model `mod` with the following code.
 
 ```{r cggpcreate}
 library(CGGP)
 # Create the initial design
-d <- 10
+d <- 6
 mod <- CGGPcreate(d=d, batchsize=100)
 mod
 ```
@@ -100,7 +102,7 @@ str(mod$design)
 Now you must pass these points to your function to be evaluated.
 
 ```{r}
-f <- function(x){x[1]*x[2] + x[3]^2 + sin(2*pi*x[4])}
+f <- function(x){x[1]*x[2] + x[3]^2 + (x[2]+.5)*sin(2*pi*x[4])}
 Y <- apply(mod$design, 1, f)
 ```
 
@@ -208,5 +210,8 @@ The dots on the plot are included for points that were
 measured and used to fit the model.
 These dots generally only appear when the other dimensions are held at 0.5.
 
+```{r}
+CGGPplotprojection(mod)
+```
 
 
