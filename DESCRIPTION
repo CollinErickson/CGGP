@@ -8,7 +8,13 @@ Authors@R:
     person("Collin", "Erickson", email = "collinberickson@gmail.com", role = c("aut", "cre")), # Creator is who gets bothered with issues
     person("Matthew", "Plumlee", role = c("aut"))
     ) # Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: Run computer experiments using a sparse grid adaptive Gaussian process. 
+Description: Run computer experiments using the adaptive composite grid
+    algotihm with a Gaussian process model.
+    The algorithm works best when running an experiment that can evaluate thousands
+    of points from a deterministic computer simulation.
+    This package is an implementation of a forthcoming paper by Plumlee,
+    Erickson, Ankenman, et al. For a preprint of the paper,
+    contact the maintainer of this package.
 License: GPL-3 | file LICENSE
 Imports: Rcpp (>= 0.12.18)
 LinkingTo: Rcpp, RcppArmadillo
@@ -19,10 +25,9 @@ Suggests:
     reshape2,
     plyr,
     MASS,
-    knitr,
-    rmarkdown
-URL: https://github.com/CollinErickson/SGGP
-BugReports: https://github.com/CollinErickson/SGGP/issues
+    knitr
+URL: https://github.com/CollinErickson/CGGP
+BugReports: https://github.com/CollinErickson/CGGP/issues
 Encoding: UTF-8
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
