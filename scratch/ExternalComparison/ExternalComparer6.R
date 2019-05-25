@@ -726,7 +726,3 @@ if (F) {
   maybe_save("ExternalCompruntime_2", device="png", width=8, height=8, p3)
   
 }
-
-if (F) {
-  egTS <- 1
-}
