@@ -32,7 +32,7 @@ Most useful when setting all values to 0.5 because it will
 have the most points.
 }
 \examples{
-\dontrun{
+\donttest{
 d <- 5
 f1 <- function(x){x[1]+x[2]^2 + cos(x[3]^2*2*pi*4) - 3.3}
 s1 <- CGGPcreate(d, 200)

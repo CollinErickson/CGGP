@@ -29,7 +29,7 @@ Useful for getting an idea of what the correlation parameters mean
 in terms of smoothness.
 }
 \examples{
-\dontrun{
+\donttest{
 CGGPplotcorr()
 CGGPplotcorr(theta=c(-2,-1,0,1))
 

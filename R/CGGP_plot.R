@@ -14,7 +14,7 @@
 #' @references https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # All dimensions should look similar
 #' d <- 8
 #' SG = CGGPcreate(d,201)
@@ -69,7 +69,7 @@ CGGPplotheat <- function(CGGP) {
 #' @family CGGP plot functions
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # All dimensions should look similar
 #' d <- 8
 #' SG = CGGPcreate(d,201)
@@ -106,7 +106,7 @@ CGGPplothist <- function(CGGP, ylog=TRUE) {
 #' @family CGGP plot functions
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # The first and fourth dimensions are most active and will have greater depth
 #' ss <- CGGPcreate(d=5, batchsize=50)
 #' f <- function(x) {cos(2*pi*x[1]*3) + x[3]*exp(4*x[4])}
@@ -386,7 +386,7 @@ valstats <- function(predmean, predvar, Yval, bydim=TRUE,
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' SG <- CGGPcreate(d=3, batchsize=100)
 #' f1 <- function(x){x[1]+x[2]^2}
 #' y <- apply(SG$design, 1, f1)
@@ -436,7 +436,7 @@ CGGPvalstats <- function(CGGP, Xval, Yval, bydim=TRUE, ...) {
 #' @importFrom graphics par
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' CGGPplotcorr()
 #' CGGPplotcorr(theta=c(-2,-1,0,1))
 #' 
@@ -532,7 +532,7 @@ CGGPplotcorr <- function(Corr=CGGP_internal_CorrMatGaussian, theta=NULL,
 #' @family CGGP plot functions
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' d <- 5
 #' f1 <- function(x){x[1]+x[2]^2 + cos(x[3]^2*2*pi*4) - 3.3}
 #' s1 <- CGGPcreate(d, 200)

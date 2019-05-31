@@ -19,7 +19,7 @@ A greater design depth signifies a more important dimension.
 Thus a larger right tail on the histogram are more important variables.
 }
 \examples{
-\dontrun{
+\donttest{
 # All dimensions should look similar
 d <- 8
 SG = CGGPcreate(d,201)

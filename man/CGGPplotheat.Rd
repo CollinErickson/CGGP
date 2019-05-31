@@ -20,7 +20,7 @@ A greater depth means that more points have been measured along that
 dimension or two-dimensional subspace.
 }
 \examples{
-\dontrun{
+\donttest{
 # All dimensions should look similar
 d <- 8
 SG = CGGPcreate(d,201)

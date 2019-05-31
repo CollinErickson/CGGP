@@ -24,7 +24,7 @@ data frame
 Calculate stats for CGGP prediction on validation data
 }
 \examples{
-\dontrun{
+\donttest{
 SG <- CGGPcreate(d=3, batchsize=100)
 f1 <- function(x){x[1]+x[2]^2}
 y <- apply(SG$design, 1, f1)

@@ -18,7 +18,7 @@ ggplot2 plot
 Plot the 2D projections of the blocks of an CGGP object.
 }
 \examples{
-\dontrun{
+\donttest{
 # The first and fourth dimensions are most active and will have greater depth
 ss <- CGGPcreate(d=5, batchsize=50)
 f <- function(x) {cos(2*pi*x[1]*3) + x[3]*exp(4*x[4])}
