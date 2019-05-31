@@ -14,7 +14,7 @@ Description: Run computer experiments using the adaptive composite grid
     This package is an implementation of a forthcoming paper by Plumlee,
     Erickson, Ankenman, et al. For a preprint of the paper,
     contact the maintainer of this package.
-License: GPL-3 | file LICENSE
+License: GPL-3
 Imports: Rcpp (>= 0.12.18)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
