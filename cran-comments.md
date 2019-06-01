@@ -1,3 +1,6 @@
+I submitted this past week and was told to fix an issue with the license and
+some examples. I have done this and am resubmitting with no other changes.
+
 ## Test environments
 * local Windows 7 install, R 3.6.0
 * ubuntu 14.04 (on travis-ci), R 3.6.0
