@@ -39,7 +39,7 @@ test_that("CGGPappend works with large number", {
   
   # Adding 2000 will force it to increase ML and add rows to uo, pila, pala, etc.
   # But it doesn't show as working on codecov? Try 4000
-  expect_error(SG <- CGGPappend(CGGP=SG, batchsize=2*2000), NA)
+  expect_error(SG <- CGGPappend(CGGP=SG, batchsize=2*2000, selectionmethod="Greedy"), NA)
   expect_is(SG, "CGGP")
   expect_gt(nrow(SG$design), lastN)
   # y <- apply(SG$design, 1, f)
@@ -64,7 +64,7 @@ test_that("CGGPappend gives warning if it can't add any data", {
   y <- apply(SG$design, 1, f)
   SG <- CGGPfit(SG, Y=y)
   
-  expect_warning(CGGPappend(CGGP=SG, batchsize=1))
+  expect_warning(CGGPappend(CGGP=SG, batchsize=1, selectionmethod="Greedy"))
 })
 
 
@@ -101,7 +101,7 @@ test_that("Append with different weights on different outputs works", {
   expect_equal(mean(SG2$uo[1:SG2$uoCOUNT,2]) , mean(SG2$uo[1:SG2$uoCOUNT,1]))
   
   # If using full variance (default), will put much more in second dimensions
-  SG3 <- CGGPappend(SG, 26)
+  SG3 <- CGGPappend(SG, 26, selectionmethod = "Greedy")
   if (F) {
     SG3$uo[1:SG3$uoCOUNT,] %>% summary
     CGGPblockplot(SG3)
@@ -109,7 +109,7 @@ test_that("Append with different weights on different outputs works", {
   expect_gt(mean(SG3$uo[1:SG3$uoCOUNT,2]) - 2 , mean(SG3$uo[1:SG3$uoCOUNT,1]))
   
   # Last option is to standardize with "/range^2"
-  expect_error(SG4 <- CGGPappend(SG, 26, multioutputdim_weights="/range^2"), NA)
+  expect_error(SG4 <- CGGPappend(SG, 26, selectionmethod = "Greedy", multioutputdim_weights="/range^2"), NA)
   if (F) {
     SG4$uo[1:SG4$uoCOUNT,] %>% summary
     CGGPblockplot(SG4)
@@ -117,11 +117,11 @@ test_that("Append with different weights on different outputs works", {
   expect_gt(mean(SG3$uo[1:SG3$uoCOUNT,2]) - 2 , mean(SG3$uo[1:SG3$uoCOUNT,1]))
   
   # Bad options
-  expect_error(CGGPappend(SG, 26, multioutputdim_weights="/range"))
-  expect_error(CGGPappend(SG, 26, multioutputdim_weights=c(1,2,3)))
+  expect_error(CGGPappend(SG, 26, selectionmethod = "Greedy", multioutputdim_weights="/range"))
+  expect_error(CGGPappend(SG, 26, selectionmethod = "Greedy", multioutputdim_weights=c(1,2,3)))
   # Can't actually fit when range is zero, so making a fake one.
   # SG0 <- CGGPfit(SG, SG$Y*0)
   SG$Y <- SG$Y*0
-  expect_error(CGGPappend(SG, 26, multioutputdim_weights="/range^2"))
+  expect_error(CGGPappend(SG, 26, selectionmethod = "Greedy", multioutputdim_weights="/range^2"))
   
 })
