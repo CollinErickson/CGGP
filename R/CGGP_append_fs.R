@@ -108,7 +108,7 @@ CGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' SG <- CGGPcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- CGGPfit(SG, Y=y)
-#' SG <- CGGPappend(CGGP=SG, batchsize=20)
+#' SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod="Greedy")
 #' # UCB,TS,Greedy
 CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
                        multioutputdim_weights=1){

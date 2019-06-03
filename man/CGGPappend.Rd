@@ -27,7 +27,7 @@ Add `batchsize` points to `SG` using `theta`.
 SG <- CGGPcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 SG <- CGGPfit(SG, Y=y)
-SG <- CGGPappend(CGGP=SG, batchsize=20)
+SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod="Greedy")
 # UCB,TS,Greedy
 }
 \seealso{
