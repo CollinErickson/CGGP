@@ -13,7 +13,7 @@ run_one_CGGP_example <- function(testf, d, N0, Nfinal, batchsize, Npred, plotit=
   
   for(c in 1:ceiling((Nfinal-N0)/batchsize)){
     cat(c, " ")
-    SG=CGGPappend(SG,batchsize) #add 200 points to the design based on thetahat
+    SG=CGGPappend(SG,batchsize, "Greedy") #add 200 points to the design based on thetahat
     Y = testf(SG$design)
     if(c < 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
       SG = CGGPfit(SG,Y) #estimate the parameter (SG structure is important)
