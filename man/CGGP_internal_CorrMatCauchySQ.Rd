@@ -36,11 +36,18 @@ Note that this is not the correlation between two vectors.
 CGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,-.5))
 }
 \seealso{
-Other correlation functions: \code{\link{CGGP_internal_CorrMatCauchySQT}},
+Other correlation functions: \code{\link{CGGP_internal_CorrMatCauchyNug}},
+  \code{\link{CGGP_internal_CorrMatCauchySQNug}},
+  \code{\link{CGGP_internal_CorrMatCauchySQTNug}},
+  \code{\link{CGGP_internal_CorrMatCauchySQT}},
   \code{\link{CGGP_internal_CorrMatCauchy}},
+  \code{\link{CGGP_internal_CorrMatGaussianNug}},
   \code{\link{CGGP_internal_CorrMatGaussian}},
+  \code{\link{CGGP_internal_CorrMatMatern32Nug}},
   \code{\link{CGGP_internal_CorrMatMatern32}},
+  \code{\link{CGGP_internal_CorrMatMatern52Nug}},
   \code{\link{CGGP_internal_CorrMatMatern52}},
+  \code{\link{CGGP_internal_CorrMatPowerExpNug}},
   \code{\link{CGGP_internal_CorrMatPowerExp}}
 }
 \concept{correlation functions}

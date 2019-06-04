@@ -24,7 +24,7 @@
 #'
 #' @examples
 #' CGGP_internal_CorrMatCauchy(c(0,.2,.4),c(.1,.3,.5), theta=c(-1,.9,.1))
-CGGP_internal_CorrMatCauchy <- function(x1, x2, theta, return_dCdtheta=FALSE,
+CGGP_internal_CorrMatCauchyNug <- function(x1, x2, theta, return_dCdtheta=FALSE,
                                         return_numpara=FALSE,
                                         returnlogs=FALSE) {
   if(return_numpara){
@@ -39,15 +39,18 @@ CGGP_internal_CorrMatCauchy <- function(x1, x2, theta, return_dCdtheta=FALSE,
     alpha = 2*exp(3*theta[3]+2)/(1+exp(3*theta[3]+2))
     halpha = h^alpha
     pow = -expHE/alpha
+    nug <- 1e-10
     
     if (!returnlogs) {
-      C = (1+halpha)^pow
+      C = (1-nug) * (1+halpha)^pow + nug*(diffmat<10^(-4))
     } else {
-      C = pow * log(1+halpha)
+      # C = pow * log(1+halpha)
+      C = (1-nug) * (1+halpha)^pow + nug*(diffmat<10^(-4))
+      C <- log(C)
     }
     if(return_dCdtheta){
       if (!returnlogs) {
-        dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),
+        dCdtheta = (1-nug)*cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),
                          3*C*pow*log(1+halpha),
                          (C*(expHE*log(1+halpha)/alpha^2 - 
                                expHE*halpha*log(h)/alpha/(1+halpha))) * 
@@ -81,7 +84,7 @@ CGGP_internal_CorrMatCauchy <- function(x1, x2, theta, return_dCdtheta=FALSE,
 #'
 #' @examples
 #' CGGP_internal_CorrMatCauchySQT(c(0,.2,.4),c(.1,.3,.5), theta=c(-.1,.3,-.7))
-CGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE,
+CGGP_internal_CorrMatCauchySQTNug <- function(x1, x2,theta, return_dCdtheta = FALSE,
                                            return_numpara=FALSE,
                                            returnlogs=FALSE) {
   if(return_numpara){
@@ -101,11 +104,14 @@ CGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
     alpha = 2*exp(5)/(1+exp(5))
     halpha = h^alpha
     pow = -expHE/alpha
+    nug <- 1e-10
     
     if (!returnlogs) {
-      C = (1+halpha)^pow
+      C = (1-nug) * (1+halpha)^pow + nug*(diffmat<10^(-4))
     } else {
-      C = pow * log(1+halpha)
+      # C = pow * log(1+halpha)
+      C = (1-nug) * (1+halpha)^pow + nug*(diffmat<10^(-4))
+      C <- log(C)
     }
     
     if(return_dCdtheta){
@@ -116,7 +122,7 @@ CGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
       hnabs = outer(x1ts,x2ts,'-')
       LO = alpha*expTILT*(pow/expLS)*(abs(h)^(alpha-1)*lh*sign(hnabs))
       if (!returnlogs) {
-        dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha),LO*Q)
+        dCdtheta = (1-nug)*cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha),LO*Q)
       } else {
         dCdtheta = cbind(3*expHE*halpha/(1+halpha), 3*pow*log(1+halpha), LO/(1+halpha))
       }
@@ -143,7 +149,7 @@ CGGP_internal_CorrMatCauchySQT <- function(x1, x2,theta, return_dCdtheta = FALSE
 #'
 #' @examples
 #' CGGP_internal_CorrMatCauchySQ(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,-.5))
-CGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
+CGGP_internal_CorrMatCauchySQNug <- function(x1, x2,theta, return_dCdtheta = FALSE,
                                           return_numpara =FALSE,returnlogs = FALSE) {
   if(return_numpara){
     return(2);
@@ -157,15 +163,18 @@ CGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
     alpha = 2*exp(0+6)/(1+exp(0+6))
     halpha = h^alpha
     pow = -expHE/alpha
+    nug <- 1e-10
     
     if(!returnlogs){
-      C = (1+halpha)^pow
+      C = (1-nug) * (1+halpha)^pow + nug*(diffmat<10^(-4))
     }else{
-      C = pow*log(1+halpha)
+      # C = pow*log(1+halpha)
+      C = (1-nug) * (1+halpha)^pow + nug*(diffmat<10^(-4))
+      C <- log(C)
     }
     if(return_dCdtheta){
       if(!returnlogs){
-        dCdtheta = cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
+        dCdtheta = (1-nug)*cbind(3*expHE*((1+halpha)^(pow-1))*(halpha),3*C*pow*log(1+halpha))
       }else{
         dCdtheta = cbind(3*expHE*halpha/(1+halpha),3*C)
       }
@@ -196,7 +205,7 @@ CGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
 #'
 #' @examples
 #' CGGP_internal_CorrMatGaussian(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
-CGGP_internal_CorrMatGaussian <- function(x1, x2,theta, return_dCdtheta = FALSE,
+CGGP_internal_CorrMatGaussianNug <- function(x1, x2,theta, return_dCdtheta = FALSE,
                                           return_numpara=FALSE,
                                           returnlogs=FALSE) {
   if(return_numpara){
@@ -208,16 +217,18 @@ CGGP_internal_CorrMatGaussian <- function(x1, x2,theta, return_dCdtheta = FALSE,
     
     expLS = exp(3*theta[1])
     h = diffmat2/expLS
+    nug <- 1e-10
     
     if (!returnlogs) {
-      # C = (1-10^(-10))*exp(-h) + 10^(-10)*(diffmat<10^(-4))
-      C = exp(-h)
+      C = (1-nug)*exp(-h) + nug*(diffmat<10^(-4))
     } else {
-      C = -h
+      # C = -h
+      C = (1-nug)*exp(-h) + nug*(diffmat<10^(-4))
+      C <- log(C)
     }
     if(return_dCdtheta){
       if (!returnlogs) {
-        dCdtheta <- 3*C*diffmat2 / expLS
+        dCdtheta <- (1-nug)*(3*C*diffmat2 / expLS)
       } else {
         dCdtheta <- 3*diffmat2 / expLS
       }
@@ -246,7 +257,7 @@ CGGP_internal_CorrMatGaussian <- function(x1, x2,theta, return_dCdtheta = FALSE,
 #'
 #' @examples
 #' CGGP_internal_CorrMatMatern32(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
-CGGP_internal_CorrMatMatern32 <- function(x1, x2,theta, return_dCdtheta=FALSE,
+CGGP_internal_CorrMatMatern32Nug <- function(x1, x2,theta, return_dCdtheta=FALSE,
                                           return_numpara=FALSE,
                                           returnlogs=FALSE) {
   if(return_numpara){
@@ -257,16 +268,18 @@ CGGP_internal_CorrMatMatern32 <- function(x1, x2,theta, return_dCdtheta=FALSE,
     
     expLS = exp(3*theta[1])
     h = diffmat/expLS
+    nug <- 1e-10
     
     if (!returnlogs) {
-      # C = (1-10^(-10))*(1+sqrt(3)*h)*exp(-sqrt(3)*h) + 10^(-10)*(diffmat<10^(-4))
-      C = (1+sqrt(3)*h)*exp(-sqrt(3)*h)
+      C = (1-nug)*(1+sqrt(3)*h)*exp(-sqrt(3)*h) + nug*(diffmat<10^(-4))
     } else {
-      C <- log(1+sqrt(3)*h) - sqrt(3)*h
+      # C <- log(1+sqrt(3)*h) - sqrt(3)*h
+      C = (1-nug)*(1+sqrt(3)*h)*exp(-sqrt(3)*h) + nug*(diffmat<10^(-4))
+      C <- log(C)
     }
     if(return_dCdtheta){
       if (!returnlogs) {
-        dCdtheta <- (sqrt(3)*diffmat*exp(-sqrt(3)*h) - sqrt(3)*C*diffmat) * (-3/expLS)
+        dCdtheta <- (1-nug)*((sqrt(3)*diffmat*exp(-sqrt(3)*h) - sqrt(3)*C*diffmat) * (-3/expLS))
       } else {
         dCdtheta <- (sqrt(3)*diffmat/(1+sqrt(3)*h) - sqrt(3)*diffmat) * (-3/expLS)
       }
@@ -294,7 +307,7 @@ CGGP_internal_CorrMatMatern32 <- function(x1, x2,theta, return_dCdtheta=FALSE,
 #'
 #' @examples
 #' CGGP_internal_CorrMatMatern52(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
-CGGP_internal_CorrMatMatern52 <- function(x1, x2,theta, return_dCdtheta=FALSE,
+CGGP_internal_CorrMatMatern52Nug <- function(x1, x2,theta, return_dCdtheta=FALSE,
                                           return_numpara=FALSE,
                                           returnlogs=FALSE) {
   if(return_numpara){
@@ -304,16 +317,18 @@ CGGP_internal_CorrMatMatern52 <- function(x1, x2,theta, return_dCdtheta=FALSE,
     diffmat =abs(outer(x1,x2,'-'))
     expLS = exp(3*theta[1])
     h = diffmat/expLS
+    nug <- 1e-10
     if (!returnlogs) {
-      # C = (1-10^(-10))*(1+sqrt(5)*h+5/3*h^2)*exp(-sqrt(5)*h) + 10^(-10)*(diffmat<10^(-4))
-      C = (1+sqrt(5)*h+5/3*h^2)*exp(-sqrt(5)*h)
+      C = (1-nug)*(1+sqrt(5)*h+5/3*h^2)*exp(-sqrt(5)*h) + nug*(diffmat<10^(-4))
     } else {
-      C = log(1+sqrt(5)*h+5/3*h^2) - sqrt(5)*h
+      # C = log(1+sqrt(5)*h+5/3*h^2) - sqrt(5)*h
+      C = (1-nug)*(1+sqrt(5)*h+5/3*h^2)*exp(-sqrt(5)*h) + nug*(diffmat<10^(-4))
+      C <- log(C)
     }
     if(return_dCdtheta){
       if (!returnlogs) {
-        dCdtheta <- ((sqrt(5)*diffmat+10/3*diffmat*h)*exp(-sqrt(5)*h) -
-                       sqrt(5)*C*diffmat) * (-3/expLS)
+        dCdtheta <- (1-nug)*(((sqrt(5)*diffmat+10/3*diffmat*h)*exp(-sqrt(5)*h) -
+                       sqrt(5)*C*diffmat) * (-3/expLS))
       } else {
         dCdtheta <- ((sqrt(5)*diffmat+10/3*diffmat*h)/(1+sqrt(5)*h+5/3*h^2) -
                        sqrt(5)*diffmat) * (-3/expLS)
@@ -343,7 +358,7 @@ CGGP_internal_CorrMatMatern52 <- function(x1, x2,theta, return_dCdtheta=FALSE,
 #'
 #' @examples
 #' CGGP_internal_CorrMatPowerExp(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,.2))
-CGGP_internal_CorrMatPowerExp <- function(x1, x2,theta,
+CGGP_internal_CorrMatPowerExpNug <- function(x1, x2,theta,
                                           return_dCdtheta = FALSE,
                                           return_numpara=FALSE,
                                           returnlogs=FALSE) {
@@ -358,15 +373,17 @@ CGGP_internal_CorrMatPowerExp <- function(x1, x2,theta,
     maxpower <- 1.95
     alpha <- minpower + (theta[2]+1)/2 * (maxpower - minpower)
     h = diffmat/expLS
+    nug <- 1e-10
     if (!returnlogs) {
-      # C = (1-nug)*exp(-(h)^alpha) + nug*(diffmat<10^(-4))
-      C = exp(-(h)^alpha)
+      C = (1-nug)*exp(-(h)^alpha) + nug*(diffmat<10^(-4))
     } else {
-      C = -(h^alpha)
+      # C = -(h^alpha)
+      C = (1-nug)*exp(-(h)^alpha) + nug*(diffmat<10^(-4))
+      C = log(C)
     }
     if(return_dCdtheta){
       if (!returnlogs) {
-        dCdtheta <- cbind(tmax*alpha*C*diffmat^alpha/expLS^alpha,
+        dCdtheta <- (1-nug)*cbind(tmax*alpha*C*diffmat^alpha/expLS^alpha,
                                   -C*h^alpha*log(h)/2 * (maxpower - minpower))
       } else {
         dCdtheta <- cbind(tmax*alpha*diffmat^alpha/expLS^alpha,
