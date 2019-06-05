@@ -118,7 +118,7 @@ require("comparer")
 e2 <- ffexp$new(
   eval_func = sggpexp_func,
   # corr = c("cauchysq", "powerexp")[1], #"cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
-  corr = c("cauchysq", "cauchysqt", "cauchy", "powerexp", "m32", "m52", "gauss",
+  corr = c("cauchysq", "cauchysqt", "cauchy", "powerexp", "m32", "m52", #"gauss",
            "cauchysqnug", "cauchysqtnug", "cauchynug", "powerexpnug", "m32nug", "m52nug", "gaussnug"),
   sel.method = c("Greedy"), #c("TS", "UCB", "Greedy"),
   fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"), d=c(3,6,7,8,10),
@@ -140,7 +140,7 @@ e2$rungrid
 # try because it gave delete error before, but shouldn't need it now
 try(e2$recover_parallel_temp_save(delete_after = FALSE))
 e2$save_self()
-e2$run_one(1)
+# e2$run_one(1)
 # if (F) {
 # e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
 #            write_start_files=!TRUE, write_error_files=!T, run_order = "random")

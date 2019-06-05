@@ -173,7 +173,11 @@ CGGP_internal_calcsigma2 <- function(CGGP, y, theta, return_lS=FALSE) {
       nv = length(Xbrn);
       Sstuff = CGGP$CorrMat(Xbrn, Xbrn , theta[(dimlcv-1)*CGGP$numpara+1:CGGP$numpara],return_dCdtheta = FALSE)
       S = Sstuff
-      cS = chol(S)
+      # cS = chol(S)
+      cS = try(chol(S))
+      if (inherits(cS, "try-error")) {
+        stop("Cholesky error in CGGP_internal_calcsigma2")
+      }
       
       cholS[[(dimlcv-1)*Q+levellcv]] = cS+t(cS)-diag(diag(cS)) #store the symmetric version for C code
       if(return_lS){

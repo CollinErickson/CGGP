@@ -209,11 +209,15 @@ CGGP_internal_CorrMatGaussian <- function(x1, x2,theta, return_dCdtheta = FALSE,
     expLS = exp(3*theta[1])
     h = diffmat2/expLS
     
+    # Gaussian corr is awful, always needs a nugget
+    nug <- 1e-10
     if (!returnlogs) {
-      # C = (1-10^(-10))*exp(-h) + 10^(-10)*(diffmat<10^(-4))
-      C = exp(-h)
+      C = (1-nug)*exp(-h) + nug*(diffmat<10^(-4))
+      # C = exp(-h)
     } else {
-      C = -h
+      # C = -h
+      C = (1-nug)*exp(-h) + nug*(diffmat<10^(-4))
+      C <- log(C)
     }
     if(return_dCdtheta){
       if (!returnlogs) {
