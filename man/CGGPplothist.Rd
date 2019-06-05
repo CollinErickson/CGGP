@@ -35,9 +35,8 @@ CGGPplothist(SG)
 \seealso{
 Other CGGP plot functions: \code{\link{CGGPplotblocks}},
   \code{\link{CGGPplotcorr}}, \code{\link{CGGPplotheat}},
-  \code{\link{CGGPplotprojection}},
   \code{\link{CGGPplotsamplesneglogpost}},
-  \code{\link{CGGPplottheta}},
+  \code{\link{CGGPplotslice}}, \code{\link{CGGPplottheta}},
   \code{\link{CGGPplotvariogram}},
   \code{\link{CGGPvalplot}}
 }

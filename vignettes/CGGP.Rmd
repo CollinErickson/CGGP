@@ -200,7 +200,7 @@ look like.
 CGGPplotcorr(mod)
 ```
 
-The function `CGGPplotprojection` shows how the output changes when a
+The function `CGGPplotslice` shows how the output changes when a
 single input is varied across its range from 0 to 1 while
 holding all the other inputs at a constant value.
 This plot may also be referred to as a slice plot.
@@ -210,8 +210,8 @@ The dots on the plot are included for points that were
 measured and used to fit the model.
 These dots generally only appear when the other dimensions are held at 0.5.
 
-```{r plotproj}
-CGGPplotprojection(mod)
+```{r plotslice}
+CGGPplotslice(mod)
 ```
 
 

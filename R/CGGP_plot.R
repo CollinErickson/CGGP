@@ -512,9 +512,9 @@ CGGPplotcorr <- function(Corr=CGGP_internal_CorrMatGaussian, theta=NULL,
 }
 
 
-#' CGGP projection plot
+#' CGGP slice plot
 #' 
-#' Show prediction plots when projected down to one dimension.
+#' Show prediction plots when varying over only one dimension.
 #' Most useful when setting all values to 0.5 because it will
 #' have the most points.
 #'
@@ -539,11 +539,11 @@ CGGPplotcorr <- function(Corr=CGGP_internal_CorrMatGaussian, theta=NULL,
 #' s1 <- CGGPfit(s1, apply(s1$design, 1, f1))
 #' #s1 <- CGGPappend(s1, 200)
 #' #s1 <- CGGPfit(s1, apply(s1$design, 1, f1))
-#' CGGPplotprojection(s1)
-#' CGGPplotprojection(s1, 0.)
-#' CGGPplotprojection(s1, s1$design[nrow(s1$design),])
+#' CGGPplotslice(s1)
+#' CGGPplotslice(s1, 0.)
+#' CGGPplotslice(s1, s1$design[nrow(s1$design),])
 #' }
-CGGPplotprojection <- function(CGGP, proj=.5, np=300, color="pink", outdims, scales="free_y", facet="grid") {
+CGGPplotslice <- function(CGGP, proj=.5, np=300, color="pink", outdims, scales="free_y", facet="grid") {
   if (!is.null(CGGP$design_unevaluated)) {stop("CGGP must be updated with all data")}
   if (length(proj) == 1) {proj <- rep(proj, CGGP$d)}
   if (length(proj) != CGGP$d) {stop("proj should be of length CGGP$d or 1")}
@@ -620,7 +620,7 @@ CGGPplotprojection <- function(CGGP, proj=.5, np=300, color="pink", outdims, sca
     } else if (facet == "wrap") {
       p <- p + ggplot2::facet_wrap(d ~ .)
     } else {
-      stop("Not valid facet argument in CGGPprojectionplot")
+      stop("Not valid facet argument in CGGPplotslice")
     }
   } else {
     p <- p +ggplot2::facet_grid(outdim ~ d, scales=scales) #"free_y")

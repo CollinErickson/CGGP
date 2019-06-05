@@ -178,14 +178,14 @@ CGGPplotvariogram(CG)
 
 
 
-#### `CGGPplotprojection`
+#### `CGGPplotslice`
 
-`CGGPplotprojection` shows what the predicted model along each individual
+`CGGPplotslice` shows what the predicted model along each individual
 dimension when the other input dimensions are held constant, i.e.,
-the projections down to single dimensions.
-By default the projection is done holding all other inputs at 0.5, but this
+a slice along a single dimension.
+By default the slice is done holding all other inputs at 0.5, but this
 can be changed by changing the argument `proj`.
-The black dots are the data points that are in that projection.
+The black dots are the data points that are in that slice
 If you change `proj` to have values not equal to 0.5, you probably
 won't see any black dots.
 The pink regions are the 95% prediction intervals.
@@ -194,19 +194,19 @@ This plot is the best for giving an idea of what the higher dimension
 function look like.
 You can see how the output changes as each input is varied.
 
-```{r projectionplot}
-CGGPplotprojection(CG)
+```{r plotslice}
+CGGPplotslice(CG)
 ```
 
 The next plot changes so that all the other dimensions are held constant
-at 0.15 for each projection plot.
+at 0.15 for each slice plot.
 When moving from the center line, the error bounds generally
 should be larger since
 it is further from the data, but we should see similar patterns
 unless the function is highly nonlinear.
 
-```{r projectionplot2}
-CGGPplotprojection(CG, proj = rep(.15, CG$d))
+```{r plotslice2}
+CGGPplotslice(CG, proj = rep(.15, CG$d))
 ```
 
 

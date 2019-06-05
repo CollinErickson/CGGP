@@ -32,9 +32,10 @@ CG <- CGGPcreate(d=d,200)
 print(CG)
 #> CGGP object
 #>    d = 4
+#>    output dimensions = 1
 #>    CorrFunc = CauchySQ
-#>    number of design points             = 197
-#>    number of unevaluated design points = 197
+#>    number of design points             = 193
+#>    number of unevaluated design points = 193
 #>    Available functions:
 #>      - CGGPfit(CGGP, Y) to update parameters with new data
 #>      - CGGPpred(CGGP, xp) to predict at new points
@@ -43,8 +44,7 @@ print(CG)
 ```
 
 A new `CGGP` object has design points that should be evaluated next,
-either from `CG$design` or
-`CG$design_unevaluated`.
+either from `CG$design` or `CG$design_unevaluated`.
 
 ``` r
 f <- function(x) {x[1]^2*cos(x[3]) + 4*(0.5-x[2])^3*(1-x[1]/3) + x[1]*sin(2*2*pi*x[3]^2)}
@@ -59,8 +59,9 @@ CG <- CGGPfit(CG, Y)
 CG
 #> CGGP object
 #>    d = 4
+#>    output dimensions = 1
 #>    CorrFunc = CauchySQ
-#>    number of design points             = 197
+#>    number of design points             = 193
 #>    number of unevaluated design points = 0
 #>    Available functions:
 #>      - CGGPfit(CGGP, Y) to update parameters with new data
@@ -76,30 +77,30 @@ you can use `CGGPpred`.
 xp <- matrix(runif(10*CG$d), ncol=CG$d)
 CGGPpred(CG, xp)
 #> $mean
-#>                [,1]
-#>  [1,]  0.0001162884
-#>  [2,] -0.0344228978
-#>  [3,] -0.0196339461
-#>  [4,]  0.7418505766
-#>  [5,]  0.4708991004
-#>  [6,] -0.2423823333
-#>  [7,]  0.1824982528
-#>  [8,]  0.0323529025
-#>  [9,]  0.4261492247
-#> [10,] -0.2613434429
+#>             [,1]
+#>  [1,] -0.5797854
+#>  [2,] -0.3749652
+#>  [3,]  0.1128483
+#>  [4,]  0.9209868
+#>  [5,]  0.9907518
+#>  [6,] -0.2265420
+#>  [7,]  0.1801634
+#>  [8,] -0.3477451
+#>  [9,]  0.7743188
+#> [10,] -0.0355732
 #> 
 #> $var
 #>               [,1]
-#>  [1,] 7.974964e-06
-#>  [2,] 1.492197e-06
-#>  [3,] 1.537227e-05
-#>  [4,] 2.460356e-05
-#>  [5,] 1.117700e-05
-#>  [6,] 1.654354e-05
-#>  [7,] 8.025908e-07
-#>  [8,] 7.446481e-06
-#>  [9,] 5.917793e-06
-#> [10,] 1.421730e-05
+#>  [1,] 4.354093e-03
+#>  [2,] 1.928985e-02
+#>  [3,] 3.206114e-03
+#>  [4,] 4.775720e-03
+#>  [5,] 1.564388e-04
+#>  [6,] 4.594134e-06
+#>  [7,] 1.772568e-04
+#>  [8,] 4.485993e-03
+#>  [9,] 1.386959e-02
+#> [10,] 1.293479e-02
 ```
 
 To add new design points to the already existing design, use
@@ -134,6 +135,11 @@ column.
 
 ``` r
 CGGPplotblocks(CG)
+#> Registered S3 methods overwritten by 'ggplot2':
+#>   method         from 
+#>   [.quosures     rlang
+#>   c.quosures     rlang
+#>   print.quosures rlang
 ```
 
 ![](tools/README-plotblocks-1.png)<!-- -->
@@ -162,7 +168,7 @@ explored more. These should be the more active dimensions.
 ``` r
 CGGPplothist(CG)
 #> Warning: Transformation introduced infinite values in continuous y-axis
-#> Warning: Removed 4 rows containing missing values (geom_bar).
+#> Warning: Removed 8 rows containing missing values (geom_bar).
 ```
 
 ![](tools/README-hist-1.png)<!-- -->
@@ -198,38 +204,36 @@ CGGPplotvariogram(CG)
 
 ![](tools/README-vario-1.png)<!-- -->
 
-#### `CGGPplotprojection`
+#### `CGGPplotslice`
 
-`CGGPplotprojection` shows what the predicted model along each
-individual dimension when the other input dimensions are held constant,
-i.e., the projections down to single dimensions. By default the
-projection is done holding all other inputs at 0.5, but this can be
-changed by changing the argument `proj`. The black dots are the data
-points that are in that projection. If you change `proj` to have values
-not equal to 0.5, you probably won’t see any black dots. The pink
-regions are the 95% prediction intervals.
+`CGGPplotslice` shows what the predicted model along each individual
+dimension when the other input dimensions are held constant, i.e., a
+slice along a single dimension. By default the slice is done holding all
+other inputs at 0.5, but this can be changed by changing the argument
+`proj`. The black dots are the data points that are in that slice If you
+change `proj` to have values not equal to 0.5, you probably won’t see
+any black dots. The pink regions are the 95% prediction intervals.
 
 This plot is the best for giving an idea of what the higher dimension
 function look like. You can see how the output changes as each input is
 varied.
 
 ``` r
-CGGPplotprojection(CG)
+CGGPplotslice(CG)
 ```
 
-![](tools/README-projectionplot-1.png)<!-- -->
+![](tools/README-plotslice-1.png)<!-- -->
 
 The next plot changes so that all the other dimensions are held constant
-at 0.15 for each projection plot. When moving from the center line, the
-error bounds generally should be larger since it is further from the
-data, but we should see similar patterns unless the function is highly
-nonlinear.
+at 0.15 for each slice plot. When moving from the center line, the error
+bounds generally should be larger since it is further from the data, but
+we should see similar patterns unless the function is highly nonlinear.
 
 ``` r
-CGGPplotprojection(CG, proj = rep(.15, CG$d))
+CGGPplotslice(CG, proj = rep(.15, CG$d))
 ```
 
-![](tools/README-projectionplot2-1.png)<!-- -->
+![](tools/README-plotslice2-1.png)<!-- -->
 
 #### `CGGPplottheta`
 

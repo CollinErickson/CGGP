@@ -108,21 +108,21 @@ test_that("Plots work", {
   expect_is(p, "ggplot")
   rm(p)
   
-  # Projection plot
+  # slice plot
   # These should work fine, return ggplot
-  expect_error(pp1 <- CGGPplotprojection(SG), NA)
+  expect_error(pp1 <- CGGPplotslice(SG), NA)
   expect_is(pp1, "ggplot")
-  expect_error(pp1 <- CGGPplotprojection(SG2), NA)
+  expect_error(pp1 <- CGGPplotslice(SG2), NA)
   expect_is(pp1, "ggplot")
-  expect_error(pp1 <- CGGPplotprojection(SG2, outdims = 2), NA)
+  expect_error(pp1 <- CGGPplotslice(SG2, outdims = 2), NA)
   expect_is(pp1, "ggplot")
-  expect_error(pp2 <- CGGPplotprojection(SG, proj = c(0)), NA)
+  expect_error(pp2 <- CGGPplotslice(SG, proj = c(0)), NA)
   expect_is(pp2, "ggplot")
   # Error if proj is not 1 or d dim
-  expect_error(CGGPplotprojection(SG, proj=c(1,1)))
-  expect_error(CGGPplotprojection(SG, proj=c(1,1,1,1)))
+  expect_error(CGGPplotslice(SG, proj=c(1,1)))
+  expect_error(CGGPplotslice(SG, proj=c(1,1,1,1)))
   # Error if not all evaluated
-  expect_error(CGGPplotprojection(CGGPappend(SG, 16)))
+  expect_error(CGGPplotslice(CGGPappend(SG, 16)))
   rm(pp1, pp2)
   
   # Variogram plot

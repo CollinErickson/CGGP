@@ -26,8 +26,8 @@ CGGPplottheta(gs)
 Other CGGP plot functions: \code{\link{CGGPplotblocks}},
   \code{\link{CGGPplotcorr}}, \code{\link{CGGPplotheat}},
   \code{\link{CGGPplothist}},
-  \code{\link{CGGPplotprojection}},
   \code{\link{CGGPplotsamplesneglogpost}},
+  \code{\link{CGGPplotslice}},
   \code{\link{CGGPplotvariogram}},
   \code{\link{CGGPvalplot}}
 }
