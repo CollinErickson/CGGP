@@ -97,7 +97,6 @@ CGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' @param batchsize Number of points to add
 #' @param selectionmethod How points will be selected: one of `UCB`, `TS`,
 #' `Greedy`, `Oldest`, `Random`, or `Lowest`
-#' @param multioutputdim_weights Weights for each output dimension.
 #' @importFrom stats quantile sd var
 #'
 #' @return SG with new points added.
@@ -110,25 +109,10 @@ CGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' SG <- CGGPfit(SG, Y=y)
 #' SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod="Greedy")
 #' # UCB,TS,Greedy
-CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
-                       multioutputdim_weights=1){
+CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB"){
   # ===== Check inputs =====
   if (!(selectionmethod %in% c("UCB", "TS", "Greedy", "Oldest", "Random", "Lowest"))) {
     stop("selectionmethod in CGGPappend must be one of UCB, TS, Greedy, Oldest, Random, or Lowest")
-  }
-  if (is.numeric(multioutputdim_weights)) {
-    if (length(multioutputdim_weights) != 1 && length(multioutputdim_weights) != ncol(CGGP$y)) {
-      stop("multioutputdim_weights if numeric must have length 1 or number of outputs")
-    }
-  } else if (multioutputdim_weights == "/range^2") {
-    multioutputdim_weights <- 1 / (apply(CGGP$Y, 2, max) - apply(CGGP$Y, 2, min))^2
-    if (any(is.na(multioutputdim_weights)) || any(is.infinite(multioutputdim_weights))) {
-      stop("multioutputdim_weights = '/range^2' not available when range is 0.")
-    }
-  } else if (multioutputdim_weights == "/sigma2MAP") {
-    multioutputdim_weights <- 1 / CGGP$sigma2MAP
-  } else {
-    stop("multioutputdim_weights not acceptable")
   }
   
   if (!is.null(CGGP$design_unevaluated)) {
@@ -209,7 +193,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
     }
     IMES_MAP[1:CGGP$poCOUNT] = rowMeans(
       sweep(IMES_MAP_beforemean, 2,
-            sigma2MAP.thisloop * multioutputdim_weights, "*")
+            sigma2MAP.thisloop, "*")
     )
     
     # Clean up to avoid silly errors
@@ -284,7 +268,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
                 function(x) {
                   # Weight by sigma2 samples
                   mean(sigma2.allsamples.alloutputs[samplelcv,] *
-                         multioutputdim_weights*x)
+                         x)
                 })
       }
     }; rm(samplelcv)
@@ -506,7 +490,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
             IMES_MAP_beforemeannewpoint <- apply(MSE_MAP, 3,
                                                  function(x) {CGGP_internal_calcMSEde(as.vector(CGGP$po[CGGP$poCOUNT, ]), x)})
             # Take weighted mean over dimensions
-            IMES_MAP[CGGP$poCOUNT] <- mean(CGGP$sigma2MAP * IMES_MAP_beforemeannewpoint * multioutputdim_weights)
+            IMES_MAP[CGGP$poCOUNT] <- mean(CGGP$sigma2MAP * IMES_MAP_beforemeannewpoint)
           } else if (selectionmethod=="UCB" || selectionmethod=="TS"){
             for(samplelcv in 1:CGGP$numPostSamples){
               if (nopd == 1) { # is a matrix
@@ -525,7 +509,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB",
                                                             }
                 )
                 IMES_PostSamples[CGGP$poCOUNT,samplelcv] <- mean(sigma2.allsamples.alloutputs[samplelcv,] * 
-                                                                   multioutputdim_weights * IMES_PostSamples_beforemeannewpoint)
+                                                                   IMES_PostSamples_beforemeannewpoint)
               }
             }; rm(samplelcv)
             IMES_UCB[CGGP$poCOUNT] = quantile(IMES_PostSamples[CGGP$poCOUNT,],probs=0.9)

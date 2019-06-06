@@ -4,8 +4,7 @@
 \alias{CGGPappend}
 \title{Add points to CGGP}
 \usage{
-CGGPappend(CGGP, batchsize, selectionmethod = "UCB",
-  multioutputdim_weights = 1)
+CGGPappend(CGGP, batchsize, selectionmethod = "UCB")
 }
 \arguments{
 \item{CGGP}{Sparse grid object}
@@ -14,8 +13,6 @@ CGGPappend(CGGP, batchsize, selectionmethod = "UCB",
 
 \item{selectionmethod}{How points will be selected: one of `UCB`, `TS`,
 `Greedy`, `Oldest`, `Random`, or `Lowest`}
-
-\item{multioutputdim_weights}{Weights for each output dimension.}
 }
 \value{
 SG with new points added.
