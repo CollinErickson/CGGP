@@ -171,5 +171,16 @@ if (F) {
 }
 
 if (F) {
-  e2 <- readRDS("./scratch/InternalComparison/ComparerRun7_object_328_of_360.rds")
+  e7 <- readRDS("./scratch/InternalComparison/ComparerRun7_completed.rds")
+  require(ggplot2); require(dplyr); require(magrittr)
+  e7$completed_runs %>% table
+  e7df <- e7$outcleandf[e7$completed_runs, ]
+  colnames(e7df)[1] <- "corr.func"
+  e7df$RMSE %>% summary
+  e7df$RMSE %>% is.na %>% summary
+  e7df$nug <- sapply(e7df$corr.func, function(xx) {grepl("nug", xx)})
+  e7df$corr.funcnn <- sapply(e7df$corr.func, function(xx) {stringr::str_remove(xx, "nug")})
+  ggplot(data=e7df, mapping=aes(nallotted, RMSE, color=corr.funcnn)) + geom_point() + scale_y_log10() + facet_grid(. ~ nug)
+  ggplot(data=e7df, mapping=aes(nallotted, RMSE, color=corr.funcnn)) + geom_point() + scale_y_log10() + facet_grid(nug ~ corr.funcnn)
+  ggplot(data=e7df %>% mutate(RMSE=pmin(10, RMSE)), mapping=aes(nallotted, RMSE, color=corr.funcnn)) + geom_point() + scale_y_log10() + facet_grid(nug ~ corr.funcnn)
 }
