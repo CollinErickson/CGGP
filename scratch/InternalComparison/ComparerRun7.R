@@ -174,7 +174,13 @@ if (F) {
   e7 <- readRDS("./scratch/InternalComparison/ComparerRun7_completed.rds")
   require(ggplot2); require(dplyr); require(magrittr)
   e7$completed_runs %>% table
-  e7df <- e7$outcleandf[e7$completed_runs, ]
+  # e7df <- e7$outcleandf[e7$completed_runs, ]
+  # outcleandf doesn't work when each has different number of rows, this fixes it
+  e7df <- NULL
+  for (irow in 1:length(e7$completed_runs)) {
+    e7df <- rbind(e7df,
+                  cbind(e7$rungrid2()[irow,], e7$outlist[[irow]]))
+  }
   colnames(e7df)[1] <- "corr.func"
   e7df$RMSE %>% summary
   e7df$RMSE %>% is.na %>% summary
@@ -183,4 +189,7 @@ if (F) {
   ggplot(data=e7df, mapping=aes(nallotted, RMSE, color=corr.funcnn)) + geom_point() + scale_y_log10() + facet_grid(. ~ nug)
   ggplot(data=e7df, mapping=aes(nallotted, RMSE, color=corr.funcnn)) + geom_point() + scale_y_log10() + facet_grid(nug ~ corr.funcnn)
   ggplot(data=e7df %>% mutate(RMSE=pmin(10, RMSE)), mapping=aes(nallotted, RMSE, color=corr.funcnn)) + geom_point() + scale_y_log10() + facet_grid(nug ~ corr.funcnn)
+  ggplot(data=e7df %>% mutate(RMSE=pmin(10, RMSE)) %>% sample_n(n()), mapping=aes(nallotted, RMSE, color=nug)) + geom_point() + scale_y_log10() + facet_grid(f ~ corr.funcnn)
+  ggplot(data=e7df %>% mutate(elapsedtime=elapsedtime) %>% sample_n(n()), mapping=aes(nallotted, elapsedtime, color=nug)) + geom_point() + scale_y_log10() + facet_grid(f ~ corr.funcnn)
+  ggplot(data=e7df %>% mutate(CRPscore=pmin(1e4, CRPscore)) %>% sample_n(n()), mapping=aes(nallotted, CRPscore, color=nug)) + geom_point() + scale_y_log10() + facet_grid(f ~ corr.funcnn)
 }
