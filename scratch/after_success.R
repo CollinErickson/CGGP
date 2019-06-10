@@ -37,13 +37,13 @@ cat("Now doing Bayesian\n")
 # Changing this so it doesn't call fit 40 times with no param updates
 for (ic in (1:round((N-201)/200))[1:9]) {
   cat(ic, " ")
-  SG=CGGPappend(SG,200, "Greedy") #add 200 points to the design based on thetahat
+  SG=CGGPappend(SG,200, "MAP") #add 200 points to the design based on thetahat
   Y = testf(SG$design)
   if( ic< 10){  #eventually we stop estimating theta because it takes awhile and the estimates dont change that much
     SG = CGGPfit(SG,Y) #estimate the parameter (SG structure is important)
   }
 }
-SG=CGGPappend(SG, 200*length((1:round((N-201)/200))[-(1:9)]), "Greedy")
+SG=CGGPappend(SG, 200*length((1:round((N-201)/200))[-(1:9)]), "MAP")
 
 cat("\n")
 Y = testf(SG$design)

@@ -32,33 +32,8 @@ CGGP_internal_set_corr <- function(CGGP, corr) {
     CGGP$CorrMat <- CGGP_internal_CorrMatMatern32
     CGGP$CorrName <- "Matern32"
   } else if (tolower(corr) %in% c("matern52", "m52", "m5")) {
-    CGGP$CorrMat <- CGGP_internal_CorrMatMatern52Nug
+    CGGP$CorrMat <- CGGP_internal_CorrMatMatern52
     CGGP$CorrName <- "Matern52"
-    
-  # NUG VERSIONS, only for testing now
-  } else if (tolower(corr) %in% c("cauchysqtnug")) {
-    CGGP$CorrMat <- CGGP_internal_CorrMatCauchySQTNug
-    CGGP$CorrName <- "CauchySQTNug"
-  } else if (tolower(corr) %in% c("cauchysqnug")) {
-    CGGP$CorrMat <- CGGP_internal_CorrMatCauchySQNug
-    CGGP$CorrName <- "CauchySQNug"
-  } else if (tolower(corr) %in% c("cauchynug")) {
-    CGGP$CorrMat <- CGGP_internal_CorrMatCauchyNug
-    CGGP$CorrName <- "CauchyNug"
-  } else if (tolower(corr) %in% c("gaussiannug", "gaussnug", "sqexpnug")) {
-    CGGP$CorrMat <- CGGP_internal_CorrMatGaussianNug
-    CGGP$CorrName <- "GaussianNug"
-  } else if (tolower(corr) %in% c("powerexpnug", "penug", "powerexponentialnug")) {
-    CGGP$CorrMat <- CGGP_internal_CorrMatPowerExpNug
-    CGGP$CorrName <- "PowerExponentialNug"
-  } else if (tolower(corr) %in% c("matern32nug", "m32nug", "m3nug")) {
-    CGGP$CorrMat <- CGGP_internal_CorrMatMatern32Nug
-    CGGP$CorrName <- "Matern32Nug"
-  } else if (tolower(corr) %in% c("matern52nug", "m52nug", "m5nug")) {
-    CGGP$CorrMat <- CGGP_internal_CorrMatMatern52Nug
-    CGGP$CorrName <- "Matern52Nug"
-    
-    
   } else {
     stop(paste0("corr given to CGGPcreate should be one of CauchySQT, CauchySQ,", 
                 " Cauchy, Gaussian, PowerExponential, Matern32, or Matern52.\n",

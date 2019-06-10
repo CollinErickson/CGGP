@@ -186,11 +186,11 @@ CGGP_internal_CorrMatCauchySQ <- function(x1, x2,theta, return_dCdtheta = FALSE,
 #' Note that this is not the correlation between two vectors.
 #' 
 #' WE HIGHLY ADVISE NOT USING THIS CORRELATION FUNCTION.
-#' Try CauchySQT, Cauchy, or Matern 3/2 instead.
+#' Try Power Exponential, CauchySQT, Cauchy, or Matern 3/2 instead.
 #'
 #' @inheritParams CGGP_internal_CorrMatCauchy
 #'
-#' @return Matrix of correlation values between x1 and x2trix
+#' @return Matrix of correlation values between x1 and x2
 #' @export
 #' @family correlation functions
 #'
