@@ -1,5 +1,6 @@
-I submitted this past week and was told to fix an issue with the license and
-some examples. I have done this and am resubmitting with no other changes.
+I submitted a couple of weeks ago and was told to reduce the number
+of tests/examples so it can build in under ten minutes.
+I also made a couple of other changes.
 
 ## Test environments
 * local Windows 7 install, R 3.6.0

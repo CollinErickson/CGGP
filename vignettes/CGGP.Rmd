@@ -138,7 +138,7 @@ of points if it is not able to reach the specified number.
 To add 200 points:
 
 ```{r cggpappend}
-mod <- CGGPappend(mod, 200, "Greedy")
+mod <- CGGPappend(mod, 200, "MAP")
 mod
 ```
 

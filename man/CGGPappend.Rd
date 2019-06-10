@@ -4,7 +4,7 @@
 \alias{CGGPappend}
 \title{Add points to CGGP}
 \usage{
-CGGPappend(CGGP, batchsize, selectionmethod = "UCB")
+CGGPappend(CGGP, batchsize, selectionmethod = "MAP")
 }
 \arguments{
 \item{CGGP}{Sparse grid object}
@@ -12,7 +12,18 @@ CGGPappend(CGGP, batchsize, selectionmethod = "UCB")
 \item{batchsize}{Number of points to add}
 
 \item{selectionmethod}{How points will be selected: one of `UCB`, `TS`,
-`Greedy`, `Oldest`, `Random`, or `Lowest`}
+`MAP`, `Oldest`, `Random`, or `Lowest`.
+`UCB` uses Upper Confidence Bound estimates for the parameters.
+`TS` uses Thompson sampling, a random sample from the posterior.
+`MAP` uses maximum a posteriori parameter estimates.
+`Oldest` adds the block that has been available the longest.
+`Random` adds a random block.
+`Lowest` adds the block with the lowest sum of index levels.
+`UCB` and `TS` are based on bandit algorithms and account for uncertainty
+in the parameter estimates, but are the slowest.
+`MAP` is fast but doesn't account for parameter uncertainty.
+The other three are naive methods that are not adaptive and won't
+perform well.}
 }
 \value{
 SG with new points added.
@@ -24,8 +35,7 @@ Add `batchsize` points to `SG` using `theta`.
 SG <- CGGPcreate(d=3, batchsize=100)
 y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 SG <- CGGPfit(SG, Y=y)
-SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod="Greedy")
-# UCB,TS,Greedy
+SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod="MAP")
 }
 \seealso{
 Other CGGP core functions: \code{\link{CGGPcreate}},

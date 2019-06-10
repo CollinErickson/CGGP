@@ -96,7 +96,18 @@ CGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' @param CGGP Sparse grid object
 #' @param batchsize Number of points to add
 #' @param selectionmethod How points will be selected: one of `UCB`, `TS`,
-#' `Greedy`, `Oldest`, `Random`, or `Lowest`
+#' `MAP`, `Oldest`, `Random`, or `Lowest`.
+#' `UCB` uses Upper Confidence Bound estimates for the parameters.
+#' `TS` uses Thompson sampling, a random sample from the posterior.
+#' `MAP` uses maximum a posteriori parameter estimates.
+#' `Oldest` adds the block that has been available the longest.
+#' `Random` adds a random block.
+#' `Lowest` adds the block with the lowest sum of index levels.
+#' `UCB` and `TS` are based on bandit algorithms and account for uncertainty
+#' in the parameter estimates, but are the slowest.
+#' `MAP` is fast but doesn't account for parameter uncertainty.
+#' The other three are naive methods that are not adaptive and won't
+#' perform well.
 #' @importFrom stats quantile sd var
 #'
 #' @return SG with new points added.
@@ -107,12 +118,11 @@ CGGP_internal_calcMSEde <- function(valsinds, MSE_MAP) {
 #' SG <- CGGPcreate(d=3, batchsize=100)
 #' y <- apply(SG$design, 1, function(x){x[1]+x[2]^2})
 #' SG <- CGGPfit(SG, Y=y)
-#' SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod="Greedy")
-#' # UCB,TS,Greedy
-CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB"){
+#' SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod="MAP")
+CGGPappend <- function(CGGP,batchsize, selectionmethod = "MAP"){
   # ===== Check inputs =====
-  if (!(selectionmethod %in% c("UCB", "TS", "Greedy", "Oldest", "Random", "Lowest"))) {
-    stop("selectionmethod in CGGPappend must be one of UCB, TS, Greedy, Oldest, Random, or Lowest")
+  if (!(selectionmethod %in% c("UCB", "TS", "MAP", "Oldest", "Random", "Lowest"))) {
+    stop("selectionmethod in CGGPappend must be one of UCB, TS, MAP, Oldest, Random, or Lowest")
   }
   
   if (!is.null(CGGP$design_unevaluated)) {
@@ -141,7 +151,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB"){
   # ==============================.
   
   # Calculate integrated mean squared error (IMSE) values for the given method
-  if(selectionmethod=="Greedy"){
+  if(selectionmethod=="MAP"){
     # Set up blank array to store MSE values
     MSE_MAP = array(0, dim=c(CGGP$d, CGGP$maxlevel,nopd))
     
@@ -288,7 +298,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB"){
   # Append points to design until limit until reaching max_design_points
   max_design_points = CGGP$ss + batchsize
   while (max_design_points > CGGP$ss + min(CGGP$pogsize[1:CGGP$poCOUNT]) - .5) {
-    if(selectionmethod=="Greedy"){
+    if(selectionmethod=="MAP"){
       IMES = IMES_MAP
     } else if(selectionmethod=="UCB"){
       IMES = IMES_UCB
@@ -381,7 +391,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB"){
     CGGP$pila[new_indices,] = CGGP$pila[old_indices,]
     CGGP$pilaCOUNT[new_indices] = CGGP$pilaCOUNT[old_indices]
     CGGP$pogsize[new_indices] = CGGP$pogsize[old_indices]
-    if(selectionmethod=="Greedy"){
+    if(selectionmethod=="MAP"){
       IMES_MAP[new_indices] = IMES_MAP[old_indices]
     }
     if(selectionmethod=="UCB"){
@@ -436,7 +446,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB"){
           max_polevels_old = max_polevels
           max_polevels = apply(CGGP$po[1:CGGP$poCOUNT, ,drop=F], 2, max)
           
-          if(selectionmethod=="Greedy"){
+          if(selectionmethod=="MAP"){
             for (opdlcv in 1:nopd) { # Loop over output parameter dimensions
               thetaMAP.thisloop <- if (nopd==1) CGGP$thetaMAP else CGGP$thetaMAP[, opdlcv]
               for (dimlcv in 1:CGGP$d) {
@@ -484,7 +494,7 @@ CGGPappend <- function(CGGP,batchsize, selectionmethod = "UCB"){
             # Can be Oldest or Random or Lowest
           }
           
-          if(selectionmethod=="Greedy"){
+          if(selectionmethod=="MAP"){
             # IMES_MAP[CGGP$poCOUNT] = CGGP_internal_calcMSEde(as.vector(CGGP$po[CGGP$poCOUNT, ]), MSE_MAP)
             # Need to apply first
             IMES_MAP_beforemeannewpoint <- apply(MSE_MAP, 3,

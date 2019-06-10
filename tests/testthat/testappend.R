@@ -5,7 +5,7 @@ test_that("CGGPappend works", {
   f <- function(x){x[1]*x[3]+x[2]^2}
   y <- apply(SG$design, 1, f)
   SG <- CGGPfit(SG, Y=y)
-  for (i in c("UCB", "Greedy", "TS", "Oldest", "Random", "Lowest")) {
+  for (i in c("UCB", "MAP", "TS", "Oldest", "Random", "Lowest")) {
     lastN <- nrow(SG$design)
     SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod = i)
     expect_is(SG, "CGGP")
@@ -24,7 +24,7 @@ test_that("CGGPappend works", {
   xsup <- matrix(runif(3*10), ncol=3)
   ysup <- apply(xsup, 1, f)
   SG <- CGGPfit(SG, SG$Y, Xs=xsup, Ys=ysup, corr='m32')
-  for (sel.method in c("UCB", "TS", "Greedy")) {
+  for (sel.method in c("UCB", "TS", "MAP")) {
     expect_error(CGGPappend(SG, 30, sel.method), NA)
   }
 })
@@ -39,7 +39,7 @@ test_that("CGGPappend works with large number", {
   
   # Adding 2000 will force it to increase ML and add rows to uo, pila, pala, etc.
   # But it doesn't show as working on codecov? Try 4000
-  expect_error(SG <- CGGPappend(CGGP=SG, batchsize=2*2000, selectionmethod="Greedy"), NA)
+  expect_error(SG <- CGGPappend(CGGP=SG, batchsize=2*2000, selectionmethod="MAP"), NA)
   expect_is(SG, "CGGP")
   expect_gt(nrow(SG$design), lastN)
   # y <- apply(SG$design, 1, f)
@@ -64,5 +64,5 @@ test_that("CGGPappend gives warning if it can't add any data", {
   y <- apply(SG$design, 1, f)
   SG <- CGGPfit(SG, Y=y)
   
-  expect_warning(CGGPappend(CGGP=SG, batchsize=1, selectionmethod="Greedy"))
+  expect_warning(CGGPappend(CGGP=SG, batchsize=1, selectionmethod="MAP"))
 })
