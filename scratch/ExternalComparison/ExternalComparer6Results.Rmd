@@ -1,0 +1,55 @@
+---
+title: "ExternalComparer6Results"
+author: "Collin Erickson"
+date: "6/3/2019"
+output: html_document
+---
+
+We have External Comparer 6 after my thesis defense.
+
+There were only minor changes from ExComp5
+
+1. We added BART, since it is popular.
+
+2. We added fit and prediction time.
+This is confusing for some that do fit and prediction simultaneously,
+such as BART.
+Or for aGP, which doesn't fit, it only predicts.
+Actually aGP has some premodel fitting, so it does have some fitting,
+but most of the time is prediction.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load}
+excomp <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp6_almostall.rds")
+excomp$plot_run_times()
+# plyr::dlply(excomp$outcleandf, "d")
+require('ggplot2');require('dplyr');require('magrittr');
+table(excomp$completed_runs)
+```
+
+Details of failed runs:
+```{r failed}
+# excomp$rungrid2()[!excomp$completed_runs,]
+# All are beambending
+```
+
+```{r plots1}
+ecdf <- excomp$outcleandf[excomp$completed_runs & !is.na(excomp$outcleandf$package),]
+ecdf$n <- ecdf$npd * ecdf$d
+ggplot(data=ecdf, mapping=aes(n, RMSE, color=package)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
+ggplot(data=ecdf, mapping=aes(n, score, color=package)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_x_log10()
+ggplot(data=ecdf[ecdf$package!="mlegp",], mapping=aes(n, score, color=package)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_x_log10()
+ggplot(data=ecdf, mapping=aes(n, CRPscore)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10()
+ggplot(data=ecdf, mapping=aes(n, runtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
+ggplot(data=ecdf, mapping=aes(n, fittime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
+ggplot(data=ecdf, mapping=aes(n, predtime)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
+# saveRDS(excomp, "./scratch/ExternalComparison/ExComp1_completed.rds")
+ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp", "CGGPoneshot")), mapping=aes(n, RMSE, color=correlation)) + geom_point() + facet_grid(f ~ interaction(package,correlation), scales="free_y") + scale_y_log10() + scale_x_log10()
+ggplot(data=ecdf %>% filter(package %in% c("CGGP","CGGPsupp")), mapping=aes(n, RMSE, color=correlation)) + geom_point() + facet_grid(f ~ interaction(package,correlation), scales="free_y") + scale_y_log10() + scale_x_log10()
+ggplot(data=ecdf, mapping=aes(n, RMSE, color=package)) + geom_point() + facet_grid(f ~ package, scales="free_y") + scale_y_log10() + scale_x_log10()
+
+```
+
