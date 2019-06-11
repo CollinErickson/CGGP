@@ -1,5 +1,8 @@
 context("testoutputparamdim")
 
+# sel.methods_totest <- c("UCB", "TS", "MAP")
+sel.methods_totest <- c("MAP") # Much faster
+
 # -----------------------------------------------
 # Test different output parameter dimensions
 # -----------------------------------------------
@@ -47,7 +50,7 @@ test_that("2. MV output, NO PCA, 1opd", {
   expect_equal(dim(yMVpred), c(nrow(SG$design), outd))
   
   # Check that append works without error, don't save it
-  for (sel.method in c("UCB", "TS", "MAP")) {
+  for (sel.method in sel.methods_totest) {
     expect_error(CGGPappend(SG, 30, sel.method), NA)
   }
   
@@ -57,7 +60,7 @@ test_that("2. MV output, NO PCA, 1opd", {
   expect_equal(ysuppred, ysup, eps.sup)
   
   # Check that append works with grid+supp data
-  for (sel.method in c("UCB", "TS", "MAP")) {
+  for (sel.method in sel.methods_totest) {
     expect_error(CGGPappend(SG, 30, sel.method), NA)
   }
 })
@@ -108,7 +111,7 @@ test_that("4. MV output, NO PCA, separate opd", {
   expect_equal(dim(yMVpred), c(nrow(SG$design), outd))
   
   # Check that append works without error, don't save it
-  for (sel.method in c("UCB", "TS", "MAP")) {
+  for (sel.method in sel.methods_totest) {
     expect_error(CGGPappend(SG, 30, sel.method), NA)
   }
   
@@ -118,7 +121,7 @@ test_that("4. MV output, NO PCA, separate opd", {
   expect_equal(ysuppred, ysup, eps.sup)
   
   # Check that append works with grid+supp data
-  for (sel.method in c("UCB", "TS", "MAP")) {
+  for (sel.method in sel.methods_totest) {
     expect_error(CGGPappend(SG, 30, sel.method), NA)
   }
 })

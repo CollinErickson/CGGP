@@ -1,5 +1,8 @@
 context("testsupponly")
 
+# sel.methods_totest <- c("MAP", "UCB", "TS")
+sel.methods_totest <- c("MAP") # Only MAP to save time
+
 test_that("1. Create, append, predict with only supp, scalar out", {
   d <- 3
   # f <- function(x){1*(cos(x[3]*2*pi*2)*x[1]^1.2 + (1-x[1]^.8)*sin(pi*x[2]^2) + log(x[3]+.2))}
@@ -48,7 +51,7 @@ test_that("1. Create, append, predict with only supp, scalar out", {
   
   # Append points, all three methods
   set.seed(0) # Fails on test, but never in console
-  for (sel.method in c("MAP", "UCB", "TS")) {
+  for (sel.method in sel.methods_totest) {
     expect_error(s1.app <- CGGPappend(s1, 100, sel.method), NA)
     expect_true(nrow(s1.app$design) > 90)
     expect_true(nrow(s1.app$design) < 100) # Can't get 100 since first block is size 1
@@ -129,7 +132,7 @@ test_that("2. Create, append, predict with only supp, MVout, no PCA, yes sepOPD"
   # expect_true(all(p1test$var < var(ytest)))
   
   # Append points, all three methods
-  for (sel.method in c("MAP", "UCB", "TS")) {
+  for (sel.method in sel.methods_totest) {
     expect_error(s1.app <- CGGPappend(s1, 100, sel.method), NA)
     expect_true(nrow(s1.app$design) > 90)
     expect_true(nrow(s1.app$design) < 100) # Can't get 100 since first block is size 1
@@ -196,7 +199,7 @@ test_that("3. Create, append, predict with only supp, MVout, no PCA, no sepOPD",
   # expect_true(all(p1test$var < var(ytest)))
   
   # Append points, all three methods
-  for (sel.method in c("MAP", "UCB", "TS")) {
+  for (sel.method in sel.methods_totest) {
     expect_error(s1.app <- CGGPappend(s1, 100, sel.method), NA)
     expect_true(nrow(s1.app$design) > 90)
     expect_true(nrow(s1.app$design) < 100) # Can't get 100 since first block is size 1
