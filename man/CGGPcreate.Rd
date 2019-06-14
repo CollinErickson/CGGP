@@ -4,8 +4,8 @@
 \alias{CGGPcreate}
 \title{Create sparse grid GP}
 \usage{
-CGGPcreate(d, batchsize, corr = "CauchySQ", grid_sizes = c(1, 2, 4, 4,
-  8, 12, 20, 28, 32), Xs = NULL, Ys = NULL,
+CGGPcreate(d, batchsize, corr = "PowerExponential", grid_sizes = c(1,
+  2, 4, 4, 8, 12, 20, 28, 32), Xs = NULL, Ys = NULL,
   HandlingSuppData = "Correct", supp_args = list())
 }
 \arguments{

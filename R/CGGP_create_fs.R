@@ -25,7 +25,7 @@
 #'
 #' @examples
 #' CGGPcreate(d=8,200)
-CGGPcreate <- function(d, batchsize, corr="CauchySQ",
+CGGPcreate <- function(d, batchsize, corr="PowerExponential",
                        grid_sizes=c(1,2,4,4,8,12,20,28,32),
                        Xs=NULL, Ys=NULL,
                        HandlingSuppData="Correct",
