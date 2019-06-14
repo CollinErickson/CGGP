@@ -1,4 +1,4 @@
-# CGGP 1.0.0.9000
+# CGGP 1.0.1
 
 * Change default correlation function to power exponential.
 
