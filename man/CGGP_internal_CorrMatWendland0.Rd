@@ -33,7 +33,7 @@ Calculate correlation matrix for two sets of points in one dimension.
 Note that this is not the correlation between two vectors.
 }
 \examples{
-CGGP_internal_CorrMatWendland0(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7,.2))
+CGGP_internal_CorrMatWendland0(c(0,.2,.4),c(.1,.3,.5), theta=-.7)
 }
 \seealso{
 Other correlation functions: \code{\link{CGGP_internal_CorrMatCauchySQT}},
