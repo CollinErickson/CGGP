@@ -1,7 +1,7 @@
 context("testoutputparamdim")
 
-# sel.methods_totest <- c("UCB", "TS", "MAP")
-sel.methods_totest <- c("MAP") # Much faster
+sel.methods_totest <- c("UCB", "TS", "MAP")
+# sel.methods_totest <- c("MAP") # Much faster
 
 # -----------------------------------------------
 # Test different output parameter dimensions

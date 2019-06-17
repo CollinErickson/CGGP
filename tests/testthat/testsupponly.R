@@ -1,7 +1,7 @@
 context("testsupponly")
 
-# sel.methods_totest <- c("MAP", "UCB", "TS")
-sel.methods_totest <- c("MAP") # Only MAP to save time
+sel.methods_totest <- c("MAP", "UCB", "TS")
+# sel.methods_totest <- c("MAP") # Only MAP to save time
 
 test_that("1. Create, append, predict with only supp, scalar out", {
   d <- 3
