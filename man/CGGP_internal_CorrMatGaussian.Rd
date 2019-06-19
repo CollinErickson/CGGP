@@ -47,6 +47,7 @@ Other correlation functions: \code{\link{CGGP_internal_CorrMatCauchySQT}},
   \code{\link{CGGP_internal_CorrMatMatern52}},
   \code{\link{CGGP_internal_CorrMatPowerExp}},
   \code{\link{CGGP_internal_CorrMatWendland0}},
-  \code{\link{CGGP_internal_CorrMatWendland1}}
+  \code{\link{CGGP_internal_CorrMatWendland1}},
+  \code{\link{CGGP_internal_CorrMatWendland2}}
 }
 \concept{correlation functions}

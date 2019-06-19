@@ -421,12 +421,56 @@ test_that("Correlation CorrMatWendland1 works", {
 })
 
 
+test_that("Correlation CorrMatWendland2 works", {
+  x1 <- runif(5)
+  x2 <- runif(4)
+  th <- runif(1,-1,1)
+  
+  # First check return_numpara is right
+  expect_equal(CGGP_internal_CorrMatWendland2(return_numpara=TRUE), 1)
+  
+  # Get error when you give in theta of wrong size
+  expect_error(CGGP_internal_CorrMatWendland2(x1=x1, x2=x2, theta = c(.1,.1)))
+  
+  # Now check correlation
+  corr1 <- CGGP_internal_CorrMatWendland2(x1=x1, x2=x2, theta=th)
+  expect_is(corr1, "matrix")
+  expect_equal(dim(corr1), c(5,4))
+  
+  # This just copies the function as written, so not really an independent check.
+  #  Should pass by definition. But will help in case we change the correlation
+  #  function later, or convert it to Rcpp.
+  wendland2func <- function(x1,x2,theta) {
+    diffmat =abs(outer(x1,x2,'-'))
+    expLS = exp(3*theta[1])
+    h = diffmat/expLS
+    C = pmax(1 - h, 0)^5 * (8*h^2 + 5*h + 1)
+    C
+  }
+  corr2 <- wendland2func(x1, x2, theta=th)
+  expect_equal(corr1, corr2)
+  
+  # Now check that dC is actually grad of C
+  corr_C_dC <- CGGP_internal_CorrMatWendland2(x1=x1, x2=x2, theta=th, return_dCdtheta=TRUE)
+  eps <- 1e-6
+  for (i in 1:1) {
+    thd <- c(0)
+    thd[i] <- eps
+    numdC <- (CGGP_internal_CorrMatWendland2(x1=x1, x2=x2, theta=th+thd) -
+                CGGP_internal_CorrMatWendland2(x1=x1, x2=x2, theta=th-thd)) / (2*eps)
+    # Should be more accurate but was exactly the same
+    # plot(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)])
+    expect_equal(numdC, corr_C_dC$dCdtheta[,(1+4*i-4):(4*i)], info = paste("theta dimension with error is",i))
+  }
+})
+
+
 test_that("Logs work for all", {
   corrs <- list(CGGP_internal_CorrMatCauchySQ, CGGP_internal_CorrMatCauchySQT,
              CGGP_internal_CorrMatCauchy, CGGP_internal_CorrMatGaussian,
              CGGP_internal_CorrMatMatern32, CGGP_internal_CorrMatMatern52,
              CGGP_internal_CorrMatPowerExp, CGGP_internal_CorrMatWendland0,
-             CGGP_internal_CorrMatWendland1
+             CGGP_internal_CorrMatWendland1, CGGP_internal_CorrMatWendland2
   )
   n1 <- 5
   n2 <- 6
