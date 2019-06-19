@@ -371,7 +371,7 @@ CGGP_internal_CorrMatPowerExp <- function(x1, x2,theta,
     if(return_dCdtheta){
       if (!returnlogs) {
         dCdtheta <- cbind(tmax*alpha*C*diffmat^alpha/expLS^alpha,
-                                  -C*h^alpha*log(h)/2 * (maxpower - minpower))
+                          -C*h^alpha*log(h)/2 * (maxpower - minpower))
       } else {
         dCdtheta <- cbind(tmax*alpha*diffmat^alpha/expLS^alpha,
                           -h^alpha*log(h)/2 * (maxpower - minpower))
@@ -408,7 +408,7 @@ CGGP_internal_CorrMatWendland0 <- function(x1, x2,theta,
   if(return_numpara){
     return(1)
   }else{ 
-    if (length(theta) != 1) {stop("CorrMatWendland0 theta should be length 2")}
+    if (length(theta) != 1) {stop("CorrMatWendland0 theta should be length 1")}
     diffmat =abs(outer(x1,x2,'-'))
     tmax <- 3
     expLS = exp(tmax*theta[1])
@@ -420,9 +420,61 @@ CGGP_internal_CorrMatWendland0 <- function(x1, x2,theta,
     }
     if(return_dCdtheta){
       if (!returnlogs) {
-        dCdtheta <- ifelse(1-h > 0, 3*diffmat/expLS, 0)
+        dCdtheta <- ifelse(1-h > 0, tmax*diffmat/expLS, 0)
       } else {
-        dCdtheta <- ifelse(1-h > 0, 3*diffmat/expLS/pmax(1-h,0), 0)
+        dCdtheta <- ifelse(1-h > 0, tmax*diffmat/expLS/pmax(1-h,0), 0)
+      }
+      dCdtheta[is.na(dCdtheta)] = 0
+      out <- list(C=C,dCdtheta=dCdtheta)
+      return(out)
+    }else{
+      return(C)
+    }
+  }
+}
+
+
+#' Wendland1 1 correlation function
+#' 
+#' Calculate correlation matrix for two sets of points in one dimension.
+#' Note that this is not the correlation between two vectors.
+#'
+#' @inheritParams CGGP_internal_CorrMatCauchy
+#'
+#' @return Matrix of correlation values between x1 and x2
+# @rdname CGGP_internal_CorrMatCauchy
+#' @export
+#' @family correlation functions
+#'
+#' @examples
+#' CGGP_internal_CorrMatWendland1(c(0,.2,.4),c(.1,.3,.5), theta=-.7)
+CGGP_internal_CorrMatWendland1 <- function(x1, x2,theta,
+                                           return_dCdtheta = FALSE,
+                                           return_numpara=FALSE,
+                                           returnlogs=FALSE) {
+  if(return_numpara){
+    return(1)
+  }else{ 
+    if (length(theta) != 1) {stop("CorrMatWendland1 theta should be length 1")}
+    diffmat =abs(outer(x1,x2,'-'))
+    tmax <- 3
+    expLS = exp(tmax*theta[1])
+    h = diffmat/expLS
+    if (!returnlogs) {
+      C <- pmax(1 - h, 0)^3 * (3*h + 1)
+    } else {
+      C = log(pmax(1 - h, 0)^3 * (3*h + 1))
+    }
+    if(return_dCdtheta){
+      if (!returnlogs) {
+        dCdtheta <- ifelse(1-h > 0,
+                           tmax*expLS * (3*(1-h)^2*(h/expLS)*(3*h+1) + (1-h)^3*(-3*h/expLS)),
+                           0)
+      } else {
+        dCdtheta <- ifelse(1-h > 0,
+                           tmax*expLS * (3*(1-h)^2*(h/expLS)*(3*h+1) + (1-h)^3*(-3*h/expLS)) /
+                             (pmax(1 - h, 0)^3 * (3*h + 1)),
+                           0)
       }
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
