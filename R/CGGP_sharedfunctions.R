@@ -34,9 +34,15 @@ CGGP_internal_set_corr <- function(CGGP, corr) {
   } else if (tolower(corr) %in% c("matern52", "m52", "m5")) {
     CGGP$CorrMat <- CGGP_internal_CorrMatMatern52
     CGGP$CorrName <- "Matern52"
-  } else if (tolower(corr) %in% c("wendland0", "w0", "triangle", "triangular", "tri", "triang")) {
+  } else if (tolower(corr) %in% c("wendland0", "w0", "wend0", "triangle", "triangular", "tri", "triang")) {
     CGGP$CorrMat <- CGGP_internal_CorrMatWendland0
     CGGP$CorrName <- "Wendland0"
+  } else if (tolower(corr) %in% c("wendland1", "w1", "wend1")) {
+    CGGP$CorrMat <- CGGP_internal_CorrMatWendland1
+    CGGP$CorrName <- "Wendland1"
+  } else if (tolower(corr) %in% c("wendland2", "w2", "wend2")) {
+    CGGP$CorrMat <- CGGP_internal_CorrMatWendland2
+    CGGP$CorrName <- "Wendland2"
   } else {
     stop(paste0("corr given to CGGPcreate should be one of CauchySQT, CauchySQ,", 
                 " Cauchy, Gaussian, PowerExponential, Matern32, or Matern52.\n",
