@@ -1,6 +1,7 @@
-# Comparison for paper
+# External comparisons, version 6
+# This (v 6) is supposed to be for the first paper submission
 # 5 is with updated grid size, extended in each dimension
-#   also adding BASS into this file, last time had to do it separately
+# 6 adds BART. Also adding BASS into this file, last time had to do it separately
 
 # decentLHS <- sFFLHD::decentLHS
 decentLHS <- function(n, d, ndes, max.time) {
@@ -546,17 +547,22 @@ excomp$save_self()
 #                write_start_files=T, write_error_files=T)
 # Getting errors, run by package.name to see which is causing it
 # excomp$parallel_cores <- 10
-excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "BART")),
-               parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
-               write_start_files=T, write_error_files=T)
-# excomp$run_all()
-
+if (F) {
+  excomp$run_all(to_run = which(!excomp$completed_runs & (package.name == "BART")),
+                 parallel_temp_save = TRUE, delete_parallel_temp_save_after=FALSE,
+                 write_start_files=T, write_error_files=T)
+  # excomp$run_all()
+}
 cat("Completed all runs in ExternalComparer6.R\n")
 
 excomp$save_self()
 
 cat("Saved self\n")
 
+# =============================================
+# Load results and make plots of results ======
+# =============================================
+# For best plots, go to very bottom
 if (F) {
   excomp <- readRDS("C:/Users/cbe117/Documents/GitHub/CGGP/scratch/ExternalComparison/ExComp6_almostall.rds")
   excomp$plot_run_times()
@@ -603,6 +609,14 @@ if (F) {
   pi3 <- ggplot(data=incompdf1, mapping=aes(n, runtime, color=package, shape=package)) + labs(color="Supp. data?", shape="Supp. data?") + geom_point(size=4) + facet_grid(f ~ correlation, scales="free_y") + scale_y_log10() + scale_x_log10()+ylab("Run time (sec)"); pi3
   
   
+  
+  # SAVE IMAGES, set SAVEPLOT to FALSE to not save images
+  SAVEPLOT <- T
+  maybe_save <- function(filepath, p,folderpath="./scratch/thesis/", device='eps', width=4, height=4) {
+    if (SAVEPLOT) {
+      ggsave(paste0(folderpath, "/", filepath, ".", device), p, device=device, width=width, height=height, units="in")
+    } else {p}
+  }
   maybe_save("InternalCompRMSE_corr", device="eps", width=8, height=8, pi1)
   maybe_save("InternalCompCRPscore_corr", device="eps", width=8, height=8, pi2)
   maybe_save("InternalCompRuntime_corr", device="eps", width=8, height=8, pi3)
