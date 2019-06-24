@@ -715,7 +715,7 @@ if (F) {
   ecdf3$package[ecdf3$package=="CGGPsupp"] <- "CGGP"; ecdf3$package[ecdf3$package=="aGP"] <- "laGP"
   colnames(ecdf3)[colnames(ecdf3)=="package"] <- "Package"
   ecdf3$f[ecdf3$f=="piston"] <- "Piston"; ecdf3$f[ecdf3$f=="OTL_Circuit"] <- "OTL circuit"; ecdf3$f[ecdf3$f=="wingweight"] <- "Wing weight"; ecdf3$f[ecdf3$f=="borehole"] <- "Borehole"
-  if (nrow(ecdf3) != 10*4*4*7 - 16) {stop("ecdf3 is wrong")} # Missing 1 BASS and 15 MRFA
+  if (nrow(ecdf3) != 10*4*4*7) {stop("ecdf3 is wrong, ExComp6 is only missing 10 aGP beambending rows")}
   # Mean smoothing, but all normal lines (no dots/dashes). Use true means, not the log scale. For run times, only use means, no dots.
   p1 <- ggplot(data=ecdf3,
                mapping=aes(n, RMSE, color=Package, shape=Package, group=Package, linetype=Package, size=Package)) + 
