@@ -114,43 +114,44 @@ require("comparer")
 #   c("Ignore", "Only", "Correct","Mixture", "MarginalValidation","FullValidation"), 4),
 #   Nsupppd=rep(c(0,5,10,20), each=6), stringsAsFactors=F)
 # sup.df <- sup.df[!(sup.df$Nsupppd==0 & sup.df$sup.method!="Ignore"),]
-
-e2 <- ffexp$new(
-  eval_func = sggpexp_func,
-  # corr = c("cauchysq", "powerexp")[1], #"cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
-  corr = c("cauchysq", "cauchysqt", "cauchy", "powerexp", "m32", "m52", #"gauss",
-           "cauchysqnug", "cauchysqtnug", "cauchynug", "powerexpnug", "m32nug", "m52nug", "gaussnug"),
-  sel.method = c("Greedy"), #c("TS", "UCB", "Greedy"),
-  fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"), d=c(3,6,7,8,10),
-                row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
-  batchsize=128,
-  # sup.method=c("Ignore", "Only", "Correct","Mixture", "MarginalValidation","FullValidation"),
-  # Nsupppd=c(0,5,10,20),
-  sup.method="Correct",
-  Nsupppd=10,
-  # sup.df=sup.df,
-  parallel=if (version$os =="linux-gnu") {TRUE} else {FALSE},
-  parallel_cores = if (version$os =="linux-gnu") {20} else {3},
-  replicate=1:3,
-  folder_path= if (version$os =="linux-gnu") {"/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun7/"}
-               else {"./scratch/InternalComparison/ComparerRun7"}
-)
-
-e2$rungrid
-# try because it gave delete error before, but shouldn't need it now
-try(e2$recover_parallel_temp_save(delete_after = FALSE))
-e2$save_self()
-# e2$run_one(1)
-# if (F) {
-# e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
-#            write_start_files=!TRUE, write_error_files=!T, run_order = "random")
-e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
-           write_start_files=TRUE, write_error_files=T)
-# }
-e2$recover_parallel_temp_save(delete_after = F)
-e2$save_self()
-
-print("Completed all runs in ComparerRun7.R")
+if (F) {
+  e2 <- ffexp$new(
+    eval_func = sggpexp_func,
+    # corr = c("cauchysq", "powerexp")[1], #"cauchysqt", "gaussian", "powerexp", "cauchy", "cauchysq"), #, "m32", "m52", "cauchysq", "cauchy"),
+    corr = c("cauchysq", "cauchysqt", "cauchy", "powerexp", "m32", "m52", #"gauss",
+             "cauchysqnug", "cauchysqtnug", "cauchynug", "powerexpnug", "m32nug", "m52nug", "gaussnug"),
+    sel.method = c("Greedy"), #c("TS", "UCB", "Greedy"),
+    fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"), d=c(3,6,7,8,10),
+                  row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
+    batchsize=128,
+    # sup.method=c("Ignore", "Only", "Correct","Mixture", "MarginalValidation","FullValidation"),
+    # Nsupppd=c(0,5,10,20),
+    sup.method="Correct",
+    Nsupppd=10,
+    # sup.df=sup.df,
+    parallel=if (version$os =="linux-gnu") {TRUE} else {FALSE},
+    parallel_cores = if (version$os =="linux-gnu") {20} else {3},
+    replicate=1:3,
+    folder_path= if (version$os =="linux-gnu") {"/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun7/"}
+                 else {"./scratch/InternalComparison/ComparerRun7"}
+  )
+  
+  e2$rungrid
+  # try because it gave delete error before, but shouldn't need it now
+  try(e2$recover_parallel_temp_save(delete_after = FALSE))
+  e2$save_self()
+  # e2$run_one(1)
+  # if (F) {
+  # e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
+  #            write_start_files=!TRUE, write_error_files=!T, run_order = "random")
+  e2$run_all(parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
+             write_start_files=TRUE, write_error_files=T)
+  # }
+  e2$recover_parallel_temp_save(delete_after = F)
+  e2$save_self()
+  
+  print("Completed all runs in ComparerRun7.R")
+}
 
 if (F) {
   # e2 <- readRDS("./scratch/InternalComparison/ComparerRun6_object_328_of_360.rds")
@@ -192,4 +193,28 @@ if (F) {
   ggplot(data=e7df %>% mutate(RMSE=pmin(10, RMSE)) %>% sample_n(n()), mapping=aes(nallotted, RMSE, color=nug)) + geom_point() + scale_y_log10() + facet_grid(f ~ corr.funcnn)
   ggplot(data=e7df %>% mutate(elapsedtime=elapsedtime) %>% sample_n(n()), mapping=aes(nallotted, elapsedtime, color=nug)) + geom_point() + scale_y_log10() + facet_grid(f ~ corr.funcnn)
   ggplot(data=e7df %>% mutate(CRPscore=pmin(1e4, CRPscore)) %>% sample_n(n()), mapping=aes(nallotted, CRPscore, color=nug)) + geom_point() + scale_y_log10() + facet_grid(f ~ corr.funcnn)
+}
+
+if (F) {
+  # Run comparison on Wendland corr funcs (3)
+  ew <- ffexp$new(
+    eval_func = sggpexp_func,
+    corr = c('wendland0', 'wendland1', 'wendland2'),
+    sel.method = c("MAP"),
+    fd=data.frame(f=c("beambending","OTL_Circuit","piston","borehole","wingweight"), d=c(3,6,7,8,10),
+                  row.names = c("beam","OTL","piston","borehole","wingweight"), stringsAsFactors = F),
+    batchsize=128,
+    sup.method="Correct",
+    Nsupppd=10,
+    parallel=if (version$os =="linux-gnu") {TRUE} else {FALSE},
+    parallel_cores = if (version$os =="linux-gnu") {20} else {3},
+    replicate=1:3,
+    folder_path= if (version$os =="linux-gnu") {"/home/collin/scratch/SGGP/scratch/InternalComparison/ComparerRun7wendland/"}
+    else {"./scratch/InternalComparison/ComparerRun7wendland"}
+  )
+  ew$recover_parallel_temp_save(delete_after=F)
+  table(ew$completed_runs)
+  ew$run_all(parallel=F,
+             parallel_temp_save=TRUE, delete_parallel_temp_save_after=FALSE,
+             write_start_files=TRUE, write_error_files=T)
 }
