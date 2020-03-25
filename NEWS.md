@@ -1,4 +1,6 @@
-# CGGP 1.0.1.9000
+# CGGP 1.0.2
+
+* Fixed errors in examples.
 
 # CGGP 1.0.1
 
