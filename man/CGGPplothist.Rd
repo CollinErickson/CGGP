@@ -27,8 +27,10 @@ CGGPplothist(SG)
 CGGPplothist(SG, ylog=FALSE)
 
 # The first dimension is more active and will have greater depth
-SG <- CGGPcreate(d=5, batchsize=10)
-SG <- CGGPappend(CGGP=SG, batchsize=100)
+f <- function(x) {sin(x[1]^.6*5)}
+SG <- CGGPcreate(d=5, batchsize=100)
+SG <- CGGPfit(SG, apply(SG$design, 1, f))
+SG <- CGGPappend(CGGP=SG, batchsize=1000)
 CGGPplothist(SG)
 }
 }
