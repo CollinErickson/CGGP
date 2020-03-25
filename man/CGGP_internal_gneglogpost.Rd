@@ -4,8 +4,16 @@
 \alias{CGGP_internal_gneglogpost}
 \title{Gradient of negative log likelihood posterior}
 \usage{
-CGGP_internal_gneglogpost(theta, CGGP, y, ..., return_lik = FALSE,
-  ys = NULL, Xs = NULL, HandlingSuppData = "Correct")
+CGGP_internal_gneglogpost(
+  theta,
+  CGGP,
+  y,
+  ...,
+  return_lik = FALSE,
+  ys = NULL,
+  Xs = NULL,
+  HandlingSuppData = "Correct"
+)
 }
 \arguments{
 \item{theta}{Log of correlation parameters}

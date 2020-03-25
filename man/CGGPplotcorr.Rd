@@ -4,8 +4,13 @@
 \alias{CGGPplotcorr}
 \title{Plot correlation samples}
 \usage{
-CGGPplotcorr(Corr = CGGP_internal_CorrMatGaussian, theta = NULL,
-  numlines = 20, outdims = NULL, zero = TRUE)
+CGGPplotcorr(
+  Corr = CGGP_internal_CorrMatGaussian,
+  theta = NULL,
+  numlines = 20,
+  outdims = NULL,
+  zero = TRUE
+)
 }
 \arguments{
 \item{Corr}{Correlation function or CGGP object.
@@ -41,11 +46,14 @@ CGGPplotcorr(SG)
 }
 }
 \seealso{
-Other CGGP plot functions: \code{\link{CGGPplotblocks}},
-  \code{\link{CGGPplotheat}}, \code{\link{CGGPplothist}},
-  \code{\link{CGGPplotsamplesneglogpost}},
-  \code{\link{CGGPplotslice}}, \code{\link{CGGPplottheta}},
-  \code{\link{CGGPplotvariogram}},
-  \code{\link{CGGPvalplot}}
+Other CGGP plot functions: 
+\code{\link{CGGPplotblocks}()},
+\code{\link{CGGPplotheat}()},
+\code{\link{CGGPplothist}()},
+\code{\link{CGGPplotsamplesneglogpost}()},
+\code{\link{CGGPplotslice}()},
+\code{\link{CGGPplottheta}()},
+\code{\link{CGGPplotvariogram}()},
+\code{\link{CGGPvalplot}()}
 }
 \concept{CGGP plot functions}

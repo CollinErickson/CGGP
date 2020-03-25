@@ -32,11 +32,14 @@ Yval <- apply(Xval, 1, f1)
 CGGPvalplot(CGGP=SG, Xval=Xval, Yval=Yval)
 }
 \seealso{
-Other CGGP plot functions: \code{\link{CGGPplotblocks}},
-  \code{\link{CGGPplotcorr}}, \code{\link{CGGPplotheat}},
-  \code{\link{CGGPplothist}},
-  \code{\link{CGGPplotsamplesneglogpost}},
-  \code{\link{CGGPplotslice}}, \code{\link{CGGPplottheta}},
-  \code{\link{CGGPplotvariogram}}
+Other CGGP plot functions: 
+\code{\link{CGGPplotblocks}()},
+\code{\link{CGGPplotcorr}()},
+\code{\link{CGGPplotheat}()},
+\code{\link{CGGPplothist}()},
+\code{\link{CGGPplotsamplesneglogpost}()},
+\code{\link{CGGPplotslice}()},
+\code{\link{CGGPplottheta}()},
+\code{\link{CGGPplotvariogram}()}
 }
 \concept{CGGP plot functions}

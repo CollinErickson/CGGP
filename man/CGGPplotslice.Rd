@@ -4,8 +4,15 @@
 \alias{CGGPplotslice}
 \title{CGGP slice plot}
 \usage{
-CGGPplotslice(CGGP, proj = 0.5, np = 300, color = "pink", outdims,
-  scales = "free_y", facet = "grid")
+CGGPplotslice(
+  CGGP,
+  proj = 0.5,
+  np = 300,
+  color = "pink",
+  outdims,
+  scales = "free_y",
+  facet = "grid"
+)
 }
 \arguments{
 \item{CGGP}{CGGP object}
@@ -45,12 +52,14 @@ CGGPplotslice(s1, s1$design[nrow(s1$design),])
 }
 }
 \seealso{
-Other CGGP plot functions: \code{\link{CGGPplotblocks}},
-  \code{\link{CGGPplotcorr}}, \code{\link{CGGPplotheat}},
-  \code{\link{CGGPplothist}},
-  \code{\link{CGGPplotsamplesneglogpost}},
-  \code{\link{CGGPplottheta}},
-  \code{\link{CGGPplotvariogram}},
-  \code{\link{CGGPvalplot}}
+Other CGGP plot functions: 
+\code{\link{CGGPplotblocks}()},
+\code{\link{CGGPplotcorr}()},
+\code{\link{CGGPplotheat}()},
+\code{\link{CGGPplothist}()},
+\code{\link{CGGPplotsamplesneglogpost}()},
+\code{\link{CGGPplottheta}()},
+\code{\link{CGGPplotvariogram}()},
+\code{\link{CGGPvalplot}()}
 }
 \concept{CGGP plot functions}

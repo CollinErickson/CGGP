@@ -24,7 +24,7 @@ dimension or two-dimensional subspace.
 # All dimensions should look similar
 d <- 8
 SG = CGGPcreate(d,201)
-CGGPheat(SG)
+CGGPplotheat(SG)
 
 # The first and fourth dimensions are most active and will have greater depth
 SG <- CGGPcreate(d=5, batchsize=50)
@@ -41,11 +41,14 @@ CGGPplotheat(SG)
 https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
 }
 \seealso{
-Other CGGP plot functions: \code{\link{CGGPplotblocks}},
-  \code{\link{CGGPplotcorr}}, \code{\link{CGGPplothist}},
-  \code{\link{CGGPplotsamplesneglogpost}},
-  \code{\link{CGGPplotslice}}, \code{\link{CGGPplottheta}},
-  \code{\link{CGGPplotvariogram}},
-  \code{\link{CGGPvalplot}}
+Other CGGP plot functions: 
+\code{\link{CGGPplotblocks}()},
+\code{\link{CGGPplotcorr}()},
+\code{\link{CGGPplothist}()},
+\code{\link{CGGPplotsamplesneglogpost}()},
+\code{\link{CGGPplotslice}()},
+\code{\link{CGGPplottheta}()},
+\code{\link{CGGPplotvariogram}()},
+\code{\link{CGGPvalplot}()}
 }
 \concept{CGGP plot functions}

@@ -4,8 +4,15 @@
 \alias{CGGP_internal_neglogpost}
 \title{Calculate negative log posterior}
 \usage{
-CGGP_internal_neglogpost(theta, CGGP, y, ..., ys = NULL, Xs = NULL,
-  HandlingSuppData = "Correct")
+CGGP_internal_neglogpost(
+  theta,
+  CGGP,
+  y,
+  ...,
+  ys = NULL,
+  Xs = NULL,
+  HandlingSuppData = "Correct"
+)
 }
 \arguments{
 \item{theta}{Correlation parameters}

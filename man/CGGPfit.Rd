@@ -4,11 +4,18 @@
 \alias{CGGPfit}
 \title{Update CGGP model given data}
 \usage{
-CGGPfit(CGGP, Y, Xs = NULL, Ys = NULL,
+CGGPfit(
+  CGGP,
+  Y,
+  Xs = NULL,
+  Ys = NULL,
   theta0 = pmax(pmin(CGGP$thetaMAP, 0.8), -0.8),
   HandlingSuppData = CGGP$HandlingSuppData,
   separateoutputparameterdimensions = is.matrix(CGGP$thetaMAP),
-  set_thetaMAP_to, corr, Ynew)
+  set_thetaMAP_to,
+  corr,
+  Ynew
+)
 }
 \arguments{
 \item{CGGP}{Sparse grid objects}
@@ -48,7 +55,9 @@ y <- apply(cg$design, 1, function(x){x[1]+x[2]^2})
 cg <- CGGPfit(CGGP=cg, Y=y)
 }
 \seealso{
-Other CGGP core functions: \code{\link{CGGPappend}},
-  \code{\link{CGGPcreate}}, \code{\link{predict.CGGP}}
+Other CGGP core functions: 
+\code{\link{CGGPappend}()},
+\code{\link{CGGPcreate}()},
+\code{\link{predict.CGGP}()}
 }
 \concept{CGGP core functions}

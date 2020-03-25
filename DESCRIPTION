@@ -28,5 +28,5 @@ Suggests:
 URL: https://github.com/CollinErickson/CGGP
 BugReports: https://github.com/CollinErickson/CGGP/issues
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr

@@ -4,9 +4,16 @@
 \alias{CGGPcreate}
 \title{Create sparse grid GP}
 \usage{
-CGGPcreate(d, batchsize, corr = "PowerExponential", grid_sizes = c(1,
-  2, 4, 4, 8, 12, 20, 28, 32), Xs = NULL, Ys = NULL,
-  HandlingSuppData = "Correct", supp_args = list())
+CGGPcreate(
+  d,
+  batchsize,
+  corr = "PowerExponential",
+  grid_sizes = c(1, 2, 4, 4, 8, 12, 20, 28, 32),
+  Xs = NULL,
+  Ys = NULL,
+  HandlingSuppData = "Correct",
+  supp_args = list()
+)
 }
 \arguments{
 \item{d}{Input dimension}
@@ -40,7 +47,9 @@ Create sparse grid GP
 CGGPcreate(d=8,200)
 }
 \seealso{
-Other CGGP core functions: \code{\link{CGGPappend}},
-  \code{\link{CGGPfit}}, \code{\link{predict.CGGP}}
+Other CGGP core functions: 
+\code{\link{CGGPappend}()},
+\code{\link{CGGPfit}()},
+\code{\link{predict.CGGP}()}
 }
 \concept{CGGP core functions}

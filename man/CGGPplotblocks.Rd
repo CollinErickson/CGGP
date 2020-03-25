@@ -31,11 +31,14 @@ CGGPplotblocks(mat)
 }
 }
 \seealso{
-Other CGGP plot functions: \code{\link{CGGPplotcorr}},
-  \code{\link{CGGPplotheat}}, \code{\link{CGGPplothist}},
-  \code{\link{CGGPplotsamplesneglogpost}},
-  \code{\link{CGGPplotslice}}, \code{\link{CGGPplottheta}},
-  \code{\link{CGGPplotvariogram}},
-  \code{\link{CGGPvalplot}}
+Other CGGP plot functions: 
+\code{\link{CGGPplotcorr}()},
+\code{\link{CGGPplotheat}()},
+\code{\link{CGGPplothist}()},
+\code{\link{CGGPplotsamplesneglogpost}()},
+\code{\link{CGGPplotslice}()},
+\code{\link{CGGPplottheta}()},
+\code{\link{CGGPplotvariogram}()},
+\code{\link{CGGPvalplot}()}
 }
 \concept{CGGP plot functions}

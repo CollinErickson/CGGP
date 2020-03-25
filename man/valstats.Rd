@@ -4,10 +4,22 @@
 \alias{valstats}
 \title{Calculate stats for prediction on validation data}
 \usage{
-valstats(predmean, predvar, Yval, bydim = TRUE, RMSE = TRUE,
-  score = TRUE, CRPscore = TRUE, coverage = TRUE, corr = TRUE,
-  R2 = TRUE, MAE = FALSE, MIS90 = FALSE, metrics,
-  min_var = .Machine$double.eps)
+valstats(
+  predmean,
+  predvar,
+  Yval,
+  bydim = TRUE,
+  RMSE = TRUE,
+  score = TRUE,
+  CRPscore = TRUE,
+  coverage = TRUE,
+  corr = TRUE,
+  R2 = TRUE,
+  MAE = FALSE,
+  MIS90 = FALSE,
+  metrics,
+  min_var = .Machine$double.eps
+)
 }
 \arguments{
 \item{predmean}{Predicted mean}

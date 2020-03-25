@@ -18,7 +18,7 @@
 #' # All dimensions should look similar
 #' d <- 8
 #' SG = CGGPcreate(d,201)
-#' CGGPheat(SG)
+#' CGGPplotheat(SG)
 #' 
 #' # The first and fourth dimensions are most active and will have greater depth
 #' SG <- CGGPcreate(d=5, batchsize=50)

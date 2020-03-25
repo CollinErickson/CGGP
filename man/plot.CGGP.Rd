@@ -11,16 +11,18 @@
 
 \item{y}{Don't use}
 
-\item{...}{Passed to CGGPblockplot}
+\item{...}{Passed to CGGPplotblocks}
 }
 \value{
 Either makes plot or returns plot object
 }
 \description{
 There are a few different plot functions for CGGP objects:
-`CGGPblockplot`, `CGGPcorrplot`, `CGGPprojectionplot`,
-`CGGPvalplot`, `CGGPheat`, and `CGGPhist`.
-Currently `CGGPblockplot` is the default plot object.
+`CGGPplotblocks`, `CGGPplotblockselection`, 
+`CGGPplotcorr`, `CGGPplotheat`, `CGGPplothist`,
+`CGGPvalplot`, 
+`CGGPplotslice`, `CGGPplotslice`, and `CGGPplotvariogram`.
+Currently `CGGPplotblocks` is the default plot object.
 }
 \examples{
 SG = CGGPcreate(3,100)

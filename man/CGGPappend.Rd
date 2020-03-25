@@ -38,7 +38,9 @@ SG <- CGGPfit(SG, Y=y)
 SG <- CGGPappend(CGGP=SG, batchsize=20, selectionmethod="MAP")
 }
 \seealso{
-Other CGGP core functions: \code{\link{CGGPcreate}},
-  \code{\link{CGGPfit}}, \code{\link{predict.CGGP}}
+Other CGGP core functions: 
+\code{\link{CGGPcreate}()},
+\code{\link{CGGPfit}()},
+\code{\link{predict.CGGP}()}
 }
 \concept{CGGP core functions}

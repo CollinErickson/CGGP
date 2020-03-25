@@ -42,7 +42,9 @@ CGGPpred(SG, matrix(c(.1,.1,.1),1,3))
 cbind(CGGPpred(SG, SG$design)$mean, y) # Should be near equal
 }
 \seealso{
-Other CGGP core functions: \code{\link{CGGPappend}},
-  \code{\link{CGGPcreate}}, \code{\link{CGGPfit}}
+Other CGGP core functions: 
+\code{\link{CGGPappend}()},
+\code{\link{CGGPcreate}()},
+\code{\link{CGGPfit}()}
 }
 \concept{CGGP core functions}

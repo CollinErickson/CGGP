@@ -4,8 +4,14 @@
 \alias{CGGP_internal_CorrMatGaussian}
 \title{Gaussian correlation function}
 \usage{
-CGGP_internal_CorrMatGaussian(x1, x2, theta, return_dCdtheta = FALSE,
-  return_numpara = FALSE, returnlogs = FALSE)
+CGGP_internal_CorrMatGaussian(
+  x1,
+  x2,
+  theta,
+  return_dCdtheta = FALSE,
+  return_numpara = FALSE,
+  returnlogs = FALSE
+)
 }
 \arguments{
 \item{x1}{Vector of coordinates from same dimension}
@@ -40,14 +46,15 @@ Try Power Exponential, CauchySQT, Cauchy, or Matern 3/2 instead.
 CGGP_internal_CorrMatGaussian(c(0,.2,.4),c(.1,.3,.5), theta=c(-.7))
 }
 \seealso{
-Other correlation functions: \code{\link{CGGP_internal_CorrMatCauchySQT}},
-  \code{\link{CGGP_internal_CorrMatCauchySQ}},
-  \code{\link{CGGP_internal_CorrMatCauchy}},
-  \code{\link{CGGP_internal_CorrMatMatern32}},
-  \code{\link{CGGP_internal_CorrMatMatern52}},
-  \code{\link{CGGP_internal_CorrMatPowerExp}},
-  \code{\link{CGGP_internal_CorrMatWendland0}},
-  \code{\link{CGGP_internal_CorrMatWendland1}},
-  \code{\link{CGGP_internal_CorrMatWendland2}}
+Other correlation functions: 
+\code{\link{CGGP_internal_CorrMatCauchySQT}()},
+\code{\link{CGGP_internal_CorrMatCauchySQ}()},
+\code{\link{CGGP_internal_CorrMatCauchy}()},
+\code{\link{CGGP_internal_CorrMatMatern32}()},
+\code{\link{CGGP_internal_CorrMatMatern52}()},
+\code{\link{CGGP_internal_CorrMatPowerExp}()},
+\code{\link{CGGP_internal_CorrMatWendland0}()},
+\code{\link{CGGP_internal_CorrMatWendland1}()},
+\code{\link{CGGP_internal_CorrMatWendland2}()}
 }
 \concept{correlation functions}

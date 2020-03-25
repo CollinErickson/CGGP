@@ -23,11 +23,14 @@ gs <- CGGPfit(gs, Y=y)
 CGGPplotsamplesneglogpost(gs)
 }
 \seealso{
-Other CGGP plot functions: \code{\link{CGGPplotblocks}},
-  \code{\link{CGGPplotcorr}}, \code{\link{CGGPplotheat}},
-  \code{\link{CGGPplothist}}, \code{\link{CGGPplotslice}},
-  \code{\link{CGGPplottheta}},
-  \code{\link{CGGPplotvariogram}},
-  \code{\link{CGGPvalplot}}
+Other CGGP plot functions: 
+\code{\link{CGGPplotblocks}()},
+\code{\link{CGGPplotcorr}()},
+\code{\link{CGGPplotheat}()},
+\code{\link{CGGPplothist}()},
+\code{\link{CGGPplotslice}()},
+\code{\link{CGGPplottheta}()},
+\code{\link{CGGPplotvariogram}()},
+\code{\link{CGGPvalplot}()}
 }
 \concept{CGGP plot functions}

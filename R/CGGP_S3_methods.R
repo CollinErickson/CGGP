@@ -51,13 +51,15 @@ predict.CGGP <- function(object, xp, ...) {
 #' S3 plot method for CGGP
 #' 
 #' There are a few different plot functions for CGGP objects:
-#' `CGGPblockplot`, `CGGPcorrplot`, `CGGPprojectionplot`,
-#' `CGGPvalplot`, `CGGPheat`, and `CGGPhist`.
-#' Currently `CGGPblockplot` is the default plot object.
+#' `CGGPplotblocks`, `CGGPplotblockselection`, 
+#' `CGGPplotcorr`, `CGGPplotheat`, `CGGPplothist`,
+#' `CGGPvalplot`, 
+#' `CGGPplotslice`, `CGGPplotslice`, and `CGGPplotvariogram`.
+#' Currently `CGGPplotblocks` is the default plot object.
 #'
 #' @param x CGGP object
 #' @param y Don't use
-#' @param ... Passed to CGGPblockplot
+#' @param ... Passed to CGGPplotblocks
 #'
 #' @return Either makes plot or returns plot object
 #' @export
