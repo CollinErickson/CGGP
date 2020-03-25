@@ -7,7 +7,7 @@
 #' @param x2 Vector of coordinates from same dimension
 #' @param ... Don't use, just forces theta to be named
 #' @param LS Log of parameter that controls lengthscale
-#' @param FD Logit of 0.5*parameter  that controls the fractal demension
+#' @param FD Logit of 0.5*parameter  that controls the fractal dimension
 #' @param HE Log of parameter that controls the hurst effect
 #'
 #' @return Matrix
@@ -49,7 +49,7 @@ CorrMatCauchy <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_num
 #' @param x2 Vector of coordinates from same dimension
 #' @param ... Don't use, just forces theta to be named
 #' @param LS Log of parameter that controls lengthscale
-#' @param FD Logit of 0.5*parameter  that controls the fractal demension
+#' @param FD Logit of 0.5*parameter  that controls the fractal dimension
 #' @param HE Log of parameter that controls the hurst effect
 #'
 #' @return Matrix
@@ -104,7 +104,7 @@ CorrMatCauchyT <- function(x1, x2,theta, ..., return_dCdtheta = FALSE, return_nu
 #' @param x2 Vector of coordinates from same dimension
 #' @param ... Don't use, just forces theta to be named
 #' @param LS Log of parameter that controls lengthscale
-#' @param FD Logit of 0.5*parameter  that controls the fractal demension
+#' @param FD Logit of 0.5*parameter  that controls the fractal dimension
 #' @param HE Log of parameter that controls the hurst effect
 #'
 #' @return Matrix

@@ -795,7 +795,7 @@ CGGPplotsamplesneglogpost <- function(CGGP) {
 #' 
 #' Shows the order in which blocks were selected
 #' for each dimension.
-#' Gives an idea of how the selection schange over time.
+#' Gives an idea of how the selections change over time.
 #'
 #' @param CGGP CGGP object
 #' @param indims Which input dimensions should be shown?

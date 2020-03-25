@@ -25,11 +25,11 @@ void rcpp_kronDBS(NumericVector A, NumericVector B, NumericVector p){
   NumericVector x(Bl); NumericVector y(Bl);
   int p0; int sv0; int c; int i; int k; int h;
   
-  for(int dim=d-1; dim>=0;dim--){ //loop over the all demensions
+  for(int dim=d-1; dim>=0;dim--){ //loop over the all dimensions
     if(p[dim]>1.5){ //do not need to do much when kron with respect to one thing
-      p0 = p[dim]; //look at our one demension
+      p0 = p[dim]; //look at our one dimension
       sv = sv-p0*p0;
-      for(h=0; h<Bl; h+=p0)  //loop over the leftover demensions
+      for(h=0; h<Bl; h+=p0)  //loop over the leftover dimensions
       {
         x[h]=B[h]/A[sv];  //do first outside loop
         for (i=1; i<p0; i++)  //backsolve with respect to dim+1 the first time
@@ -76,11 +76,11 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
   int p0; int sv0; int c; int i; int k; int h; int dim2; int p1; int np;
   double *pointersave1; double *pointersave2;
   
-  for(int dim=d-1; dim>=0;dim--){ //loop over the all demensions
+  for(int dim=d-1; dim>=0;dim--){ //loop over the all dimensions
     if(p[dim]>1.5){ //do not need to do much when kron with respect to one thing
-      p0 = p[dim]; //look at our one demension
+      p0 = p[dim]; //look at our one dimension
       sv = sv-p0*p0;
-      for(h=0; h<Bl; h+=p0)  //loop over the leftover demensions
+      for(h=0; h<Bl; h+=p0)  //loop over the leftover dimensions
       {
         x[h]=B[h]/A[sv];  //do first outside loop
         for (i=1; i<p0; i++)  //backsolve with respect to dim+1 the first time
@@ -109,9 +109,9 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
   sv=A.size();
   
   pointersave2 = B1.begin();
-  for(int dim=d-1; dim>=0;dim--){ //loop over the all demensions
+  for(int dim=d-1; dim>=0;dim--){ //loop over the all dimensions
     if(p[dim]>1.5){  //do kron with respect to more than one thing
-      p0 = p[dim]; //look at our one demension
+      p0 = p[dim]; //look at our one dimension
       sv = sv-p0*p0;
       for(np=npara-1;np>=0;np--){
         sdv = sdv-p0*p0;
@@ -129,7 +129,7 @@ NumericMatrix rcpp_gkronDBS(NumericVector A,NumericVector dA, NumericVector B, N
       
         for(dim2=dim;dim2>=0;dim2--){
           if(p(dim2)>1.5){  //spin if we have something to spin over
-            p1 = p(dim2); //look at our one demension
+            p1 = p(dim2); //look at our one dimension
             dBn2 = clone(dBn);
             c=0;
             for(i=0; i<p1; i++) for(h=0; h<Bl; h+=p1){dBn[c]=dBn2[h+i]; c++;} //spinning the vector to right orientation

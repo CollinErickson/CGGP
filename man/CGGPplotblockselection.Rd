@@ -17,7 +17,7 @@ ggplot2 object
 \description{
 Shows the order in which blocks were selected
 for each dimension.
-Gives an idea of how the selection schange over time.
+Gives an idea of how the selections change over time.
 }
 \examples{
 gs <- CGGPcreate(d=3, batchsize=100)

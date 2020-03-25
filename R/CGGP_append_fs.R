@@ -1,6 +1,6 @@
 #' Calculate MSE over single dimension
 #' 
-#' Calcaluted using grid of integration points.
+#' Calculated using grid of integration points.
 #' Can be calculated exactly, but not much reason in 1D.
 #'
 #' @param xl Vector of points in 1D

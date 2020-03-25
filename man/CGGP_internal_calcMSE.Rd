@@ -17,7 +17,7 @@ CGGP_internal_calcMSE(xl, theta, CorrMat)
 MSE value
 }
 \description{
-Calcaluted using grid of integration points.
+Calculated using grid of integration points.
 Can be calculated exactly, but not much reason in 1D.
 }
 \examples{

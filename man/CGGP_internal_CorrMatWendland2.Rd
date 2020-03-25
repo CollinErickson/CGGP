@@ -21,7 +21,7 @@ CGGP_internal_CorrMatWendland2(
 \item{theta}{Correlation parameters:
 \itemize{
     \item LS Log of parameter that controls lengthscale
-    \item FD Logit of 0.5*parameter  that controls the fractal demension
+    \item FD Logit of 0.5*parameter  that controls the fractal dimension
     \item HE Log of parameter that controls the hurst effect
 }}
 
