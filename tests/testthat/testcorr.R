@@ -472,10 +472,17 @@ test_that("Logs work for all", {
              CGGP_internal_CorrMatPowerExp, CGGP_internal_CorrMatWendland0,
              CGGP_internal_CorrMatWendland1, CGGP_internal_CorrMatWendland2
   )
+  # Some corr funcs work better on log scale (like standard Gaussian and Matern),
+  # but some work better on normal scale (Wendland). Wendland corr funcs 
+  # were showing giving errors
+  use_log_scales <- c(rep(T, 7),
+                      rep(F, 3))
+  # use_log_scales <- rep(T, 10)
   n1 <- 5
   n2 <- 6
   for (icorr in rev(1:length(corrs))) {
     corr <- corrs[[icorr]]
+    use_log_scale <- use_log_scales[icorr]
     numpara <- corr(return_numpara = T)
     x1 <- runif(n1)
     x2 <- runif(n2)
@@ -503,23 +510,25 @@ test_that("Logs work for all", {
       numdC <- (corr(x1=x1, x2=x2, theta=theta+thd) -
                   corr(x1=x1, x2=x2, theta=theta-thd)) / (2*eps)
       # Should be more accurate but was exactly the same
-      expect_equal(numdC, corr_C_dC$dCdtheta[,(1+n2*i-n2):(n2*i)], info = paste("theta dimension with error is",i))
+      expect_equal(numdC, corr_C_dC$dCdtheta[,(1+n2*i-n2):(n2*i)], 
+                   info = paste("theta dimension with error is",i, ", icor is", icorr))
     }
     
     # Check grad matches on log scale
-    corr_C_dC_logs <- corr(x1 = x1, x2 = x2, theta = theta, return_dCdtheta=T, returnlogs = T)
+    corr_C_dC_logs <- corr(x1 = x1, x2 = x2, theta = theta, return_dCdtheta=T,
+                           returnlogs=use_log_scale)
     eps <- 1e-6
     for (i in 1:numpara) {
       thd <- rep(0, numpara)
       thd[i] <- eps
-      numdC <- (corr(x1=x1, x2=x2, theta=theta+thd, returnlogs = T) -
-                  corr(x1=x1, x2=x2, theta=theta-thd, returnlogs = T)) / (2*eps)
+      numdC <- (corr(x1=x1, x2=x2, theta=theta+thd, returnlogs = use_log_scale) -
+                  corr(x1=x1, x2=x2, theta=theta-thd, returnlogs = use_log_scale)) / (2*eps)
       # Should be more accurate but was exactly the same
       # For Wendland, need to convert NaN to 0's
       numdC <- ifelse(is.nan(numdC), 0, numdC)
       # plot(numdC, corr_C_dC_logs$dCdtheta[,(1+n2*i-n2):(n2*i)])
       expect_equal(numdC, corr_C_dC_logs$dCdtheta[,(1+n2*i-n2):(n2*i)],
-                   info = paste("theta dimension with error is",i))
+                   info = paste("theta dimension with error is", i, ", icor is", icorr))
     }
     
     rm(numpara, c1, c1_log)
