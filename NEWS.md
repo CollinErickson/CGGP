@@ -1,6 +1,10 @@
+# CGGP 1.0.2.9000
+
 # CGGP 1.0.2
 
 * Fixed errors in examples.
+
+* Accepted to CRAN on 3/29/2020.
 
 # CGGP 1.0.1
 
