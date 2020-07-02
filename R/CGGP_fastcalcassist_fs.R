@@ -126,7 +126,11 @@ CGGP_internal_calcpwanddpw <- function(CGGP, y, theta, return_lS=FALSE) {
       if(return_lS){
         lS[levellcv, dimlcv] = 2*sum(log(diag(cS)))
         for(paralcv in 1:CGGP$numpara){
-          dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -sum(diag(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]))
+          if(nv > 1.5){
+            dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -sum(diag(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]))
+          } else {
+            dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]
+          }
         }
       }
     }
@@ -258,7 +262,11 @@ CGGP_internal_calcsigma2anddsigma2 <- function(CGGP, y, theta, return_lS=FALSE) 
       if(return_lS){
         lS[levellcv, dimlcv] = 2*sum(log(diag(cS)))
         for(paralcv in 1:CGGP$numpara){
-          dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -sum(diag(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]))
+          if(nv > 1.5){
+            dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -sum(diag(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]))
+          } else {
+            dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]
+          }
         }
       }
     }
