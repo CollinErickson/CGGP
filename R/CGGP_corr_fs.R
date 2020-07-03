@@ -411,18 +411,26 @@ CGGP_internal_CorrMatWendland0 <- function(x1, x2,theta,
     if (length(theta) != 1) {stop("CorrMatWendland0 theta should be length 1")}
     diffmat =abs(outer(x1,x2,'-'))
     tmax <- 3
+    
     expLS = exp(tmax*theta[1])
-    h = diffmat/expLS
+    
+    wherecov = which(diffmat<expLS)
+    h = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
+    h[wherecov] = 1-diffmat[wherecov] / expLS
     if (!returnlogs) {
-      C <- pmax(1 - h, 0)
+      C = matrix(0,dim(h)[1],dim(h)[2])
+      C[wherecov] <- h[wherecov]
     } else {
-      C = log(pmax(1 - h, 0))
+      C = -Inf * matrix(1,dim(h)[1],dim(h)[2])
+      C[wherecov] = log(h[wherecov])
     }
     if(return_dCdtheta){
       if (!returnlogs) {
-        dCdtheta <- ifelse(1-h > 0, tmax*diffmat/expLS, 0)
+        dCdtheta = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
+        dCdtheta[wherecov] <- tmax * (1-h[wherecov])
       } else {
-        dCdtheta <- ifelse(1-h > 0, tmax*diffmat/expLS/pmax(1-h,0), 0)
+        dCdtheta = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
+        dCdtheta[wherecov] <- tmax * ((1-h[wherecov])/h[wherecov])
       }
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
@@ -459,22 +467,29 @@ CGGP_internal_CorrMatWendland1 <- function(x1, x2,theta,
     diffmat =abs(outer(x1,x2,'-'))
     tmax <- 3
     expLS = exp(tmax*theta[1])
-    h = diffmat/expLS
+    
+    wherecov = which(diffmat<expLS)
+    h = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
+    h[wherecov] = 1-diffmat[wherecov] / expLS
     if (!returnlogs) {
-      C <- pmax(1 - h, 0)^3 * (3*h + 1)
+      C = matrix(0,dim(h)[1],dim(h)[2])
+      C[wherecov] <- h[wherecov]^3 * (4 - 3*h[wherecov])
     } else {
-      C = log(pmax(1 - h, 0)^3 * (3*h + 1))
+      C = -Inf * matrix(1,dim(h)[1],dim(h)[2])
+      C[wherecov] = 3* log(h[wherecov]) + log(4 - 3*h[wherecov])
     }
+    
     if(return_dCdtheta){
+      h2 = 1-h
       if (!returnlogs) {
         dCdtheta <- ifelse(1-h > 0,
-                           tmax*expLS * (3*(1-h)^2*(h/expLS)*(3*h+1) + (1-h)^3*(-3*h/expLS)),
+                           tmax*expLS * (3*(1-h2)^2*(h2/expLS)*(3*h+1) + (1-h2)^3*(-3*h2/expLS)),
                            0)
+        dCdtheta = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
+        dCdtheta[wherecov] <- 12*tmax*h[wherecov]^2*(1-h[wherecov])
       } else {
-        dCdtheta <- ifelse(1-h > 0,
-                           tmax*expLS * (3*(1-h)^2*(h/expLS)*(3*h+1) + (1-h)^3*(-3*h/expLS)) /
-                             (pmax(1 - h, 0)^3 * (3*h + 1)),
-                           0)
+        dCdtheta = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
+        dCdtheta[wherecov] <- 12*tmax*(1-h[wherecov])/(h[wherecov] * (4 - 3*h[wherecov]))
       }
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
@@ -512,23 +527,24 @@ CGGP_internal_CorrMatWendland2 <- function(x1, x2,theta,
     diffmat =abs(outer(x1,x2,'-'))
     tmax <- 3
     expLS = exp(tmax*theta[1])
-    h = diffmat/expLS
+
+    wherecov = which(diffmat<expLS)
+    h = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
+    h[wherecov] = 1-diffmat[wherecov] / expLS
     if (!returnlogs) {
-      C <- pmax(1 - h, 0)^5 * (8*h^2 + 5*h + 1)
+      C = matrix(0,dim(h)[1],dim(h)[2])
+      C[wherecov] <- h[wherecov]^5 * (8*h[wherecov]^2- 21*h[wherecov] + 14)
     } else {
-      C = log(pmax(1 - h, 0)^5 * (8*h^2 + 5*h + 1))
+      C = -Inf * matrix(1,dim(h)[1],dim(h)[2])
+      C[wherecov] = 5* log(h[wherecov]) + log(8*h[wherecov]^2- 21*h[wherecov] + 14)
     }
     if(return_dCdtheta){
       if (!returnlogs) {
-        dCdtheta <- ifelse(1-h > 0,
-                           tmax*expLS * (5*(1-h)^4*(h/expLS)*(8*h^2 + 5*h + 1) + (1-h)^5*(-16*h^2/expLS-5*h/expLS)),
-                           # tmax*expLS * (-h/expLS) * (-5*(1-h)^4*(8*h^2 + 5*h + 1) + (1-h)^5*(16*h+5)),
-                           0)
+        dCdtheta = matrix(0,dim(h)[1],dim(h)[2])
+        dCdtheta[wherecov] <- tmax*14*h[wherecov]^4*(1-h[wherecov])^2*(5-4*h[wherecov])
       } else {
-        dCdtheta <- ifelse(1-h > 0,
-                           tmax*expLS * (5*(1-h)^4*(h/expLS)*(8*h^2 + 5*h + 1) + (1-h)^5*(-16*h^2/expLS-5*h/expLS)) /
-                             (pmax(1 - h, 0)^5 * (8*h^2 + 5*h + 1)),
-                           0)
+        dCdtheta = matrix(0,dim(h)[1],dim(h)[2])
+        dCdtheta[wherecov] <- tmax*14*(1-h[wherecov])^2*(5-4*h[wherecov])/(h[wherecov]*(8*h[wherecov]^2- 21*h[wherecov] + 14))
       }
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)

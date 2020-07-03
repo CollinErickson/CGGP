@@ -43,7 +43,11 @@ CGGP_internal_faststuff123 <- function(CGGP,y,theta,
             dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv] = t(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv])
           }
           for(paralcv in 1:CGGP$numpara){
+          if(nv > 1.5){
             dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -sum(diag(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]))
+          } else {
+            dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]
+          }
           }
         }
       }

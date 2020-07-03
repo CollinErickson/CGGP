@@ -128,7 +128,11 @@ CGGP_internal_calc_cholS_lS_dsigma2_pw_dMatdtheta <- function(CGGP,y,
       }
       lS[levellcv, dimlcv] = 2*sum(log(diag(cS)))
       for(paralcv in 1:CGGP$numpara){
-        dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -sum(diag(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]))
+          if(nv > 1.5){
+            dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -sum(diag(dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]))
+          } else {
+            dlS[levellcv, CGGP$numpara*(dimlcv-1)+paralcv] = -dMatdtheta[[(dimlcv-1)*Q+levellcv]][1:nv,nv*(paralcv-1)+1:nv]
+          }
       }
     }
   }

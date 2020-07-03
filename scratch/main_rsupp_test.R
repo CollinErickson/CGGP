@@ -1,4 +1,4 @@
-
+library(CGGP)
 borehole <- function(x) {
   rw <- x[, 1] * (0.15 - 0.05) + 0.05
   r <-  x[, 2] * (50000 - 100) + 100
@@ -29,11 +29,11 @@ Yp = testf(Xp)
 
 Xs = randomLHS(40, d)
 Ys = testf(Xs)
-CGGP = CGGPcreate(d,300) 
+CGGP = CGGPcreate(d,300, corr = "Wendland2") 
 Y = testf(CGGP$design) 
 CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
-CGGP = CGGPappend(CGGP,1500, selectionmethod = "Greedy")
-Y = testf(CGGP$design)  
+CGGP = CGGPappend(CGGP,1500, selectionmethod = "MAP")
+Y = testf(CGGP$design)
 CGGP = CGGPfit(CGGP,Y,Xs=Xs,Ys=Ys)
 library(tictoc)
 tic('here')
@@ -41,12 +41,12 @@ Pred1 = CGGPpred(CGGP,Xp)
 toc()
 mean((Pred1$mean-Yp)^2)
 
-Y = testf(CGGP$design)  
-Yb= Y
-Yb[261,1] = NA
-Yb[710:810,1] = NA
-Yb[261,2] = NA
-Yb[710:810,3] = NA
-CGGP3 = CGGPfit(CGGP,Yb)
-Pred2 = CGGPpred(CGGP3,Xp)
-mean((Pred2$mean-Yp)^2)
+# Y = testf(CGGP$design)  
+# Yb= Y
+# Yb[261,1] = NA
+# Yb[710:810,1] = NA
+# Yb[261,2] = NA
+# Yb[710:810,3] = NA
+# CGGP3 = CGGPfit(CGGP,Yb)
+# Pred2 = CGGPpred(CGGP3,Xp)
+# mean((Pred2$mean-Yp)^2)
