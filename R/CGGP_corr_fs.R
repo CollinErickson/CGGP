@@ -482,14 +482,18 @@ CGGP_internal_CorrMatWendland1 <- function(x1, x2,theta,
     if(return_dCdtheta){
       h2 = 1-h
       if (!returnlogs) {
-        dCdtheta <- ifelse(1-h > 0,
-                           tmax*expLS * (3*(1-h2)^2*(h2/expLS)*(3*h+1) + (1-h2)^3*(-3*h2/expLS)),
-                           0)
+        # dCdtheta <- ifelse(1-h > 0,
+        #                    # tmax*expLS * (3*(1-h2)^2*(h2/expLS)*(3*h+1) + (1-h2)^3*(-3*h2/expLS)),
+        #                    tmax*expLS * (3*(1-h2)^2*(h2/expLS)*(4-3*h) + (1-h2)^3*(-3*1/expLS)),
+        #                    0)
         dCdtheta = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
-        dCdtheta[wherecov] <- 12*tmax*h[wherecov]^2*(1-h[wherecov])
+        # dCdtheta[wherecov] <- 12*tmax*h[wherecov]^2*(1-h[wherecov])
+        dCdtheta[wherecov] <- 12*tmax*h[wherecov]^2*(1-h[wherecov]) * diffmat[wherecov] / expLS
       } else {
         dCdtheta = matrix(0,dim(diffmat)[1],dim(diffmat)[2])
-        dCdtheta[wherecov] <- 12*tmax*(1-h[wherecov])/(h[wherecov] * (4 - 3*h[wherecov]))
+        # dCdtheta[wherecov] <- 12*tmax*(1-h[wherecov])/(h[wherecov] * (4 - 3*h[wherecov]))
+        # dCdtheta[wherecov] <- 12*tmax*h[wherecov]^2*(1-h[wherecov]) * diffmat[wherecov] / expLS / C[wherecov]
+        dCdtheta[wherecov] <- tmax * 3 * (1/h[wherecov] - 1/(4-3*h[wherecov])) * diffmat[wherecov] / expLS 
       }
       dCdtheta[is.na(dCdtheta)] = 0
       out <- list(C=C,dCdtheta=dCdtheta)
