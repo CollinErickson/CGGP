@@ -24,6 +24,7 @@ Suggests:
     reshape2,
     plyr,
     MASS,
+    rmarkdown,
     knitr
 URL: https://github.com/CollinErickson/CGGP
 BugReports: https://github.com/CollinErickson/CGGP/issues
