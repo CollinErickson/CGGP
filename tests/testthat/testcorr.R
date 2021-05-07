@@ -491,13 +491,15 @@ test_that("Logs work for all", {
       x1 <- runif(n1)
       x2 <- runif(n2)
       theta <- runif(numpara)*2-1
+      # theta <- runif(numpara)*4 - 2 # Leads to fake errors, just numerics
       
       # Check that it actually equals log of normal corr
       c1 <- corr(x1 = x1, x2 = x2, theta = theta)
       c1_log <- corr(x1 = x1, x2 = x2, theta = theta, returnlogs = T)
       expect_is(c1, "matrix")
       expect_is(c1_log, "matrix")
-      expect_equal(log(c1), c1_log)
+      # expect_equal(log(c1), c1_log)
+      expect_equal(c1, exp(c1_log)) # Better to avoid -Inf
       
       # Check grad has correct C
       d1_log <- corr(x1 = x1, x2 = x2, theta = theta, returnlogs = T, return_dCdtheta = T)
@@ -515,7 +517,9 @@ test_that("Logs work for all", {
                     corr(x1=x1, x2=x2, theta=theta-thd)) / (2*eps)
         # Should be more accurate but was exactly the same
         expect_equal(numdC, corr_C_dC$dCdtheta[,(1+n2*i-n2):(n2*i)], 
-                     info = paste("theta dimension with error is",i, ", icor is", icorr))
+                     info = paste("theta dimension with error is",i, ", icor is", icorr,
+                                  "use_log_scale is", use_log_scale,
+                                  "theta is", theta))
       }
       
       # Check grad matches on log scale
@@ -538,7 +542,8 @@ test_that("Logs work for all", {
         # Wendland on log scale sometimes gets to 1e-5, so be more lenient on those
         expect_equal(numdC, corr_C_dC_logs$dCdtheta[,(1+n2*i-n2):(n2*i)],
                      info = paste("theta dimension with error is", i, ", icor is", icorr,
-                                  "use_log_scale is", use_log_scale),
+                                  "use_log_scale is", use_log_scale,
+                                  "theta is", theta),
                      tolerance = if (!use_log_scale || works_well_on_log_scales[icorr]) {1e-8} else {1e-4})
       }
       
