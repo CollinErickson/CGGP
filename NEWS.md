@@ -1,4 +1,8 @@
-# CGGP 1.0.2.9000
+# CGGP 1.0.3
+
+* Minor fixes.
+
+* Added rmarkdown to Suggests to avoid being removed from CRAN.
 
 # CGGP 1.0.2
 
