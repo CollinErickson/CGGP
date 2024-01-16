@@ -1,4 +1,8 @@
-# CGGP 1.0.3.9000
+# CGGP 1.0.4
+
+* Documentation fix (https://github.com/r-lib/roxygen2/issues/1491)
+
+* Removed C++11 setting in Makevars to remove NOTE
 
 # CGGP 1.0.3
 

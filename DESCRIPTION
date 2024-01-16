@@ -1,7 +1,7 @@
 Package: CGGP
 Type: Package
 Title: Composite Grid Gaussian Processes
-Version: 1.0.3.9000
+Version: 1.0.4
 Authors@R:
     c(
     person("Collin", "Erickson", email = "collinberickson@gmail.com", role = c("aut", "cre")), # Creator is who gets bothered with issues
@@ -29,5 +29,5 @@ Suggests:
 URL: https://github.com/CollinErickson/CGGP
 BugReports: https://github.com/CollinErickson/CGGP/issues
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr

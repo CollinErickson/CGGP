@@ -1,6 +1,6 @@
 #' Calculate predictive weights for CGGP
 #' 
-#' Predictive weights are Sigma^{-1}*y in standard GP.
+#' Predictive weights are Sigma^(-1)*y in standard GP.
 #' This calculation is much faster since we don't need to
 #' solve the full system of equations.
 #'

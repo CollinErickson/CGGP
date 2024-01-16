@@ -3,6 +3,7 @@
 \docType{package}
 \name{CGGP}
 \alias{CGGP}
+\alias{CGGP-package}
 \title{CGGP: A package for running sparse grid computer experiments}
 \description{
 The CGGP package implements the method presented in Plumlee et al. (2019).

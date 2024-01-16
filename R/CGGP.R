@@ -6,5 +6,6 @@
 #' The CGGP functions: CGGPcreate, CGGPfit, CGGPappend, and CGGPpred
 #'
 #' @docType package
+#' @aliases CGGP-package
 #' @name CGGP
 NULL

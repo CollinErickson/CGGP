@@ -3,10 +3,16 @@
 
 # CGGP
 
+<!-- badges: start -->
+
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/CGGP)](https://cran.r-project.org/package=CGGP)
 [![Travis-CI Build
 Status](https://travis-ci.org/CollinErickson/CGGP.svg?branch=master)](https://travis-ci.org/CollinErickson/CGGP)
-[![Coverage
-Status](https://img.shields.io/codecov/c/github/CollinErickson/CGGP/master.svg)](https://codecov.io/github/CollinErickson/CGGP?branch=master)
+[![codecov](https://codecov.io/github/CollinErickson/CGGP/graph/badge.svg?token=FMnP9TEFBk)](https://codecov.io/github/CollinErickson/CGGP)
+[![CRAN RStudio mirror
+downloads](https://cranlogs.r-pkg.org/badges/last-month/CGGP?color=blue)](https://r-pkg.org/pkg/CGGP)
+[![R-CMD-check](https://github.com/CollinErickson/CGGP/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CollinErickson/CGGP/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
 The goal of CGGP is to provide a sequential design of experiment
 algorithm that can efficiently use many points and interpolate exactly.
@@ -33,7 +39,7 @@ print(CG)
 #> CGGP object
 #>    d = 4
 #>    output dimensions = 1
-#>    CorrFunc = CauchySQ
+#>    CorrFunc = PowerExponential
 #>    number of design points             = 193
 #>    number of unevaluated design points = 193
 #>    Available functions:
@@ -60,7 +66,7 @@ CG
 #> CGGP object
 #>    d = 4
 #>    output dimensions = 1
-#>    CorrFunc = CauchySQ
+#>    CorrFunc = PowerExponential
 #>    number of design points             = 193
 #>    number of unevaluated design points = 0
 #>    Available functions:
@@ -77,30 +83,30 @@ you can use `CGGPpred`.
 xp <- matrix(runif(10*CG$d), ncol=CG$d)
 CGGPpred(CG, xp)
 #> $mean
-#>             [,1]
-#>  [1,] -0.5797854
-#>  [2,] -0.3749652
-#>  [3,]  0.1128483
-#>  [4,]  0.9209868
-#>  [5,]  0.9907518
-#>  [6,] -0.2265420
-#>  [7,]  0.1801634
-#>  [8,] -0.3477451
-#>  [9,]  0.7743188
-#> [10,] -0.0355732
+#>              [,1]
+#>  [1,] -0.52367139
+#>  [2,] -0.31521070
+#>  [3,]  0.05781108
+#>  [4,]  0.94199482
+#>  [5,]  0.98578179
+#>  [6,] -0.22661334
+#>  [7,]  0.17936738
+#>  [8,] -0.16986576
+#>  [9,]  0.73173845
+#> [10,] -0.15488181
 #> 
 #> $var
 #>               [,1]
-#>  [1,] 4.354093e-03
-#>  [2,] 1.928985e-02
-#>  [3,] 3.206114e-03
-#>  [4,] 4.775720e-03
-#>  [5,] 1.564388e-04
-#>  [6,] 4.594134e-06
-#>  [7,] 1.772568e-04
-#>  [8,] 4.485993e-03
-#>  [9,] 1.386959e-02
-#> [10,] 1.293479e-02
+#>  [1,] 0.0092572099
+#>  [2,] 0.0221140651
+#>  [3,] 0.0094446082
+#>  [4,] 0.0134280357
+#>  [5,] 0.0012771995
+#>  [6,] 0.0002103327
+#>  [7,] 0.0035323769
+#>  [8,] 0.0149844852
+#>  [9,] 0.0170830979
+#> [10,] 0.0183621344
 ```
 
 To add new design points to the already existing design, use
@@ -135,11 +141,6 @@ column.
 
 ``` r
 CGGPplotblocks(CG)
-#> Registered S3 methods overwritten by 'ggplot2':
-#>   method         from 
-#>   [.quosures     rlang
-#>   c.quosures     rlang
-#>   print.quosures rlang
 ```
 
 ![](tools/README-plotblocks-1.png)<!-- -->
@@ -147,11 +148,11 @@ CGGPplotblocks(CG)
 #### `CGGPplotheat`
 
 `CGGPplotheat` is similar to `CGGPplotblocks` and can be easier to read
-since it is only a single plot. The \((i,j)\) entry shows the maximum
-value for which a block was selected with \(X_i\) and \(X_j\) at least
-that large. The diagonal entries, \((i, i)\), show the maximum depth for
-\(X_i\). A diagonal entry must be at least as large as any entry in its
-column or row. This plot is also symmetric.
+since it is only a single plot. The $(i,j)$ entry shows the maximum
+value for which a block was selected with $X_i$ and $X_j$ at least that
+large. The diagonal entries, $(i, i)$, show the maximum depth for $X_i$.
+A diagonal entry must be at least as large as any entry in its column or
+row. This plot is also symmetric.
 
 ``` r
 CGGPplotheat(CG)
@@ -168,7 +169,7 @@ explored more. These should be the more active dimensions.
 ``` r
 CGGPplothist(CG)
 #> Warning: Transformation introduced infinite values in continuous y-axis
-#> Warning: Removed 8 rows containing missing values (geom_bar).
+#> Warning: Removed 12 rows containing missing values (`geom_bar()`).
 ```
 
 ![](tools/README-hist-1.png)<!-- -->
