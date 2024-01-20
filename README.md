@@ -6,11 +6,8 @@
 <!-- badges: start -->
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/CGGP)](https://cran.r-project.org/package=CGGP)
-[![Travis-CI Build
-Status](https://travis-ci.org/CollinErickson/CGGP.svg?branch=master)](https://travis-ci.org/CollinErickson/CGGP)
-[![codecov](https://codecov.io/github/CollinErickson/CGGP/graph/badge.svg?token=FMnP9TEFBk)](https://codecov.io/github/CollinErickson/CGGP)
-[![CRAN RStudio mirror
-downloads](https://cranlogs.r-pkg.org/badges/last-month/CGGP?color=blue)](https://r-pkg.org/pkg/CGGP)
+[![codecov](https://codecov.io/github/CollinErickson/CGGP/graph/badge.svg?token=FMnP9TEFBk)](https://app.codecov.io/github/CollinErickson/CGGP)
+[![CRAN-RStudio-mirror-downloads](https://cranlogs.r-pkg.org/badges/last-month/CGGP?color=blue)](https://r-pkg.org/pkg/CGGP)
 [![R-CMD-check](https://github.com/CollinErickson/CGGP/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CollinErickson/CGGP/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
