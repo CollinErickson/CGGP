@@ -1,6 +1,10 @@
+# CGGP 1.0.4.9000
+
 # CGGP 1.0.4
 
-* Documentation fix (https://github.com/r-lib/roxygen2/issues/1491)
+* Documentation fix (https://github.com/r-lib/roxygen2/issues/1491).
+
+* Accepted to CRAN on 1/23/24.
 
 # CGGP 1.0.3
 
